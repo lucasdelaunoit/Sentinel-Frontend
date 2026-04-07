@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard,
   Users,
@@ -12,38 +13,45 @@ import { cn } from '@/lib/utils'
 interface NavItem {
   label: string
   icon: React.ComponentType<{ className?: string }>
-  active?: boolean
+  to: string
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', icon: LayoutDashboard, active: true },
-  { label: 'Employees', icon: Users },
-  { label: 'Projects', icon: FolderOpen },
-  { label: 'Skill Matrix', icon: Grid3x3 },
+  { label: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },
+  { label: 'Employees', icon: Users, to: '/employees' },
+  { label: 'Projects', icon: FolderOpen, to: '/projects' },
+  { label: 'Skill Matrix', icon: Grid3x3, to: '/skill-matrix' },
 ]
 
 const quickActions: NavItem[] = [
-  { label: 'Simulate Leave', icon: PlayCircle, active: true },
+  { label: 'Simulate Leave', icon: PlayCircle, to: '/simulate' },
 ]
 
-function NavLink({ item }: { item: NavItem }) {
+function SidebarNavLink({ item }: { item: NavItem }) {
   return (
-    <button
-      className={cn(
-        'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-        item.active
-          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-          : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
-      )}
+    <NavLink
+      to={item.to}
+      className={({ isActive }) =>
+        cn(
+          'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+          isActive
+            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+            : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
+        )
+      }
     >
-      <item.icon
-        className={cn(
-          'size-4 shrink-0',
-          item.active ? 'text-sidebar-primary' : 'text-sidebar-foreground/60',
-        )}
-      />
-      {item.label}
-    </button>
+      {({ isActive }) => (
+        <>
+          <item.icon
+            className={cn(
+              'size-4 shrink-0',
+              isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/60',
+            )}
+          />
+          {item.label}
+        </>
+      )}
+    </NavLink>
   )
 }
 
@@ -73,7 +81,7 @@ export default function Sidebar() {
           </p>
           <div className="space-y-0.5">
             {navItems.map((item) => (
-              <NavLink key={item.label} item={item} />
+              <SidebarNavLink key={item.label} item={item} />
             ))}
           </div>
         </div>
@@ -84,7 +92,7 @@ export default function Sidebar() {
           </p>
           <div className="space-y-0.5">
             {quickActions.map((item) => (
-              <NavLink key={item.label} item={item} />
+              <SidebarNavLink key={item.label} item={item} />
             ))}
           </div>
         </div>

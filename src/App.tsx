@@ -3,6 +3,7 @@ import './App.css'
 import Sidebar from './components/layout/Sidebar'
 import TopBar from './components/layout/TopBar'
 import Dashboard from './pages/Dashboard'
+import Employees from './pages/Employees'
 
 export default function App() {
   return (
@@ -13,7 +14,8 @@ export default function App() {
         <main className="flex-1 overflow-y-auto p-6">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/dashboard" element={<p>sss</p>} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/employees" element={<Employees />} />
           </Routes>
         </main>
       </div>
