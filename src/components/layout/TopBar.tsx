@@ -1,4 +1,4 @@
-import { Bell, ChevronRight, PlusCircle } from 'lucide-react'
+import { Bell, CalendarCheck, ChevronRight, PlayCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export default function TopBar() {
@@ -11,17 +11,20 @@ export default function TopBar() {
           <span>Overview</span>
         </div>
         <h1 className="text-xl font-bold text-foreground leading-tight">
-          Dashboard
+          Today
         </h1>
       </div>
 
       <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" className="gap-1.5 h-8 text-sm">
+          <CalendarCheck className="size-3.5" />
+          Import planning
+        </Button>
         <Button
-          variant="default"
           size="sm"
-          className="gap-1.5 bg-foreground text-background hover:bg-foreground/85 h-8 px-3 text-sm"
+          className="gap-2 rounded-full bg-foreground text-background hover:bg-foreground/85 h-9 px-4 text-sm font-medium"
         >
-          <PlusCircle className="size-3.5" />
+          <PlayCircle className="size-4" />
           Simulate Leave
         </Button>
         <Button variant="outline" size="icon" className="size-8 relative">

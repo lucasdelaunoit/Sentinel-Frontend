@@ -1,5 +1,4 @@
-import { CalendarCheck, Eye, TrendingUp, TrendingDown } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Eye, TrendingUp, TrendingDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 /* ─── Helpers ─────────────────────────────────────────────── */
@@ -220,7 +219,7 @@ interface StatCardProps {
 
 function StatCard({ title, value, trend, trendUp = true, icon: Icon }: StatCardProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl bg-card border border-border p-5 shadow-sm">
+    <div className="flex flex-col gap-3 rounded-xl bg-card border border-border p-5">
       <div className="flex items-start justify-between">
         <p className="text-sm font-medium text-muted-foreground">{title}</p>
         <div className="flex size-8 items-center justify-center rounded-lg bg-muted text-muted-foreground/50">
@@ -289,33 +288,11 @@ const projects = [
 /* ─── Dashboard Page ──────────────────────────────────────── */
 
 import { Users, AlertTriangle, BookOpen, Activity } from 'lucide-react'
+import {Button} from "@/components/ui/button.tsx";
 
 export default function Dashboard() {
   return (
     <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Today</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Lorem ipsum dolor sit amet consectetur. Lectus amet sed et purus.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5 h-8 text-sm">
-            <CalendarCheck className="size-3.5" />
-            Import planning
-          </Button>
-          <Button
-            size="sm"
-            className="gap-1.5 h-8 text-sm bg-foreground text-background hover:bg-foreground/85"
-          >
-            <CalendarCheck className="size-3.5" />
-            Simulate a leave
-          </Button>
-        </div>
-      </div>
-
       {/* Stat cards */}
       <div className="grid grid-cols-4 gap-4">
         <StatCard
@@ -351,7 +328,7 @@ export default function Dashboard() {
       {/* Middle row: KCI chart + Critical Projects */}
       <div className="grid grid-cols-5 gap-4">
         {/* KCI Radar card */}
-        <div className="col-span-3 rounded-xl bg-card border border-border shadow-sm p-5">
+        <div className="col-span-3 rounded-xl bg-card border border-border p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-foreground">
               Knowledge Coverage Index Today (KCI)
@@ -393,7 +370,7 @@ export default function Dashboard() {
         {/* Right column: Critical Projects + Skill Gap */}
         <div className="col-span-2 flex flex-col gap-4">
           {/* Critical Projects */}
-          <div className="rounded-xl bg-card border border-border shadow-sm p-5 flex-1">
+          <div className="rounded-xl bg-card border border-border p-5 flex-1">
             <h3 className="font-semibold text-foreground mb-4">
               Critical projects{' '}
               <span className="text-muted-foreground font-normal">(2)</span>
@@ -449,7 +426,7 @@ export default function Dashboard() {
           </div>
 
           {/* Skill Gap Alerts */}
-          <div className="rounded-xl bg-card border border-border shadow-sm p-5">
+          <div className="rounded-xl bg-card border border-border p-5">
             <h3 className="font-semibold text-foreground mb-3">Skill Gap Alerts</h3>
             <div className="rounded-lg bg-rose-50 border border-rose-100 p-3">
               <p className="text-2xl font-bold text-rose-600">3</p>
@@ -462,7 +439,7 @@ export default function Dashboard() {
       </div>
 
       {/* Project Health Summary */}
-      <div className="rounded-xl bg-card border border-border shadow-sm overflow-hidden">
+      <div className="rounded-xl bg-card border border-border overflow-hidden">
         <div className="px-6 py-4 border-b border-border">
           <h3 className="font-semibold text-foreground">Project Health Summary</h3>
         </div>
