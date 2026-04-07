@@ -21,8 +21,7 @@ export default function TopBar() {
           Import planning
         </Button>
         <Button
-          size="sm"
-          className="gap-2 rounded-full bg-foreground text-background hover:bg-foreground/85 h-9 px-4 text-sm font-medium"
+          className="gap-2 bg-foreground text-background hover:bg-foreground/85 h-9 px-5 text-sm font-medium"
         >
           <PlayCircle className="size-4" />
           Simulate Leave
