@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Eye, PenSquare, X, Search, ChevronsUpDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -455,7 +456,7 @@ function EmployeeList({
 }: {
   employees: Employee[]
   onView: (emp: Employee) => void
-}) {
+  }) {
   const cols = ['Employee', 'Department', 'Skills', 'Projects ↕', 'Criticality', 'Bus Factor', "Today's Status", 'Actions']
 
   return (
@@ -551,6 +552,7 @@ function EmployeeList({
 /* ─── Employees Page ───────────────────────────────────────── */
 
 export default function Employees() {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<Tab>('list')
   const [search, setSearch] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
@@ -574,8 +576,7 @@ export default function Employees() {
   }
 
   function openView(emp: Employee) {
-    setEditEmployee(emp)
-    setModalOpen(true)
+    navigate(`/employees/${emp.id}`)
   }
 
   return (
