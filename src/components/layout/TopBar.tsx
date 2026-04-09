@@ -16,6 +16,7 @@ export default function TopBar() {
   const isProjects = path === "/projects";
   const isEmployeeDetail = path.startsWith("/employees/");
   const isProjectDetail = path.startsWith("/projects/");
+  const isSettings = path === "/settings";
 
   let breadcrumb = "Sentinel";
   let title = "Dashboard";
@@ -35,6 +36,9 @@ export default function TopBar() {
   } else if (isProjectDetail) {
     breadcrumb = "Portfolio";
     title = "Project Detail";
+  } else if (isSettings) {
+    breadcrumb = "Admin";
+    title = "Settings";
   }
 
   return (

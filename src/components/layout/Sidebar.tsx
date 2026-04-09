@@ -19,6 +19,7 @@ const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
   { label: "Employees", icon: Users, to: "/employees" },
   { label: "Projects", icon: FolderOpen, to: "/projects" },
+  { label: "Settings", icon: Settings, to: "/settings" },
 ];
 
 const quickActions: NavItem[] = [

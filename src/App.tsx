@@ -7,6 +7,7 @@ import Employees from "./pages/Employees";
 import EmployeeDetail from "./pages/EmployeeDetail";
 import Projects from "./pages/Projects";
 import ProjectDetail from "./pages/ProjectDetail";
+import Settings from "./pages/Settings";
 import { PageProvider } from "./context/PageContext";
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
               <Route path="/employees/:id" element={<EmployeeDetail />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/projects/:id" element={<ProjectDetail />} />
+              <Route path="/settings" element={<Settings />} />
             </Routes>
           </main>
         </div>
