@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   Activity,
   CalendarClock,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +22,7 @@ function Avatar({
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full font-semibold text-white",
+        "flex shrink-0 items-center justify-center rounded-full font-semibold text-white shadow-sm",
         size === "sm" ? "size-7 text-[10px]" : "size-9 text-xs",
         color,
       )}
@@ -32,13 +33,13 @@ function Avatar({
 }
 
 const AVATAR_COLORS: Record<string, string> = {
-  SC: "bg-indigo-500",
-  MJ: "bg-blue-500",
-  DK: "bg-amber-500",
-  ER: "bg-rose-500",
-  LW: "bg-emerald-500",
-  AK: "bg-violet-500",
-  W: "bg-green-500",
+  SC: "bg-gradient-to-br from-indigo-500 to-indigo-600",
+  MJ: "bg-gradient-to-br from-blue-500 to-blue-600",
+  DK: "bg-gradient-to-br from-amber-500 to-amber-600",
+  ER: "bg-gradient-to-br from-rose-500 to-rose-600",
+  LW: "bg-gradient-to-br from-emerald-500 to-emerald-600",
+  AK: "bg-gradient-to-br from-violet-500 to-violet-600",
+  W: "bg-gradient-to-br from-green-500 to-green-600",
 };
 
 function AvatarGroup({
@@ -78,15 +79,15 @@ function AvatarGroup({
 function HealthBar({ value }: { value: number }) {
   const color =
     value >= 70
-      ? "bg-amber-400"
+      ? "bg-gradient-to-r from-emerald-400 to-emerald-500"
       : value >= 55
-        ? "bg-orange-500"
-        : "bg-rose-500";
+        ? "bg-gradient-to-r from-amber-400 to-amber-500"
+        : "bg-gradient-to-r from-rose-400 to-rose-500";
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
+      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted shadow-inner">
         <div
-          className={cn("h-full rounded-full", color)}
+          className={cn("h-full rounded-full shadow-sm", color)}
           style={{ width: `${value}%` }}
         />
       </div>
@@ -98,9 +99,9 @@ function HealthBar({ value }: { value: number }) {
 function ProgressBar({ value }: { value: number }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
+      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted shadow-inner">
         <div
-          className="h-full rounded-full bg-primary"
+          className="h-full rounded-full bg-gradient-to-r from-primary/80 to-primary shadow-sm"
           style={{ width: `${value}%` }}
         />
       </div>
@@ -232,19 +233,21 @@ function StatCard({
   icon: Icon,
 }: StatCardProps) {
   return (
-    <div className="flex flex-col gap-2 rounded-xl bg-card border border-border p-4">
+    <div className="group relative flex flex-col gap-3 rounded-2xl bg-card border border-border/60 p-5 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
       <div className="flex items-start justify-between">
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <div className="flex size-7 items-center justify-center rounded-lg bg-muted text-muted-foreground/50">
-          <Icon className="size-3.5" />
+        <p className="text-[12px] font-medium text-muted-foreground tracking-wide">
+          {title}
+        </p>
+        <div className="flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground/50 group-hover:bg-muted group-hover:text-muted-foreground transition-colors">
+          <Icon className="size-4" />
         </div>
       </div>
-      <div className="text-2xl font-bold tracking-tight text-foreground">
+      <div className="text-[28px] font-bold tracking-tight text-foreground leading-none">
         {value}
       </div>
       <div
         className={cn(
-          "flex items-center gap-1 text-xs font-medium",
+          "flex items-center gap-1.5 text-[11px] font-medium",
           trendUp ? "text-emerald-600" : "text-rose-500",
         )}
       >
@@ -331,7 +334,7 @@ const todayEvents = [
 
 export default function Dashboard() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       {/* Today's Stats */}
       <div className="grid grid-cols-4 gap-4">
         <StatCard
@@ -367,17 +370,27 @@ export default function Dashboard() {
       {/* Today's Overview Grid */}
       <div className="grid grid-cols-3 gap-4">
         {/* Today's Leave & Returns */}
-        <div className="rounded-xl bg-card border border-border p-5">
-          <h3 className="font-semibold text-foreground mb-4">
-            Today's Team Status
-          </h3>
+        <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-foreground text-sm">
+              Team Status
+            </h3>
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+              Today
+            </span>
+          </div>
           <div className="space-y-3">
             {todayEvents.map((e, i) => (
-              <div key={i} className="flex items-center gap-3">
+              <div
+                key={i}
+                className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/30 transition-colors"
+              >
                 <div
                   className={cn(
-                    "flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white",
-                    e.type === "leave" ? "bg-amber-500" : "bg-emerald-500",
+                    "flex size-8 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-sm",
+                    e.type === "leave"
+                      ? "bg-gradient-to-br from-amber-400 to-amber-500"
+                      : "bg-gradient-to-br from-emerald-400 to-emerald-500",
                   )}
                 >
                   {e.initials}
@@ -390,8 +403,10 @@ export default function Dashboard() {
                 </div>
                 <span
                   className={cn(
-                    "shrink-0 text-xs font-medium",
-                    e.type === "leave" ? "text-amber-600" : "text-emerald-600",
+                    "shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full",
+                    e.type === "leave"
+                      ? "text-amber-600 bg-amber-50"
+                      : "text-emerald-600 bg-emerald-50",
                   )}
                 >
                   {e.time}
@@ -402,23 +417,25 @@ export default function Dashboard() {
         </div>
 
         {/* KCI Mini Chart */}
-        <div className="rounded-xl bg-card border border-border p-5">
+        <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-foreground">Today's KCI</h3>
-            <span className="text-xs font-medium text-emerald-600">
+            <h3 className="font-semibold text-foreground text-sm">
+              Knowledge Coverage
+            </h3>
+            <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
               +3% vs last week
             </span>
           </div>
           <div className="flex items-center gap-4">
             <KCIRadarChart />
-            <div className="space-y-2 text-xs">
+            <div className="space-y-3 text-xs">
               <div className="flex items-center gap-2">
-                <div className="size-2 rounded-sm bg-rose-400" />
+                <div className="size-2.5 rounded-sm bg-rose-400 shadow-sm" />
                 <span className="text-muted-foreground">Current: 68%</span>
               </div>
               <div className="flex items-center gap-2">
                 <div
-                  className="size-2 rounded-sm border border-blue-300 bg-blue-100"
+                  className="size-2.5 rounded-sm border border-blue-300 bg-blue-100"
                   style={{ borderStyle: "dashed" }}
                 />
                 <span className="text-muted-foreground">Target: 90%</span>
@@ -428,87 +445,102 @@ export default function Dashboard() {
         </div>
 
         {/* Critical Projects Today */}
-        <div className="rounded-xl bg-card border border-border p-5">
-          <h3 className="font-semibold text-foreground mb-4">
-            Critical Projects{" "}
-            <span className="text-muted-foreground font-normal">(2)</span>
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-rose-50 border border-rose-100">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white">
+        <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-foreground text-sm">
+              Critical Projects
+            </h3>
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+              2 at risk
+            </span>
+          </div>
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-rose-50/80 to-rose-50/40 border border-rose-100/50 hover:from-rose-50 hover:to-rose-50 transition-all">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 text-[11px] font-bold text-white shadow-sm">
                 P1
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground">
                   Cloud Migration
                 </p>
-                <p className="text-xs text-rose-600">
+                <p className="text-[11px] text-rose-600 font-medium">
                   Bus factor: 1 • Risk: 18
                 </p>
               </div>
-              <Eye className="size-4 text-rose-400" />
+              <Eye className="size-4 text-rose-400/70" />
             </div>
-            <div className="flex items-center gap-3 p-2 rounded-lg bg-amber-50 border border-amber-100">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-amber-600 text-xs font-bold text-white">
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-50/80 to-amber-50/40 border border-amber-100/50 hover:from-amber-50 hover:to-amber-50 transition-all">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-[11px] font-bold text-white shadow-sm">
                 P2
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground">
                   Data Pipeline
                 </p>
-                <p className="text-xs text-amber-600">
+                <p className="text-[11px] text-amber-600 font-medium">
                   Bus factor: 1 • Risk: 22
                 </p>
               </div>
-              <Eye className="size-4 text-amber-400" />
+              <Eye className="size-4 text-amber-400/70" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Projects Table */}
-      <div className="rounded-xl bg-card border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-          <h3 className="font-semibold text-foreground">All Projects</h3>
-          <span className="text-xs text-muted-foreground">
-            3 active projects
-          </span>
+      <div className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
+        <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h3 className="font-semibold text-foreground">All Projects</h3>
+            <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
+              3 active
+            </span>
+          </div>
+          <button className="flex items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors font-medium">
+            View all
+            <ArrowRight className="size-3" />
+          </button>
         </div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-muted/30">
-              <th className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <tr className="border-b border-border/60 bg-muted/20">
+              <th className="px-6 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 ID
               </th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Project Name
               </th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Status
               </th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Progress
               </th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Risk
               </th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Bus Factor
               </th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Health
               </th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Team
               </th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"></th>
+              <th className="px-4 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border/40">
             {projects.map((p) => (
-              <tr key={p.id} className="hover:bg-muted/20 transition-colors">
-                <td className="px-6 py-4 text-xs font-mono font-semibold text-muted-foreground">
-                  {p.id}
+              <tr
+                key={p.id}
+                className="hover:bg-muted/20 transition-colors group"
+              >
+                <td className="px-6 py-4">
+                  <span className="text-[11px] font-mono font-semibold text-muted-foreground/70">
+                    {p.id}
+                  </span>
                 </td>
                 <td className="px-4 py-4">
                   <p className="font-semibold text-foreground">{p.name}</p>
@@ -517,7 +549,7 @@ export default function Dashboard() {
                   </p>
                 </td>
                 <td className="px-4 py-4">
-                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200 ring-inset">
+                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-200/60 ring-inset">
                     {p.status}
                   </span>
                 </td>
@@ -550,7 +582,7 @@ export default function Dashboard() {
                   <AvatarGroup members={p.team} extra={p.extra} />
                 </td>
                 <td className="px-4 py-4">
-                  <button className="text-muted-foreground hover:text-foreground transition-colors">
+                  <button className="text-muted-foreground/50 hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-muted">
                     <Eye className="size-4" />
                   </button>
                 </td>

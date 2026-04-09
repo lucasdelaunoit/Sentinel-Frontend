@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import {
   Shield,
   BookOpen,
+  Sliders,
   Plus,
   Trash2,
   X,
   Check,
-  Sliders,
 } from "lucide-react";
 
 type Tab = "organization" | "skills" | "rules";
@@ -173,11 +173,81 @@ const DEFAULT_RULES: Rule[] = [
 ];
 
 const RULE_TYPE_LABELS: Record<RuleType, string> = {
-  min_staff: "Minimum Staff",
-  min_skill: "Minimum Skill",
+  min_staff: "Min Staff",
+  min_skill: "Min Skill",
   bus_factor: "Bus Factor",
   coverage: "Coverage",
 };
+
+const SEVERITY_STYLES = {
+  critical: {
+    bg: "bg-gradient-to-br from-rose-500 to-rose-600",
+    text: "text-rose-700",
+    bgLight: "bg-rose-50",
+    border: "border-rose-200",
+  },
+  warning: {
+    bg: "bg-gradient-to-br from-amber-500 to-amber-600",
+    text: "text-amber-700",
+    bgLight: "bg-amber-50",
+    border: "border-amber-200",
+  },
+  info: {
+    bg: "bg-gradient-to-br from-blue-500 to-blue-600",
+    text: "text-blue-700",
+    bgLight: "bg-blue-50",
+    border: "border-blue-200",
+  },
+};
+
+function StatCard({
+  label,
+  value,
+  sub,
+}: {
+  label: string;
+  value: string | number;
+  sub?: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
+      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+        {label}
+      </p>
+      <p className="text-[24px] font-bold text-foreground mt-1 tracking-tight">
+        {value}
+      </p>
+      {sub && <p className="text-[11px] text-muted-foreground mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+function Badge({
+  children,
+  variant,
+}: {
+  children: React.ReactNode;
+  variant: "critical" | "warning" | "info" | "neutral";
+}) {
+  const styles = {
+    critical:
+      "bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-sm",
+    warning:
+      "bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm",
+    info: "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm",
+    neutral: "bg-muted/60 text-muted-foreground",
+  };
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold shadow-sm",
+        styles[variant],
+      )}
+    >
+      {children}
+    </span>
+  );
+}
 
 function OrganizationTab({
   settings,
@@ -196,31 +266,38 @@ function OrganizationTab({
   }
 
   return (
-    <div className="rounded-xl bg-card border border-border p-6 max-w-2xl">
-      <h3 className="font-semibold text-foreground mb-6">
-        Organization Details
-      </h3>
-      <div className="space-y-4">
+    <div className="space-y-6">
+      <div className="grid grid-cols-4 gap-4">
+        <StatCard label="Organization" value={form.name} />
+        <StatCard label="Industry" value={form.industry} />
+        <StatCard label="Size" value={form.size} />
+        <StatCard label="Location" value={form.location} />
+      </div>
+
+      <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm">
+        <h3 className="text-[14px] font-semibold text-foreground mb-4">
+          Organization Details
+        </h3>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">
+            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
               Organization Name
             </label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">
+            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
               Industry
             </label>
             <select
               value={form.industry}
               onChange={(e) => setForm({ ...form, industry: e.target.value })}
-              className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer"
             >
               {[
                 "Technology",
@@ -233,16 +310,14 @@ function OrganizationTab({
               ))}
             </select>
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">
+            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
               Company Size
             </label>
             <select
               value={form.size}
               onChange={(e) => setForm({ ...form, size: e.target.value })}
-              className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer"
             >
               {["1-10", "11-50", "51-200", "201-500", "500+"].map((s) => (
                 <option key={s}>{s}</option>
@@ -250,48 +325,33 @@ function OrganizationTab({
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">
+            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
               Location
             </label>
             <input
               type="text"
               value={form.location}
               onChange={(e) => setForm({ ...form, location: e.target.value })}
-              className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
             />
           </div>
         </div>
-        <div className="pt-4">
+        <div className="mt-5">
           <Button
             onClick={handleSave}
-            className="gap-2 bg-foreground text-background hover:bg-foreground/85 rounded-xl h-9 px-4 font-semibold"
+            className={cn(
+              "gap-2 rounded-xl h-9 px-5 font-medium transition-all duration-200 shadow-sm",
+              saved
+                ? "bg-gradient-to-br from-emerald-500 to-emerald-600 hover:bg-emerald-500"
+                : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/10",
+            )}
           >
-            {saved ? <Check className="size-4" /> : <Save className="size-4" />}
-            {saved ? "Saved!" : "Save Changes"}
+            {saved ? <Check className="size-4" /> : null}
+            {saved ? "Saved" : "Save Changes"}
           </Button>
         </div>
       </div>
     </div>
-  );
-}
-
-function Save({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-      <polyline points="17 21 17 13 7 13 7 21" />
-      <polyline points="7 3 7 8 15 8" />
-    </svg>
   );
 }
 
@@ -311,8 +371,9 @@ function SkillsTab({
   const [showAdd, setShowAdd] = useState(false);
 
   function handleDelete(id: string) {
-    setList(list.filter((s) => s.id !== id));
-    onSave(list.filter((s) => s.id !== id));
+    const updated = list.filter((s) => s.id !== id);
+    setList(updated);
+    onSave(updated);
   }
 
   function handleAdd() {
@@ -323,8 +384,9 @@ function SkillsTab({
       category: newSkill.category as (typeof SKILL_CATEGORIES)[number],
       description: newSkill.description || "",
     };
-    setList([...list, skill]);
-    onSave([...list, skill]);
+    const updated = [...list, skill];
+    setList(updated);
+    onSave(updated);
     setNewSkill({ name: "", category: "FRONTEND", description: "" });
     setShowAdd(false);
   }
@@ -341,14 +403,16 @@ function SkillsTab({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-foreground">Skill Catalog</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Manage the skills tracked in your organization
+          <p className="text-[12px] font-medium text-muted-foreground">
+            Manage your skill catalog
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {list.length} skills defined
           </p>
         </div>
         <Button
           onClick={() => setShowAdd(true)}
-          className="gap-2 bg-foreground text-background hover:bg-foreground/85 rounded-xl h-9 px-4 font-semibold"
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press"
         >
           <Plus className="size-4" />
           Add Skill
@@ -356,11 +420,8 @@ function SkillsTab({
       </div>
 
       {showAdd && (
-        <div className="rounded-xl bg-card border border-border p-4">
-          <h4 className="text-sm font-semibold text-foreground mb-3">
-            Add New Skill
-          </h4>
-          <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-2xl bg-card border border-border/60 p-4 shadow-sm">
+          <div className="grid grid-cols-4 gap-3">
             <input
               type="text"
               placeholder="Skill name"
@@ -368,7 +429,7 @@ function SkillsTab({
               onChange={(e) =>
                 setNewSkill({ ...newSkill, name: e.target.value })
               }
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
             />
             <select
               value={newSkill.category}
@@ -378,34 +439,32 @@ function SkillsTab({
                   category: e.target.value as (typeof SKILL_CATEGORIES)[number],
                 })
               }
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer"
             >
               {SKILL_CATEGORIES.map((c) => (
                 <option key={c}>{c}</option>
               ))}
             </select>
+            <input
+              type="text"
+              placeholder="Description"
+              value={newSkill.description}
+              onChange={(e) =>
+                setNewSkill({ ...newSkill, description: e.target.value })
+              }
+              className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+            />
             <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Description (optional)"
-                value={newSkill.description}
-                onChange={(e) =>
-                  setNewSkill({ ...newSkill, description: e.target.value })
-                }
-                className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
               <Button
                 onClick={handleAdd}
-                size="sm"
-                className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg h-9 px-3"
+                className="bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-600 text-white rounded-xl h-10 px-4 shadow-sm"
               >
-                <Check className="size-4" />
+                Add
               </Button>
               <Button
                 onClick={() => setShowAdd(false)}
-                size="sm"
                 variant="outline"
-                className="h-9 px-3 rounded-lg"
+                className="rounded-xl h-10 px-3 hover:bg-muted/50"
               >
                 <X className="size-4" />
               </Button>
@@ -414,51 +473,56 @@ function SkillsTab({
         </div>
       )}
 
-      {SKILL_CATEGORIES.map((cat) => (
-        <div
-          key={cat}
-          className="rounded-xl bg-card border border-border overflow-hidden"
-        >
-          <div className="px-4 py-3 border-b border-border bg-muted/30">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {cat}
-            </h4>
-          </div>
-          <div className="divide-y divide-border">
-            {grouped[cat]?.length === 0 ? (
-              <p className="px-4 py-3 text-sm text-muted-foreground">
-                No skills in this category
-              </p>
-            ) : (
-              grouped[cat]?.map((skill) => (
-                <div
-                  key={skill.id}
-                  className="flex items-center justify-between px-4 py-3"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      {skill.name}
-                    </p>
-                    {skill.description && (
-                      <p className="text-xs text-muted-foreground">
-                        {skill.description}
-                      </p>
-                    )}
-                  </div>
-                  <Button
-                    onClick={() => handleDelete(skill.id)}
-                    size="sm"
-                    variant="ghost"
-                    className="text-muted-foreground hover:text-rose-500 h-8 w-8 p-0"
+      <div className="grid grid-cols-3 gap-4">
+        {SKILL_CATEGORIES.map((cat) => (
+          <div
+            key={cat}
+            className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-all"
+          >
+            <div className="px-4 py-3 border-b border-border/60 bg-muted/20">
+              <div className="flex items-center justify-between">
+                <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                  {cat}
+                </h4>
+                <Badge variant="neutral">{grouped[cat]?.length || 0}</Badge>
+              </div>
+            </div>
+            <div className="divide-y divide-border/40">
+              {grouped[cat]?.length === 0 ? (
+                <p className="px-4 py-6 text-[11px] text-muted-foreground text-center">
+                  No skills
+                </p>
+              ) : (
+                grouped[cat]?.map((skill) => (
+                  <div
+                    key={skill.id}
+                    className="flex items-center justify-between px-4 py-3 hover:bg-muted/20 transition-colors"
                   >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-              ))
-            )}
+                    <div>
+                      <p className="text-[13px] font-medium text-foreground">
+                        {skill.name}
+                      </p>
+                      {skill.description && (
+                        <p className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+                          {skill.description}
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      onClick={() => handleDelete(skill.id)}
+                      size="sm"
+                      variant="ghost"
+                      className="text-muted-foreground/50 hover:text-rose-500 h-7 w-7 p-0 rounded-lg hover:bg-rose-50/50"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -517,34 +581,31 @@ function RulesTab({
     setShowAdd(false);
   }
 
-  function updateParam(id: string, key: string, value: string | number) {
-    const updated = list.map((r) =>
-      r.id === id ? { ...r, params: { ...r.params, [key]: value } } : r,
-    );
-    setList(updated);
-    onSave(updated);
-  }
-
-  const severityColors = {
-    critical: "bg-rose-500 text-white",
-    warning: "bg-amber-500 text-white",
-    info: "bg-blue-500 text-white",
-  };
+  const activeRules = list.filter((r) => r.enabled);
+  const criticalRules = list.filter(
+    (r) => r.enabled && r.severity === "critical",
+  );
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-semibold text-foreground">
-            Organizational Rules
-          </h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Define constraints and requirements for your organization
-          </p>
+        <div className="flex items-center gap-4">
+          <div>
+            <p className="text-[12px] font-medium text-muted-foreground">
+              Organizational Rules
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {activeRules.length} active, {criticalRules.length} critical
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Badge variant="neutral">{list.length} rules</Badge>
+            <Badge variant="critical">{criticalRules.length} critical</Badge>
+          </div>
         </div>
         <Button
           onClick={() => setShowAdd(true)}
-          className="gap-2 bg-foreground text-background hover:bg-foreground/85 rounded-xl h-9 px-4 font-semibold"
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press"
         >
           <Plus className="size-4" />
           Add Rule
@@ -552,27 +613,24 @@ function RulesTab({
       </div>
 
       {showAdd && (
-        <div className="rounded-xl bg-card border border-border p-4">
-          <h4 className="text-sm font-semibold text-foreground mb-3">
-            Add New Rule
-          </h4>
-          <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl bg-card border border-border/60 p-4 shadow-sm">
+          <div className="grid grid-cols-4 gap-3">
             <input
               type="text"
               placeholder="Rule name"
               value={newRule.name}
               onChange={(e) => setNewRule({ ...newRule, name: e.target.value })}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
             />
             <select
               value={newRule.type}
               onChange={(e) =>
                 setNewRule({ ...newRule, type: e.target.value as RuleType })
               }
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer"
             >
-              <option value="min_staff">Minimum Staff</option>
-              <option value="min_skill">Minimum Skill</option>
+              <option value="min_staff">Min Staff</option>
+              <option value="min_skill">Min Skill</option>
               <option value="bus_factor">Bus Factor</option>
               <option value="coverage">Coverage</option>
             </select>
@@ -584,7 +642,7 @@ function RulesTab({
                   severity: e.target.value as "critical" | "warning" | "info",
                 })
               }
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer"
             >
               <option value="critical">Critical</option>
               <option value="warning">Warning</option>
@@ -593,88 +651,83 @@ function RulesTab({
             <div className="flex gap-2">
               <Button
                 onClick={handleAdd}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg h-9 px-4"
+                className="bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-600 text-white rounded-xl h-10 px-4 shadow-sm"
               >
                 Add
               </Button>
               <Button
                 onClick={() => setShowAdd(false)}
                 variant="outline"
-                className="h-9 px-3 rounded-lg"
+                className="rounded-xl h-10 px-3 hover:bg-muted/50"
               >
-                Cancel
+                <X className="size-4" />
               </Button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="space-y-3">
-        {list.map((rule) => (
-          <div
-            key={rule.id}
-            className={cn(
-              "rounded-xl border p-4",
-              rule.enabled
-                ? "bg-card border-border"
-                : "bg-muted/30 border-border/50",
-            )}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-3">
-                <button
-                  onClick={() => toggleRule(rule.id)}
-                  className={cn(
-                    "mt-0.5 size-5 rounded-full border-2 flex items-center justify-center transition-colors",
-                    rule.enabled
-                      ? "bg-emerald-500 border-emerald-500"
-                      : "border-muted-foreground/30",
-                  )}
-                >
-                  {rule.enabled && <Check className="size-3 text-white" />}
-                </button>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p
-                      className={cn(
-                        "text-sm font-semibold",
-                        rule.enabled
-                          ? "text-foreground"
-                          : "text-muted-foreground",
-                      )}
-                    >
-                      {rule.name}
-                    </p>
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
-                        severityColors[rule.severity],
-                      )}
-                    >
-                      {rule.severity}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {RULE_TYPE_LABELS[rule.type]} • {formatRuleParams(rule)}
-                  </p>
-                </div>
-              </div>
-              <Button
-                onClick={() => handleDelete(rule.id)}
-                size="sm"
-                variant="ghost"
-                className="text-muted-foreground hover:text-rose-500 h-8 w-8 p-0"
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-            <div className="mt-3 grid grid-cols-3 gap-3 pl-8">
-              {renderRuleParams(rule, (key, val) =>
-                updateParam(rule.id, key, val),
+      <div className="grid grid-cols-2 gap-4">
+        {list.map((rule) => {
+          const s = SEVERITY_STYLES[rule.severity];
+          return (
+            <div
+              key={rule.id}
+              className={cn(
+                "rounded-2xl border p-4 transition-all duration-200",
+                rule.enabled
+                  ? "bg-card border-border/60 hover:shadow-md hover:border-border"
+                  : "bg-muted/20 border-border/30 opacity-60",
               )}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3">
+                  <button
+                    onClick={() => toggleRule(rule.id)}
+                    className={cn(
+                      "mt-0.5 size-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 shrink-0 shadow-sm",
+                      rule.enabled
+                        ? `${s.bg} border-transparent`
+                        : "border-muted-foreground/30 bg-transparent",
+                    )}
+                  >
+                    {rule.enabled && <Check className="size-3 text-white" />}
+                  </button>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p
+                        className={cn(
+                          "text-[13px] font-semibold",
+                          rule.enabled
+                            ? "text-foreground"
+                            : "text-muted-foreground",
+                        )}
+                      >
+                        {rule.name}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <Badge variant={rule.severity}>
+                        {RULE_TYPE_LABELS[rule.type]}
+                      </Badge>
+                      <span className="text-[11px] text-muted-foreground">
+                        {formatRuleParams(rule)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => handleDelete(rule.id)}
+                  size="sm"
+                  variant="ghost"
+                  className="text-muted-foreground/50 hover:text-rose-500 h-7 w-7 p-0 rounded-lg hover:bg-rose-50/50"
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -685,114 +738,13 @@ function formatRuleParams(rule: Rule): string {
     case "min_staff":
       return `Min ${rule.params.minCount} ${rule.params.role || rule.params.department}`;
     case "min_skill":
-      return `Min ${rule.params.minCount} with ${rule.params.skill} (level ${rule.params.minLevel}+)`;
+      return `${rule.params.minCount}x ${rule.params.skill} (lv.${rule.params.minLevel}+)`;
     case "bus_factor":
-      return `Max bus factor: ${rule.params.maxBusFactor}`;
+      return `Max: ${rule.params.maxBusFactor}`;
     case "coverage":
-      return `Min ${rule.params.minCoverage} per ${rule.params.category}`;
+      return `${rule.params.minCoverage}x ${rule.params.category}`;
     default:
       return "";
-  }
-}
-
-function renderRuleParams(
-  rule: Rule,
-  onChange: (key: string, val: string | number) => void,
-) {
-  switch (rule.type) {
-    case "min_staff":
-      return (
-        <>
-          <input
-            type="text"
-            placeholder="Role or department"
-            value={rule.params.role || rule.params.department || ""}
-            onChange={(e) =>
-              onChange(
-                rule.params.role !== undefined ? "role" : "department",
-                e.target.value,
-              )
-            }
-            className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <input
-            type="number"
-            placeholder="Min count"
-            value={rule.params.minCount}
-            onChange={(e) =>
-              onChange("minCount", parseInt(e.target.value) || 1)
-            }
-            className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </>
-      );
-    case "min_skill":
-      return (
-        <>
-          <input
-            type="text"
-            placeholder="Skill name"
-            value={rule.params.skill || ""}
-            onChange={(e) => onChange("skill", e.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <input
-            type="number"
-            placeholder="Min level"
-            value={rule.params.minLevel || 1}
-            onChange={(e) =>
-              onChange("minLevel", parseInt(e.target.value) || 1)
-            }
-            className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-          <input
-            type="number"
-            placeholder="Min count"
-            value={rule.params.minCount}
-            onChange={(e) =>
-              onChange("minCount", parseInt(e.target.value) || 1)
-            }
-            className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </>
-      );
-    case "bus_factor":
-      return (
-        <input
-          type="number"
-          placeholder="Max bus factor"
-          value={rule.params.maxBusFactor}
-          onChange={(e) =>
-            onChange("maxBusFactor", parseInt(e.target.value) || 2)
-          }
-          className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        />
-      );
-    case "coverage":
-      return (
-        <>
-          <select
-            value={rule.params.category || "FRONTEND"}
-            onChange={(e) => onChange("category", e.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            {SKILL_CATEGORIES.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
-          <input
-            type="number"
-            placeholder="Min coverage"
-            value={rule.params.minCoverage}
-            onChange={(e) =>
-              onChange("minCoverage", parseInt(e.target.value) || 1)
-            }
-            className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </>
-      );
-    default:
-      return null;
   }
 }
 
@@ -809,17 +761,17 @@ export default function Settings() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 page-enter">
       <div className="flex items-center gap-2">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={cn(
-              "flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold transition-colors",
+              "flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-medium transition-all duration-200",
               activeTab === tab.key
-                ? "bg-foreground text-background"
-                : "bg-card border border-border text-foreground hover:bg-muted",
+                ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                : "bg-card border border-border/60 text-foreground hover:bg-muted/50",
             )}
           >
             <tab.icon className="size-4" />

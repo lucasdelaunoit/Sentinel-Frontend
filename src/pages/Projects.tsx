@@ -10,6 +10,8 @@ import {
   CheckCircle2,
   Clock,
   Layers,
+  Plus,
+  Filter,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,9 +34,9 @@ type SortKey =
 type SortDir = "asc" | "desc";
 
 function healthColor(v: number) {
-  if (v >= 75) return "bg-emerald-500";
-  if (v >= 55) return "bg-amber-400";
-  return "bg-rose-500";
+  if (v >= 75) return "bg-gradient-to-r from-emerald-400 to-emerald-500";
+  if (v >= 55) return "bg-gradient-to-r from-amber-400 to-amber-500";
+  return "bg-gradient-to-r from-rose-400 to-rose-500";
 }
 
 function riskColor(v: number) {
@@ -60,17 +62,21 @@ function fmt(date: string) {
 /* ─── Status & priority badges ─────────────────────────────── */
 
 const STATUS_STYLES: Record<ProjectStatus, string> = {
-  Active: "bg-emerald-100 text-emerald-700",
-  Completed: "bg-blue-100 text-blue-700",
-  "On Hold": "bg-amber-100 text-amber-700",
-  Planning: "bg-violet-100 text-violet-700",
+  Active:
+    "bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-700 ring-1 ring-emerald-200/60",
+  Completed:
+    "bg-gradient-to-br from-blue-50 to-blue-100 text-blue-700 ring-1 ring-blue-200/60",
+  "On Hold":
+    "bg-gradient-to-br from-amber-50 to-amber-100 text-amber-700 ring-1 ring-amber-200/60",
+  Planning:
+    "bg-gradient-to-br from-violet-50 to-violet-100 text-violet-700 ring-1 ring-violet-200/60",
 };
 
 function StatusBadge({ value }: { value: ProjectStatus }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+        "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold",
         STATUS_STYLES[value],
       )}
     >
@@ -81,15 +87,15 @@ function StatusBadge({ value }: { value: ProjectStatus }) {
 
 function PriorityDot({ value }: { value: ProjectPriority }) {
   const dot: Record<ProjectPriority, string> = {
-    Critical: "bg-rose-500",
-    High: "bg-orange-400",
-    Medium: "bg-amber-400",
-    Low: "bg-muted-foreground/40",
+    Critical: "bg-gradient-to-br from-rose-500 to-rose-600 shadow-sm",
+    High: "bg-gradient-to-br from-orange-400 to-orange-500 shadow-sm",
+    Medium: "bg-gradient-to-br from-amber-400 to-amber-500 shadow-sm",
+    Low: "bg-muted/40",
   };
   return (
     <div className="flex items-center gap-1.5">
       <div className={cn("size-1.5 rounded-full shrink-0", dot[value])} />
-      <span className="text-xs text-foreground">{value}</span>
+      <span className="text-[12px] text-foreground">{value}</span>
     </div>
   );
 }
@@ -99,21 +105,21 @@ function PriorityDot({ value }: { value: ProjectPriority }) {
 function ProgressBar({ value }: { value: number }) {
   const color =
     value === 100
-      ? "bg-blue-500"
+      ? "bg-gradient-to-r from-blue-500 to-blue-600"
       : value >= 60
-        ? "bg-primary"
+        ? "bg-gradient-to-r from-primary/80 to-primary"
         : value >= 35
-          ? "bg-amber-400"
-          : "bg-muted-foreground/30";
+          ? "bg-gradient-to-r from-amber-400 to-amber-500"
+          : "bg-muted";
   return (
     <div className="flex items-center gap-2.5 min-w-[110px]">
-      <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
+      <div className="h-1.5 flex-1 rounded-full bg-muted shadow-inner overflow-hidden">
         <div
-          className={cn("h-full rounded-full transition-all", color)}
+          className={cn("h-full rounded-full shadow-sm", color)}
           style={{ width: `${value}%` }}
         />
       </div>
-      <span className="text-xs font-medium tabular-nums text-foreground w-8 text-right">
+      <span className="text-[12px] font-medium tabular-nums text-foreground w-8 text-right">
         {value}%
       </span>
     </div>
@@ -125,15 +131,15 @@ function ProgressBar({ value }: { value: number }) {
 function HealthBar({ value }: { value: number }) {
   return (
     <div className="flex items-center gap-2.5 min-w-[100px]">
-      <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
+      <div className="h-1.5 flex-1 rounded-full bg-muted shadow-inner overflow-hidden">
         <div
-          className={cn("h-full rounded-full", healthColor(value))}
+          className={cn("h-full rounded-full shadow-sm", healthColor(value))}
           style={{ width: `${value}%` }}
         />
       </div>
       <span
         className={cn(
-          "text-xs font-semibold tabular-nums w-8 text-right",
+          "text-[12px] font-semibold tabular-nums w-8 text-right",
           value >= 75
             ? "text-emerald-600"
             : value >= 55
@@ -169,7 +175,7 @@ function AvatarGroup({
         >
           <div
             className={cn(
-              "flex size-7 items-center justify-center rounded-full text-[10px] font-semibold text-white shrink-0",
+              "flex size-7 items-center justify-center rounded-full text-[10px] font-semibold text-white shrink-0 shadow-sm",
               m.color,
             )}
           >
@@ -209,7 +215,7 @@ function SortTh({
     <th
       onClick={() => onSort(col)}
       className={cn(
-        "px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors",
+        "px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 cursor-pointer select-none hover:text-foreground transition-colors",
         className,
       )}
     >
@@ -245,15 +251,17 @@ function StatCard({
   color?: string;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl bg-card border border-border px-5 py-4">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground/60">
+    <div className="group relative flex items-center gap-4 rounded-2xl bg-card border border-border/60 px-5 py-4 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground/60 group-hover:bg-muted group-hover:text-muted-foreground transition-colors">
         <Icon className="size-4" />
       </div>
       <div>
-        <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+          {label}
+        </p>
         <p
           className={cn(
-            "text-2xl font-bold tracking-tight leading-none mt-0.5",
+            "text-[24px] font-bold tracking-tight leading-none mt-0.5",
             color,
           )}
         >
@@ -347,7 +355,6 @@ export default function Projects() {
     return list;
   }, [search, statusFilter, sort]);
 
-  // Stats
   const total = PROJECTS.length;
   const active = PROJECTS.filter((p) => p.status === "Active").length;
   const atRisk = PROJECTS.filter(
@@ -361,8 +368,7 @@ export default function Projects() {
   );
 
   return (
-    <div className="space-y-5">
-      {/* Stats row */}
+    <div className="space-y-5 page-enter">
       <div className="grid grid-cols-4 gap-4">
         <StatCard
           icon={Layers}
@@ -392,19 +398,17 @@ export default function Projects() {
         />
       </div>
 
-      {/* Filters row */}
       <div className="flex items-center justify-between gap-4">
-        {/* Status pills */}
         <div className="flex items-center gap-1.5">
           {STATUS_FILTERS.map((s) => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
               className={cn(
-                "px-4 py-1.5 rounded-full text-xs font-semibold transition-colors",
+                "px-4 py-1.5 rounded-xl text-[12px] font-medium transition-all duration-200",
                 statusFilter === s
-                  ? "bg-foreground text-background"
-                  : "bg-card border border-border text-foreground hover:bg-muted",
+                  ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                  : "bg-card border border-border/60 text-foreground hover:bg-muted/50",
               )}
             >
               {s}
@@ -413,7 +417,7 @@ export default function Projects() {
                   className={cn(
                     "ml-1.5 text-[10px]",
                     statusFilter === s
-                      ? "text-background/60"
+                      ? "text-primary-foreground/60"
                       : "text-muted-foreground",
                   )}
                 >
@@ -424,34 +428,42 @@ export default function Projects() {
           ))}
         </div>
 
-        {/* Search */}
-        <div className="relative w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search projects ..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-border bg-card pl-9 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative w-64">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/50 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search projects ..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-xl border border-border/60 bg-card pl-10 pr-4 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+            />
+          </div>
+          <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press">
+            <Plus className="size-4" />
+            New Project
+          </Button>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="rounded-2xl bg-card border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-          <h3 className="font-semibold text-foreground">
-            Projects
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              ({filtered.length})
+      <div className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
+        <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h3 className="font-semibold text-foreground text-sm">Projects</h3>
+            <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
+              {filtered.length}
             </span>
-          </h3>
+          </div>
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+            <Filter className="size-3.5" />
+            <span>Filtered by {statusFilter}</span>
+          </div>
         </div>
 
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-muted/20">
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground w-14">
+            <tr className="border-b border-border/60 bg-muted/30">
+              <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 w-14">
                 ID
               </th>
               <SortTh
@@ -460,10 +472,10 @@ export default function Projects() {
                 sort={sort}
                 onSort={toggleSort}
               />
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Status
               </th>
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Priority
               </th>
               <SortTh
@@ -490,7 +502,7 @@ export default function Projects() {
                 sort={sort}
                 onSort={toggleSort}
               />
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Team
               </th>
               <SortTh
@@ -499,13 +511,13 @@ export default function Projects() {
                 sort={sort}
                 onSort={toggleSort}
               />
-              <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Actions
               </th>
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border/40">
             {filtered.length === 0 ? (
               <tr>
                 <td
@@ -547,61 +559,56 @@ function ProjectRow({
 
   return (
     <tr
-      className="hover:bg-muted/10 transition-colors group cursor-pointer"
+      className="hover:bg-muted/20 transition-colors group cursor-pointer"
       onClick={() => navigate(`/projects/${project.id}`)}
     >
-      {/* ID */}
       <td className="px-5 py-4">
-        <span className="text-[11px] font-mono font-semibold text-muted-foreground">
+        <span className="text-[11px] font-mono font-semibold text-muted-foreground/70">
           {project.id}
         </span>
       </td>
 
-      {/* Project name + description */}
       <td className="px-5 py-4 max-w-[260px]">
-        <p className="font-semibold text-foreground truncate">{project.name}</p>
-        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+        <p className="font-semibold text-foreground text-[14px] truncate">
+          {project.name}
+        </p>
+        <p className="text-[12px] text-muted-foreground mt-0.5 truncate">
           {project.description}
         </p>
-        {/* Skills tags */}
-        <div className="flex gap-1 mt-1.5 flex-wrap">
+        <div className="flex gap-1 mt-2 flex-wrap">
           {project.skills.slice(0, 3).map((s) => (
             <span
               key={s}
-              className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+              className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60"
             >
               {s}
             </span>
           ))}
           {project.skills.length > 3 && (
-            <span className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+            <span className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60">
               +{project.skills.length - 3}
             </span>
           )}
         </div>
       </td>
 
-      {/* Status */}
       <td className="px-5 py-4">
         <StatusBadge value={project.status} />
       </td>
 
-      {/* Priority */}
       <td className="px-5 py-4">
         <PriorityDot value={project.priority} />
       </td>
 
-      {/* Progress */}
       <td className="px-5 py-4">
         <ProgressBar value={project.progress} />
       </td>
 
-      {/* Risk */}
       <td className="px-5 py-4">
         <div className="flex items-center gap-1.5">
           <div
             className={cn(
-              "size-1.5 rounded-full shrink-0",
+              "size-1.5 rounded-full shrink-0 shadow-sm",
               project.riskScore >= 20
                 ? "bg-rose-500"
                 : project.riskScore >= 12
@@ -611,7 +618,7 @@ function ProjectRow({
           />
           <span
             className={cn(
-              "text-sm font-bold tabular-nums",
+              "text-[14px] font-bold tabular-nums",
               riskColor(project.riskScore),
             )}
           >
@@ -620,11 +627,10 @@ function ProjectRow({
         </div>
       </td>
 
-      {/* Bus Factor */}
       <td className="px-5 py-4">
         <span
           className={cn(
-            "text-sm font-bold tabular-nums",
+            "text-[14px] font-bold tabular-nums",
             busFactorColor(project.busFactor),
           )}
         >
@@ -632,35 +638,38 @@ function ProjectRow({
         </span>
       </td>
 
-      {/* Health */}
       <td className="px-5 py-4">
         <HealthBar value={project.health} />
       </td>
 
-      {/* Team */}
       <td className="px-5 py-4">
         <AvatarGroup members={project.team} />
       </td>
 
-      {/* Due date */}
       <td className="px-5 py-4">
         <span
           className={cn(
-            "text-xs font-medium whitespace-nowrap",
+            "text-[12px] font-medium whitespace-nowrap",
             overdue ? "text-rose-500" : "text-foreground",
           )}
         >
           {fmt(project.endDate)}
         </span>
-        {overdue && <p className="text-[10px] text-rose-400 mt-0.5">Overdue</p>}
+        {overdue && (
+          <p className="text-[10px] text-rose-400 mt-0.5 font-medium">
+            Overdue
+          </p>
+        )}
       </td>
 
-      {/* Actions */}
       <td className="px-5 py-4">
         <Button
           size="sm"
-          className="gap-1.5 bg-foreground text-background hover:bg-foreground/85 rounded-lg h-8 px-3 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={() => navigate(`/projects/${project.id}`)}
+          className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 opacity-0 group-hover:opacity-100 transition-opacity btn-press"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/projects/${project.id}`);
+          }}
         >
           <Eye className="size-3.5" />
           View

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, PenSquare, X, Search, ChevronsUpDown } from "lucide-react";
+import { Eye, PenSquare, X, Search, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -46,7 +46,7 @@ const EMPLOYEES: Employee[] = [
     busFactor: 1,
     todayStatus: "Has Leave",
     initials: "CC",
-    color: "bg-indigo-500",
+    color: "bg-gradient-to-br from-indigo-500 to-indigo-600",
     leaves: [{ start: 1, end: 5, type: "vacation" }],
   },
   {
@@ -60,7 +60,7 @@ const EMPLOYEES: Employee[] = [
     busFactor: 1,
     todayStatus: "Available",
     initials: "GM",
-    color: "bg-amber-600",
+    color: "bg-gradient-to-br from-amber-500 to-amber-600",
     leaves: [],
   },
   {
@@ -74,7 +74,7 @@ const EMPLOYEES: Employee[] = [
     busFactor: 1,
     todayStatus: "Available",
     initials: "SC",
-    color: "bg-indigo-500",
+    color: "bg-gradient-to-br from-indigo-500 to-indigo-600",
     leaves: [{ start: 2, end: 6, type: "vacation" }],
   },
   {
@@ -88,7 +88,7 @@ const EMPLOYEES: Employee[] = [
     busFactor: 2,
     todayStatus: "Available",
     initials: "MJ",
-    color: "bg-blue-500",
+    color: "bg-gradient-to-br from-blue-500 to-blue-600",
     leaves: [{ start: 14, end: 18, type: "conference" }],
   },
   {
@@ -102,7 +102,7 @@ const EMPLOYEES: Employee[] = [
     busFactor: 2,
     todayStatus: "Remote",
     initials: "ER",
-    color: "bg-rose-500",
+    color: "bg-gradient-to-br from-rose-500 to-rose-600",
     leaves: [],
   },
   {
@@ -116,7 +116,7 @@ const EMPLOYEES: Employee[] = [
     busFactor: 1,
     todayStatus: "Available",
     initials: "DK",
-    color: "bg-amber-500",
+    color: "bg-gradient-to-br from-amber-500 to-amber-600",
     leaves: [],
   },
   {
@@ -130,7 +130,7 @@ const EMPLOYEES: Employee[] = [
     busFactor: 3,
     todayStatus: "Available",
     initials: "LW",
-    color: "bg-emerald-500",
+    color: "bg-gradient-to-br from-emerald-500 to-emerald-600",
     leaves: [],
   },
   {
@@ -144,26 +144,25 @@ const EMPLOYEES: Employee[] = [
     busFactor: 4,
     todayStatus: "Available",
     initials: "JP",
-    color: "bg-cyan-500",
+    color: "bg-gradient-to-br from-cyan-500 to-cyan-600",
     leaves: [{ start: 22, end: 26, type: "conference" }],
   },
 ];
 
 /* ─── Calendar helpers ─────────────────────────────────────── */
 
-// April 1, 2026 = Wednesday (index 3 if Sun=0)
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAYS_IN_APRIL = 30;
-const APRIL_FIRST_DAY = 3; // Wednesday
+const APRIL_FIRST_DAY = 3;
 
 function getDayName(dayOfMonth: number) {
   return DAY_NAMES[(APRIL_FIRST_DAY + dayOfMonth - 1) % 7];
 }
 
 const LEAVE_BAND_BG: Record<LeaveType, string> = {
-  vacation: "bg-blue-100",
-  sick: "bg-rose-100",
-  conference: "bg-indigo-100",
+  vacation: "bg-blue-50",
+  sick: "bg-rose-50",
+  conference: "bg-indigo-50",
 };
 
 const LEAVE_DOT: Record<LeaveType, string> = {
@@ -176,14 +175,16 @@ const LEAVE_DOT: Record<LeaveType, string> = {
 
 function StatCard({ title, value }: { title: string; value: string }) {
   return (
-    <div className="flex flex-col rounded-2xl bg-card border border-border p-5 gap-2.5">
+    <div className="group relative flex flex-col rounded-2xl bg-card border border-border/60 p-5 gap-2.5 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
       <div className="flex items-start justify-between">
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
-        <button className="flex size-7 items-center justify-center rounded-lg bg-muted text-muted-foreground/50 hover:bg-muted/80 transition-colors">
+        <p className="text-[11px] font-medium text-muted-foreground tracking-wide uppercase">
+          {title}
+        </p>
+        <button className="flex size-7 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground transition-colors">
           <PenSquare className="size-3.5" />
         </button>
       </div>
-      <p className="text-4xl font-bold tracking-tight text-foreground">
+      <p className="text-[32px] font-bold tracking-tight text-foreground leading-none">
         {value}
       </p>
     </div>
@@ -192,14 +193,15 @@ function StatCard({ title, value }: { title: string; value: string }) {
 
 function CriticalityBadge({ value }: { value: Criticality }) {
   const cls: Record<Criticality, string> = {
-    High: "bg-rose-500 text-white",
-    Medium: "bg-amber-500 text-white",
-    Low: "bg-emerald-500 text-white",
+    High: "bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-sm",
+    Medium:
+      "bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm",
+    Low: "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-sm",
   };
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
+        "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold shadow-sm",
         cls[value],
       )}
     >
@@ -210,14 +212,16 @@ function CriticalityBadge({ value }: { value: Criticality }) {
 
 function StatusBadge({ value }: { value: TodayStatus }) {
   const cls: Record<TodayStatus, string> = {
-    "Has Leave": "bg-rose-600 text-white",
-    Available: "bg-emerald-500 text-white",
-    Remote: "bg-blue-500 text-white",
+    "Has Leave":
+      "bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-sm",
+    Available:
+      "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-sm",
+    Remote: "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm",
   };
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
+        "inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold shadow-sm",
         cls[value],
       )}
     >
@@ -228,7 +232,7 @@ function StatusBadge({ value }: { value: TodayStatus }) {
 
 function DeptBadge({ value }: { value: string }) {
   return (
-    <span className="inline-flex items-center rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-foreground/70">
+    <span className="inline-flex items-center rounded-md bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-foreground/70">
       {value}
     </span>
   );
@@ -248,24 +252,18 @@ function EmployeeModal({ open, onClose, employee }: EmployeeModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-end">
-      {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         onClick={onClose}
       />
-
-      {/* Side panel */}
-      <div className="relative z-10 flex h-full w-[460px] flex-col bg-card shadow-2xl">
-        {/* Accent bar */}
-        <div className="h-[3px] w-full shrink-0 bg-emerald-400" />
-
-        {/* Header */}
+      <div className="relative z-10 flex h-full w-[480px] flex-col bg-card shadow-2xl">
+        <div className="h-[3px] w-full shrink-0 bg-gradient-to-r from-primary via-primary to-transparent" />
         <div className="flex items-start justify-between px-8 pt-7 pb-5">
           <div>
-            <h2 className="text-xl font-bold text-foreground">
+            <h2 className="text-[18px] font-bold text-foreground tracking-tight">
               {isEdit ? "Edit Employee" : "Add a New Employee"}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-[13px] text-muted-foreground">
               {isEdit
                 ? "Update the employee information below"
                 : "Fill in the details to create a new employee profile"}
@@ -273,13 +271,12 @@ function EmployeeModal({ open, onClose, employee }: EmployeeModalProps) {
           </div>
           <button
             onClick={onClose}
-            className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+            className="flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <X className="size-4" />
           </button>
         </div>
 
-        {/* Form */}
         <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-5">
           <Field label="Full Name">
             <input
@@ -330,10 +327,9 @@ function EmployeeModal({ open, onClose, employee }: EmployeeModalProps) {
           </Field>
         </div>
 
-        {/* Footer */}
-        <div className="shrink-0 px-8 py-5 border-t border-border">
+        <div className="shrink-0 px-8 py-5 border-t border-border/60">
           <Button
-            className="w-full justify-center gap-2 bg-foreground text-background hover:bg-foreground/85 rounded-xl h-10 font-semibold"
+            className="w-full justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-11 text-[13px] font-semibold shadow-sm shadow-primary/10 btn-press"
             onClick={onClose}
           >
             <PenSquare className="size-4" />
@@ -353,16 +349,15 @@ function Field({
   children: React.ReactElement;
 }) {
   const inputCls =
-    "w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
+    "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-foreground">
+      <label className="block text-[12px] font-medium text-foreground/70">
         {label}
       </label>
-      {/* Clone child and inject className */}
       {children.type === "select" ? (
         <select
-          className={cn(inputCls, "appearance-none")}
+          className={cn(inputCls, "appearance-none cursor-pointer")}
           {...(children.props as object)}
         >
           {(children.props as { children: React.ReactNode }).children}
@@ -380,29 +375,34 @@ function LeaveCalendar({ employees }: { employees: Employee[] }) {
   const days = Array.from({ length: DAYS_IN_APRIL }, (_, i) => i + 1);
 
   return (
-    <div className="rounded-2xl bg-card border border-border overflow-hidden">
-      <div className="px-6 py-5 border-b border-border">
-        <h3 className="font-semibold text-foreground">
-          April 2026 — Leave Calendar
-        </h3>
+    <div className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
+      <div className="px-6 py-5 border-b border-border/60">
+        <div className="flex items-center gap-3">
+          <h3 className="font-semibold text-foreground text-sm">
+            April 2026 — Leave Calendar
+          </h3>
+          <span className="text-[10px] font-medium text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full uppercase tracking-wide">
+            {employees.length} employees
+          </span>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
         <table className="min-w-full text-xs border-separate border-spacing-0">
           <thead>
             <tr>
-              <th className="sticky left-0 z-20 bg-card px-6 py-3 text-left text-xs font-medium text-muted-foreground border-b border-border min-w-[180px]">
+              <th className="sticky left-0 z-20 bg-card px-6 py-3 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 border-b border-border/60 min-w-[180px]">
                 Employee
               </th>
               {days.map((d) => (
                 <th
                   key={d}
-                  className="px-0 py-3 min-w-[36px] border-b border-border text-center"
+                  className="px-0 py-3 min-w-[36px] border-b border-border/60 text-center"
                 >
                   <div className="text-[9px] text-muted-foreground/50 font-normal leading-none">
                     {getDayName(d)}
                   </div>
-                  <div className="text-xs font-semibold text-muted-foreground leading-snug">
+                  <div className="text-[11px] font-semibold text-foreground/70 leading-snug">
                     {d}
                   </div>
                 </th>
@@ -411,7 +411,6 @@ function LeaveCalendar({ employees }: { employees: Employee[] }) {
           </thead>
           <tbody>
             {employees.map((emp) => {
-              // Build leave map: day → leave range
               const leaveMap = new Map<number, LeaveRange>();
               emp.leaves.forEach((lr) => {
                 for (let d = lr.start; d <= lr.end; d++) leaveMap.set(d, lr);
@@ -419,24 +418,22 @@ function LeaveCalendar({ employees }: { employees: Employee[] }) {
 
               return (
                 <tr key={emp.id} className="group">
-                  {/* Employee name – sticky */}
-                  <td className="sticky left-0 z-10 bg-card group-hover:bg-muted/10 transition-colors px-6 py-2.5 border-b border-border">
+                  <td className="sticky left-0 z-10 bg-card group-hover:bg-muted/20 transition-colors px-6 py-2.5 border-b border-border/40">
                     <div className="flex items-center gap-2.5">
                       <div
                         className={cn(
-                          "flex size-6 shrink-0 items-center justify-center rounded-full text-[9px] font-semibold text-white",
+                          "flex size-6 shrink-0 items-center justify-center rounded-lg text-[9px] font-semibold text-white shadow-sm",
                           emp.color,
                         )}
                       >
                         {emp.initials}
                       </div>
-                      <span className="font-medium text-foreground whitespace-nowrap">
+                      <span className="font-medium text-foreground text-[13px] whitespace-nowrap">
                         {emp.name}
                       </span>
                     </div>
                   </td>
 
-                  {/* Day cells */}
                   {days.map((d) => {
                     const lr = leaveMap.get(d);
                     const isStart = lr?.start === d;
@@ -445,21 +442,21 @@ function LeaveCalendar({ employees }: { employees: Employee[] }) {
                     return (
                       <td
                         key={d}
-                        className="px-0 py-2.5 border-b border-border group-hover:bg-muted/10 transition-colors"
+                        className="px-0 py-2.5 border-b border-border/40 group-hover:bg-muted/10 transition-colors"
                       >
                         {lr ? (
                           <div
                             className={cn(
                               "flex h-6 items-center justify-center",
                               LEAVE_BAND_BG[lr.type],
-                              isStart && "rounded-l-full ml-1",
-                              isEnd && "rounded-r-full mr-1",
+                              isStart && "rounded-l-lg ml-1",
+                              isEnd && "rounded-r-lg mr-1",
                               !isStart && !isEnd && "w-full",
                             )}
                           >
                             <div
                               className={cn(
-                                "size-1.5 rounded-full",
+                                "size-1.5 rounded-full shadow-sm",
                                 LEAVE_DOT[lr.type],
                               )}
                             />
@@ -476,8 +473,7 @@ function LeaveCalendar({ employees }: { employees: Employee[] }) {
           </tbody>
         </table>
 
-        {/* Legend */}
-        <div className="flex items-center gap-6 px-6 py-4 border-t border-border">
+        <div className="flex items-center gap-6 px-6 py-4 border-t border-border/60">
           {(
             [
               { label: "Vacation", dot: "bg-blue-400" },
@@ -486,8 +482,8 @@ function LeaveCalendar({ employees }: { employees: Employee[] }) {
             ] as const
           ).map(({ label, dot }) => (
             <div key={label} className="flex items-center gap-1.5">
-              <div className={cn("size-2 rounded-full", dot)} />
-              <span className="text-xs text-muted-foreground">{label}</span>
+              <div className={cn("size-2 rounded-full shadow-sm", dot)} />
+              <span className="text-[11px] text-muted-foreground">{label}</span>
             </div>
           ))}
         </div>
@@ -509,7 +505,7 @@ function EmployeeList({
     "Employee",
     "Department",
     "Skills",
-    "Projects ↕",
+    "Projects",
     "Criticality",
     "Bus Factor",
     "Today's Status",
@@ -517,91 +513,83 @@ function EmployeeList({
   ];
 
   return (
-    <div className="rounded-2xl bg-card border border-border overflow-hidden">
-      <div className="px-6 py-4 border-b border-border">
-        <h3 className="font-semibold text-foreground">List of all employees</h3>
+    <div className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
+      <div className="px-6 py-4 border-b border-border/60">
+        <h3 className="font-semibold text-foreground text-sm">All Employees</h3>
       </div>
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-border bg-muted/20">
+          <tr className="border-b border-border/60 bg-muted/30">
             {cols.map((col) => (
               <th
                 key={col}
-                className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+                className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70"
               >
-                {col.includes("↕") ? (
-                  <span className="flex items-center gap-1">
-                    Projects
-                    <ChevronsUpDown className="size-3" />
-                  </span>
-                ) : (
-                  col
-                )}
+                {col}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
+        <tbody className="divide-y divide-border/40">
           {employees.map((emp) => (
-            <tr key={emp.id} className="hover:bg-muted/10 transition-colors">
-              {/* Employee */}
+            <tr
+              key={emp.id}
+              className="hover:bg-muted/20 transition-colors group"
+            >
               <td className="px-5 py-4">
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
-                      "flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white",
+                      "flex size-10 shrink-0 items-center justify-center rounded-xl text-[12px] font-semibold text-white shadow-md",
                       emp.color,
                     )}
                   >
                     {emp.initials}
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">{emp.name}</p>
-                    <p className="text-xs text-muted-foreground">{emp.email}</p>
+                    <p className="font-semibold text-foreground text-[14px]">
+                      {emp.name}
+                    </p>
+                    <p className="text-[12px] text-muted-foreground">
+                      {emp.email}
+                    </p>
                   </div>
                 </div>
               </td>
-              {/* Department */}
               <td className="px-5 py-4">
                 <DeptBadge value={emp.department} />
               </td>
-              {/* Skills */}
               <td className="px-5 py-4">
-                <span className="font-semibold text-foreground">
+                <span className="font-semibold text-foreground text-[14px]">
                   {emp.skills}
                 </span>
-                <span className="ml-1 text-muted-foreground text-xs">
+                <span className="ml-1 text-muted-foreground text-[11px]">
                   skills
                 </span>
               </td>
-              {/* Projects */}
               <td className="px-5 py-4">
-                <span className="font-semibold text-foreground">
+                <span className="font-semibold text-foreground text-[14px]">
                   {emp.projects}
                 </span>
-                <span className="ml-1 text-muted-foreground text-xs">
+                <span className="ml-1 text-muted-foreground text-[11px]">
                   projects
                 </span>
               </td>
-              {/* Criticality */}
               <td className="px-5 py-4">
                 <CriticalityBadge value={emp.criticality} />
               </td>
-              {/* Bus Factor */}
               <td className="px-5 py-4">
-                <span className="font-semibold text-foreground">
+                <span className="font-semibold text-foreground text-[14px]">
                   {emp.busFactor}
                 </span>
               </td>
-              {/* Today's Status */}
               <td className="px-5 py-4">
                 <StatusBadge value={emp.todayStatus} />
               </td>
-              {/* Actions */}
               <td className="px-5 py-4">
                 <Button
                   size="sm"
-                  className="gap-1.5 bg-foreground text-background hover:bg-foreground/85 rounded-lg h-8 px-3 text-xs font-semibold"
+                  className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
                   onClick={() => onView(emp)}
                 >
                   <Eye className="size-3.5" />
@@ -647,11 +635,10 @@ export default function Employees() {
 
   return (
     <>
-      <div className="space-y-5">
-        {/* Stat cards */}
+      <div className="space-y-5 page-enter">
         <div className="grid grid-cols-4 gap-4">
           <StatCard
-            title="Total Employee"
+            title="Total Employees"
             value={String(totalEmployee).padStart(2, "0")}
           />
           <StatCard
@@ -662,35 +649,43 @@ export default function Employees() {
           <StatCard title="Avg. Skills/Person" value={avgSkills} />
         </div>
 
-        {/* Tab toggle */}
-        <div className="flex items-center gap-2">
-          {(["list", "calendar"] as Tab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "px-5 py-2 rounded-full text-sm font-semibold transition-colors",
-                activeTab === tab
-                  ? "bg-foreground text-background"
-                  : "bg-card border border-border text-foreground hover:bg-muted",
-              )}
-            >
-              {tab === "list" ? "Employee list" : "Leave Calendar"}
-            </button>
-          ))}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            {(["list", "calendar"] as Tab[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={cn(
+                  "px-5 py-2 rounded-xl text-[13px] font-medium transition-all duration-200",
+                  activeTab === tab
+                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                    : "bg-card border border-border/60 text-foreground hover:bg-muted/50",
+                )}
+              >
+                {tab === "list" ? "Employee list" : "Leave Calendar"}
+              </button>
+            ))}
+          </div>
+
+          <Button
+            onClick={() => setModalOpen(true)}
+            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press"
+          >
+            <Plus className="size-4" />
+            Add Employee
+          </Button>
         </div>
 
         {activeTab === "list" ? (
           <>
-            {/* Search */}
-            <div className="relative w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+            <div className="relative w-80">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/50 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search employee ..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-border bg-card pl-9 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border border-border/60 bg-card pl-10 pr-4 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
               />
             </div>
 

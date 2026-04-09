@@ -17,9 +17,9 @@ import { EMPLOYEE_DETAILS, type EmployeeDetail } from "@/data/employees";
 
 interface SkillCoverage {
   skill: string;
-  holders: EmployeeDetail[]; // all team members who have it
-  activeHolders: EmployeeDetail[]; // holders not currently on leave
-  maxLevel: number; // best level in team
+  holders: EmployeeDetail[];
+  activeHolders: EmployeeDetail[];
+  maxLevel: number;
 }
 
 function skillMatch(required: string, empSkillName: string) {
@@ -68,7 +68,6 @@ function generateAlerts(
 ): RiskAlert[] {
   const alerts: RiskAlert[] = [];
 
-  // Bus factor
   if (project.busFactor <= 1) {
     const singleHolders = coverage.filter((c) => c.holders.length === 1);
     alerts.push({
@@ -89,7 +88,6 @@ function generateAlerts(
     });
   }
 
-  // People currently on leave with impact
   members
     .filter((m) => m.todayStatus === "Has Leave")
     .forEach((member) => {
@@ -111,14 +109,13 @@ function generateAlerts(
         title: `${member.name} is currently on leave`,
         detail:
           nowUncovered.length > 0
-            ? `⚠ ${nowUncovered.map((c) => c.skill).join(", ")} now has zero active coverage.`
+            ? `${nowUncovered.map((c) => c.skill).join(", ")} now has zero active coverage.`
             : nowSilo.length > 0
               ? `${nowSilo.map((c) => c.skill).join(", ")} dropped to a single active holder.`
               : "All skills remain covered by other team members.",
       });
     });
 
-  // Knowledge silos (only 1 person knows a skill, and they're available)
   coverage
     .filter((c) => c.activeHolders.length === 1 && c.holders.length === 1)
     .forEach((c) => {
@@ -131,7 +128,6 @@ function generateAlerts(
       });
     });
 
-  // Fully uncovered skills (no one has it)
   coverage
     .filter((c) => c.holders.length === 0)
     .forEach((c) => {
@@ -145,7 +141,6 @@ function generateAlerts(
       });
     });
 
-  // Health
   if (project.health < 50) {
     alerts.push({
       id: "health",
@@ -166,7 +161,6 @@ function generateAlerts(
     });
   }
 
-  // Overdue
   if (
     new Date(project.endDate) < new Date() &&
     project.status !== "Completed"
@@ -183,11 +177,9 @@ function generateAlerts(
   return alerts;
 }
 
-/* ─── Absence impact per member ───────────────────────────── */
-
 interface AbsenceImpact {
-  uncovered: string[]; // skills with 0 holders if this person left
-  weakened: string[]; // skills dropping to 1 holder
+  uncovered: string[];
+  weakened: string[];
   level: "critical" | "warning" | "safe";
 }
 
@@ -220,21 +212,21 @@ const ALERT_STYLE: Record<
 > = {
   critical: {
     border: "border-l-rose-500",
-    bg: "bg-rose-50",
+    bg: "bg-gradient-to-r from-rose-50/80 to-rose-50/40",
     icon: "text-rose-500",
-    label: "bg-rose-100 text-rose-700",
+    label: "bg-gradient-to-br from-rose-500 to-rose-600 text-white",
   },
   warning: {
     border: "border-l-amber-400",
-    bg: "bg-amber-50",
+    bg: "bg-gradient-to-r from-amber-50/80 to-amber-50/40",
     icon: "text-amber-500",
-    label: "bg-amber-100 text-amber-700",
+    label: "bg-gradient-to-br from-amber-400 to-amber-500 text-white",
   },
   info: {
     border: "border-l-blue-400",
-    bg: "bg-blue-50",
+    bg: "bg-gradient-to-r from-blue-50/80 to-blue-50/40",
     icon: "text-blue-500",
-    label: "bg-blue-100 text-blue-700",
+    label: "bg-gradient-to-br from-blue-400 to-blue-500 text-white",
   },
 };
 
@@ -243,7 +235,7 @@ function AlertCard({ alert }: { alert: RiskAlert }) {
   return (
     <div
       className={cn(
-        "rounded-xl border border-border border-l-4 p-4",
+        "rounded-xl border border-border/60 border-l-4 p-4 shadow-sm",
         s.border,
         s.bg,
       )}
@@ -254,17 +246,17 @@ function AlertCard({ alert }: { alert: RiskAlert }) {
           <div className="flex items-center gap-2 flex-wrap">
             <span
               className={cn(
-                "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+                "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide shadow-sm",
                 s.label,
               )}
             >
               {alert.category}
             </span>
-            <p className="text-sm font-semibold text-foreground">
+            <p className="text-[13px] font-semibold text-foreground">
               {alert.title}
             </p>
           </div>
-          <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+          <p className="mt-1.5 text-[12px] text-muted-foreground leading-relaxed">
             {alert.detail}
           </p>
         </div>
@@ -287,15 +279,17 @@ function RiskKpi({
   icon: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl bg-card border border-border px-5 py-4">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground/60">
+    <div className="group relative flex items-center gap-4 rounded-2xl bg-card border border-border/60 px-5 py-4 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground/60 group-hover:bg-muted group-hover:text-muted-foreground transition-colors">
         <Icon className="size-4" />
       </div>
       <div>
-        <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+          {label}
+        </p>
         <p
           className={cn(
-            "text-2xl font-bold tracking-tight leading-none mt-0.5",
+            "text-[24px] font-bold tracking-tight leading-none mt-0.5",
             color,
           )}
         >
@@ -320,7 +314,7 @@ function MemberAvatar({
     <div
       title={emp.name}
       className={cn(
-        "flex shrink-0 items-center justify-center rounded-full font-semibold text-white",
+        "flex shrink-0 items-center justify-center rounded-full font-semibold text-white shadow-sm",
         emp.color,
         size === "sm" ? "size-7 text-[10px]" : "size-9 text-xs",
       )}
@@ -334,8 +328,8 @@ function ImpactPill({ impact }: { impact: AbsenceImpact }) {
   if (impact.level === "critical") {
     return (
       <div className="flex items-center gap-1.5">
-        <div className="size-1.5 rounded-full bg-rose-500 shrink-0" />
-        <span className="text-xs font-semibold text-rose-600">
+        <div className="size-1.5 rounded-full bg-gradient-to-br from-rose-500 to-rose-600 shrink-0 shadow-sm" />
+        <span className="text-[11px] font-semibold text-rose-600">
           {impact.uncovered.length} skill
           {impact.uncovered.length !== 1 ? "s" : ""} lost
         </span>
@@ -345,8 +339,8 @@ function ImpactPill({ impact }: { impact: AbsenceImpact }) {
   if (impact.level === "warning") {
     return (
       <div className="flex items-center gap-1.5">
-        <div className="size-1.5 rounded-full bg-amber-400 shrink-0" />
-        <span className="text-xs font-semibold text-amber-600">
+        <div className="size-1.5 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 shrink-0 shadow-sm" />
+        <span className="text-[11px] font-semibold text-amber-600">
           {impact.weakened.length} skill
           {impact.weakened.length !== 1 ? "s" : ""} become silo
         </span>
@@ -355,8 +349,10 @@ function ImpactPill({ impact }: { impact: AbsenceImpact }) {
   }
   return (
     <div className="flex items-center gap-1.5">
-      <div className="size-1.5 rounded-full bg-emerald-500 shrink-0" />
-      <span className="text-xs text-emerald-600 font-medium">No impact</span>
+      <div className="size-1.5 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shrink-0 shadow-sm" />
+      <span className="text-[11px] text-emerald-600 font-medium">
+        No impact
+      </span>
     </div>
   );
 }
@@ -376,34 +372,34 @@ function SimulateLeaveModal({
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-end">
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative z-10 flex h-full w-[460px] flex-col bg-card shadow-2xl">
-        <div className="h-[3px] w-full shrink-0 bg-emerald-400" />
+      <div className="relative z-10 flex h-full w-[480px] flex-col bg-card shadow-2xl">
+        <div className="h-[3px] w-full shrink-0 bg-gradient-to-r from-primary via-primary to-transparent" />
         <div className="flex items-start justify-between px-8 pt-7 pb-5">
           <div>
-            <h2 className="text-xl font-bold text-foreground">
+            <h2 className="text-[18px] font-bold text-foreground tracking-tight">
               Leave Impact Simulation
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Simulate an absence and see how it affects this project's risk
-              profile
+            <p className="mt-1 text-[13px] text-muted-foreground">
+              Simulate an absence and see how it affects this project&apos;s
+              risk profile
             </p>
           </div>
           <button
             onClick={onClose}
-            className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+            className="flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <X className="size-4" />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-5">
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-foreground">
+            <label className="block text-[12px] font-medium text-foreground/70">
               Select Employee
             </label>
-            <select className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring">
+            <select className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer">
               {members.map((m) => (
                 <option key={m.id}>{m.name}</option>
               ))}
@@ -411,19 +407,19 @@ function SimulateLeaveModal({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-foreground">
+              <label className="block text-[12px] font-medium text-foreground/70">
                 Start date
               </label>
               <input
                 type="date"
-                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-foreground">
+              <label className="block text-[12px] font-medium text-foreground/70">
                 Start time
               </label>
-              <select className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-ring">
+              <select className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer">
                 <option>Morning</option>
                 <option>Afternoon</option>
               </select>
@@ -431,28 +427,28 @@ function SimulateLeaveModal({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-foreground">
+              <label className="block text-[12px] font-medium text-foreground/70">
                 End date
               </label>
               <input
                 type="date"
-                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-foreground">
+              <label className="block text-[12px] font-medium text-foreground/70">
                 End time
               </label>
-              <select className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-ring">
+              <select className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer">
                 <option>Morning</option>
                 <option>Afternoon</option>
               </select>
             </div>
           </div>
         </div>
-        <div className="shrink-0 px-8 py-5 border-t border-border">
+        <div className="shrink-0 px-8 py-5 border-t border-border/60">
           <Button
-            className="w-full justify-center gap-2 bg-foreground text-background hover:bg-foreground/85 rounded-xl h-10 font-semibold"
+            className="w-full justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-11 text-[13px] font-semibold shadow-sm shadow-primary/10 btn-press"
             onClick={onClose}
           >
             <PlayCircle className="size-4" />
@@ -485,20 +481,20 @@ function RiskOverviewTab({
 
   return (
     <div className="grid grid-cols-5 gap-4">
-      {/* Left: alerts + leave impact */}
       <div className="col-span-3 space-y-4">
-        {/* Risk alerts */}
-        <div className="rounded-2xl bg-card border border-border">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-foreground">Risk Alerts</h3>
+        <div className="rounded-2xl bg-card border border-border/60 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
+            <div className="flex items-center gap-3">
+              <h3 className="font-semibold text-foreground text-sm">
+                Risk Alerts
+              </h3>
               {criticalAlerts.length > 0 && (
-                <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-bold text-rose-700">
+                <span className="inline-flex items-center rounded-full bg-gradient-to-br from-rose-500 to-rose-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
                   {criticalAlerts.length} critical
                 </span>
               )}
               {warningAlerts.length > 0 && (
-                <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">
+                <span className="inline-flex items-center rounded-full bg-gradient-to-br from-amber-400 to-amber-500 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
                   {warningAlerts.length} warning
                 </span>
               )}
@@ -506,9 +502,9 @@ function RiskOverviewTab({
           </div>
           <div className="p-4 space-y-3">
             {alerts.length === 0 ? (
-              <div className="flex items-center gap-3 rounded-xl bg-emerald-50 border border-emerald-100 p-4">
-                <div className="size-2 rounded-full bg-emerald-500 shrink-0" />
-                <p className="text-sm font-medium text-emerald-700">
+              <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-emerald-50/80 to-emerald-50/40 border border-emerald-100/50 p-4">
+                <div className="size-2.5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 shrink-0 shadow-sm" />
+                <p className="text-[13px] font-medium text-emerald-700">
                   No active risk alerts — project is in good shape.
                 </p>
               </div>
@@ -521,33 +517,32 @@ function RiskOverviewTab({
           </div>
         </div>
 
-        {/* Active leave impact */}
         {onLeave.length > 0 && (
-          <div className="rounded-2xl bg-card border border-border">
-            <div className="px-6 py-4 border-b border-border">
-              <h3 className="font-semibold text-foreground">
+          <div className="rounded-2xl bg-card border border-border/60 shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-border/60">
+              <h3 className="font-semibold text-foreground text-sm">
                 Current Absence Impact
               </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-[11px] text-muted-foreground mt-0.5">
                 Skills affected by team members who are currently on leave
               </p>
             </div>
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-border/40">
               {onLeave.map((member) => {
                 const impact = absenceImpact(member, coverage);
                 const affected = [...impact.uncovered, ...impact.weakened];
                 return (
                   <div
                     key={member.id}
-                    className="flex items-start gap-4 px-6 py-4"
+                    className="flex items-start gap-4 px-6 py-4 hover:bg-muted/20 transition-colors"
                   >
                     <MemberAvatar emp={member} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-semibold text-foreground text-sm">
+                        <p className="font-semibold text-foreground text-[13px]">
                           {member.name}
                         </p>
-                        <span className="inline-flex items-center rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-semibold text-white">
+                        <span className="inline-flex items-center rounded-full bg-gradient-to-br from-rose-500 to-rose-600 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
                           On Leave
                           {member.onLeaveUntil
                             ? ` until ${member.onLeaveUntil}`
@@ -555,26 +550,26 @@ function RiskOverviewTab({
                         </span>
                       </div>
                       {affected.length > 0 ? (
-                        <div className="flex flex-wrap gap-1 mt-1.5">
+                        <div className="flex flex-wrap gap-1.5 mt-2">
                           {impact.uncovered.map((s) => (
                             <span
                               key={s}
-                              className="inline-flex items-center rounded-md bg-rose-100 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700"
+                              className="inline-flex items-center rounded-md bg-gradient-to-br from-rose-100 to-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-700 border border-rose-200/50"
                             >
-                              ✕ {s}
+                              {s}
                             </span>
                           ))}
                           {impact.weakened.map((s) => (
                             <span
                               key={s}
-                              className="inline-flex items-center rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700"
+                              className="inline-flex items-center rounded-md bg-gradient-to-br from-amber-100 to-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 border border-amber-200/50"
                             >
-                              ⚠ {s}
+                              {s}
                             </span>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-xs text-emerald-600 mt-1 font-medium">
+                        <p className="text-[11px] text-emerald-600 mt-1 font-medium">
                           All skills remain covered
                         </p>
                       )}
@@ -588,17 +583,17 @@ function RiskOverviewTab({
         )}
       </div>
 
-      {/* Right: quick coverage summary */}
       <div className="col-span-2 space-y-4">
-        {/* Skill coverage summary */}
-        <div className="rounded-2xl bg-card border border-border">
-          <div className="px-6 py-4 border-b border-border">
-            <h3 className="font-semibold text-foreground">Skill Coverage</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
+        <div className="rounded-2xl bg-card border border-border/60 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-border/60">
+            <h3 className="font-semibold text-foreground text-sm">
+              Skill Coverage
+            </h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
               Active holders per required skill
             </p>
           </div>
-          <div className="p-5 space-y-3">
+          <div className="p-5 space-y-4">
             {coverage.map((c) => {
               const status =
                 c.activeHolders.length === 0
@@ -608,10 +603,10 @@ function RiskOverviewTab({
                     : "covered";
               const barColor =
                 status === "uncovered"
-                  ? "bg-rose-500"
+                  ? "bg-gradient-to-r from-rose-400 to-rose-500"
                   : status === "silo"
-                    ? "bg-amber-400"
-                    : "bg-emerald-500";
+                    ? "bg-gradient-to-r from-amber-400 to-amber-500"
+                    : "bg-gradient-to-r from-emerald-400 to-emerald-500";
               const pct = Math.min(
                 100,
                 (c.activeHolders.length / Math.max(project.team.length, 1)) *
@@ -620,32 +615,29 @@ function RiskOverviewTab({
 
               return (
                 <div key={c.skill}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium text-foreground">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[13px] font-medium text-foreground">
                       {c.skill}
                     </span>
                     <div className="flex items-center gap-2">
                       {status === "uncovered" && (
-                        <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wide">
+                        <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wide bg-rose-50 px-1.5 py-0.5 rounded">
                           Uncovered
                         </span>
                       )}
                       {status === "silo" && (
-                        <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">
+                        <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide bg-amber-50 px-1.5 py-0.5 rounded">
                           Silo
                         </span>
                       )}
-                      <span className="text-xs text-muted-foreground tabular-nums">
+                      <span className="text-[11px] text-muted-foreground tabular-nums">
                         {c.activeHolders.length}/{project.team.length}
                       </span>
                     </div>
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                  <div className="h-1.5 w-full rounded-full bg-muted shadow-inner overflow-hidden">
                     <div
-                      className={cn(
-                        "h-full rounded-full transition-all",
-                        barColor,
-                      )}
+                      className={cn("h-full rounded-full shadow-sm", barColor)}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -655,20 +647,19 @@ function RiskOverviewTab({
           </div>
         </div>
 
-        {/* Simulate CTA */}
-        <div className="rounded-2xl bg-foreground p-5 space-y-3">
+        <div className="rounded-2xl bg-gradient-to-br from-foreground to-foreground/90 p-5 space-y-3 shadow-lg">
           <div>
-            <p className="text-sm font-bold text-background">
+            <p className="text-[14px] font-bold text-background">
               Run a Leave Simulation
             </p>
-            <p className="text-xs text-background/60 mt-0.5">
+            <p className="text-[12px] text-background/60 mt-0.5 leading-relaxed">
               See how a planned or unplanned absence would affect risk coverage
               on this project.
             </p>
           </div>
           <Button
             onClick={onSimulate}
-            className="w-full justify-center gap-2 bg-background text-foreground hover:bg-background/90 rounded-xl h-9 text-sm font-semibold"
+            className="w-full justify-center gap-2 bg-card text-foreground hover:bg-card/90 rounded-xl h-10 text-[13px] font-semibold shadow-md btn-press"
           >
             <PlayCircle className="size-4" />
             Simulate a Leave
@@ -689,16 +680,18 @@ function TeamTab({
   coverage: SkillCoverage[];
 }) {
   return (
-    <div className="rounded-2xl bg-card border border-border overflow-hidden">
-      <div className="px-6 py-4 border-b border-border">
-        <h3 className="font-semibold text-foreground">Team Risk Analysis</h3>
-        <p className="text-xs text-muted-foreground mt-0.5">
+    <div className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
+      <div className="px-6 py-4 border-b border-border/60">
+        <h3 className="font-semibold text-foreground text-sm">
+          Team Risk Analysis
+        </h3>
+        <p className="text-[11px] text-muted-foreground mt-0.5">
           Shows the risk exposure if each team member were to become unavailable
         </p>
       </div>
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-border bg-muted/20">
+          <tr className="border-b border-border/60 bg-muted/30">
             {[
               "Member",
               "Role",
@@ -709,14 +702,14 @@ function TeamTab({
             ].map((col) => (
               <th
                 key={col}
-                className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+                className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70"
               >
                 {col}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
+        <tbody className="divide-y divide-border/40">
           {members.map((member) => {
             const impact = absenceImpact(member, coverage);
             const contributed = coverage.filter((c) =>
@@ -728,51 +721,47 @@ function TeamTab({
               <tr
                 key={member.id}
                 className={cn(
-                  "hover:bg-muted/10 transition-colors",
-                  impact.level === "critical" && "bg-rose-50/50",
+                  "hover:bg-muted/20 transition-colors",
+                  impact.level === "critical" && "bg-rose-50/30",
                 )}
               >
-                {/* Member */}
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-3">
                     <MemberAvatar emp={member} />
                     <div>
-                      <p className="font-semibold text-foreground">
+                      <p className="font-semibold text-foreground text-[14px]">
                         {member.name}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[12px] text-muted-foreground">
                         {member.email}
                       </p>
                     </div>
                   </div>
                 </td>
-                {/* Role */}
                 <td className="px-5 py-4">
-                  <p className="text-sm text-foreground">{member.role}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[13px] text-foreground">{member.role}</p>
+                  <p className="text-[11px] text-muted-foreground">
                     {member.department}
                   </p>
                 </td>
-                {/* Criticality */}
                 <td className="px-5 py-4">
                   <span
                     className={cn(
-                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+                      "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold",
                       member.criticality === "High"
-                        ? "bg-rose-100 text-rose-700"
+                        ? "bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-sm"
                         : member.criticality === "Medium"
-                          ? "bg-amber-100 text-amber-700"
+                          ? "bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm"
                           : "bg-muted text-muted-foreground",
                     )}
                   >
                     {member.criticality}
                   </span>
                 </td>
-                {/* Skills */}
                 <td className="px-5 py-4">
                   <div className="flex flex-wrap gap-1">
                     {contributed.length === 0 ? (
-                      <span className="text-xs text-muted-foreground italic">
+                      <span className="text-[11px] text-muted-foreground italic">
                         None matched
                       </span>
                     ) : (
@@ -782,8 +771,8 @@ function TeamTab({
                           className={cn(
                             "inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold",
                             c.holders.length === 1
-                              ? "bg-rose-100 text-rose-700"
-                              : "bg-muted text-muted-foreground",
+                              ? "bg-gradient-to-br from-rose-100 to-rose-50 text-rose-700 border border-rose-200/50"
+                              : "bg-muted/60 text-foreground/60",
                           )}
                         >
                           {c.skill}
@@ -792,22 +781,20 @@ function TeamTab({
                     )}
                   </div>
                 </td>
-                {/* Status */}
                 <td className="px-5 py-4">
                   <span
                     className={cn(
-                      "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+                      "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold",
                       isOnLeave
-                        ? "bg-rose-500 text-white"
+                        ? "bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-sm"
                         : member.todayStatus === "Remote"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-emerald-100 text-emerald-700",
+                          ? "bg-gradient-to-br from-blue-100 to-blue-50 text-blue-700 border border-blue-200/50"
+                          : "bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-700 border border-emerald-200/50",
                     )}
                   >
                     {member.todayStatus}
                   </span>
                 </td>
-                {/* Impact */}
                 <td className="px-5 py-4">
                   {impact.level === "critical" ? (
                     <div className="space-y-0.5">
@@ -838,7 +825,6 @@ function TeamTab({
 
 /* ─── Tab: Knowledge ─────────────────────────────────────── */
 
-// Reuse hexagonal radar from EmployeeDetail pattern
 const RADAR_AXES = [
   "FRONTEND",
   "BACKEND",
@@ -953,19 +939,18 @@ function KnowledgeTab({
 }) {
   return (
     <div className="grid grid-cols-5 gap-4">
-      {/* Skill coverage table */}
-      <div className="col-span-3 rounded-2xl bg-card border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">
+      <div className="col-span-3 rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
+        <div className="px-6 py-4 border-b border-border/60">
+          <h3 className="font-semibold text-foreground text-sm">
             Required Skills Coverage
           </h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-[11px] text-muted-foreground mt-0.5">
             Coverage counts exclude team members currently on leave
           </p>
         </div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-border bg-muted/20">
+            <tr className="border-b border-border/60 bg-muted/30">
               {[
                 "Skill",
                 "Status",
@@ -975,14 +960,14 @@ function KnowledgeTab({
               ].map((col) => (
                 <th
                   key={col}
-                  className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+                  className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70"
                 >
                   {col}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border/40">
             {coverage.map((c) => {
               const status =
                 c.activeHolders.length === 0
@@ -1005,23 +990,25 @@ function KnowledgeTab({
                 <tr
                   key={c.skill}
                   className={cn(
-                    "hover:bg-muted/10 transition-colors",
-                    status === "uncovered" && "bg-rose-50/50",
-                    status === "silo" && "bg-amber-50/40",
+                    "hover:bg-muted/20 transition-colors",
+                    status === "uncovered" && "bg-rose-50/30",
+                    status === "silo" && "bg-amber-50/20",
                   )}
                 >
                   <td className="px-5 py-3.5">
-                    <p className="font-semibold text-foreground">{c.skill}</p>
+                    <p className="font-semibold text-foreground text-[14px]">
+                      {c.skill}
+                    </p>
                   </td>
                   <td className="px-5 py-3.5">
                     <span
                       className={cn(
-                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold",
+                        "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold shadow-sm",
                         status === "uncovered"
-                          ? "bg-rose-100 text-rose-700"
+                          ? "bg-gradient-to-br from-rose-500 to-rose-600 text-white"
                           : status === "silo"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-emerald-100 text-emerald-700",
+                            ? "bg-gradient-to-br from-amber-400 to-amber-500 text-white"
+                            : "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white",
                       )}
                     >
                       {status === "uncovered"
@@ -1033,22 +1020,22 @@ function KnowledgeTab({
                   </td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
+                      <div className="h-1.5 w-16 rounded-full bg-muted shadow-inner overflow-hidden">
                         <div
                           className={cn(
                             "h-full rounded-full",
                             status === "uncovered"
-                              ? "bg-rose-500"
+                              ? "bg-gradient-to-r from-rose-400 to-rose-500"
                               : status === "silo"
-                                ? "bg-amber-400"
-                                : "bg-emerald-500",
+                                ? "bg-gradient-to-r from-amber-400 to-amber-500"
+                                : "bg-gradient-to-r from-emerald-400 to-emerald-500",
                           )}
                           style={{
                             width: `${Math.min(100, (c.activeHolders.length / Math.max(project.team.length, 1)) * 100)}%`,
                           }}
                         />
                       </div>
-                      <span className="text-xs text-muted-foreground tabular-nums">
+                      <span className="text-[11px] text-muted-foreground tabular-nums">
                         {c.activeHolders.length}/{project.team.length}
                       </span>
                     </div>
@@ -1056,7 +1043,7 @@ function KnowledgeTab({
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1">
                       {c.holders.length === 0 ? (
-                        <span className="text-xs text-rose-500 italic">
+                        <span className="text-[11px] text-rose-500 italic">
                           None
                         </span>
                       ) : (
@@ -1065,7 +1052,7 @@ function KnowledgeTab({
                             key={h.id}
                             title={`${h.name}${h.todayStatus === "Has Leave" ? " (on leave)" : ""}`}
                             className={cn(
-                              "flex size-6 items-center justify-center rounded-full text-[9px] font-semibold text-white ring-2 ring-card",
+                              "flex size-6 items-center justify-center rounded-lg text-[9px] font-semibold text-white ring-2 ring-card shadow-sm",
                               h.color,
                               h.todayStatus === "Has Leave" && "opacity-40",
                             )}
@@ -1079,7 +1066,7 @@ function KnowledgeTab({
                   <td className="px-5 py-3.5">
                     <span
                       className={cn(
-                        "text-xs font-medium",
+                        "text-[12px] font-medium",
                         c.maxLevel >= 4
                           ? "text-emerald-600"
                           : c.maxLevel >= 3
@@ -1097,20 +1084,18 @@ function KnowledgeTab({
         </table>
       </div>
 
-      {/* Radar + legend */}
       <div className="col-span-2 space-y-4">
-        <div className="rounded-2xl bg-card border border-border p-6">
-          <h3 className="font-semibold text-foreground mb-1">
+        <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm">
+          <h3 className="font-semibold text-foreground text-sm mb-1">
             Team Competency Radar
           </h3>
-          <p className="text-xs text-muted-foreground mb-4">
+          <p className="text-[11px] text-muted-foreground mb-4">
             Average skill level per category across the team
           </p>
           <CoverageRadar members={members} />
         </div>
 
-        {/* Summary counts */}
-        <div className="rounded-2xl bg-card border border-border p-5 space-y-3">
+        <div className="rounded-2xl bg-card border border-border/60 p-5 space-y-3 shadow-sm">
           <h3 className="font-semibold text-foreground text-sm">
             Coverage Summary
           </h3>
@@ -1118,27 +1103,34 @@ function KnowledgeTab({
             {
               label: "Fully covered (2+ holders)",
               count: coverage.filter((c) => c.activeHolders.length >= 2).length,
-              color: "bg-emerald-500",
+              color: "bg-gradient-to-br from-emerald-400 to-emerald-500",
             },
             {
               label: "Knowledge silos (1 holder)",
               count: coverage.filter((c) => c.activeHolders.length === 1)
                 .length,
-              color: "bg-amber-400",
+              color: "bg-gradient-to-br from-amber-400 to-amber-500",
             },
             {
               label: "Uncovered (0 holders)",
               count: coverage.filter((c) => c.activeHolders.length === 0)
                 .length,
-              color: "bg-rose-500",
+              color: "bg-gradient-to-br from-rose-400 to-rose-500",
             },
           ].map(({ label, count, color }) => (
             <div key={label} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className={cn("size-2 rounded-full shrink-0", color)} />
-                <span className="text-xs text-muted-foreground">{label}</span>
+                <div
+                  className={cn(
+                    "size-2 rounded-full shrink-0 shadow-sm",
+                    color,
+                  )}
+                />
+                <span className="text-[12px] text-muted-foreground">
+                  {label}
+                </span>
               </div>
-              <span className="text-sm font-bold text-foreground tabular-nums">
+              <span className="text-[14px] font-bold text-foreground tabular-nums">
                 {count}
               </span>
             </div>
@@ -1181,12 +1173,12 @@ export default function ProjectDetail() {
   if (!project) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <p className="text-lg font-semibold text-foreground">
+        <p className="text-[16px] font-semibold text-foreground">
           Project not found
         </p>
         <Link
           to="/projects"
-          className="text-sm text-primary underline underline-offset-4"
+          className="text-[13px] text-primary hover:underline underline-offset-4"
         >
           Back to projects
         </Link>
@@ -1209,8 +1201,7 @@ export default function ProjectDetail() {
 
   return (
     <>
-      <div className="space-y-5">
-        {/* KPIs */}
+      <div className="space-y-5 page-enter">
         <div className="grid grid-cols-4 gap-4">
           <RiskKpi
             label="Risk Score"
@@ -1282,11 +1273,10 @@ export default function ProjectDetail() {
           />
         </div>
 
-        {/* Active alert strip */}
         {criticalAlertCount > 0 && (
-          <div className="flex items-center gap-3 rounded-xl bg-rose-50 border border-rose-200 px-4 py-3">
+          <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-rose-50/80 to-rose-50/40 border border-rose-200/50 px-4 py-3 shadow-sm">
             <AlertTriangle className="size-4 text-rose-500 shrink-0" />
-            <p className="text-sm font-semibold text-rose-700">
+            <p className="text-[13px] font-semibold text-rose-700">
               {criticalAlertCount} critical risk
               {criticalAlertCount !== 1 ? "s" : ""} detected on this project —
               <button
@@ -1299,22 +1289,21 @@ export default function ProjectDetail() {
           </div>
         )}
 
-        {/* Tabs */}
         <div className="flex items-center gap-2">
           {tabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={cn(
-                "px-5 py-2 rounded-full text-sm font-semibold transition-colors",
+                "px-5 py-2 rounded-xl text-[13px] font-medium transition-all duration-200",
                 activeTab === tab.key
-                  ? "bg-foreground text-background"
-                  : "bg-card border border-border text-foreground hover:bg-muted",
+                  ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                  : "bg-card border border-border/60 text-foreground hover:bg-muted/50",
               )}
             >
               {tab.label}
               {tab.key === "overview" && criticalAlertCount > 0 && (
-                <span className="ml-2 inline-flex items-center rounded-full bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 leading-none">
+                <span className="ml-2 inline-flex items-center rounded-full bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 leading-none shadow-sm">
                   {criticalAlertCount}
                 </span>
               )}
@@ -1322,7 +1311,6 @@ export default function ProjectDetail() {
           ))}
         </div>
 
-        {/* Tab content */}
         {activeTab === "overview" && (
           <RiskOverviewTab
             project={project}

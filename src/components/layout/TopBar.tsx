@@ -4,6 +4,7 @@ import {
   ChevronRight,
   PlayCircle,
   PenSquare,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -42,43 +43,53 @@ export default function TopBar() {
   }
 
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-6">
+    <header className="flex h-[60px] shrink-0 items-center justify-between border-b border-border/60 bg-card/80 backdrop-blur-sm px-6">
       <div>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span>Sentinel</span>
-          <ChevronRight className="size-3" />
-          <span>{breadcrumb}</span>
+        <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70">
+          <span className="font-medium">Sentinel</span>
+          <ChevronRight className="size-3 text-muted-foreground/40" />
+          <span className="font-medium text-foreground/60">{breadcrumb}</span>
         </div>
-        <h1 className="text-xl font-bold text-foreground leading-tight">
+        <h1 className="text-[17px] font-semibold text-foreground leading-tight tracking-tight mt-0.5">
           {title}
         </h1>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         {isEmployees && (
-          <Button className="gap-2 bg-foreground text-background hover:bg-foreground/85 rounded-xl h-9 px-4 font-semibold">
+          <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press">
             <PenSquare className="size-4" />
             Add a New Employee
           </Button>
         )}
         {isProjects && (
-          <Button className="gap-2 bg-foreground text-background hover:bg-foreground/85 rounded-xl h-9 px-4 font-semibold">
+          <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press">
             <PenSquare className="size-4" />
             New Project
           </Button>
         )}
         {isHome && (
           <>
-            <Button variant="outline" size="sm" className="gap-1.5 h-8 text-sm">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-8 text-[12px] rounded-xl border-border/60 bg-card hover:bg-muted/50"
+            >
               <CalendarCheck className="size-3.5" />
               Import planning
             </Button>
-            <Button className="gap-2 bg-foreground text-background hover:bg-foreground/85 h-9 px-5 text-sm font-medium">
+            <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-5 text-[13px] font-medium rounded-xl shadow-sm shadow-primary/10 btn-press">
               <PlayCircle className="size-4" />
               Simulate Leave
             </Button>
           </>
         )}
+
+        {/* Notification bell */}
+        <button className="relative flex size-8 items-center justify-center rounded-xl text-muted-foreground/60 hover:bg-muted hover:text-foreground transition-colors">
+          <Bell className="size-[18px]" />
+          <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-rose-500" />
+        </button>
       </div>
     </header>
   );
