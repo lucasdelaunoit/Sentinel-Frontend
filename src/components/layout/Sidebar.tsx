@@ -1,31 +1,29 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
   FolderOpen,
-  Grid3x3,
   PlayCircle,
   Shield,
   Settings,
-} from 'lucide-react'
-import { cn } from '@/lib/utils'
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface NavItem {
-  label: string
-  icon: React.ComponentType<{ className?: string }>
-  to: string
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  to: string;
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', icon: LayoutDashboard, to: '/dashboard' },
-  { label: 'Employees', icon: Users, to: '/employees' },
-  { label: 'Projects', icon: FolderOpen, to: '/projects' },
-  { label: 'Skill Matrix', icon: Grid3x3, to: '/skill-matrix' },
-]
+  { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
+  { label: "Employees", icon: Users, to: "/employees" },
+  { label: "Projects", icon: FolderOpen, to: "/projects" },
+];
 
 const quickActions: NavItem[] = [
-  { label: 'Simulate Leave', icon: PlayCircle, to: '/simulate' },
-]
+  { label: "Simulate Leave", icon: PlayCircle, to: "/simulate" },
+];
 
 function SidebarNavLink({ item }: { item: NavItem }) {
   return (
@@ -33,10 +31,10 @@ function SidebarNavLink({ item }: { item: NavItem }) {
       to={item.to}
       className={({ isActive }) =>
         cn(
-          'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+          "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
           isActive
-            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-            : 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
+            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
         )
       }
     >
@@ -44,15 +42,15 @@ function SidebarNavLink({ item }: { item: NavItem }) {
         <>
           <item.icon
             className={cn(
-              'size-4 shrink-0',
-              isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/60',
+              "size-4 shrink-0",
+              isActive ? "text-sidebar-primary" : "text-sidebar-foreground/60",
             )}
           />
           {item.label}
         </>
       )}
     </NavLink>
-  )
+  );
 }
 
 export default function Sidebar() {
@@ -114,5 +112,5 @@ export default function Sidebar() {
         </button>
       </div>
     </aside>
-  )
+  );
 }
