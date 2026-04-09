@@ -9,23 +9,33 @@ import { Button } from "@/components/ui/button";
 
 export default function TopBar() {
   const location = useLocation();
+  const path = location.pathname;
 
-  const PAGE_CONFIG: Record<string, { breadcrumb: string; title: string }> = {
-    "/": { breadcrumb: "Overview", title: "Today" },
-    "/dashboard": { breadcrumb: "Overview", title: "Today" },
-    "/employees": { breadcrumb: "HR", title: "All Employees" },
-    "/projects": { breadcrumb: "Portfolio", title: "All Projects" },
-  };
+  const isHome = path === "/" || path === "/dashboard";
+  const isEmployees = path === "/employees";
+  const isProjects = path === "/projects";
+  const isEmployeeDetail = path.startsWith("/employees/");
+  const isProjectDetail = path.startsWith("/projects/");
 
-  const config = PAGE_CONFIG[location.pathname] ?? {
-    breadcrumb: "Sentinel",
-    title: "Dashboard",
-  };
+  let breadcrumb = "Sentinel";
+  let title = "Dashboard";
 
-  const isHome =
-    location.pathname === "/" || location.pathname === "/dashboard";
-  const isEmployees = location.pathname === "/employees";
-  const isProjects = location.pathname === "/projects";
+  if (isHome) {
+    breadcrumb = "Overview";
+    title = "Today";
+  } else if (isEmployees) {
+    breadcrumb = "HR";
+    title = "All Employees";
+  } else if (isProjects) {
+    breadcrumb = "Portfolio";
+    title = "All Projects";
+  } else if (isEmployeeDetail) {
+    breadcrumb = "HR";
+    title = "Employee Detail";
+  } else if (isProjectDetail) {
+    breadcrumb = "Portfolio";
+    title = "Project Detail";
+  }
 
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-6">
@@ -33,10 +43,10 @@ export default function TopBar() {
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <span>Sentinel</span>
           <ChevronRight className="size-3" />
-          <span>{config.breadcrumb}</span>
+          <span>{breadcrumb}</span>
         </div>
         <h1 className="text-xl font-bold text-foreground leading-tight">
-          {config.title}
+          {title}
         </h1>
       </div>
 
