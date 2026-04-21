@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Eye, PenSquare, X, Search, Plus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Eye, PenSquare, X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -608,10 +608,18 @@ function EmployeeList({
 
 export default function Employees() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>("list");
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const editEmployee = undefined;
+
+  useEffect(() => {
+    if (searchParams.get("action") === "add") {
+      setModalOpen(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const filtered = EMPLOYEES.filter(
     (e) =>
@@ -649,31 +657,21 @@ export default function Employees() {
           <StatCard title="Avg. Skills/Person" value={avgSkills} />
         </div>
 
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            {(["list", "calendar"] as Tab[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={cn(
-                  "px-5 py-2 rounded-xl text-[13px] font-medium transition-all duration-200",
-                  activeTab === tab
-                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                    : "bg-card border border-border/60 text-foreground hover:bg-muted/50",
-                )}
-              >
-                {tab === "list" ? "Employee list" : "Leave Calendar"}
-              </button>
-            ))}
-          </div>
-
-          <Button
-            onClick={() => setModalOpen(true)}
-            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press"
-          >
-            <Plus className="size-4" />
-            Add Employee
-          </Button>
+        <div className="flex items-center gap-2">
+          {(["list", "calendar"] as Tab[]).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={cn(
+                "px-5 py-2 rounded-xl text-[13px] font-medium transition-all duration-200",
+                activeTab === tab
+                  ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                  : "bg-card border border-border/60 text-foreground hover:bg-muted/50",
+              )}
+            >
+              {tab === "list" ? "Employee list" : "Leave Calendar"}
+            </button>
+          ))}
         </div>
 
         {activeTab === "list" ? (

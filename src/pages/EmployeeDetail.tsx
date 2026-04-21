@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
+import { usePage } from "@/context/PageContext";
 import {
   PenSquare,
   X,
@@ -612,12 +613,32 @@ function SkillsTab({ employee }: { employee: EmployeeDetail }) {
 
 export default function EmployeeDetail() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { setTitle, setBreadcrumb } = usePage();
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
   const [simulateOpen, setSimulateOpen] = useState(false);
 
   const employee: EmployeeDetail | undefined = id
     ? EMPLOYEE_DETAILS[id]
     : undefined;
+
+  useEffect(() => {
+    if (employee) {
+      setTitle(employee.name);
+      setBreadcrumb("HR");
+    }
+    return () => {
+      setTitle("");
+      setBreadcrumb("");
+    };
+  }, [employee?.id]);
+
+  useEffect(() => {
+    if (searchParams.get("simulate") === "true") {
+      setSimulateOpen(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   if (!employee) {
     return (

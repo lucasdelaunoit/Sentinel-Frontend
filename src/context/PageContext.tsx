@@ -1,27 +1,28 @@
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 
 interface PageContextType {
-  title?: string;
-  subtitle?: string;
+  title: string;
+  breadcrumb: string;
+  setTitle: (t: string) => void;
+  setBreadcrumb: (b: string) => void;
 }
 
-const PageContext = createContext<PageContextType>({});
+const PageContext = createContext<PageContextType>({
+  title: "",
+  breadcrumb: "",
+  setTitle: () => {},
+  setBreadcrumb: () => {},
+});
 
 export function usePage() {
   return useContext(PageContext);
 }
 
-export function PageProvider({
-  children,
-  title,
-  subtitle,
-}: {
-  children: ReactNode;
-  title?: string;
-  subtitle?: string;
-}) {
+export function PageProvider({ children }: { children: ReactNode }) {
+  const [title, setTitle] = useState("");
+  const [breadcrumb, setBreadcrumb] = useState("");
   return (
-    <PageContext.Provider value={{ title, subtitle }}>
+    <PageContext.Provider value={{ title, breadcrumb, setTitle, setBreadcrumb }}>
       {children}
     </PageContext.Provider>
   );

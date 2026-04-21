@@ -24,7 +24,7 @@ const navItems: NavItem[] = [
 ];
 
 const quickActions: NavItem[] = [
-  { label: "Simulate Leave", icon: PlayCircle, to: "/simulate" },
+  { label: "Simulate Leave", icon: PlayCircle, to: "/?simulate=true" },
 ];
 
 function SidebarNavLink({ item }: { item: NavItem }) {

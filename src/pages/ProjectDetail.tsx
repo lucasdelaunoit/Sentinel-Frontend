@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
+import { usePage } from "@/context/PageContext";
 import {
   PlayCircle,
   AlertTriangle,
@@ -1147,10 +1148,22 @@ type DetailTab = "overview" | "team" | "knowledge";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
+  const { setTitle, setBreadcrumb } = usePage();
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
   const [simulateOpen, setSimulateOpen] = useState(false);
 
   const project = PROJECTS.find((p) => p.id === id);
+
+  useEffect(() => {
+    if (project) {
+      setTitle(project.name);
+      setBreadcrumb("Portfolio");
+    }
+    return () => {
+      setTitle("");
+      setBreadcrumb("");
+    };
+  }, [project?.id]);
 
   const members = useMemo(
     () =>

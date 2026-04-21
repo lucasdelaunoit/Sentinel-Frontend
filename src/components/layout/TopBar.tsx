@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   CalendarCheck,
   ChevronRight,
@@ -7,20 +7,23 @@ import {
   Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePage } from "@/context/PageContext";
 
 export default function TopBar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const path = location.pathname;
+  const { title: contextTitle, breadcrumb: contextBreadcrumb } = usePage();
 
   const isHome = path === "/" || path === "/dashboard";
   const isEmployees = path === "/employees";
   const isProjects = path === "/projects";
-  const isEmployeeDetail = path.startsWith("/employees/");
-  const isProjectDetail = path.startsWith("/projects/");
+  const isEmployeeDetail = /^\/employees\/[^/]+$/.test(path);
+  const isProjectDetail = /^\/projects\/[^/]+$/.test(path);
   const isSettings = path === "/settings";
 
-  let breadcrumb = "Sentinel";
-  let title = "Dashboard";
+  let breadcrumb = "Overview";
+  let title = "Today";
 
   if (isHome) {
     breadcrumb = "Overview";
@@ -32,11 +35,11 @@ export default function TopBar() {
     breadcrumb = "Portfolio";
     title = "All Projects";
   } else if (isEmployeeDetail) {
-    breadcrumb = "HR";
-    title = "Employee Detail";
+    breadcrumb = contextBreadcrumb || "HR";
+    title = contextTitle || "Employee Detail";
   } else if (isProjectDetail) {
-    breadcrumb = "Portfolio";
-    title = "Project Detail";
+    breadcrumb = contextBreadcrumb || "Portfolio";
+    title = contextTitle || "Project Detail";
   } else if (isSettings) {
     breadcrumb = "Admin";
     title = "Settings";
@@ -57,15 +60,30 @@ export default function TopBar() {
 
       <div className="flex items-center gap-3">
         {isEmployees && (
-          <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press">
+          <Button
+            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press"
+            onClick={() => navigate("/employees?action=add")}
+          >
             <PenSquare className="size-4" />
             Add a New Employee
           </Button>
         )}
         {isProjects && (
-          <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press">
+          <Button
+            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press"
+            onClick={() => navigate("/projects?action=add")}
+          >
             <PenSquare className="size-4" />
             New Project
+          </Button>
+        )}
+        {isEmployeeDetail && (
+          <Button
+            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-5 text-[13px] font-medium rounded-xl shadow-sm shadow-primary/10 btn-press"
+            onClick={() => navigate(`${path}?simulate=true`)}
+          >
+            <PlayCircle className="size-4" />
+            Simulate Leave
           </Button>
         )}
         {isHome && (
@@ -74,18 +92,21 @@ export default function TopBar() {
               variant="outline"
               size="sm"
               className="gap-1.5 h-8 text-[12px] rounded-xl border-border/60 bg-card hover:bg-muted/50"
+              onClick={() => {}}
             >
               <CalendarCheck className="size-3.5" />
               Import planning
             </Button>
-            <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-5 text-[13px] font-medium rounded-xl shadow-sm shadow-primary/10 btn-press">
+            <Button
+              className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-5 text-[13px] font-medium rounded-xl shadow-sm shadow-primary/10 btn-press"
+              onClick={() => navigate("/?simulate=true")}
+            >
               <PlayCircle className="size-4" />
               Simulate Leave
             </Button>
           </>
         )}
 
-        {/* Notification bell */}
         <button className="relative flex size-8 items-center justify-center rounded-xl text-muted-foreground/60 hover:bg-muted hover:text-foreground transition-colors">
           <Bell className="size-[18px]" />
           <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-rose-500" />

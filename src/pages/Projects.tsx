@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Search,
   ChevronsUpDown,
@@ -12,6 +12,7 @@ import {
   Layers,
   Plus,
   Filter,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -285,9 +286,132 @@ const STATUS_FILTERS: (ProjectStatus | "All")[] = [
   "Completed",
 ];
 
+/* ─── New Project Modal ────────────────────────────────────── */
+
+function FieldInput({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactElement;
+}) {
+  const inputCls =
+    "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-[12px] font-medium text-foreground/70">
+        {label}
+      </label>
+      {children.type === "select" ? (
+        <select
+          className={cn(inputCls, "appearance-none cursor-pointer")}
+          {...(children.props as object)}
+        >
+          {(children.props as { children: React.ReactNode }).children}
+        </select>
+      ) : (
+        <input className={inputCls} {...(children.props as object)} />
+      )}
+    </div>
+  );
+}
+
+function NewProjectModal({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-end">
+      <div
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="relative z-10 flex h-full w-[480px] flex-col bg-card shadow-2xl">
+        <div className="h-[3px] w-full shrink-0 bg-gradient-to-r from-primary via-primary to-transparent" />
+        <div className="flex items-start justify-between px-8 pt-7 pb-5">
+          <div>
+            <h2 className="text-[18px] font-bold text-foreground tracking-tight">
+              New Project
+            </h2>
+            <p className="mt-1 text-[13px] text-muted-foreground">
+              Create a new project in your portfolio
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-5">
+          <FieldInput label="Project Name">
+            <input type="text" placeholder="e.g. API Modernization" />
+          </FieldInput>
+          <FieldInput label="Description">
+            <input
+              type="text"
+              placeholder="Brief description of the project"
+            />
+          </FieldInput>
+          <FieldInput label="Department">
+            <select defaultValue="">
+              <option value="" disabled>
+                Select a department
+              </option>
+              {[
+                "Engineering",
+                "Data",
+                "Design",
+                "Security",
+                "DevOps",
+                "Management",
+              ].map((d) => (
+                <option key={d}>{d}</option>
+              ))}
+            </select>
+          </FieldInput>
+          <FieldInput label="Priority">
+            <select defaultValue="">
+              <option value="" disabled>
+                Select priority
+              </option>
+              {["Critical", "High", "Medium", "Low"].map((p) => (
+                <option key={p}>{p}</option>
+              ))}
+            </select>
+          </FieldInput>
+          <div className="grid grid-cols-2 gap-4">
+            <FieldInput label="Start Date">
+              <input type="date" />
+            </FieldInput>
+            <FieldInput label="Target End Date">
+              <input type="date" />
+            </FieldInput>
+          </div>
+        </div>
+        <div className="shrink-0 px-8 py-5 border-t border-border/60">
+          <Button
+            className="w-full justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-11 text-[13px] font-semibold shadow-sm shadow-primary/10 btn-press"
+            onClick={onClose}
+          >
+            <Plus className="size-4" />
+            Create Project
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Projects Page ────────────────────────────────────────── */
 
 export default function Projects() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "All">(
     "All",
@@ -296,6 +420,14 @@ export default function Projects() {
     key: "name",
     dir: "asc",
   });
+  const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("action") === "add") {
+      setModalOpen(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   function toggleSort(key: SortKey) {
     setSort((prev) =>
@@ -368,6 +500,7 @@ export default function Projects() {
   );
 
   return (
+    <>
     <div className="space-y-5 page-enter">
       <div className="grid grid-cols-4 gap-4">
         <StatCard
@@ -428,21 +561,15 @@ export default function Projects() {
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="relative w-64">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/50 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search projects ..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-border/60 bg-card pl-10 pr-4 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
-            />
-          </div>
-          <Button className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press">
-            <Plus className="size-4" />
-            New Project
-          </Button>
+        <div className="relative w-64">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/50 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search projects ..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-xl border border-border/60 bg-card pl-10 pr-4 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
+          />
         </div>
       </div>
 
@@ -541,6 +668,9 @@ export default function Projects() {
         </table>
       </div>
     </div>
+
+    <NewProjectModal open={modalOpen} onClose={() => setModalOpen(false)} />
+    </>
   );
 }
 
