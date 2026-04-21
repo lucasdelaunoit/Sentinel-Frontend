@@ -3,8 +3,6 @@ import { useParams, Link, useSearchParams } from "react-router-dom";
 import { usePage } from "@/context/PageContext";
 import {
   PenSquare,
-  X,
-  PlayCircle,
   Plus,
   Calendar,
   Briefcase,
@@ -21,6 +19,7 @@ import {
   type LeaveType,
   type SkillCategory,
 } from "@/data/employees";
+import SimulateLeaveModal from "@/components/SimulateLeaveModal";
 
 /* ─── Types ───────────────────────────────────────────────── */
 
@@ -231,122 +230,6 @@ function LeaveStatusBadge({
     >
       {status}
     </span>
-  );
-}
-
-/* ─── Simulate a Leave Modal ───────────────────────────────── */
-
-function SimulateLeaveModal({
-  open,
-  onClose,
-  employeeName,
-}: {
-  open: boolean;
-  onClose: () => void;
-  employeeName: string;
-}) {
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-end">
-      <div
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="relative z-10 flex h-full w-[480px] flex-col bg-card shadow-2xl">
-        <div className="h-[3px] w-full shrink-0 bg-gradient-to-r from-primary via-primary to-transparent" />
-
-        <div className="flex items-start justify-between px-8 pt-7 pb-5">
-          <div>
-            <h2 className="text-[18px] font-bold text-foreground tracking-tight">
-              Leave Impact Simulation
-            </h2>
-            <p className="mt-1 text-[13px] text-muted-foreground">
-              Simulate the impact of an employee absence on projects and skills
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-5">
-          <div className="space-y-1.5">
-            <label className="block text-[12px] font-medium text-foreground/70">
-              Select Employee
-            </label>
-            <select
-              defaultValue={employeeName}
-              className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer"
-            >
-              <option>{employeeName}</option>
-              {Object.values(EMPLOYEE_DETAILS)
-                .filter((e) => e.name !== employeeName)
-                .map((e) => (
-                  <option key={e.id}>{e.name}</option>
-                ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="block text-[12px] font-medium text-foreground/70">
-                Start date
-              </label>
-              <input
-                type="date"
-                defaultValue="2025-08-15"
-                className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="block text-[12px] font-medium text-foreground/70">
-                Start time
-              </label>
-              <select className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer">
-                <option>Morning</option>
-                <option selected>Afternoon</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="block text-[12px] font-medium text-foreground/70">
-                End date
-              </label>
-              <input
-                type="date"
-                defaultValue="2025-08-17"
-                className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="block text-[12px] font-medium text-foreground/70">
-                End time
-              </label>
-              <select className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer">
-                <option>Morning</option>
-                <option selected>Afternoon</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div className="shrink-0 px-8 py-5 border-t border-border/60">
-          <Button
-            className="w-full justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-11 text-[13px] font-semibold shadow-sm shadow-primary/10 btn-press"
-            onClick={onClose}
-          >
-            <PlayCircle className="size-4" />
-            Run Simulation
-          </Button>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -758,7 +641,8 @@ export default function EmployeeDetail() {
       <SimulateLeaveModal
         open={simulateOpen}
         onClose={() => setSimulateOpen(false)}
-        employeeName={employee.name}
+        employees={Object.values(EMPLOYEE_DETAILS)}
+        initialEmployeeId={employee.id}
       />
     </>
   );

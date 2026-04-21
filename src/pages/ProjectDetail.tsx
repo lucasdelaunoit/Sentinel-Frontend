@@ -2,17 +2,17 @@ import { useState, useMemo, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { usePage } from "@/context/PageContext";
 import {
-  PlayCircle,
   AlertTriangle,
   ShieldAlert,
   Brain,
   Users,
-  X,
+  PlayCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PROJECTS, type ProjectData } from "@/data/projects";
 import { EMPLOYEE_DETAILS, type EmployeeDetail } from "@/data/employees";
+import SimulateLeaveModal from "@/components/SimulateLeaveModal";
 
 /* ─── Risk computation ────────────────────────────────────── */
 
@@ -354,109 +354,6 @@ function ImpactPill({ impact }: { impact: AbsenceImpact }) {
       <span className="text-[11px] text-emerald-600 font-medium">
         No impact
       </span>
-    </div>
-  );
-}
-
-/* ─── Simulate Leave Modal ────────────────────────────────── */
-
-function SimulateLeaveModal({
-  open,
-  onClose,
-  members,
-}: {
-  open: boolean;
-  onClose: () => void;
-  members: EmployeeDetail[];
-}) {
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-end">
-      <div
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="relative z-10 flex h-full w-[480px] flex-col bg-card shadow-2xl">
-        <div className="h-[3px] w-full shrink-0 bg-gradient-to-r from-primary via-primary to-transparent" />
-        <div className="flex items-start justify-between px-8 pt-7 pb-5">
-          <div>
-            <h2 className="text-[18px] font-bold text-foreground tracking-tight">
-              Leave Impact Simulation
-            </h2>
-            <p className="mt-1 text-[13px] text-muted-foreground">
-              Simulate an absence and see how it affects this project&apos;s
-              risk profile
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-5">
-          <div className="space-y-1.5">
-            <label className="block text-[12px] font-medium text-foreground/70">
-              Select Employee
-            </label>
-            <select className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer">
-              {members.map((m) => (
-                <option key={m.id}>{m.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="block text-[12px] font-medium text-foreground/70">
-                Start date
-              </label>
-              <input
-                type="date"
-                className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="block text-[12px] font-medium text-foreground/70">
-                Start time
-              </label>
-              <select className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer">
-                <option>Morning</option>
-                <option>Afternoon</option>
-              </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="block text-[12px] font-medium text-foreground/70">
-                End date
-              </label>
-              <input
-                type="date"
-                className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="block text-[12px] font-medium text-foreground/70">
-                End time
-              </label>
-              <select className="w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] appearance-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all cursor-pointer">
-                <option>Morning</option>
-                <option>Afternoon</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <div className="shrink-0 px-8 py-5 border-t border-border/60">
-          <Button
-            className="w-full justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-11 text-[13px] font-semibold shadow-sm shadow-primary/10 btn-press"
-            onClick={onClose}
-          >
-            <PlayCircle className="size-4" />
-            Run Simulation
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -1348,7 +1245,7 @@ export default function ProjectDetail() {
       <SimulateLeaveModal
         open={simulateOpen}
         onClose={() => setSimulateOpen(false)}
-        members={members}
+        employees={members}
       />
     </>
   );
