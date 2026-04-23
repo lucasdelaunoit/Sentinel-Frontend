@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useSearchParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { usePage } from "@/context/PageContext";
 import {
   PenSquare,
@@ -19,7 +19,6 @@ import {
   type LeaveType,
   type SkillCategory,
 } from "@/data/employees";
-import SimulateLeaveModal from "@/components/SimulateLeaveModal";
 
 /* ─── Types ───────────────────────────────────────────────── */
 
@@ -496,11 +495,9 @@ function SkillsTab({ employee }: { employee: EmployeeDetail }) {
 
 export default function EmployeeDetail() {
   const { id } = useParams<{ id: string }>();
-  const [searchParams, setSearchParams] = useSearchParams();
+
   const { setTitle, setBreadcrumb } = usePage();
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
-  const [simulateOpen, setSimulateOpen] = useState(false);
-
   const employee: EmployeeDetail | undefined = id
     ? EMPLOYEE_DETAILS[id]
     : undefined;
@@ -516,12 +513,6 @@ export default function EmployeeDetail() {
     };
   }, [employee?.id]);
 
-  useEffect(() => {
-    if (searchParams.get("simulate") === "true") {
-      setSimulateOpen(true);
-      setSearchParams({}, { replace: true });
-    }
-  }, [searchParams, setSearchParams]);
 
   if (!employee) {
     return (
@@ -638,12 +629,6 @@ export default function EmployeeDetail() {
         {activeTab === "skills" && <SkillsTab employee={employee} />}
       </div>
 
-      <SimulateLeaveModal
-        open={simulateOpen}
-        onClose={() => setSimulateOpen(false)}
-        employees={Object.values(EMPLOYEE_DETAILS)}
-        initialEmployeeId={employee.id}
-      />
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { usePage } from "@/context/PageContext";
 import {
   AlertTriangle,
@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PROJECTS, type ProjectData } from "@/data/projects";
 import { EMPLOYEE_DETAILS, type EmployeeDetail } from "@/data/employees";
-import SimulateLeaveModal from "@/components/SimulateLeaveModal";
 
 /* ─── Risk computation ────────────────────────────────────── */
 
@@ -1045,9 +1044,9 @@ type DetailTab = "overview" | "team" | "knowledge";
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { setTitle, setBreadcrumb } = usePage();
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
-  const [simulateOpen, setSimulateOpen] = useState(false);
 
   const project = PROJECTS.find((p) => p.id === id);
 
@@ -1227,7 +1226,7 @@ export default function ProjectDetail() {
             members={members}
             coverage={coverage}
             alerts={alerts}
-            onSimulate={() => setSimulateOpen(true)}
+            onSimulate={() => navigate("/employees?tab=calendar")}
           />
         )}
         {activeTab === "team" && (
@@ -1242,11 +1241,6 @@ export default function ProjectDetail() {
         )}
       </div>
 
-      <SimulateLeaveModal
-        open={simulateOpen}
-        onClose={() => setSimulateOpen(false)}
-        employees={members}
-      />
     </>
   );
 }

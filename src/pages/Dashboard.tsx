@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Eye,
   TrendingUp,
@@ -15,7 +15,6 @@ import {
 import { cn } from "@/lib/utils";
 import { PROJECTS } from "@/data/projects";
 import { EMPLOYEE_DETAILS, type EmployeeDetail, type SkillCategory } from "@/data/employees";
-import SimulateLeaveModal from "@/components/SimulateLeaveModal";
 
 /* ─── Avatar ──────────────────────────────────────────────── */
 
@@ -352,16 +351,6 @@ function getRiskLevel(score: number) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [simulateOpen, setSimulateOpen] = useState(false);
-
-  useEffect(() => {
-    if (searchParams.get("simulate") === "true") {
-      setSimulateOpen(true);
-      setSearchParams({}, { replace: true });
-    }
-  }, [searchParams, setSearchParams]);
-
   const employees = useMemo(() => Object.values(EMPLOYEE_DETAILS), []);
 
   /* ── Computed coverage ─────────────────────────────────── */
@@ -790,7 +779,7 @@ export default function Dashboard() {
             {/* Quick action */}
             <div className="mt-auto">
               <button
-                onClick={() => navigate("/?simulate=true")}
+                onClick={() => navigate("/employees?tab=calendar")}
                 className="w-full flex items-center justify-center gap-1.5 text-[11px] font-semibold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 py-2 rounded-xl transition-colors"
               >
                 <Zap className="size-3" />
@@ -906,11 +895,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <SimulateLeaveModal
-        open={simulateOpen}
-        onClose={() => setSimulateOpen(false)}
-        employees={employees}
-      />
     </>
   );
 }
