@@ -1,27 +1,20 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Eye,
-  Users,
-  AlertTriangle,
-  Activity,
   ArrowRight,
   Calendar,
   Zap, CalendarCheck, PlayCircle,
-  X,
-  BookOpen,
-  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PROJECTS } from "@/data/projects";
-import { EMPLOYEE_DETAILS, type EmployeeDetail, type SkillCategory } from "@/data/employees";
+import { EMPLOYEE_DETAILS, type EmployeeDetail } from "@/data/employees";
 import TopBar from "@/components/layout/TopBar.tsx";
-import useGetDashboardStats from "@/hooks/useGetDashboardStats";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import HomeStatCardsSection from "@/components/specified/pages/home/HomeStatCardsSection.tsx";
 import TeamStatusOfTodayCard from "@/components/specified/pages/home/TeamStatusOfTodayCard.tsx";
 import KnowledgeCoverageOfToday from "@/components/specified/pages/home/KnowledgeCoverageOfToday.tsx";
+import ImportPlanningSheet from "@/components/specified/pages/home/ImportPlanningSheet.tsx";
 
 /* ─── Avatar ──────────────────────────────────────────────── */
 
@@ -203,25 +196,6 @@ function getRiskLevel(score: number) {
   );
 }
 
-/* ─── Modal ───────────────────────────────────────────────── */
-
-function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[82vh] flex flex-col z-10">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-          <h2 className="font-semibold text-sm">{title}</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
-            <X className="size-4" />
-          </button>
-        </div>
-        <div className="overflow-y-auto p-6 space-y-5">{children}</div>
-      </div>
-    </div>
-  );
-}
-
 /* ─── Dashboard ───────────────────────────────────────────── */
 
 export default function Dashboard() {
@@ -246,29 +220,9 @@ export default function Dashboard() {
 
   /* ── Derived stats ─────────────────────────────────────── */
   const atRiskProjects = PROJECTS.filter(p => p.riskScore >= 15 || p.health < 60).length;
-  const criticalProjectCount = PROJECTS.filter(p => p.riskScore >= 25 || p.health < 40).length;
-  const unstableProjectCount = atRiskProjects - criticalProjectCount;
-  const criticalAbsentCount = employees.filter(e => e.todayStatus === "Has Leave" && e.criticality === "High").length;
-
-
-  const absenceImpactDetails = useMemo(() => {
-    const absentIds = new Set(employees.filter(e => e.todayStatus === "Has Leave").map(e => e.id));
-    const allSkillNames = [...new Set(employees.flatMap(e => e.skills.filter(s => s.level >= 3).map(s => s.name)))];
-    return allSkillNames
-      .map(skill => {
-        const coveredBy = employees.filter(e => e.skills.some(s => s.name === skill && s.level >= 3));
-        if (coveredBy.length === 0 || !coveredBy.every(e => absentIds.has(e.id))) return null;
-        const category = coveredBy[0].skills.find(s => s.name === skill)?.category ?? "";
-        const requiredBy = PROJECTS.filter(p => p.skills.includes(skill));
-        return { skill, category, coveredBy, requiredBy };
-      })
-      .filter(Boolean) as { skill: string; category: string; coveredBy: typeof employees; requiredBy: typeof PROJECTS }[];
-  }, [employees]);
-
-  const absenceImpactSkills = absenceImpactDetails.length;
 
   /* ── Modal state ───────────────────────────────────────── */
-  const [modalOpen, setModalOpen] = useState<"risk" | "coverage" | "availability" | "impact" | null>(null);
+  const [importSheetOpen, setImportSheetOpen] = useState(false);
 
   /* ── Dashboard stats (live) ────────────────────────────── */
 
@@ -321,7 +275,7 @@ export default function Dashboard() {
         title="Dashboard"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" className="font-semibold" size="lg" onClick={() => {}}>
+            <Button variant="outline" className="font-semibold" size="lg" onClick={() => setImportSheetOpen(true)}>
               <CalendarCheck className="size-4" /> Import planning
             </Button>
             <Button onClick={() => navigate("/?simulate=true")} size="lg">
@@ -649,6 +603,8 @@ export default function Dashboard() {
           </table>
         </div>
       </div>
+
+      <ImportPlanningSheet open={importSheetOpen} onOpenChange={setImportSheetOpen} />
     </>
   );
 }
