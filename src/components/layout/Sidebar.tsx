@@ -4,7 +4,6 @@ import {
   Users,
   FolderOpen,
   PlayCircle,
-  Shield,
   Settings,
   ChevronRight,
 } from "lucide-react";
@@ -62,19 +61,19 @@ export default function Sidebar() {
   return (
     <aside className="flex h-full w-60 shrink-0 flex-col bg-sidebar border-r border-sidebar-border/60">
       {/* Logo */}
-      <div className="relative px-4 py-5">
+      <div className="relative px-5 py-5">
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-sidebar-border/40 to-transparent" />
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="flex size-9 items-center justify-center rounded-sm bg-sidebar-primary shadow-lg shadow-sidebar-primary/20">
-              <Shield className="size-4.5 text-white" />
-            </div>
-          </div>
-          <div>
-            <div className="text-[15px] font-bold text-sidebar-accent-foreground leading-none tracking-tight">
+        <div className="flex items-center gap-3.5">
+          <img
+            src="/logo.svg"
+            alt="Sentinel"
+            className="size-11 shrink-0 rounded-xl bg-background p-[7px]"
+          />
+          <div className="flex flex-col justify-center">
+            <div className="text-lg font-bold text-sidebar-accent-foreground leading-none tracking-tight">
               Sentinel
             </div>
-            <div className="mt-1 text-[10px] font-medium tracking-widest text-sidebar-foreground/40 uppercase">
+            <div className="mt-[5px] text-[9px] font-semibold tracking-[0.18em] text-border uppercase">
               Risk Analyzer
             </div>
           </div>
