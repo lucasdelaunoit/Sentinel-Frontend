@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Eye,
@@ -7,10 +7,12 @@ import {
   Users,
   AlertTriangle,
   Activity,
-  CalendarClock,
   ArrowRight,
   Calendar,
   Zap, CalendarCheck, PlayCircle,
+  X,
+  BookOpen,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PROJECTS } from "@/data/projects";
@@ -306,6 +308,25 @@ function getRiskLevel(score: number) {
   );
 }
 
+/* ─── Modal ───────────────────────────────────────────────── */
+
+function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[82vh] flex flex-col z-10">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+          <h2 className="font-semibold text-sm">{title}</h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+            <X className="size-4" />
+          </button>
+        </div>
+        <div className="overflow-y-auto p-6 space-y-5">{children}</div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Dashboard ───────────────────────────────────────────── */
 
 export default function Dashboard() {
@@ -356,7 +377,31 @@ export default function Dashboard() {
   /* ── Derived stats ─────────────────────────────────────── */
   const onLeaveCount = employees.filter(e => e.todayStatus === "Has Leave").length;
   const atRiskProjects = PROJECTS.filter(p => p.riskScore >= 15 || p.health < 60).length;
+  const criticalProjectCount = PROJECTS.filter(p => p.riskScore >= 25 || p.health < 40).length;
+  const unstableProjectCount = atRiskProjects - criticalProjectCount;
   const teamAvailable = employees.filter(e => e.todayStatus !== "Has Leave").length;
+  const criticalAbsentCount = employees.filter(e => e.todayStatus === "Has Leave" && e.criticality === "High").length;
+
+  const underCoveredCount = coverageByCategory.filter(c => c < 0.7).length;
+
+  const absenceImpactDetails = useMemo(() => {
+    const absentIds = new Set(employees.filter(e => e.todayStatus === "Has Leave").map(e => e.id));
+    const allSkillNames = [...new Set(employees.flatMap(e => e.skills.filter(s => s.level >= 3).map(s => s.name)))];
+    return allSkillNames
+      .map(skill => {
+        const coveredBy = employees.filter(e => e.skills.some(s => s.name === skill && s.level >= 3));
+        if (coveredBy.length === 0 || !coveredBy.every(e => absentIds.has(e.id))) return null;
+        const category = coveredBy[0].skills.find(s => s.name === skill)?.category ?? "";
+        const requiredBy = PROJECTS.filter(p => p.skills.includes(skill));
+        return { skill, category, coveredBy, requiredBy };
+      })
+      .filter(Boolean) as { skill: string; category: string; coveredBy: typeof employees; requiredBy: typeof PROJECTS }[];
+  }, [employees]);
+
+  const absenceImpactSkills = absenceImpactDetails.length;
+
+  /* ── Modal state ───────────────────────────────────────── */
+  const [modalOpen, setModalOpen] = useState<"risk" | "coverage" | "availability" | "impact" | null>(null);
 
   const criticalEmployees = useMemo(
     () => employees.filter(e => e.criticality === "High").sort((a, b) => a.busFactor - b.busFactor),
@@ -432,36 +477,40 @@ export default function Dashboard() {
         {/* Today's Stats */}
         <div className="grid grid-cols-4 gap-4">
           <StatCard
-            title="On Leave Today"
-            value={String(onLeaveCount)}
-            trend={onLeaveCount > 0 ? `${onLeaveCount} member${onLeaveCount > 1 ? "s" : ""} absent` : "Full team available"}
-            trendUp={onLeaveCount > 0}
-            trendColor={onLeaveCount > 0 ? "text-rose-500" : "text-emerald-600"}
-            icon={CalendarClock}
-          />
-          <StatCard
             title="Projects at Risk"
             value={String(atRiskProjects)}
-            trend={atRiskProjects > 0 ? `${atRiskProjects} need attention` : "All projects healthy"}
+            trend={atRiskProjects > 0 ? `${criticalProjectCount} critical · ${unstableProjectCount} unstable` : "All projects healthy"}
             trendUp={atRiskProjects > 0}
             trendColor={atRiskProjects > 0 ? "text-rose-500" : "text-emerald-600"}
             icon={AlertTriangle}
+            onClick={() => setModalOpen("risk")}
           />
           <StatCard
             title="Knowledge Coverage"
             value={`${avgCoverage}%`}
-            trend={`Security at ${Math.round(coverageByCategory[4] * 100)}% — lowest`}
-            trendUp={false}
-            trendColor="text-rose-500"
+            trend={underCoveredCount > 0 ? `${underCoveredCount} skill${underCoveredCount > 1 ? "s" : ""} under-covered` : "All areas well covered"}
+            trendUp={underCoveredCount === 0}
+            trendColor={underCoveredCount > 0 ? "text-rose-500" : "text-emerald-600"}
             icon={Activity}
+            onClick={() => setModalOpen("coverage")}
           />
           <StatCard
-            title="Team Available"
+            title="Team Availability"
             value={`${teamAvailable}/${employees.length}`}
-            trend={`${Math.round((teamAvailable / employees.length) * 100)}% capacity today`}
-            trendUp={teamAvailable >= employees.length * 0.75}
-            trendColor={teamAvailable >= employees.length * 0.75 ? "text-emerald-600" : "text-amber-500"}
+            trend={criticalAbsentCount > 0 ? `${criticalAbsentCount} critical employee${criticalAbsentCount > 1 ? "s" : ""} absent` : "Fully operational"}
+            trendUp={criticalAbsentCount === 0}
+            trendColor={criticalAbsentCount > 0 ? "text-rose-500" : "text-emerald-600"}
             icon={Users}
+            onClick={() => setModalOpen("availability")}
+          />
+          <StatCard
+            title="Absence Impact"
+            value={String(absenceImpactSkills)}
+            trend={absenceImpactSkills > 0 ? `skill${absenceImpactSkills > 1 ? "s" : ""} became uncovered` : "No impact from absences"}
+            trendUp={absenceImpactSkills > 0}
+            trendColor={absenceImpactSkills > 0 ? "text-rose-500" : "text-emerald-600"}
+            icon={Zap}
+            onClick={() => setModalOpen("impact")}
           />
         </div>
 
@@ -866,6 +915,215 @@ export default function Dashboard() {
           </table>
         </div>
       </div>
+
+      {/* ── Modals ────────────────────────────────────────────── */}
+
+      {modalOpen === "risk" && (
+        <Modal title="Projects at Risk" onClose={() => setModalOpen(null)}>
+          {PROJECTS.filter(p => p.riskScore >= 15 || p.health < 60).length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
+              <ShieldAlert className="size-8 text-emerald-500" />
+              <p className="text-sm font-medium text-foreground">All projects are healthy</p>
+            </div>
+          ) : (
+            PROJECTS
+              .filter(p => p.riskScore >= 15 || p.health < 60)
+              .sort((a, b) => b.riskScore - a.riskScore)
+              .map(p => {
+                const level = getRiskLevel(p.riskScore);
+                const isCritical = p.riskScore >= 25 || p.health < 40;
+                return (
+                  <div key={p.id} className="rounded-xl border border-border/60 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-sm">{p.name}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{p.department}</p>
+                      </div>
+                      <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full border", level.badge)}>
+                        {isCritical ? "Critical" : "Unstable"}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 text-xs">
+                      <div>
+                        <p className="text-muted-foreground mb-1">Risk Score</p>
+                        <p className="font-semibold text-rose-500">{p.riskScore}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-1">Bus Factor</p>
+                        <p className={cn("font-semibold", p.busFactor === 1 ? "text-rose-500" : "text-amber-500")}>{p.busFactor}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-1">Health</p>
+                        <p className={cn("font-semibold", p.health < 50 ? "text-rose-500" : "text-amber-500")}>{p.health}%</p>
+                      </div>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className={cn("h-full rounded-full", p.health < 50 ? "bg-rose-500" : "bg-amber-400")}
+                        style={{ width: `${p.health}%` }}
+                      />
+                    </div>
+                    <button
+                      onClick={() => { setModalOpen(null); navigate(`/projects/${p.id}`); }}
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
+                    >
+                      View project details <ArrowRight className="size-3" />
+                    </button>
+                  </div>
+                );
+              })
+          )}
+        </Modal>
+      )}
+
+      {modalOpen === "coverage" && (
+        <Modal title="Knowledge Coverage" onClose={() => setModalOpen(null)}>
+          <p className="text-xs text-muted-foreground">
+            % of team members with proficiency ≥ 3 in each category. Under 70% is considered at risk.
+          </p>
+          <div className="space-y-3">
+            {AXES.map((axis, i) => {
+              const pct = Math.round(coverageByCategory[i] * 100);
+              const isWeak = pct < 70;
+              return (
+                <div key={axis}>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs font-medium">{axis}</span>
+                    <span className={cn("text-xs font-semibold", isWeak ? "text-rose-500" : "text-emerald-600")}>
+                      {pct}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={cn("h-full rounded-full transition-all", isWeak ? "bg-rose-400" : "bg-emerald-500")}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  {isWeak && (
+                    <p className="text-[10px] text-rose-500 mt-0.5">Under-covered — needs reinforcement</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div className="rounded-xl bg-muted/40 border border-border/60 p-3 text-xs">
+            <p className="font-semibold mb-0.5">Most fragile area</p>
+            <p className="text-muted-foreground">
+              {AXES[coverageByCategory.indexOf(Math.min(...coverageByCategory))]} at{" "}
+              {Math.round(Math.min(...coverageByCategory) * 100)}% coverage
+            </p>
+          </div>
+        </Modal>
+      )}
+
+      {modalOpen === "availability" && (
+        <Modal title="Team Availability" onClose={() => setModalOpen(null)}>
+          {employees.filter(e => e.todayStatus === "Has Leave").length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
+              <Users className="size-8 text-emerald-500" />
+              <p className="text-sm font-medium text-foreground">Full team is available today</p>
+            </div>
+          ) : (
+            <>
+              <p className="text-xs text-muted-foreground">Employees currently on leave and their potential impact.</p>
+              <div className="space-y-3">
+                {employees
+                  .filter(e => e.todayStatus === "Has Leave")
+                  .map(emp => (
+                    <div key={emp.id} className="rounded-xl border border-border/60 p-4 space-y-2">
+                      <div className="flex items-center gap-3">
+                        <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white", emp.color)}>
+                          {emp.initials}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold">{emp.name}</p>
+                          <p className="text-xs text-muted-foreground">{emp.role}</p>
+                        </div>
+                        <span className={cn(
+                          "text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0",
+                          emp.criticality === "High"
+                            ? "bg-rose-50 text-rose-600 border-rose-200/60"
+                            : emp.criticality === "Medium"
+                            ? "bg-amber-50 text-amber-600 border-amber-200/60"
+                            : "bg-emerald-50 text-emerald-600 border-emerald-200/60",
+                        )}>
+                          {emp.criticality}
+                        </span>
+                      </div>
+                      {emp.projects.filter(p => p.status === "Active").length > 0 && (
+                        <div className="text-xs text-muted-foreground pl-11">
+                          Active on:{" "}
+                          <span className="text-foreground font-medium">
+                            {emp.projects.filter(p => p.status === "Active").map(p => p.name).join(", ")}
+                          </span>
+                        </div>
+                      )}
+                      {(uniqueSkillsMap[emp.id] ?? []).length > 0 && (
+                        <div className="pl-11 flex flex-wrap gap-1">
+                          {(uniqueSkillsMap[emp.id] ?? []).slice(0, 4).map(s => (
+                            <span key={s} className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200/60">
+                              {s}
+                            </span>
+                          ))}
+                          {(uniqueSkillsMap[emp.id] ?? []).length > 4 && (
+                            <span className="text-[10px] text-muted-foreground">+{(uniqueSkillsMap[emp.id] ?? []).length - 4} more</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            </>
+          )}
+        </Modal>
+      )}
+
+      {modalOpen === "impact" && (
+        <Modal title="Absence Impact" onClose={() => setModalOpen(null)}>
+          {absenceImpactDetails.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
+              <BookOpen className="size-8 text-emerald-500" />
+              <p className="text-sm font-medium text-foreground">No skills became uncovered</p>
+              <p className="text-xs text-muted-foreground">All skills have at least one available backup today.</p>
+            </div>
+          ) : (
+            <>
+              <p className="text-xs text-muted-foreground">
+                Skills with zero available coverage due to today's absences.
+              </p>
+              <div className="space-y-3">
+                {absenceImpactDetails.map(({ skill, category, coveredBy, requiredBy }) => (
+                  <div key={skill} className="rounded-xl border border-rose-200/60 bg-rose-50/40 p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-semibold">{skill}</p>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{category}</p>
+                      </div>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-200/60 shrink-0">
+                        0 coverage
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Was covered by:{" "}
+                      <span className="text-foreground font-medium">
+                        {coveredBy.map(e => e.name).join(", ")}
+                      </span>
+                    </div>
+                    {requiredBy.length > 0 && (
+                      <div className="text-xs text-muted-foreground">
+                        Required by:{" "}
+                        <span className="text-foreground font-medium">
+                          {requiredBy.map(p => p.name).join(", ")}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </Modal>
+      )}
 
     </>
   );
