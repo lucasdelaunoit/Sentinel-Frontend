@@ -15,6 +15,8 @@ import {
 import { cn } from "@/lib/utils";
 import { PROJECTS } from "@/data/projects";
 import { EMPLOYEE_DETAILS, type EmployeeDetail, type SkillCategory } from "@/data/employees";
+import StatCard from "@/components/common/cards/StatCard.tsx";
+import TopBar from "@/components/layout/TopBar.tsx";
 
 /* ─── Avatar ──────────────────────────────────────────────── */
 
@@ -209,51 +211,6 @@ function KCIRadarChart({
         );
       })}
     </svg>
-  );
-}
-
-/* ─── Stat Card ───────────────────────────────────────────── */
-
-interface StatCardProps {
-  title: string;
-  value: React.ReactNode;
-  trend: React.ReactNode;
-  trendUp?: boolean;
-  trendColor?: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-function StatCard({
-  title,
-  value,
-  trend,
-  trendUp = true,
-  trendColor,
-  icon: Icon,
-}: StatCardProps) {
-  const color = trendColor ?? (trendUp ? "text-emerald-600" : "text-rose-500");
-  return (
-    <div className="group relative flex flex-col gap-3 rounded-2xl bg-card border border-border/60 p-5 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
-      <div className="flex items-start justify-between">
-        <p className="text-[12px] font-medium text-muted-foreground tracking-wide">
-          {title}
-        </p>
-        <div className="flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground/50 group-hover:bg-muted group-hover:text-muted-foreground transition-colors">
-          <Icon className="size-4" />
-        </div>
-      </div>
-      <div className="text-[28px] font-bold tracking-tight text-foreground leading-none">
-        {value}
-      </div>
-      <div className={cn("flex items-center gap-1.5 text-[11px] font-medium", color)}>
-        {trendUp ? (
-          <TrendingUp className="size-3" />
-        ) : (
-          <TrendingDown className="size-3" />
-        )}
-        {trend}
-      </div>
-    </div>
   );
 }
 
@@ -456,7 +413,8 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className="space-y-6 page-enter">
+      <TopBar title="Dashboard" />
+      <div className="flex-1 overflow-y-auto p-6 space-y-6 page-enter">
         {/* Today's Stats */}
         <div className="grid grid-cols-4 gap-4">
           <StatCard

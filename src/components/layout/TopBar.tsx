@@ -1,13 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  CalendarCheck,
-  ChevronRight,
-  PlayCircle,
-  PenSquare,
-  Bell,
-} from "lucide-react";
+import { CalendarCheck, ChevronRight, PlayCircle, PenSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePage } from "@/context/PageContext";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb.tsx";
 
 export default function TopBar() {
   const location = useLocation();
@@ -46,7 +41,7 @@ export default function TopBar() {
   }
 
   return (
-    <header className="flex h-[60px] shrink-0 items-center justify-between border-b border-border/60 bg-card/80 backdrop-blur-sm px-6">
+    <header className="flex h-[60px] shrink-0 items-center justify-between border-b border-border bg-card/80 backdrop-blur-sm px-6">
       <div>
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70">
           <span className="font-medium">Sentinel</span>
@@ -60,12 +55,8 @@ export default function TopBar() {
 
       <div className="flex items-center gap-3">
         {isEmployees && (
-          <Button
-            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press"
-            onClick={() => navigate("/employees?action=add")}
-          >
-            <PenSquare className="size-4" />
-            Add a New Employee
+          <Button onClick={() => navigate("/employees?action=add")}>
+            <PenSquare className="size-4" /> Add a New Employee
           </Button>
         )}
         {isProjects && (
@@ -106,11 +97,6 @@ export default function TopBar() {
             </Button>
           </>
         )}
-
-        <button className="relative flex size-8 items-center justify-center rounded-xl text-muted-foreground/60 hover:bg-muted hover:text-foreground transition-colors">
-          <Bell className="size-[18px]" />
-          <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-rose-500" />
-        </button>
       </div>
     </header>
   );

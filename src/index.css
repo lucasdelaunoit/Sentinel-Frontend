@@ -50,7 +50,7 @@
 
 :root {
   /* Premium warm off-white with subtle depth */
-  --background: oklch(0.975 0.004 240);
+  --background: #f5f5f4;
   --foreground: oklch(0.145 0.015 250);
 
   /* Clean white cards with subtle shadow depth */
@@ -61,7 +61,7 @@
   --popover-foreground: oklch(0.145 0.015 250);
 
   /* Sophisticated indigo primary */
-  --primary: oklch(0.52 0.18 265);
+  --primary: #1B1917;
   --primary-foreground: oklch(1 0 0);
 
   --secondary: oklch(0.965 0.004 240);
