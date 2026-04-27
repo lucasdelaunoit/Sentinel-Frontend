@@ -4,8 +4,7 @@ import {
   Users,
   FolderOpen,
   PlayCircle,
-  Settings,
-  ChevronRight,
+  Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,25 +33,16 @@ function SidebarNavLink({ item }: { item: NavItem }) {
         cn(
           "group relative flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200",
           isActive
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            ? "bg-primary/30 text-sidebar-accent-foreground"
             : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
         )
       }
     >
-      {({ isActive }) => (
-        <>
-          <item.icon
-            className={cn(
-              "size-[18px] shrink-0 transition-transform duration-200 group-hover:scale-110",
-              isActive ? "text-sidebar-primary" : "text-sidebar-foreground/50",
-            )}
-          />
-          <span className="flex-1">{item.label}</span>
-          {isActive && (
-            <ChevronRight className="size-3.5 text-sidebar-primary opacity-60" />
-          )}
-        </>
-      )}
+      <item.icon
+        className={cn(
+          "size-[18px] shrink-0 transition-transform duration-200 group-hover:scale-110")}
+      />
+      <span className="flex-1">{item.label}</span>
     </NavLink>
   );
 }
@@ -61,21 +51,19 @@ export default function Sidebar() {
   return (
     <aside className="flex h-full w-60 shrink-0 flex-col bg-sidebar border-r border-sidebar-border/60">
       {/* Logo */}
-      <div className="relative px-5 py-5">
+      <div className="relative px-4 py-5">
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-sidebar-border/40 to-transparent" />
         <div className="flex items-center gap-3.5">
           <img
             src="/logo.svg"
             alt="Sentinel"
-            className="size-11 shrink-0 rounded-xl bg-background p-[7px]"
+            className="size-[47px] shrink-0 rounded-xl bg-secondary-foreground p-[8px]"
           />
           <div className="flex flex-col justify-center">
-            <div className="text-lg font-bold text-sidebar-accent-foreground leading-none tracking-tight">
+            <div className="text-2xl font-bold text-sidebar-accent-foreground leading-none tracking-tight">
               Sentinel
             </div>
-            <div className="mt-[5px] text-[9px] font-semibold tracking-[0.18em] text-border uppercase">
-              Risk Analyzer
-            </div>
+
           </div>
         </div>
       </div>

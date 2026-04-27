@@ -52,7 +52,7 @@ export default function TopBar({ title, actions }: TopBarProps): ReactNode {
           <ChevronRight className="size-3 text-muted-foreground/40" />
           <span className="font-medium text-foreground/60">{breadcrumb}</span>
         </div>
-        <h1 className="text-[17px] font-semibold text-foreground leading-tight tracking-tight mt-0.5">
+        <h1 className="text-xl font-bold text-foreground leading-tight tracking-tight mt-0.5">
           {title}
         </h1>
       </div>

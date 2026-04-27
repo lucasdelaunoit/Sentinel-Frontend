@@ -1,0 +1,1 @@
+type Severity = "critical" | "warning" | "ok"
