@@ -98,10 +98,9 @@ export default function Sidebar() {
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-sidebar-border/40 to-transparent" />
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-sidebar-primary to-sidebar-primary/80 text-xs font-bold text-white shadow-lg shadow-sidebar-primary/20">
+            <div className="flex size-[47px] shrink-0 rounded-xl bg-secondary-foreground items-center justify-center text-xs font-bold text-white shadow-lg shadow-sidebar-primary/20">
               AD
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 size-2 rounded-full bg-emerald-500 ring-2 ring-sidebar" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="truncate text-[13px] font-semibold text-sidebar-accent-foreground leading-tight">
