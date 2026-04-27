@@ -60,8 +60,8 @@
     --popover: #ffffff;
     --popover-foreground: #1c1917;
 
-    /* Primary - dark */
-    --primary: #1c1917;
+    /* Primary - accent green */
+    --primary: #097155;
     --primary-foreground: #ffffff;
 
     /* Secondary */
@@ -82,10 +82,10 @@
     /* Borders */
     --border: #e7e5e4;
     --input: #fafaf9;
-    --ring: #2563eb;
+    --ring: #097155;
 
     /* Chart palette */
-    --chart-1: #2563eb;
+    --chart-1: #097155;
     --chart-2: #16a34a;
     --chart-3: #ca8a04;
     --chart-4: #dc2626;
@@ -97,12 +97,12 @@
     /* Dark sidebar */
     --sidebar: #1c1917;
     --sidebar-foreground: rgba(255, 255, 255, 0.5);
-    --sidebar-primary: #60a5fa;
+    --sidebar-primary: #4ade80;
     --sidebar-primary-foreground: #ffffff;
     --sidebar-accent: rgba(255, 255, 255, 0.08);
     --sidebar-accent-foreground: rgba(255, 255, 255, 0.95);
     --sidebar-border: #2a2724;
-    --sidebar-ring: #2563eb;
+    --sidebar-ring: #097155;
 
     /* Status colors */
     --success: #16a34a;
@@ -188,13 +188,13 @@
 
 /* Selection */
 ::selection {
-    background: #dbeafe;
+    background: #d1fae5;
     color: #1c1917;
 }
 
 /* Focus states */
 *:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid #097155;
     outline-offset: 2px;
 }
 
@@ -324,14 +324,14 @@
 
 /* Accent progress bar */
 .progress-accent {
-    background: #2563eb;
+    background: #097155;
 }
 
 /* Accent light backgrounds */
 .bg-accent-light {
-    background: #dbeafe;
+    background: #d1fae5;
 }
 
 .border-accent-light {
-    border-color: #bfdbfe;
+    border-color: #6ee7b7;
 }

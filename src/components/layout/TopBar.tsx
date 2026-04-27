@@ -1,10 +1,15 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { CalendarCheck, ChevronRight, PlayCircle, PenSquare } from "lucide-react";
+import { ChevronRight, PlayCircle, PenSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePage } from "@/context/PageContext";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb.tsx";
+import type {ReactNode} from "react";
 
-export default function TopBar() {
+interface TopBarProps {
+  title: string;
+  actions?: ReactNode;
+}
+
+export default function TopBar({ title, actions }: TopBarProps): ReactNode {
   const location = useLocation();
   const navigate = useNavigate();
   const path = location.pathname;
@@ -18,7 +23,6 @@ export default function TopBar() {
   const isSettings = path === "/settings";
 
   let breadcrumb = "Overview";
-  let title = "Today";
 
   if (isHome) {
     breadcrumb = "Overview";
@@ -77,26 +81,7 @@ export default function TopBar() {
             Simulate Leave
           </Button>
         )}
-        {isHome && (
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 h-8 text-[12px] rounded-xl border-border/60 bg-card hover:bg-muted/50"
-              onClick={() => {}}
-            >
-              <CalendarCheck className="size-3.5" />
-              Import planning
-            </Button>
-            <Button
-              className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-5 text-[13px] font-medium rounded-xl shadow-sm shadow-primary/10 btn-press"
-              onClick={() => navigate("/?simulate=true")}
-            >
-              <PlayCircle className="size-4" />
-              Simulate Leave
-            </Button>
-          </>
-        )}
+        {actions}
       </div>
     </header>
   );

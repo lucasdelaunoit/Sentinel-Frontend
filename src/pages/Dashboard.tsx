@@ -10,13 +10,15 @@ import {
   CalendarClock,
   ArrowRight,
   Calendar,
-  Zap,
+  Zap, CalendarCheck, PlayCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PROJECTS } from "@/data/projects";
 import { EMPLOYEE_DETAILS, type EmployeeDetail, type SkillCategory } from "@/data/employees";
 import StatCard from "@/components/common/cards/StatCard.tsx";
 import TopBar from "@/components/layout/TopBar.tsx";
+import {Card} from "@/components/ui/card.tsx";
+import {Button} from "@/components/ui/button.tsx";
 
 /* ─── Avatar ──────────────────────────────────────────────── */
 
@@ -413,7 +415,19 @@ export default function Dashboard() {
 
   return (
     <>
-      <TopBar title="Dashboard" />
+      <TopBar
+        title="Dashboard"
+        actions={
+          <div className="flex gap-2">
+            <Button variant="outline" className="font-semibold" size="lg" onClick={() => {}}>
+              <CalendarCheck className="size-4" /> Import planning
+            </Button>
+            <Button onClick={() => navigate("/?simulate=true")} size="lg">
+              <PlayCircle className="size-4" /> Simulate Leave
+            </Button>
+          </div>
+        }
+      />
       <div className="flex-1 overflow-y-auto p-6 space-y-6 page-enter">
         {/* Today's Stats */}
         <div className="grid grid-cols-4 gap-4">
@@ -454,7 +468,7 @@ export default function Dashboard() {
         {/* Today's Overview Grid */}
         <div className="grid grid-cols-3 gap-4">
           {/* Team Status */}
-          <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm">
+          <Card className="p-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-foreground text-sm">Team Status</h3>
               <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Today</span>
@@ -506,10 +520,10 @@ export default function Dashboard() {
                 <span className="text-[10px] text-muted-foreground">{onLeaveCount} on leave</span>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* KCI Chart */}
-          <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm">
+          <Card className="p-5">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-foreground text-sm">Knowledge Coverage</h3>
               <span
@@ -543,7 +557,7 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Critical Projects */}
           <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm">

@@ -66,10 +66,9 @@ export default function Sidebar() {
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-sidebar-border/40 to-transparent" />
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-sidebar-primary shadow-lg shadow-sidebar-primary/20">
+            <div className="flex size-9 items-center justify-center rounded-sm bg-sidebar-primary shadow-lg shadow-sidebar-primary/20">
               <Shield className="size-4.5 text-white" />
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 size-2 rounded-full bg-emerald-500 ring-2 ring-sidebar" />
           </div>
           <div>
             <div className="text-[15px] font-bold text-sidebar-accent-foreground leading-none tracking-tight">
