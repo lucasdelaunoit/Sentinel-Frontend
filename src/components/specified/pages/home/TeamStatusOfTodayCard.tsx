@@ -86,8 +86,8 @@ export default function TeamStatusOfTodayCard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <CardTitle>Today's Team Status</CardTitle>
-          <div className="flex items-center gap-2">
-            <span><span className="text-sm font-semibold tabular-nums text-foreground">{capacityPct}%</span> present</span>
+          <div className="flex items-center gap-2 text-secondary-foreground">
+            <span><span className="text-sm font-semibold tabular-nums">{capacityPct}%</span> present</span>
             <CapacityDonut percent={capacityPct} />
           </div>
         </div>
