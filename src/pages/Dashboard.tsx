@@ -17,8 +17,10 @@ import {
 import { cn } from "@/lib/utils";
 import { PROJECTS } from "@/data/projects";
 import { EMPLOYEE_DETAILS, type EmployeeDetail, type SkillCategory } from "@/data/employees";
-import StatCard from "@/components/common/cards/StatCard.tsx";
+import StatCard, { StatCardSkeleton } from "@/components/common/cards/StatCard.tsx";
 import TopBar from "@/components/layout/TopBar.tsx";
+import useGetDashboardStats from "@/hooks/useGetDashboardStats";
+import type { Severity } from "@/types/api";
 import {Card} from "@/components/ui/card.tsx";
 import {Button} from "@/components/ui/button.tsx";
 
@@ -403,6 +405,15 @@ export default function Dashboard() {
   /* ── Modal state ───────────────────────────────────────── */
   const [modalOpen, setModalOpen] = useState<"risk" | "coverage" | "availability" | "impact" | null>(null);
 
+  /* ── Dashboard stats (live) ────────────────────────────── */
+  const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
+
+  const SEVERITY_COLOR: Record<Severity, string> = {
+    critical: "text-rose-500",
+    warning:  "text-amber-500",
+    ok:       "text-emerald-600",
+  };
+
   const criticalEmployees = useMemo(
     () => employees.filter(e => e.criticality === "High").sort((a, b) => a.busFactor - b.busFactor),
     [employees],
@@ -476,42 +487,49 @@ export default function Dashboard() {
       <div className="flex-1 overflow-y-auto p-6 space-y-6 page-enter">
         {/* Today's Stats */}
         <div className="grid grid-cols-4 gap-4">
-          <StatCard
-            title="Projects at Risk"
-            value={String(atRiskProjects)}
-            trend={atRiskProjects > 0 ? `${criticalProjectCount} critical · ${unstableProjectCount} unstable` : "All projects healthy"}
-            trendUp={atRiskProjects > 0}
-            trendColor={atRiskProjects > 0 ? "text-rose-500" : "text-emerald-600"}
-            icon={AlertTriangle}
-            onClick={() => setModalOpen("risk")}
-          />
-          <StatCard
-            title="Knowledge Coverage"
-            value={`${avgCoverage}%`}
-            trend={underCoveredCount > 0 ? `${underCoveredCount} skill${underCoveredCount > 1 ? "s" : ""} under-covered` : "All areas well covered"}
-            trendUp={underCoveredCount === 0}
-            trendColor={underCoveredCount > 0 ? "text-rose-500" : "text-emerald-600"}
-            icon={Activity}
-            onClick={() => setModalOpen("coverage")}
-          />
-          <StatCard
-            title="Team Availability"
-            value={`${teamAvailable}/${employees.length}`}
-            trend={criticalAbsentCount > 0 ? `${criticalAbsentCount} critical employee${criticalAbsentCount > 1 ? "s" : ""} absent` : "Fully operational"}
-            trendUp={criticalAbsentCount === 0}
-            trendColor={criticalAbsentCount > 0 ? "text-rose-500" : "text-emerald-600"}
-            icon={Users}
-            onClick={() => setModalOpen("availability")}
-          />
-          <StatCard
-            title="Absence Impact"
-            value={String(absenceImpactSkills)}
-            trend={absenceImpactSkills > 0 ? `skill${absenceImpactSkills > 1 ? "s" : ""} became uncovered` : "No impact from absences"}
-            trendUp={absenceImpactSkills > 0}
-            trendColor={absenceImpactSkills > 0 ? "text-rose-500" : "text-emerald-600"}
-            icon={Zap}
-            onClick={() => setModalOpen("impact")}
-          />
+          {statsLoading ? (
+            <>
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </>
+          ) : (
+            <>
+              <StatCard
+                title="Projects at Risk"
+                value={stats ? String(stats.projects_at_risk.value) : "—"}
+                trend={stats?.projects_at_risk.insight ?? "Unavailable"}
+                trendColor={stats ? SEVERITY_COLOR[stats.projects_at_risk.severity] : undefined}
+                icon={AlertTriangle}
+                onClick={() => setModalOpen("risk")}
+              />
+              <StatCard
+                title="Knowledge Coverage"
+                value={stats ? `${stats.knowledge_coverage.value}%` : "—"}
+                trend={stats?.knowledge_coverage.insight ?? "Unavailable"}
+                trendColor={stats ? SEVERITY_COLOR[stats.knowledge_coverage.severity] : undefined}
+                icon={Activity}
+                onClick={() => setModalOpen("coverage")}
+              />
+              <StatCard
+                title="Team Availability"
+                value={stats ? stats.team_availability.value : "—"}
+                trend={stats?.team_availability.insight ?? "Unavailable"}
+                trendColor={stats ? SEVERITY_COLOR[stats.team_availability.severity] : undefined}
+                icon={Users}
+                onClick={() => setModalOpen("availability")}
+              />
+              <StatCard
+                title="Absence Impact"
+                value={stats ? String(stats.absence_impact.value) : "—"}
+                trend={stats?.absence_impact.insight ?? "Unavailable"}
+                trendColor={stats ? SEVERITY_COLOR[stats.absence_impact.severity] : undefined}
+                icon={Zap}
+                onClick={() => setModalOpen("impact")}
+              />
+            </>
+          )}
         </div>
 
         {/* Today's Overview Grid */}
@@ -920,105 +938,124 @@ export default function Dashboard() {
 
       {modalOpen === "risk" && (
         <Modal title="Projects at Risk" onClose={() => setModalOpen(null)}>
-          {PROJECTS.filter(p => p.riskScore >= 15 || p.health < 60).length === 0 ? (
+          {!stats ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">{statsLoading ? "Loading…" : "Data unavailable"}</p>
+          ) : stats.projects_at_risk.value === 0 ? (
             <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
               <ShieldAlert className="size-8 text-emerald-500" />
               <p className="text-sm font-medium text-foreground">All projects are healthy</p>
             </div>
           ) : (
-            PROJECTS
-              .filter(p => p.riskScore >= 15 || p.health < 60)
-              .sort((a, b) => b.riskScore - a.riskScore)
-              .map(p => {
-                const level = getRiskLevel(p.riskScore);
-                const isCritical = p.riskScore >= 25 || p.health < 40;
-                return (
-                  <div key={p.id} className="rounded-xl border border-border/60 p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-sm">{p.name}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{p.department}</p>
-                      </div>
-                      <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full border", level.badge)}>
-                        {isCritical ? "Critical" : "Unstable"}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-3 text-xs">
-                      <div>
-                        <p className="text-muted-foreground mb-1">Risk Score</p>
-                        <p className="font-semibold text-rose-500">{p.riskScore}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground mb-1">Bus Factor</p>
-                        <p className={cn("font-semibold", p.busFactor === 1 ? "text-rose-500" : "text-amber-500")}>{p.busFactor}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground mb-1">Health</p>
-                        <p className={cn("font-semibold", p.health < 50 ? "text-rose-500" : "text-amber-500")}>{p.health}%</p>
-                      </div>
-                    </div>
-                    <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
-                      <div
-                        className={cn("h-full rounded-full", p.health < 50 ? "bg-rose-500" : "bg-amber-400")}
-                        style={{ width: `${p.health}%` }}
-                      />
-                    </div>
-                    <button
-                      onClick={() => { setModalOpen(null); navigate(`/projects/${p.id}`); }}
-                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
-                    >
-                      View project details <ArrowRight className="size-3" />
-                    </button>
+            [
+              ...stats.projects_at_risk.detail.critical.map(p => ({ ...p, tag: "Critical" as const })),
+              ...stats.projects_at_risk.detail.unstable.map(p => ({ ...p, tag: "Unstable" as const })),
+            ].map(p => (
+              <div key={p.id} className="rounded-xl border border-border/60 p-4 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-semibold text-sm">{p.name}</p>
+                  <span className={cn(
+                    "text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0",
+                    p.tag === "Critical"
+                      ? "bg-rose-50 text-rose-600 border-rose-200/60"
+                      : "bg-orange-50 text-orange-600 border-orange-200/60",
+                  )}>
+                    {p.tag}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-xs">
+                  <div>
+                    <p className="text-muted-foreground mb-1">Risk Score</p>
+                    <p className="font-semibold text-rose-500">{p.risk_score}</p>
                   </div>
-                );
-              })
+                  <div>
+                    <p className="text-muted-foreground mb-1">Bus Factor</p>
+                    <p className={cn("font-semibold", p.bus_factor === 1 ? "text-rose-500" : "text-amber-500")}>{p.bus_factor}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground mb-1">Health</p>
+                    <p className={cn("font-semibold", p.health < 50 ? "text-rose-500" : "text-amber-500")}>{p.health}%</p>
+                  </div>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className={cn("h-full rounded-full", p.health < 50 ? "bg-rose-500" : "bg-amber-400")}
+                    style={{ width: `${p.health}%` }}
+                  />
+                </div>
+                {p.missing_skills.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {p.missing_skills.map(s => (
+                      <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200/60 font-medium">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <button
+                  onClick={() => { setModalOpen(null); navigate(`/projects/${p.id}`); }}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
+                >
+                  View project details <ArrowRight className="size-3" />
+                </button>
+              </div>
+            ))
           )}
         </Modal>
       )}
 
       {modalOpen === "coverage" && (
         <Modal title="Knowledge Coverage" onClose={() => setModalOpen(null)}>
-          <p className="text-xs text-muted-foreground">
-            % of team members with proficiency ≥ 3 in each category. Under 70% is considered at risk.
-          </p>
-          <div className="space-y-3">
-            {AXES.map((axis, i) => {
-              const pct = Math.round(coverageByCategory[i] * 100);
-              const isWeak = pct < 70;
-              return (
-                <div key={axis}>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs font-medium">{axis}</span>
-                    <span className={cn("text-xs font-semibold", isWeak ? "text-rose-500" : "text-emerald-600")}>
-                      {pct}%
-                    </span>
-                  </div>
-                  <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={cn("h-full rounded-full transition-all", isWeak ? "bg-rose-400" : "bg-emerald-500")}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  {isWeak && (
-                    <p className="text-[10px] text-rose-500 mt-0.5">Under-covered — needs reinforcement</p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <div className="rounded-xl bg-muted/40 border border-border/60 p-3 text-xs">
-            <p className="font-semibold mb-0.5">Most fragile area</p>
-            <p className="text-muted-foreground">
-              {AXES[coverageByCategory.indexOf(Math.min(...coverageByCategory))]} at{" "}
-              {Math.round(Math.min(...coverageByCategory) * 100)}% coverage
-            </p>
-          </div>
+          {!stats ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">{statsLoading ? "Loading…" : "Data unavailable"}</p>
+          ) : (
+            <>
+              <p className="text-xs text-muted-foreground">
+                % of team members with proficiency ≥ 3 in each skill category. Under 70% is considered at risk.
+              </p>
+              <div className="space-y-3">
+                {stats.knowledge_coverage.detail.categories.map(cat => {
+                  const isWeak = cat.coverage_pct < 70;
+                  return (
+                    <div key={cat.category_id}>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-medium">{cat.category_name}</span>
+                        <span className={cn("text-xs font-semibold", isWeak ? "text-rose-500" : "text-emerald-600")}>
+                          {cat.coverage_pct}%
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className={cn("h-full rounded-full transition-all", isWeak ? "bg-rose-400" : "bg-emerald-500")}
+                          style={{ width: `${cat.coverage_pct}%` }}
+                        />
+                      </div>
+                      {cat.uncovered_skills.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {cat.uncovered_skills.map(s => (
+                            <span key={s} className="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200/60 font-medium">
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="rounded-xl bg-muted/40 border border-border/60 p-3 text-xs">
+                <p className="font-semibold mb-0.5">Most fragile area</p>
+                <p className="text-muted-foreground">{stats.knowledge_coverage.detail.most_fragile}</p>
+              </div>
+            </>
+          )}
         </Modal>
       )}
 
       {modalOpen === "availability" && (
         <Modal title="Team Availability" onClose={() => setModalOpen(null)}>
-          {employees.filter(e => e.todayStatus === "Has Leave").length === 0 ? (
+          {!stats ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">{statsLoading ? "Loading…" : "Data unavailable"}</p>
+          ) : stats.team_availability.detail.absent_employees.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
               <Users className="size-8 text-emerald-500" />
               <p className="text-sm font-medium text-foreground">Full team is available today</p>
@@ -1027,51 +1064,46 @@ export default function Dashboard() {
             <>
               <p className="text-xs text-muted-foreground">Employees currently on leave and their potential impact.</p>
               <div className="space-y-3">
-                {employees
-                  .filter(e => e.todayStatus === "Has Leave")
-                  .map(emp => (
-                    <div key={emp.id} className="rounded-xl border border-border/60 p-4 space-y-2">
-                      <div className="flex items-center gap-3">
-                        <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white", emp.color)}>
-                          {emp.initials}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold">{emp.name}</p>
-                          <p className="text-xs text-muted-foreground">{emp.role}</p>
-                        </div>
-                        <span className={cn(
-                          "text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0",
-                          emp.criticality === "High"
-                            ? "bg-rose-50 text-rose-600 border-rose-200/60"
-                            : emp.criticality === "Medium"
-                            ? "bg-amber-50 text-amber-600 border-amber-200/60"
-                            : "bg-emerald-50 text-emerald-600 border-emerald-200/60",
-                        )}>
-                          {emp.criticality}
-                        </span>
+                {stats.team_availability.detail.absent_employees.map(emp => (
+                  <div key={emp.id} className="rounded-xl border border-border/60 p-4 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-foreground">
+                        {emp.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
                       </div>
-                      {emp.projects.filter(p => p.status === "Active").length > 0 && (
-                        <div className="text-xs text-muted-foreground pl-11">
-                          Active on:{" "}
-                          <span className="text-foreground font-medium">
-                            {emp.projects.filter(p => p.status === "Active").map(p => p.name).join(", ")}
-                          </span>
-                        </div>
-                      )}
-                      {(uniqueSkillsMap[emp.id] ?? []).length > 0 && (
-                        <div className="pl-11 flex flex-wrap gap-1">
-                          {(uniqueSkillsMap[emp.id] ?? []).slice(0, 4).map(s => (
-                            <span key={s} className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200/60">
-                              {s}
-                            </span>
-                          ))}
-                          {(uniqueSkillsMap[emp.id] ?? []).length > 4 && (
-                            <span className="text-[10px] text-muted-foreground">+{(uniqueSkillsMap[emp.id] ?? []).length - 4} more</span>
-                          )}
-                        </div>
-                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold">{emp.name}</p>
+                      </div>
+                      <span className={cn(
+                        "text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0",
+                        emp.criticality === "High"
+                          ? "bg-rose-50 text-rose-600 border-rose-200/60"
+                          : emp.criticality === "Medium"
+                          ? "bg-amber-50 text-amber-600 border-amber-200/60"
+                          : "bg-emerald-50 text-emerald-600 border-emerald-200/60",
+                      )}>
+                        {emp.criticality}
+                      </span>
                     </div>
-                  ))}
+                    {emp.projects.length > 0 && (
+                      <div className="text-xs text-muted-foreground pl-11">
+                        Active on:{" "}
+                        <span className="text-foreground font-medium">{emp.projects.join(", ")}</span>
+                      </div>
+                    )}
+                    {emp.skills.length > 0 && (
+                      <div className="pl-11 flex flex-wrap gap-1">
+                        {emp.skills.slice(0, 4).map(s => (
+                          <span key={s} className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200/60">
+                            {s}
+                          </span>
+                        ))}
+                        {emp.skills.length > 4 && (
+                          <span className="text-[10px] text-muted-foreground">+{emp.skills.length - 4} more</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </>
           )}
@@ -1080,7 +1112,9 @@ export default function Dashboard() {
 
       {modalOpen === "impact" && (
         <Modal title="Absence Impact" onClose={() => setModalOpen(null)}>
-          {absenceImpactDetails.length === 0 ? (
+          {!stats ? (
+            <p className="text-sm text-muted-foreground py-6 text-center">{statsLoading ? "Loading…" : "Data unavailable"}</p>
+          ) : stats.absence_impact.detail.uncovered_skills.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
               <BookOpen className="size-8 text-emerald-500" />
               <p className="text-sm font-medium text-foreground">No skills became uncovered</p>
@@ -1092,31 +1126,22 @@ export default function Dashboard() {
                 Skills with zero available coverage due to today's absences.
               </p>
               <div className="space-y-3">
-                {absenceImpactDetails.map(({ skill, category, coveredBy, requiredBy }) => (
-                  <div key={skill} className="rounded-xl border border-rose-200/60 bg-rose-50/40 p-4 space-y-2">
+                {stats.absence_impact.detail.uncovered_skills.map(skill => (
+                  <div key={skill.skill_id} className="rounded-xl border border-rose-200/60 bg-rose-50/40 p-4 space-y-2">
                     <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-sm font-semibold">{skill}</p>
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{category}</p>
-                      </div>
+                      <p className="text-sm font-semibold">{skill.skill_name}</p>
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-rose-50 text-rose-600 border-rose-200/60 shrink-0">
                         0 coverage
                       </span>
                     </div>
                     <div className="text-xs text-muted-foreground">
                       Was covered by:{" "}
-                      <span className="text-foreground font-medium">
-                        {coveredBy.map(e => e.name).join(", ")}
-                      </span>
+                      <span className="text-foreground font-medium">{skill.previously_covered_by}</span>
                     </div>
-                    {requiredBy.length > 0 && (
-                      <div className="text-xs text-muted-foreground">
-                        Required by:{" "}
-                        <span className="text-foreground font-medium">
-                          {requiredBy.map(p => p.name).join(", ")}
-                        </span>
-                      </div>
-                    )}
+                    <div className="text-xs text-muted-foreground">
+                      Required by:{" "}
+                      <span className="text-foreground font-medium">{skill.required_by_project}</span>
+                    </div>
                   </div>
                 ))}
               </div>

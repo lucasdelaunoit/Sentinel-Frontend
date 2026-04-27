@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils.ts";
-import type {ElementType, ReactNode} from "react";
-import {Card} from "@/components/ui/card.tsx";
+import type { ElementType, ReactNode } from "react";
+import { Card } from "@/components/ui/card.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { ArrowRightIcon } from "lucide-react";
 
 interface StatCardProps {
@@ -17,18 +18,12 @@ export default function StatCard({
   title,
   value,
   trend,
-  trendUp = true,
   trendColor,
   icon: Icon,
   onClick,
 }: StatCardProps) {
-  const color = trendColor ?? (trendUp ? "text-emerald-600" : "text-rose-500");
-
   return (
-    <Card
-      className={cn("px-5 py-6", onClick && "cursor-pointer hover:bg-muted/30 transition-colors")}
-      onClick={onClick}
-    >
+    <Card className={cn("px-5 py-6", onClick && "cursor-pointer hover:bg-muted/30 transition-colors")} onClick={onClick}>
       <div className="flex justify-between items-start">
         <span className="text-sm font-normal text-muted-foreground tracking-wide">
           {title}
@@ -39,10 +34,23 @@ export default function StatCard({
         {value}
       </div>
       {trend !== undefined && (
-        <div className="text-sm flex items-center gap-1">
+        <div className={cn("text-sm flex items-center gap-1", trendColor ?? "text-muted-foreground")}>
           <ArrowRightIcon size={13} /> <span className="font-semibold">{trend}</span>
         </div>
       )}
+    </Card>
+  );
+}
+
+export function StatCardSkeleton() {
+  return (
+    <Card className="px-5 py-6">
+      <div className="flex justify-between items-start">
+        <Skeleton className="h-3.5 w-28" />
+        <Skeleton className="h-5 w-5 rounded-sm" />
+      </div>
+      <Skeleton className="h-10 w-20 mt-2" />
+      <Skeleton className="h-3.5 w-40 mt-2" />
     </Card>
   );
 }
