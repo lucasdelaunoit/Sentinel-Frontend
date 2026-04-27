@@ -1,5 +1,3 @@
-import type { Severity } from "@/types/api"
-
 /* ── Shared building blocks ──────────────────────────────── */
 
 export interface RiskProjectDetail {
@@ -40,26 +38,39 @@ export interface UncoveredSkillDetail {
   before_status: string
 }
 
-/* ── Stat card shapes ────────────────────────────────────── */
+/* ── Detail endpoint responses ───────────────────────────── */
+
+export interface ProjectsAtRiskDetail {
+  critical: RiskProjectDetail[]
+  unstable: RiskProjectDetail[]
+}
+
+export interface KnowledgeCoverageDetail {
+  categories: CategoryDetail[]
+  most_fragile: string
+}
+
+export interface TeamAvailabilityDetail {
+  absent_employees: AbsentEmployeeDetail[]
+  degraded_projects?: string[]
+}
+
+export interface AbsenceImpactDetail {
+  uncovered_skills: UncoveredSkillDetail[]
+}
+
+/* ── Stat card shapes (GET /dashboard/stats) ─────────────── */
 
 export interface ProjectsAtRiskStat {
   value: number
   insight: string
   severity: Severity
-  detail: {
-    critical: RiskProjectDetail[]
-    unstable: RiskProjectDetail[]
-  }
 }
 
 export interface KnowledgeCoverageStat {
   value: number
   insight: string
   severity: Severity
-  detail: {
-    categories: CategoryDetail[]
-    most_fragile: string
-  }
 }
 
 export interface TeamAvailabilityStat {
@@ -68,18 +79,12 @@ export interface TeamAvailabilityStat {
   total: number
   insight: string
   severity: Severity
-  detail: {
-    absent_employees: AbsentEmployeeDetail[]
-  }
 }
 
 export interface AbsenceImpactStat {
   value: number
   insight: string
   severity: Severity
-  detail: {
-    uncovered_skills: UncoveredSkillDetail[]
-  }
 }
 
 /* ── Root response ───────────────────────────────────────── */
