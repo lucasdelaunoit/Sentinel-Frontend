@@ -29,9 +29,9 @@ function CapacityDonut({ percent }: { percent: number }) {
 }
 
 const STATUS_STYLES = {
-  leave: { avatar: "bg-gradient-to-br from-rose-400 to-rose-500", badge: "text-rose-600 bg-rose-50", label: "On leave" },
+  leave: { avatar: "bg-destructive-foreground", badge: "text-rose-600 bg-rose-50", label: "On leave" },
   remote: { avatar: "bg-gradient-to-br from-blue-400 to-blue-500", badge: "text-blue-600 bg-blue-50", label: "Remote" },
-  available: { avatar: "bg-gradient-to-br from-emerald-400 to-emerald-500", badge: "text-emerald-600 bg-emerald-50", label: "Available" },
+  available: { avatar: "bg-primary", badge: "text-emerald-600 bg-emerald-50", label: "Available" },
 } as const;
 
 type StatusType = keyof typeof STATUS_STYLES;
@@ -93,32 +93,34 @@ export default function TeamStatusOfTodayCard() {
         </div>
 
         <CardContent className="p-0">
-          {absent.length === 0 ? (
-            <div className="py-7 text-center">
-              <p className="text-sm font-semibold text-emerald-600">All hands on deck</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Everyone is available today</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {absent.map(e => {
-                const s = STATUS_STYLES[toType(e.todayStatus)];
-                return (
-                  <div key={e.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted transition-colors">
-                    <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-sm", s.avatar)}>
-                      {e.initials}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{e.name}</p>
-                      <p className="text-xs text-muted-foreground">{e.role}</p>
-                    </div>
-                    <span className={cn("shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full", s.badge)}>
+          <div className="h-full">
+            {absent.length === 0 ? (
+              <div className="py-7 text-center">
+                <p className="text-sm font-semibold text-emerald-600">All hands on deck</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Everyone is available today</p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {absent.map(e => {
+                  const s = STATUS_STYLES[toType(e.todayStatus)];
+                  return (
+                    <div key={e.id} className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-secondary cursor-pointer transition-colors">
+                      <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-sm", s.avatar)}>
+                        {e.initials}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{e.name}</p>
+                        <p className="text-xs text-muted-foreground">{e.role}</p>
+                      </div>
+                      <span className={cn("shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full", s.badge)}>
                       {s.label}
                     </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           <button
             onClick={() => setSheetOpen(true)}
