@@ -3,13 +3,15 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Eye, PenSquare, X, Search, Plus, Play, Trash2,
   AlertTriangle, CheckCircle2, ShieldAlert, ChevronDown,
-  GripVertical, Zap,
+  GripVertical, Zap, CalendarCheck, PlayCircle, ArrowRightIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { EMPLOYEE_DETAILS } from "@/data/employees";
 import { PROJECTS } from "@/data/projects";
 import { useCalendarSettings } from "@/hooks/useCalendarSettings";
+import TopBar from "@/components/layout/TopBar.tsx";
+import {PlusIcon} from "@phosphor-icons/react";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
@@ -967,8 +969,34 @@ export default function Employees() {
 
   return (
     <>
-      <div className="space-y-5 page-enter">
+      <TopBar
+        title="All Employees"
+        actions={
+          <div className="flex gap-2">
+            <Button variant="outline" className="font-semibold" size="lg" onClick={() => setImportSheetOpen(true)}>
+              <CalendarCheck className="size-4" /> Import planning
+            </Button>
+            <Button onClick={() => navigate("/?simulate=true")} size="lg">
+              <PlusIcon /> Add a New Employee
+            </Button>
+          </div>
+        }
+      />
+      <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         <div className="grid grid-cols-4 gap-4">
+          {/*<StatCard
+            title="Projects at Risk"
+            value={stats ? String(stats.projects_at_risk.value) : "—"}
+            icon={AlertTriangle}
+            onClick={() => setModalOpen("risk")}
+            isLoading={statsLoading}
+            comment={
+              <div className={cn("text-sm flex items-center gap-1", stats ? SEVERITY_COLOR[stats.projects_at_risk.severity] : "text-secondary-foreground")}>
+                <ArrowRightIcon size={13} />
+                <span className="font-semibold">{stats?.projects_at_risk.insight ?? "Unavailable"}</span>
+              </div>
+            }
+          />*/}
           <StatCard title="Total Employees" value={String(totalEmployee).padStart(2, "0")} />
           <StatCard title="Critical Staff" value={String(criticalStaff).padStart(2, "0")} />
           <StatCard title="On Leave" value={String(onLeave).padStart(2, "0")} />

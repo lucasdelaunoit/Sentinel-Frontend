@@ -58,11 +58,6 @@ export default function TopBar({ title, actions }: TopBarProps): ReactNode {
       </div>
 
       <div className="flex items-center gap-3">
-        {isEmployees && (
-          <Button onClick={() => navigate("/employees?action=add")}>
-            <PenSquare className="size-4" /> Add a New Employee
-          </Button>
-        )}
         {isProjects && (
           <Button
             className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press"

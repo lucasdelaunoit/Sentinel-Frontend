@@ -32,7 +32,7 @@ export default function StatCard({
         </span>
         <span className="text-muted-foreground opacity-60"><Icon className="h-4"/></span>
       </div>
-      <div className="text-4xl font-semibold"> {/*style={{ fontSize: "34px", fontWeight: 800, color: theme.text, letterSpacing: "-0.03em", lineHeight: 1.15, marginTop: "2px" }}*/}
+      <div className="text-3xl font-semibold"> {/*style={{ fontSize: "34px", fontWeight: 800, color: theme.text, letterSpacing: "-0.03em", lineHeight: 1.15, marginTop: "2px" }}*/}
         {value}
       </div>
       {comment}
