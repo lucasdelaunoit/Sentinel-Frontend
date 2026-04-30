@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils.ts";
 import { Card, CardContent, CardTitle } from "@/components/ui/card.tsx";
+import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import { useMemo, useState } from "react";
 import { EMPLOYEE_DETAILS } from "@/data/employees.ts";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet.tsx";
@@ -104,18 +105,22 @@ export default function TeamStatusOfTodayCard() {
                 {absent.map(e => {
                   const s = STATUS_STYLES[toType(e.todayStatus)];
                   return (
-                    <div key={e.id} className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-secondary cursor-pointer transition-colors">
-                      <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-sm", s.avatar)}>
-                        {e.initials}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{e.name}</p>
-                        <p className="text-xs text-muted-foreground">{e.role}</p>
-                      </div>
-                      <span className={cn("shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full", s.badge)}>
-                      {s.label}
-                    </span>
-                    </div>
+                    <SecondaryCard
+                      key={e.id}
+                      before={
+                        <div className={cn("flex size-8 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-sm", s.avatar)}>
+                          {e.initials}
+                        </div>
+                      }
+                      title={e.name}
+                      description={e.role}
+                      action={
+                        <span className={cn("text-[11px] font-semibold px-2 py-0.5 rounded-full", s.badge)}>
+                          {s.label}
+                        </span>
+                      }
+                      className="hover:bg-secondary p-1.5"
+                    />
                   );
                 })}
               </div>
@@ -169,18 +174,21 @@ export default function TeamStatusOfTodayCard() {
             ) : filteredEmployees.map(e => {
               const s = STATUS_STYLES[toType(e.todayStatus)];
               return (
-                <div key={e.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted transition-colors">
-                  <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-sm", s.avatar)}>
-                    {e.initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{e.name}</p>
-                    <p className="text-xs text-muted-foreground">{e.role}</p>
-                  </div>
-                  <span className={cn("shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full", s.badge)}>
-                    {s.label}
-                  </span>
-                </div>
+                <SecondaryCard
+                  key={e.id}
+                  before={
+                    <div className={cn("flex size-8 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-sm", s.avatar)}>
+                      {e.initials}
+                    </div>
+                  }
+                  title={e.name}
+                  description={e.role}
+                  action={
+                    <span className={cn("text-[11px] font-semibold px-2 py-0.5 rounded-full", s.badge)}>
+                      {s.label}
+                    </span>
+                  }
+                />
               );
             })}
           </div>
