@@ -15,6 +15,7 @@ import HomeStatCardsSection from "@/components/specified/pages/home/HomeStatCard
 import TeamStatusOfTodayCard from "@/components/specified/pages/home/TeamStatusOfTodayCard.tsx";
 import KnowledgeCoverageOfToday from "@/components/specified/pages/home/KnowledgeCoverageOfToday.tsx";
 import ImportPlanningSheet from "@/components/specified/pages/home/ImportPlanningSheet.tsx";
+import CriticalProjectsCard from "@/components/specified/pages/home/CriticalProjectsCard.tsx";
 
 /* ─── Avatar ──────────────────────────────────────────────── */
 
@@ -219,7 +220,6 @@ export default function Dashboard() {
   }, [employees]);
 
   /* ── Derived stats ─────────────────────────────────────── */
-  const atRiskProjects = PROJECTS.filter(p => p.riskScore >= 15 || p.health < 60).length;
 
   /* ── Modal state ───────────────────────────────────────── */
   const [importSheetOpen, setImportSheetOpen] = useState(false);
@@ -264,7 +264,6 @@ export default function Dashboard() {
   /* ── Display lists ─────────────────────────────────────── */
 
 
-  const criticalProjects = [...PROJECTS].sort((a, b) => b.riskScore - a.riskScore).slice(0, 2);
   const displayProjects = [...PROJECTS]
     .filter(p => p.status !== "Completed")
     .sort((a, b) => b.riskScore - a.riskScore);
@@ -297,61 +296,7 @@ export default function Dashboard() {
           <KnowledgeCoverageOfToday />
 
           {/* Critical Projects */}
-          <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-foreground text-sm">Critical Projects</h3>
-              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                {atRiskProjects} at risk
-              </span>
-            </div>
-            <div className="space-y-2.5">
-              {criticalProjects.map((p, i) => {
-                const level = getRiskLevel(p.riskScore);
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => navigate(`/projects/${p.id}`)}
-                    className={cn(
-                      "w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left hover:opacity-90 cursor-pointer",
-                      i === 0
-                        ? "bg-gradient-to-r from-rose-50/80 to-rose-50/40 border-rose-100/50 hover:from-rose-50 hover:to-rose-50"
-                        : "bg-gradient-to-r from-amber-50/80 to-amber-50/40 border-amber-100/50 hover:from-amber-50 hover:to-amber-50",
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "flex size-8 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-sm",
-                        i === 0 ? "bg-gradient-to-br from-rose-500 to-rose-600" : "bg-gradient-to-br from-amber-500 to-amber-600",
-                      )}
-                    >
-                      {p.id.slice(-2)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{p.name}</p>
-                      <p className={cn("text-[11px] font-medium", i === 0 ? "text-rose-600" : "text-amber-600")}>
-                        Bus factor: {p.busFactor} · Risk: {p.riskScore}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span className={cn("text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border", level.badge)}>
-                        {level.label}
-                      </span>
-                      <Eye className={cn("size-3.5 shrink-0", i === 0 ? "text-rose-400/70" : "text-amber-400/70")} />
-                    </div>
-                  </button>
-                );
-              })}
-              <div className="pt-1">
-                <button
-                  onClick={() => navigate("/projects")}
-                  className="w-full flex items-center justify-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition-colors font-medium py-2 rounded-xl hover:bg-muted/30"
-                >
-                  View all projects
-                  <ArrowRight className="size-3" />
-                </button>
-              </div>
-            </div>
-          </div>
+          <CriticalProjectsCard />
         </div>
 
         {/* Critical Staff + Risk Overview */}
