@@ -107,12 +107,22 @@ export interface TeamTodayStatusResponse {
 
 /* ── Employee list (GET /employees) ──────────────────────── */
 
-export interface EmployeeListItem {
+export interface EmployeeSkillItem {
   id: number
   name: string
-  role: string
-  initials: string
-  today_status: TodayStatus
+  category: { id: number; name: string }
+  pivot: { level: number }
+}
+
+export interface EmployeeListItem {
+  id: number
+  department_id: number
+  name: string
+  email: string
+  title: string
+  is_remote: boolean
+  department: { id: number; name: string }
+  skills: EmployeeSkillItem[]
 }
 
 /* ── Root response ───────────────────────────────────────── */
