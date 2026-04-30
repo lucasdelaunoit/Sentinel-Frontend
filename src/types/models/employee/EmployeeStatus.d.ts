@@ -1,0 +1,1 @@
+type EmployeeStatus = "available" | "away";
