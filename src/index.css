@@ -106,18 +106,39 @@
     --sidebar-ring: #097155;
 
     /* Status colors */
+    /* ---- Success */
     --success: #16a34a;
+    --success-foreground: #ffffff;
     --success-bg: #f0fdf4;
     --success-border: #bbf7d0;
 
-    --warning: #ca8a04;
-    --warning-bg: #fefce8;
-    --warning-border: #fef08a;
-
+    /* ---- Danger */
     --danger: #dc2626;
+    --danger-foreground: #ffffff;
     --danger-bg: #fef2f2;
     --danger-border: #fecaca;
 
+    /* ---- Warning */
+    --warning: #ca8a04;
+    --warning-foreground: #ffffff;
+    --warning-bg: #fefce8;
+    --warning-border: #fef08a;
+
+    /* ---- Informative */
+    --info: #0ea5e9; /* sky-500 - cooler but still harmonious */
+    --info-foreground: #ffffff;
+    --info-bg: #ecfeff;
+    --info-border: #bff0ff;
+
+    /* ---- Neutral */
+    --neutral: #6b7280;
+    --neutral-foreground: #ffffff;
+    --neutral-bg: #f3f4f6;
+    --neutral-border: #e5e7eb;
+
+
+    /* ---------------------------------------------- */
+    /* Accent named palettes (kept for backwards compatibility) */
     --orange: #ea580c;
     --orange-bg: #fff7ed;
     --orange-border: #fed7aa;
