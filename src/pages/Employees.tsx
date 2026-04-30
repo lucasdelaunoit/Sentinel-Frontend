@@ -4,7 +4,9 @@ import {
   Eye, PenSquare, X, Search, Plus, Play, Trash2,
   AlertTriangle, CheckCircle2, ShieldAlert, ChevronDown,
   GripVertical, Zap, CalendarCheck, PlayCircle, ArrowRightIcon,
+  Users, Activity,
 } from "lucide-react";
+import StatCard from "@/components/common/cards/StatCard";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { EMPLOYEE_DETAILS } from "@/data/employees";
@@ -759,20 +761,6 @@ function LeaveCalendar({ employees }: { employees: Employee[] }) {
 
 /* ─── Small components ──────────────────────────────────── */
 
-function StatCard({ title, value }: { title: string; value: string }) {
-  return (
-    <div className="group relative flex flex-col rounded-2xl bg-card border border-border/60 p-5 gap-2.5 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
-      <div className="flex items-start justify-between">
-        <p className="text-[11px] font-medium text-muted-foreground tracking-wide uppercase">{title}</p>
-        <button className="flex size-7 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground transition-colors">
-          <PenSquare className="size-3.5" />
-        </button>
-      </div>
-      <p className="text-[32px] font-bold tracking-tight text-foreground leading-none">{value}</p>
-    </div>
-  );
-}
-
 function CriticalityBadge({ value }: { value: Criticality }) {
   const cls: Record<Criticality, string> = {
     High: "bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-sm",
@@ -984,23 +972,10 @@ export default function Employees() {
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         <div className="grid grid-cols-4 gap-4">
-          {/*<StatCard
-            title="Projects at Risk"
-            value={stats ? String(stats.projects_at_risk.value) : "—"}
-            icon={AlertTriangle}
-            onClick={() => setModalOpen("risk")}
-            isLoading={statsLoading}
-            comment={
-              <div className={cn("text-sm flex items-center gap-1", stats ? SEVERITY_COLOR[stats.projects_at_risk.severity] : "text-secondary-foreground")}>
-                <ArrowRightIcon size={13} />
-                <span className="font-semibold">{stats?.projects_at_risk.insight ?? "Unavailable"}</span>
-              </div>
-            }
-          />*/}
-          <StatCard title="Total Employees" value={String(totalEmployee).padStart(2, "0")} />
-          <StatCard title="Critical Staff" value={String(criticalStaff).padStart(2, "0")} />
-          <StatCard title="On Leave" value={String(onLeave).padStart(2, "0")} />
-          <StatCard title="Avg. Skills/Person" value={avgSkills} />
+          <StatCard title="Total Employees" value={String(totalEmployee).padStart(2, "0")} icon={Users} isLoading={false} comment={null} />
+          <StatCard title="Critical Staff" value={String(criticalStaff).padStart(2, "0")} icon={ShieldAlert} isLoading={false} comment={null} />
+          <StatCard title="On Leave" value={String(onLeave).padStart(2, "0")} icon={CalendarCheck} isLoading={false} comment={null} />
+          <StatCard title="Avg. Skills/Person" value={avgSkills} icon={Activity} isLoading={false} comment={null} />
         </div>
 
         {/* Tab switcher */}
