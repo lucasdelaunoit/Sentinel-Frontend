@@ -46,6 +46,36 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+
+    /* Status colors */
+    /* ---- Success */
+    --color-success-foreground: var(--success-foreground);
+    --color-success: var(--success);
+    /*--color-success-border: var(--success-border);*/
+
+    /* ---- Danger */
+    --color-danger-foreground: var(--danger-foreground);
+    --color-danger: var(--danger);
+    /*--danger-bg: var(--danger-bg);
+    --danger-border: var(--danger-border);*/
+
+    /* ---- Warning */
+    --color-warning-foreground: var(--warning-foreground);
+    --color-warning: var(--warning);
+    /*--color-warning-bg: var(--warning-bg);
+    --color-warning-border: var(--warning-border);*/
+
+    /* ---- Informative */
+    --color-info-foreground: var(--info-foreground);
+    --color-info: var(--info-foreground);
+    /*--color-info-bg: var(--info-bg);
+    --color-info-border: var(--info-border);*/
+
+    /* ---- Neutral */
+    --neutral: var(--neutral);
+    --neutral-foreground: var(--neutral-foreground);
+    --neutral-bg: var(--neutral-bg);
+    --neutral-border: var(--neutral-border);
 }
 
 :root {
@@ -60,7 +90,7 @@
     --popover: #ffffff;
     --popover-foreground: #1c1917;
 
-    /* Primary - accent green */
+    /* Primary */
     --primary: #097155;
     --primary-foreground: #ffffff;
 
@@ -107,28 +137,26 @@
 
     /* Status colors */
     /* ---- Success */
-    --success: #16a34a;
-    --success-foreground: #ffffff;
-    --success-bg: #f0fdf4;
-    --success-border: #bbf7d0;
+    --success-foreground: #097155;
+    --success: #f0fdf4;
+    /*--success-border: #bbf7d0;*/
 
     /* ---- Danger */
-    --danger: #dc2626;
-    --danger-foreground: #ffffff;
-    --danger-bg: #fef2f2;
-    --danger-border: #fecaca;
+    --danger-foreground: #dc2626;
+    --danger: #fef2f2;
+    /*--danger-border: #fecaca;*/
 
     /* ---- Warning */
-    --warning: #ca8a04;
-    --warning-foreground: #ffffff;
-    --warning-bg: #fefce8;
-    --warning-border: #fef08a;
+    --warning-foreground: #ca8a04;
+    --warning: #fefce8;
+    /*--warning-bg: #fefce8;
+    --warning-border: #fef08a;*/
 
     /* ---- Informative */
-    --info: #0ea5e9; /* sky-500 - cooler but still harmonious */
-    --info-foreground: #ffffff;
-    --info-bg: #ecfeff;
-    --info-border: #bff0ff;
+    --info-foreground: #0ea5e9;
+    --info: #ecfeff;
+    /*--info-bg: #ecfeff;
+    --info-border: #bff0ff;*/
 
     /* ---- Neutral */
     --neutral: #6b7280;

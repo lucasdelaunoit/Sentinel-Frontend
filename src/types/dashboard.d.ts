@@ -87,6 +87,34 @@ export interface AbsenceImpactStat {
   severity: Severity
 }
 
+/* ── Team status (GET /employees/today-status) ───────────── */
+
+export type TodayStatus = "Available" | "Has Leave" | "Remote"
+
+export interface EmployeeTodayStatus {
+  id: number
+  name: string
+  role: string
+  initials: string
+  today_status: TodayStatus
+}
+
+export interface TeamTodayStatusResponse {
+  capacity_pct: number
+  total: number
+  employees: EmployeeTodayStatus[]
+}
+
+/* ── Employee list (GET /employees) ──────────────────────── */
+
+export interface EmployeeListItem {
+  id: number
+  name: string
+  role: string
+  initials: string
+  today_status: TodayStatus
+}
+
 /* ── Root response ───────────────────────────────────────── */
 
 export interface DashboardStats {
