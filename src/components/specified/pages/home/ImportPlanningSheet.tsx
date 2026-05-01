@@ -1,12 +1,4 @@
 import React, { useState, useRef, useCallback } from "react"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import {
   Upload,
@@ -23,6 +15,7 @@ import {
   LayoutGrid,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import ComposedSheet from "@/components/common/sheets/ComposedSheet"
 
 interface ImportPlanningSheetProps {
   open: boolean
@@ -116,55 +109,46 @@ export default function ImportPlanningSheet({ open, onOpenChange }: ImportPlanni
   const handleClose = () => {
     handleRemove()
     setShowTips(false)
-    onOpenChange(false)
   }
 
   const handleSubmit = () => {
     if (!file) return
     // TODO: send file to API
     handleClose()
+    onOpenChange(false)
   }
 
   return (
-    <Sheet open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
-      <SheetContent side="right" showCloseButton={false} className="flex flex-col p-0 gap-0">
-        {/* Hidden file input — shared across upload zone & replace button */}
-        <input
-          ref={inputRef}
-          type="file"
-          accept={ACCEPTED_TYPES.join(",")}
-          className="hidden"
-          onChange={handleInputChange}
-        />
+    <ComposedSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Import Planning"
+      description="Upload a screenshot of your team planning to sync absences."
+      icon={<Upload className="size-4 text-primary" />}
+      onClose={handleClose}
+      footer={
+        <>
+          <Button variant="outline" className="flex-1" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button className="flex-1" disabled={!file} onClick={handleSubmit}>
+            <Upload className="size-4" />
+            Import Planning
+          </Button>
+        </>
+      }
+    >
+      {/* Hidden file input — shared across upload zone & replace button */}
+      <input
+        ref={inputRef}
+        type="file"
+        accept={ACCEPTED_TYPES.join(",")}
+        className="hidden"
+        onChange={handleInputChange}
+      />
 
-        {/* Header */}
-        <SheetHeader className="px-6 py-5 border-b border-border/60">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                <Upload className="size-4 text-primary" />
-              </div>
-              <div>
-                <SheetTitle>Import Planning</SheetTitle>
-                <SheetDescription className="mt-0.5">
-                  Upload a screenshot of your team planning to sync absences.
-                </SheetDescription>
-              </div>
-            </div>
-            <button
-              onClick={handleClose}
-              className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-            >
-              <X className="size-4" />
-            </button>
-          </div>
-        </SheetHeader>
-
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
-
-          {/* Upload zone */}
-          {!file ? (
+      {/* Upload zone */}
+      {!file ? (
             <div
               onClick={() => inputRef.current?.click()}
               onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
@@ -336,19 +320,6 @@ export default function ImportPlanningSheet({ open, onOpenChange }: ImportPlanni
               </div>
             )}
           </div>
-        </div>
-
-        {/* Footer */}
-        <SheetFooter className="px-6 py-4 border-t border-border/60 flex-row gap-2.5">
-          <Button variant="outline" className="flex-1" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button className="flex-1" disabled={!file} onClick={handleSubmit}>
-            <Upload className="size-4" />
-            Import Planning
-          </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+    </ComposedSheet>
   )
 }

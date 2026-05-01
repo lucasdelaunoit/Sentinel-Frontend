@@ -3,7 +3,7 @@ import { SecondaryButton } from "@/components/common/buttons/SecondaryButton.tsx
 import { Card, CardContent, CardTitle } from "@/components/ui/card.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import { useState } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet.tsx";
+import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import { Input } from "@/components/ui/input.tsx";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart.tsx";
 import { RadialBarChart, RadialBar } from "recharts";
@@ -11,6 +11,8 @@ import useGetEmployees from "@/api/employees/useGetEmployees.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import Feedback from "@/components/layout/Feedback";
 import useGetTeamToday from "@/api/employees/useGetTeamToday.ts";
+import EmployeeAvatar from "@/components/specified/models/employees/avatars/EmployeeAvatar.tsx";
+import EmployeeStatusBadge from "@/components/specified/models/employees/badges/EmployeeStatusBadge.tsx";
 
 type SheetFilter = "all" | "available" | "remote";
 
@@ -141,36 +143,22 @@ export default function TeamStatusOfTodayCard() {
         </div>
 
         <CardContent className="p-0 flex-1 flex flex-col justify-between">
-          <div className="flex-1 flex flex-col justify-center">
+          <div className="flex-1 flex flex-col justify-center mb-4">
             {isLoading ? (
               <TeamStatusSkeleton />
             ) : cardEmployees.length === 0 ? (
               <Feedback variant="success" title="All hands on deck" description="Everyone is available today" />
             ) : (
-              <div className="space-y-1">
+              <div className="space-y-4 p-0.5">
                 {cardEmployees.map((e) => {
                   const s = STATUS_STYLES[toTypeFromCard(e.today_status)];
                   return (
                     <SecondaryCard
                       key={e.id}
-                      before={
-                        <div
-                          className={cn(
-                            "flex size-8 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-sm",
-                            s.avatar,
-                          )}
-                        >
-                          {e.initials}
-                        </div>
-                      }
+                      before={<EmployeeAvatar initials={initials(e.name)} variant={toTypeFromRemote(e.is_remote)} />}
                       title={e.name}
                       description={e.role}
-                      action={
-                        <span className={cn("text-[11px] font-semibold px-2 py-0.5 rounded-full", s.badge)}>
-                          {s.label}
-                        </span>
-                      }
-                      className="hover:bg-secondary p-1.5"
+                      action={<EmployeeStatusBadge status={e.status} />}
                     />
                   );
                 })}
@@ -181,74 +169,6 @@ export default function TeamStatusOfTodayCard() {
           <SecondaryButton label="View full team →" onClick={() => setSheetOpen(true)} />
         </CardContent>
       </Card>
-
-      <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="right" className="flex flex-col gap-0 p-0 sm:max-w-[360px]">
-          <SheetHeader className="p-5 pb-4 border-b border-border/40">
-            <SheetTitle>Full Team</SheetTitle>
-            <SheetDescription>
-              {total} members · {availableCount} available today
-            </SheetDescription>
-          </SheetHeader>
-
-          <div className="p-4 space-y-3 border-b border-border/40">
-            <Input
-              placeholder="Search by name or title…"
-              value={search}
-              onChange={(ev) => setSearch(ev.target.value)}
-              className="h-8 text-sm"
-            />
-            <div className="flex gap-1.5 flex-wrap">
-              {(["all", "available", "remote"] as SheetFilter[]).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={cn(
-                    "text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors",
-                    filter === f ? FILTER_ACTIVE[f] : "bg-muted text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {FILTER_LABELS[f]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 space-y-1">
-            {isSheetLoading ? (
-              <TeamStatusSkeleton />
-            ) : sheetEmployees.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">No results</p>
-            ) : (
-              sheetEmployees.map((e) => {
-                const s = STATUS_STYLES[toTypeFromRemote(e.is_remote)];
-                return (
-                  <SecondaryCard
-                    key={e.id}
-                    before={
-                      <div
-                        className={cn(
-                          "flex size-8 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-sm",
-                          s.avatar,
-                        )}
-                      >
-                        {initials(e.name)}
-                      </div>
-                    }
-                    title={e.name}
-                    description={e.title}
-                    action={
-                      <span className={cn("text-[11px] font-semibold px-2 py-0.5 rounded-full", s.badge)}>
-                        {s.label}
-                      </span>
-                    }
-                  />
-                );
-              })
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
     </>
   );
 }
