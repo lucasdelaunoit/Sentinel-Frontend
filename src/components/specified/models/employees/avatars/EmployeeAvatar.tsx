@@ -18,13 +18,13 @@ const SIZE_VARIANTS: Record<EmployeeAvatarSizes, string> = {
   lg: "size-10 text-[13px] font-medium",
 };
 
-export default function EmployeeAvatar({ initials, variant, size = "base" }: StatusAvatarProps) {
+export default function EmployeeAvatar({ initials, variant = "available", size = "base" }: StatusAvatarProps) {
   return (
     <div
       className={cn(
         "flex items-center select-none justify-center rounded-xl text-primary-foreground shadow-sm",
         SIZE_VARIANTS[size],
-        variant ? STATUS_VARIANTS[variant] : "bg-red-500",
+        STATUS_VARIANTS[variant],
       )}
     >
       {initials}

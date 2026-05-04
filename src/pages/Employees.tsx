@@ -41,11 +41,11 @@ import EmployeeAvatar from "@/components/specified/models/employees/avatars/Empl
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import EmployeeStatusBadge from "@/components/specified/models/employees/badges/EmployeeStatusBadge.tsx";
+import { getInitials } from "@/utils/formatters/persons.ts";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
 type Criticality = "High" | "Medium" | "Low";
-type TodayStatus = "Available" | "Has Leave" | "Remote";
 type LeaveType = "vacation" | "sick" | "conference";
 type Tab = "list" | "calendar";
 type ImpactLevel = "critical" | "warning" | "safe";
@@ -55,21 +55,6 @@ interface LeaveRange {
   start: number;
   end: number;
   type: LeaveType;
-}
-
-interface Employee {
-  id: string;
-  name: string;
-  email: string;
-  department: string;
-  skills: number;
-  projects: number;
-  criticality: Criticality;
-  busFactor: number;
-  todayStatus: TodayStatus;
-  initials: string;
-  color: string;
-  leaves: LeaveRange[];
 }
 
 interface SimBlock {
@@ -105,33 +90,7 @@ interface ProjectImpact {
 type EmpSortKey = "name" | "email" | "title";
 type SortDir = "asc" | "desc";
 
-/* ─── Employee table helpers ────────────────────────────────── */
-
 const PER_PAGE_OPTIONS = [10, 15, 25, 50] as const;
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((p) => p[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
-const AVATAR_COLORS = [
-  "bg-gradient-to-br from-indigo-500 to-indigo-600",
-  "bg-gradient-to-br from-amber-500 to-amber-600",
-  "bg-gradient-to-br from-blue-500 to-blue-600",
-  "bg-gradient-to-br from-rose-500 to-rose-600",
-  "bg-gradient-to-br from-emerald-500 to-emerald-600",
-  "bg-gradient-to-br from-cyan-500 to-cyan-600",
-  "bg-gradient-to-br from-violet-500 to-violet-600",
-  "bg-gradient-to-br from-orange-500 to-orange-600",
-];
-
-function avatarColor(id: number): string {
-  return AVATAR_COLORS[id % AVATAR_COLORS.length];
-}
 
 /* ─── Mock data ───────────────────────────────────────────── */
 
@@ -1526,68 +1485,65 @@ function EmployeeList() {
             </TableRow>
           ) : (
             employees.map((emp) => {
-              const initials = getInitials(emp.name);
-              return (
-                <TableRow
-                  key={emp.id}
-                  className="hover:bg-muted/20 transition-colors group cursor-pointer border-border/40"
-                  onClick={() => navigate(`/employees/${emp.id}`)}
-                >
-                  <TableCell className="px-5 py-4">
-                    <div className="flex items-center gap-3">
-                      <EmployeeAvatar initials={initials} variant={emp.status} size="lg" />
-                      <div>
-                        <p className="font-semibold text-foreground text-[14px]">{emp.name}</p>
-                        <p className="text-[12px] text-muted-foreground">{emp.email}</p>
-                      </div>
+              <TableRow
+                key={emp.id}
+                className="hover:bg-muted/20 transition-colors group cursor-pointer border-border/40"
+                onClick={() => navigate(`/employees/${emp.id}`)}
+              >
+                <TableCell className="px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <EmployeeAvatar initials={getInitials(emp.name)} variant={emp.status} size="lg" />
+                    <div>
+                      <p className="font-semibold text-foreground text-[14px]">{emp.name}</p>
+                      <p className="text-[12px] text-muted-foreground">{emp.email}</p>
                     </div>
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <span className="inline-flex items-center rounded-md bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-foreground/70">
-                      {emp.department?.name ?? "—"}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <span className="text-[13px] text-foreground">{emp.title || "—"}</span>
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <EmployeeStatusBadge status={emp.status} />
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-semibold text-foreground text-[14px]">{emp.skills.length}</span>
-                      <span className="text-muted-foreground text-[11px]">skills</span>
-                      <div className="flex gap-1 ml-1 flex-wrap">
-                        {emp.skills.slice(0, 3).map((s) => (
-                          <span
-                            key={s.id}
-                            className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60"
-                          >
-                            {s.name}
-                          </span>
-                        ))}
-                        {emp.skills.length > 3 && (
-                          <span className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60">
-                            +{emp.skills.length - 3}
-                          </span>
-                        )}
-                      </div>
+                  </div>
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <span className="inline-flex items-center rounded-md bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-foreground/70">
+                    {emp.department?.name ?? "—"}
+                  </span>
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <span className="text-[13px] text-foreground">{emp.title || "—"}</span>
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <EmployeeStatusBadge status={emp.status} />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-semibold text-foreground text-[14px]">{emp.skills.length}</span>
+                    <span className="text-muted-foreground text-[11px]">skills</span>
+                    <div className="flex gap-1 ml-1 flex-wrap">
+                      {emp.skills.slice(0, 3).map((s) => (
+                        <span
+                          key={s.id}
+                          className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60"
+                        >
+                          {s.name}
+                        </span>
+                      ))}
+                      {emp.skills.length > 3 && (
+                        <span className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60">
+                          +{emp.skills.length - 3}
+                        </span>
+                      )}
                     </div>
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <Button
-                      size="sm"
-                      className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/employees/${emp.id}`);
-                      }}
-                    >
-                      <Eye className="size-3.5" /> View
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
+                  </div>
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Button
+                    size="sm"
+                    className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/employees/${emp.id}`);
+                    }}
+                  >
+                    <Eye className="size-3.5" /> View
+                  </Button>
+                </TableCell>
+              </TableRow>;
             })
           )}
         </TableBody>
