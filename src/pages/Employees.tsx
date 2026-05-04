@@ -1,21 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  Eye,
-  PenSquare,
-  X,
-  ShieldAlert,
-  CalendarCheck,
-  Users,
-  Activity,
-  ChevronDown,
-  ChevronUp,
-  ChevronsUpDown,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from "lucide-react";
+import { Eye, PenSquare, X, ShieldAlert, CalendarCheck, Users, Activity } from "lucide-react";
 import StatCard from "@/components/common/cards/StatCard";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
@@ -31,11 +16,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import EmployeeStatusBadge from "@/components/specified/models/employees/badges/EmployeeStatusBadge.tsx";
 import { getInitials } from "@/utils/formatters/persons.ts";
+import { SortableTableHead } from "@/components/common/table/SortableTableHead";
+import { TablePagination } from "@/components/common/table/TablePagination";
+import { useTableSort } from "@/hooks/useTableSort";
+import { useTablePagination } from "@/hooks/useTablePagination";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
 type EmpSortKey = "name" | "email" | "title";
-type SortDir = "asc" | "desc";
 
 interface EmployeeFormData {
   name?: string;
@@ -43,8 +31,6 @@ interface EmployeeFormData {
   department?: string;
   criticality?: string;
 }
-
-const PER_PAGE_OPTIONS = [10, 15, 25, 50] as const;
 
 /* ─── Employee Modal ────────────────────────────────────────── */
 
@@ -87,7 +73,12 @@ function EmployeeModal({ open, onClose, employee }: EmployeeModalProps) {
         <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-5">
           {[
             { label: "Full Name", type: "text", placeholder: "e.g. John Doe", defaultValue: employee?.name },
-            { label: "Email Address", type: "email", placeholder: "e.g. john@company.com", defaultValue: employee?.email },
+            {
+              label: "Email Address",
+              type: "email",
+              placeholder: "e.g. john@company.com",
+              defaultValue: employee?.email,
+            },
           ].map(({ label, ...props }) => (
             <div key={label} className="space-y-1.5">
               <label className="block text-[12px] font-medium text-foreground/70">{label}</label>
@@ -96,8 +87,13 @@ function EmployeeModal({ open, onClose, employee }: EmployeeModalProps) {
           ))}
           <div className="space-y-1.5">
             <label className="block text-[12px] font-medium text-foreground/70">Department</label>
-            <select defaultValue={employee?.department ?? ""} className={cn(fieldCls, "appearance-none cursor-pointer")}>
-              <option value="" disabled>Select a department</option>
+            <select
+              defaultValue={employee?.department ?? ""}
+              className={cn(fieldCls, "appearance-none cursor-pointer")}
+            >
+              <option value="" disabled>
+                Select a department
+              </option>
               {["Management", "Engineering", "Design", "Data", "Security", "DevOps"].map((d) => (
                 <option key={d}>{d}</option>
               ))}
@@ -113,8 +109,13 @@ function EmployeeModal({ open, onClose, employee }: EmployeeModalProps) {
           </div>
           <div className="space-y-1.5">
             <label className="block text-[12px] font-medium text-foreground/70">Criticality Level</label>
-            <select defaultValue={employee?.criticality ?? ""} className={cn(fieldCls, "appearance-none cursor-pointer")}>
-              <option value="" disabled>Select criticality</option>
+            <select
+              defaultValue={employee?.criticality ?? ""}
+              className={cn(fieldCls, "appearance-none cursor-pointer")}
+            >
+              <option value="" disabled>
+                Select criticality
+              </option>
               {["High", "Medium", "Low"].map((c) => (
                 <option key={c}>{c}</option>
               ))}
@@ -137,74 +138,27 @@ function EmployeeModal({ open, onClose, employee }: EmployeeModalProps) {
 
 /* ─── Employee List ─────────────────────────────────────────── */
 
-function EmpSortTh({
-  label,
-  col,
-  sort,
-  onSort,
-}: {
-  label: string;
-  col: EmpSortKey;
-  sort: { key: EmpSortKey; dir: SortDir };
-  onSort: (k: EmpSortKey) => void;
-}) {
-  const active = sort.key === col;
-  return (
-    <TableHead
-      onClick={() => onSort(col)}
-      className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 cursor-pointer select-none hover:text-foreground transition-colors"
-    >
-      <span className="flex items-center gap-1">
-        {label}
-        {active ? (
-          sort.dir === "asc" ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />
-        ) : (
-          <ChevronsUpDown className="size-3 opacity-40" />
-        )}
-      </span>
-    </TableHead>
-  );
-}
-
 function EmployeeList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<{ key: EmpSortKey; dir: SortDir }>({ key: "name", dir: "asc" });
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(15);
   const [remoteFilter, setRemoteFilter] = useState<boolean | null>(null);
+  const { sort, toggleSort } = useTableSort<EmpSortKey>("name");
+  const { page, setPage, perPage, setPerPage } = useTablePagination(15, [search, remoteFilter]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [search, remoteFilter, perPage]);
-
-  function toggleSort(key: EmpSortKey) {
-    setSort((prev) => (prev.key === key ? { key, dir: prev.dir === "asc" ? "desc" : "asc" } : { key, dir: "asc" }));
-    setPage(1);
-  }
-
-  const params: LaravelQueryParams = {
+  const { data, isLoading, isError } = useGetEmployees({
     page,
     per_page: perPage,
     search: search || undefined,
     sorts: [{ field: sort.key, direction: sort.dir }],
     filters: remoteFilter !== null ? [{ field: "is_remote", value: remoteFilter }] : undefined,
     includes: ["department", "skills"],
-  };
+  });
 
-  const { data, isLoading, isError } = useGetEmployees(params);
   const employees = data?.data ?? [];
   const total = data?.total ?? 0;
   const lastPage = data?.last_page ?? 1;
   const from = data?.from ?? 0;
   const to = data?.to ?? 0;
-
-  const pageNumbers = (() => {
-    const count = Math.min(5, lastPage);
-    let start = Math.max(1, page - 2);
-    if (start + count - 1 > lastPage) start = Math.max(1, lastPage - count + 1);
-    return Array.from({ length: count }, (_, i) => start + i);
-  })();
 
   const toolbarAction = (
     <>
@@ -221,7 +175,9 @@ function EmployeeList() {
             onClick={() => setRemoteFilter(val)}
             className={cn(
               "px-3 py-1 rounded-lg text-[11px] font-medium transition-all duration-150",
-              remoteFilter === val ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground",
+              remoteFilter === val
+                ? "bg-card shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {val === null ? "All" : val ? "Remote" : "On-site"}
@@ -233,15 +189,20 @@ function EmployeeList() {
   );
 
   return (
-    <ComposedCard title="All Employees" action={toolbarAction} className="p-0 overflow-hidden" headerClassName="px-6 pt-4 flex-wrap gap-3">
+    <ComposedCard
+      title="All Employees"
+      action={toolbarAction}
+      className="p-0 overflow-hidden"
+      headerClassName="px-6 pt-4 flex-wrap gap-3"
+    >
       <Table className="text-sm">
         <TableHeader>
           <TableRow className="border-b border-t border-border/60 bg-muted/30 hover:bg-muted/30">
-            <EmpSortTh label="Employee" col="name" sort={sort} onSort={toggleSort} />
+            <SortableTableHead label="Employee" col="name" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
             <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Department
             </TableHead>
-            <EmpSortTh label="Title" col="title" sort={sort} onSort={toggleSort} />
+            <SortableTableHead label="Title" col="title" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
             <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Work mode
             </TableHead>
@@ -266,16 +227,24 @@ function EmployeeList() {
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="px-5 py-4"><Skeleton className="h-5 w-20 rounded-md" /></TableCell>
-                <TableCell className="px-5 py-4"><Skeleton className="h-3.5 w-28" /></TableCell>
-                <TableCell className="px-5 py-4"><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-5 w-20 rounded-md" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-3.5 w-28" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </TableCell>
                 <TableCell className="px-5 py-4">
                   <div className="flex gap-1.5">
                     <Skeleton className="h-5 w-16 rounded-md" />
                     <Skeleton className="h-5 w-12 rounded-md" />
                   </div>
                 </TableCell>
-                <TableCell className="px-5 py-4"><Skeleton className="h-8 w-14 rounded-lg" /></TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-8 w-14 rounded-lg" />
+                </TableCell>
               </TableRow>
             ))
           ) : isError ? (
@@ -323,7 +292,10 @@ function EmployeeList() {
                     <span className="text-muted-foreground text-[11px]">skills</span>
                     <div className="flex gap-1 ml-1 flex-wrap">
                       {emp.skills.slice(0, 3).map((s) => (
-                        <span key={s.id} className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60">
+                        <span
+                          key={s.id}
+                          className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60"
+                        >
                           {s.name}
                         </span>
                       ))}
@@ -353,50 +325,17 @@ function EmployeeList() {
         </TableBody>
       </Table>
 
-      {/* Pagination */}
-      {!isLoading && !isError && total > 0 && (
-        <div className="px-6 py-4 border-t border-border/60 flex items-center justify-between bg-muted/10 flex-wrap gap-3">
-          <div className="flex items-center gap-2.5 text-[12px] text-muted-foreground">
-            <span>Show</span>
-            <select
-              value={perPage}
-              onChange={(e) => setPerPage(Number(e.target.value))}
-              className="border border-border/60 rounded-lg bg-card px-2 py-1 text-[12px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-            >
-              {PER_PAGE_OPTIONS.map((n) => (
-                <option key={n} value={n}>{n}</option>
-              ))}
-            </select>
-            <span>per page · {from}–{to} of {total}</span>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg" disabled={page <= 1} onClick={() => setPage(1)}>
-              <ChevronsLeft className="size-3.5" />
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-              <ChevronLeft className="size-3.5" />
-            </Button>
-            {pageNumbers.map((p) => (
-              <button
-                key={p}
-                onClick={() => setPage(p)}
-                className={cn(
-                  "h-8 min-w-8 px-2 rounded-lg text-[12px] font-medium transition-all",
-                  page === p ? "bg-primary text-primary-foreground shadow-sm" : "border border-border/60 bg-card text-foreground hover:bg-muted/50",
-                )}
-              >
-                {p}
-              </button>
-            ))}
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg" disabled={page >= lastPage} onClick={() => setPage((p) => p + 1)}>
-              <ChevronRight className="size-3.5" />
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg" disabled={page >= lastPage} onClick={() => setPage(lastPage)}>
-              <ChevronsRight className="size-3.5" />
-            </Button>
-          </div>
-        </div>
+      {!isLoading && !isError && (
+        <TablePagination
+          page={page}
+          lastPage={lastPage}
+          perPage={perPage}
+          total={total}
+          from={from}
+          to={to}
+          onPageChange={setPage}
+          onPerPageChange={setPerPage}
+        />
       )}
     </ComposedCard>
   );
@@ -435,7 +374,13 @@ export default function Employees() {
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         <div className="grid grid-cols-4 gap-4">
-          <StatCard title="Total Employees" value={totalEmployee} icon={Users} isLoading={statsLoading} comment={null} />
+          <StatCard
+            title="Total Employees"
+            value={totalEmployee}
+            icon={Users}
+            isLoading={statsLoading}
+            comment={null}
+          />
           <StatCard title="Critical Staff" value="—" icon={ShieldAlert} isLoading={statsLoading} comment={null} />
           <StatCard title="On Leave" value={onLeave} icon={CalendarCheck} isLoading={statsLoading} comment={null} />
           <StatCard title="Avg. Skills/Person" value="—" icon={Activity} isLoading={statsLoading} comment={null} />
