@@ -121,6 +121,7 @@ export interface EmployeeListItem {
   email: string
   title: string
   is_remote: boolean
+  status: EmployeeStatus
   department: { id: number; name: string }
   skills: EmployeeSkillItem[]
 }

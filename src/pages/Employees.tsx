@@ -32,11 +32,16 @@ import { Button } from "@/components/ui/button";
 import { EMPLOYEE_DETAILS } from "@/data/employees";
 import { PROJECTS } from "@/data/projects";
 import { useCalendarSettings } from "@/hooks/useCalendarSettings";
+// TODO: replace mock EMPLOYEES below with API data once leave/calendar endpoint exists
 import TopBar from "@/components/layout/TopBar.tsx";
 import { PlusIcon } from "@phosphor-icons/react";
 import useGetEmployees from "@/api/employees/useGetEmployees";
+import useGetTeamToday from "@/api/employees/useGetTeamToday";
 import type { LaravelQueryParams } from "@/types/laravel";
 import EmployeeAvatar from "@/components/specified/models/employees/avatars/EmployeeAvatar.tsx";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import EmployeeStatusBadge from "@/components/specified/models/employees/badges/EmployeeStatusBadge.tsx";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
@@ -1360,7 +1365,7 @@ function EmpSortTh({
 }) {
   const active = sort.key === col;
   return (
-    <th
+    <TableHead
       onClick={() => onSort(col)}
       className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 cursor-pointer select-none hover:text-foreground transition-colors"
     >
@@ -1376,7 +1381,7 @@ function EmpSortTh({
           <ChevronsUpDown className="size-3 opacity-40" />
         )}
       </span>
-    </th>
+    </TableHead>
   );
 }
 
@@ -1472,117 +1477,101 @@ function EmployeeList() {
       </div>
 
       {/* Table */}
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border/60 bg-muted/30">
+      <Table className="text-sm">
+        <TableHeader>
+          <TableRow className="border-b border-border/60 bg-muted/30 hover:bg-muted/30">
             <EmpSortTh label="Employee" col="name" sort={sort} onSort={toggleSort} />
-            <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Department
-            </th>
+            </TableHead>
             <EmpSortTh label="Title" col="title" sort={sort} onSort={toggleSort} />
-            <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Work mode
-            </th>
-            <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            </TableHead>
+            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Skills
-            </th>
-            <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            </TableHead>
+            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border/40">
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody className="[&_tr]:border-border/40">
           {isLoading ? (
             Array.from({ length: perPage > 10 ? 8 : perPage }).map((_, i) => (
-              <tr key={i} className="animate-pulse">
-                <td className="px-5 py-4">
+              <TableRow key={i} className="border-border/40">
+                <TableCell className="px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="size-10 rounded-xl bg-muted/60 shrink-0" />
+                    <Skeleton className="size-10 rounded-xl shrink-0" />
                     <div className="space-y-1.5">
-                      <div className="h-3.5 w-32 bg-muted/60 rounded" />
-                      <div className="h-3 w-24 bg-muted/40 rounded" />
+                      <Skeleton className="h-3.5 w-32" />
+                      <Skeleton className="h-3 w-24" />
                     </div>
                   </div>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="h-5 w-20 bg-muted/60 rounded-md" />
-                </td>
-                <td className="px-5 py-4">
-                  <div className="h-3.5 w-28 bg-muted/60 rounded" />
-                </td>
-                <td className="px-5 py-4">
-                  <div className="h-5 w-16 bg-muted/60 rounded-full" />
-                </td>
-                <td className="px-5 py-4">
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-5 w-20 rounded-md" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-3.5 w-28" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
                   <div className="flex gap-1.5">
-                    <div className="h-5 w-16 bg-muted/60 rounded-md" />
-                    <div className="h-5 w-12 bg-muted/60 rounded-md" />
+                    <Skeleton className="h-5 w-16 rounded-md" />
+                    <Skeleton className="h-5 w-12 rounded-md" />
                   </div>
-                </td>
-                <td className="px-5 py-4">
-                  <div className="h-8 w-14 bg-muted/60 rounded-lg" />
-                </td>
-              </tr>
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-8 w-14 rounded-lg" />
+                </TableCell>
+              </TableRow>
             ))
           ) : isError ? (
-            <tr>
-              <td colSpan={6} className="px-6 py-12 text-center text-sm text-muted-foreground">
+            <TableRow className="border-border/40">
+              <TableCell colSpan={6} className="px-6 py-12 text-center text-sm text-muted-foreground">
                 Failed to load employees. Check API connection.
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ) : employees.length === 0 ? (
-            <tr>
-              <td colSpan={6} className="px-6 py-12 text-center text-sm text-muted-foreground">
+            <TableRow className="border-border/40">
+              <TableCell colSpan={6} className="px-6 py-12 text-center text-sm text-muted-foreground">
                 No employees match your filters.
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ) : (
             employees.map((emp) => {
               const initials = getInitials(emp.name);
               const color = avatarColor(emp.id);
               return (
-                <tr
+                <TableRow
                   key={emp.id}
-                  className="hover:bg-muted/20 transition-colors group cursor-pointer"
+                  className="hover:bg-muted/20 transition-colors group cursor-pointer border-border/40"
                   onClick={() => navigate(`/employees/${emp.id}`)}
                 >
-                  <td className="px-5 py-4">
+                  <TableCell className="px-5 py-4">
                     <div className="flex items-center gap-3">
-                      <EmployeeAvatar initials={initials} variant={emp.status} />
-                      <div
-                        className={cn(
-                          "flex size-10 shrink-0 items-center justify-center rounded-xl text-[12px] font-semibold text-white shadow-md",
-                          color,
-                        )}
-                      >
-                        {initials}
-                      </div>
+                      <EmployeeAvatar initials={initials} variant={emp.status} size="lg" />
                       <div>
                         <p className="font-semibold text-foreground text-[14px]">{emp.name}</p>
                         <p className="text-[12px] text-muted-foreground">{emp.email}</p>
                       </div>
                     </div>
-                  </td>
-                  <td className="px-5 py-4">
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
                     <span className="inline-flex items-center rounded-md bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-foreground/70">
                       {emp.department?.name ?? "—"}
                     </span>
-                  </td>
-                  <td className="px-5 py-4">
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
                     <span className="text-[13px] text-foreground">{emp.title || "—"}</span>
-                  </td>
-                  <td className="px-5 py-4">
-                    {emp.is_remote ? (
-                      <span className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm">
-                        Remote
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold bg-muted/60 text-foreground/60">
-                        On-site
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-5 py-4">
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
+                    <EmployeeStatusBadge status={emp.status} />
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-semibold text-foreground text-[14px]">{emp.skills.length}</span>
                       <span className="text-muted-foreground text-[11px]">skills</span>
@@ -1602,8 +1591,8 @@ function EmployeeList() {
                         )}
                       </div>
                     </div>
-                  </td>
-                  <td className="px-5 py-4">
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
                     <Button
                       size="sm"
                       className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
@@ -1614,13 +1603,13 @@ function EmployeeList() {
                     >
                       <Eye className="size-3.5" /> View
                     </Button>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               );
             })
           )}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
 
       {/* Pagination */}
       {!isLoading && !isError && total > 0 && (
@@ -1746,10 +1735,11 @@ export default function Employees() {
     }
   }, [searchParams, setSearchParams]);
 
-  const totalEmployee = EMPLOYEES.length;
-  const criticalStaff = EMPLOYEES.filter((e) => e.criticality === "High").length;
-  const onLeave = EMPLOYEES.filter((e) => e.todayStatus === "Has Leave").length;
-  const avgSkills = (EMPLOYEES.reduce((s, e) => s + e.skills, 0) / EMPLOYEES.length).toFixed(1);
+  const { data: teamToday, isLoading: statsLoading } = useGetTeamToday();
+  const totalEmployee = teamToday?.total != null ? String(teamToday.total).padStart(2, "0") : "—";
+  const onLeave = teamToday
+    ? String(teamToday.employees.filter((e) => e.today_status === "Has Leave").length).padStart(2, "0")
+    : "—";
 
   return (
     <>
@@ -1767,26 +1757,14 @@ export default function Employees() {
         <div className="grid grid-cols-4 gap-4">
           <StatCard
             title="Total Employees"
-            value={String(totalEmployee).padStart(2, "0")}
+            value={totalEmployee}
             icon={Users}
-            isLoading={false}
+            isLoading={statsLoading}
             comment={null}
           />
-          <StatCard
-            title="Critical Staff"
-            value={String(criticalStaff).padStart(2, "0")}
-            icon={ShieldAlert}
-            isLoading={false}
-            comment={null}
-          />
-          <StatCard
-            title="On Leave"
-            value={String(onLeave).padStart(2, "0")}
-            icon={CalendarCheck}
-            isLoading={false}
-            comment={null}
-          />
-          <StatCard title="Avg. Skills/Person" value={avgSkills} icon={Activity} isLoading={false} comment={null} />
+          <StatCard title="Critical Staff" value="—" icon={ShieldAlert} isLoading={statsLoading} comment={null} />
+          <StatCard title="On Leave" value={onLeave} icon={CalendarCheck} isLoading={statsLoading} comment={null} />
+          <StatCard title="Avg. Skills/Person" value="—" icon={Activity} isLoading={statsLoading} comment={null} />
         </div>
 
         {/* Tab switcher */}
