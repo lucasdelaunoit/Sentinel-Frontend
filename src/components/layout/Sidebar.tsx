@@ -3,7 +3,7 @@ import {
   LayoutDashboard,
   Users,
   FolderOpen,
-  PlayCircle,
+  CalendarDays,
   Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,11 +18,8 @@ const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
   { label: "Employees", icon: Users, to: "/employees" },
   { label: "Projects", icon: FolderOpen, to: "/projects" },
+  { label: "Planning", icon: CalendarDays, to: "/planning" },
   { label: "Settings", icon: Settings, to: "/settings" },
-];
-
-const quickActions: NavItem[] = [
-  { label: "Simulate Leave", icon: PlayCircle, to: "/?simulate=true" },
 ];
 
 function SidebarNavLink({ item }: { item: NavItem }) {
@@ -81,16 +78,6 @@ export default function Sidebar() {
           </div>
         </div>
 
-        <div>
-          <p className="mb-2 px-3.5 text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/30">
-            Quick Actions
-          </p>
-          <div className="space-y-0.5">
-            {quickActions.map((item) => (
-              <SidebarNavLink key={item.label} item={item} />
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* User profile */}
