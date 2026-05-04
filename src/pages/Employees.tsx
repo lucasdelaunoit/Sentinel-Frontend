@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import EmployeeStatusBadge from "@/components/specified/models/employees/badges/EmployeeStatusBadge.tsx";
 import { getInitials } from "@/utils/formatters/persons.ts";
+import { HighlightMatch } from "@/utils/useHighlightableText";
 import { SortableTableHead } from "@/components/common/table/SortableTableHead";
 import { TablePagination } from "@/components/common/table/TablePagination";
 import { useTableSort } from "@/hooks/useTableSort";
@@ -141,16 +142,16 @@ function EmployeeModal({ open, onClose, employee }: EmployeeModalProps) {
 function EmployeeList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [remoteFilter, setRemoteFilter] = useState<boolean | null>(null);
+  const [statusFilter, setStatusFilter] = useState<EmployeeStatus | null>(null);
   const { sort, toggleSort } = useTableSort<EmpSortKey>("name");
-  const { page, setPage, perPage, setPerPage } = useTablePagination(15, [search, remoteFilter]);
+  const { page, setPage, perPage, setPerPage } = useTablePagination(15, [search, statusFilter]);
 
   const { data, isLoading, isError } = useGetEmployees({
     page,
     per_page: perPage,
     search: search || undefined,
     sorts: [{ field: sort.key, direction: sort.dir }],
-    filters: remoteFilter !== null ? [{ field: "is_remote", value: remoteFilter }] : undefined,
+    filters: statusFilter !== null ? [{ field: "status", value: statusFilter }] : undefined,
     includes: ["department", "skills"],
   });
 
@@ -169,18 +170,18 @@ function EmployeeList() {
       )}
       <div className="flex-1" />
       <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-1">
-        {([null, false, true] as (boolean | null)[]).map((val) => (
+        {([null, "available", "away"] as (EmployeeStatus | null)[]).map((val) => (
           <button
             key={String(val)}
-            onClick={() => setRemoteFilter(val)}
+            onClick={() => setStatusFilter(val)}
             className={cn(
-              "px-3 py-1 rounded-lg text-[11px] font-medium transition-all duration-150",
-              remoteFilter === val
+              "px-3 py-1 rounded-lg text-[11px] font-medium transition-all duration-150 cursor-pointer",
+              statusFilter === val
                 ? "bg-card shadow-sm text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            {val === null ? "All" : val ? "Remote" : "On-site"}
+            {val === null ? "All" : val === "available" ? "Available" : "Away"}
           </button>
         ))}
       </div>
@@ -270,8 +271,12 @@ function EmployeeList() {
                   <div className="flex items-center gap-3">
                     <EmployeeAvatar initials={getInitials(emp.name)} variant={emp.status} size="lg" />
                     <div>
-                      <p className="font-semibold text-foreground text-[14px]">{emp.name}</p>
-                      <p className="text-[12px] text-muted-foreground">{emp.email}</p>
+                      <p className="font-semibold text-foreground text-[14px]">
+                        <HighlightMatch text={emp.name} searchTerm={search} />
+                      </p>
+                      <p className="text-[12px] text-muted-foreground">
+                        <HighlightMatch text={emp.email} searchTerm={search} />
+                      </p>
                     </div>
                   </div>
                 </TableCell>
