@@ -1,8 +1,8 @@
-import { Card, CardContent, CardTitle } from "@/components/ui/card.tsx";
 import { useMemo } from "react";
 import { EMPLOYEE_DETAILS, type SkillCategory } from "@/data/employees.ts";
 import {ChartContainer, type ChartConfig, ChartLegend, ChartLegendContent} from "@/components/ui/chart.tsx";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis } from "recharts";
+import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 
 const AXES: SkillCategory[] = ["FRONTEND", "BACKEND", "DEVOPS", "DATABASE", "SECURITY", "TESTING"];
 
@@ -33,35 +33,32 @@ export default function KnowledgeCoverageOfToday() {
   );
 
   return (
-    <Card className="p-5">
-      <CardTitle>Today's Knowledge Coverage</CardTitle>
-      <CardContent className="p-0">
-        <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[220px]">
-          <RadarChart data={chartData}>
-            <PolarGrid />
-            <PolarAngleAxis
-              dataKey="axis"
-              tick={{ fontSize: 8, fontWeight: 600, fill: "#6B7280" }}
-            />
-            <Radar
-              dataKey="target"
-              fill="var(--color-target)"
-              fillOpacity={0.15}
-              stroke="var(--color-target)"
-              strokeWidth={1.5}
-              strokeDasharray="5 3"
-            />
-            <Radar
-              dataKey="coverage"
-              fill="var(--color-coverage)"
-              fillOpacity={0.45}
-              stroke="var(--color-coverage)"
-              strokeWidth={2}
-            />
-            <ChartLegend content={<ChartLegendContent />} />
-          </RadarChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+    <ComposedCard title="Today's Knowledge Coverage">
+      <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[220px]">
+        <RadarChart data={chartData}>
+          <PolarGrid />
+          <PolarAngleAxis
+            dataKey="axis"
+            tick={{ fontSize: 8, fontWeight: 600, fill: "#6B7280" }}
+          />
+          <Radar
+            dataKey="target"
+            fill="var(--color-target)"
+            fillOpacity={0.15}
+            stroke="var(--color-target)"
+            strokeWidth={1.5}
+            strokeDasharray="5 3"
+          />
+          <Radar
+            dataKey="coverage"
+            fill="var(--color-coverage)"
+            fillOpacity={0.45}
+            stroke="var(--color-coverage)"
+            strokeWidth={2}
+          />
+          <ChartLegend content={<ChartLegendContent />} />
+        </RadarChart>
+      </ChartContainer>
+    </ComposedCard>
   );
 }

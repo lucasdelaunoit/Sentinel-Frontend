@@ -22,7 +22,7 @@ export default function EmployeeAvatar({ initials, variant, size = "base" }: Sta
   return (
     <div
       className={cn(
-        "flex items-center justify-center rounded-xl text-white shadow-sm",
+        "flex items-center select-none justify-center rounded-xl text-primary-foreground shadow-sm",
         SIZE_VARIANTS[size],
         variant ? STATUS_VARIANTS[variant] : "bg-red-500",
       )}

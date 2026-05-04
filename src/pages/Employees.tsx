@@ -4,7 +4,6 @@ import {
   Eye,
   PenSquare,
   X,
-  Search,
   Plus,
   Play,
   Trash2,
@@ -15,8 +14,6 @@ import {
   GripVertical,
   Zap,
   CalendarCheck,
-  PlayCircle,
-  ArrowRightIcon,
   Users,
   Activity,
   ChevronUp,
@@ -27,6 +24,8 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import StatCard from "@/components/common/cards/StatCard";
+import ComposedCard from "@/components/common/cards/ComposedCard";
+import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { EMPLOYEE_DETAILS } from "@/data/employees";
@@ -1425,61 +1424,45 @@ function EmployeeList() {
     return Array.from({ length: count }, (_, i) => start + i);
   })();
 
-  return (
-    <div className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
-      {/* Toolbar */}
-      <div className="px-6 py-4 border-b border-border/60 flex items-center gap-3 flex-wrap">
-        <h3 className="font-semibold text-foreground text-sm shrink-0">All Employees</h3>
-        {!isLoading && (
-          <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
-            {total}
-          </span>
-        )}
-        <div className="flex-1" />
-
-        {/* Remote filter */}
-        <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-1">
-          {([null, false, true] as (boolean | null)[]).map((val) => (
-            <button
-              key={String(val)}
-              onClick={() => setRemoteFilter(val)}
-              className={cn(
-                "px-3 py-1 rounded-lg text-[11px] font-medium transition-all duration-150",
-                remoteFilter === val
-                  ? "bg-card shadow-sm text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {val === null ? "All" : val ? "Remote" : "On-site"}
-            </button>
-          ))}
-        </div>
-
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground/50 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search employees..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 pr-8 py-2 rounded-xl border border-border/60 bg-background text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all w-56"
-          />
-          {search && (
-            <button
-              onClick={() => setSearch("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground transition-colors"
-            >
-              <X className="size-3.5" />
-            </button>
-          )}
-        </div>
+  const toolbarAction = (
+    <>
+      {!isLoading && (
+        <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
+          {total}
+        </span>
+      )}
+      <div className="flex-1" />
+      <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-1">
+        {([null, false, true] as (boolean | null)[]).map((val) => (
+          <button
+            key={String(val)}
+            onClick={() => setRemoteFilter(val)}
+            className={cn(
+              "px-3 py-1 rounded-lg text-[11px] font-medium transition-all duration-150",
+              remoteFilter === val
+                ? "bg-card shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {val === null ? "All" : val ? "Remote" : "On-site"}
+          </button>
+        ))}
       </div>
+      <SearchBar value={search} onChange={setSearch} placeholder="Search employees..." />
+    </>
+  );
 
+  return (
+    <ComposedCard
+      title="All Employees"
+      action={toolbarAction}
+      className="p-0 overflow-hidden"
+      headerClassName="px-6 pt-4 flex-wrap gap-3"
+    >
       {/* Table */}
       <Table className="text-sm">
         <TableHeader>
-          <TableRow className="border-b border-border/60 bg-muted/30 hover:bg-muted/30">
+          <TableRow className="border-b border-t border-border/60 bg-muted/30 hover:bg-muted/30">
             <EmpSortTh label="Employee" col="name" sort={sort} onSort={toggleSort} />
             <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Department
@@ -1544,7 +1527,6 @@ function EmployeeList() {
           ) : (
             employees.map((emp) => {
               const initials = getInitials(emp.name);
-              const color = avatarColor(emp.id);
               return (
                 <TableRow
                   key={emp.id}
@@ -1686,7 +1668,7 @@ function EmployeeList() {
           </div>
         </div>
       )}
-    </div>
+    </ComposedCard>
   );
 }
 
@@ -1718,7 +1700,6 @@ function SimulationCTA({ onOpen }: { onOpen: () => void }) {
 /* ─── Employees Page ────────────────────────────────────── */
 
 export default function Employees() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<Tab>("list");
   const [modalOpen, setModalOpen] = useState(false);
