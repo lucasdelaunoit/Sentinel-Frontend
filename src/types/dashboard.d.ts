@@ -126,6 +126,34 @@ export interface EmployeeListItem {
   skills: EmployeeSkillItem[]
 }
 
+/* ── Project list (GET /projects) ───────────────────────── */
+
+export interface ProjectMemberSnippet {
+  id: number
+  name: string
+  initials: string
+}
+
+export interface ProjectSkillItem {
+  id: number
+  name: string
+}
+
+export interface ProjectListItem {
+  id: number
+  name: string
+  description: string
+  status: ProjectStatus
+  priority: ProjectPriority
+  progress: number
+  risk_score: number
+  bus_factor: number
+  health: number
+  end_date: string
+  team: ProjectMemberSnippet[]
+  skills: ProjectSkillItem[]
+}
+
 /* ── Root response ───────────────────────────────────────── */
 
 export interface DashboardStats {

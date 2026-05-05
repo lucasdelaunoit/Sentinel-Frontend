@@ -1,43 +1,80 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  Search,
-  ChevronsUpDown,
-  ChevronUp,
-  ChevronDown,
-  Eye,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Layers,
-  Plus,
-  Filter,
-  X,
-} from "lucide-react";
+import { Eye, X, Layers, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
+import { PlusIcon } from "@phosphor-icons/react";
+import StatCard from "@/components/common/cards/StatCard";
+import ComposedCard from "@/components/common/cards/ComposedCard";
+import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  PROJECTS,
-  type ProjectData,
-  type ProjectStatus,
-  type ProjectPriority,
-} from "@/data/projects";
+import TopBar from "@/components/layout/TopBar.tsx";
+import useGetProjects from "@/api/projects/useGetProjects";
+import type { ProjectListItem } from "@/types/dashboard";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SortableTableHead } from "@/components/common/table/SortableTableHead";
+import { TablePagination } from "@/components/common/table/TablePagination";
+import { useTableSort } from "@/hooks/useTableSort";
+import { useTablePagination } from "@/hooks/useTablePagination";
+import { HighlightMatch } from "@/utils/useHighlightableText";
 
-/* ─── Helpers ─────────────────────────────────────────────── */
+/* ─── Types ────────────────────────────────────────────────── */
 
-type SortKey =
-  | "name"
-  | "progress"
-  | "riskScore"
-  | "busFactor"
-  | "health"
-  | "endDate";
-type SortDir = "asc" | "desc";
+type ProjSortKey = "name" | "progress" | "risk_score" | "bus_factor" | "health" | "end_date";
+
+/* ─── Helpers ───────────────────────────────────────────────── */
+
+const STATUS_LABELS: Record<ProjectStatus, string> = {
+  active: "Active",
+  on_hold: "On Hold",
+  planning: "Planning",
+  completed: "Completed",
+};
+
+const STATUS_STYLES: Record<ProjectStatus, string> = {
+  active: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400",
+  completed: "bg-blue-50 text-blue-700 ring-1 ring-blue-200/60 dark:bg-blue-500/10 dark:text-blue-400",
+  on_hold: "bg-amber-50 text-amber-700 ring-1 ring-amber-200/60 dark:bg-amber-500/10 dark:text-amber-400",
+  planning: "bg-violet-50 text-violet-700 ring-1 ring-violet-200/60 dark:bg-violet-500/10 dark:text-violet-400",
+};
+
+const PRIORITY_LABELS: Record<ProjectPriority, string> = {
+  critical: "Critical",
+  high: "High",
+  medium: "Medium",
+  low: "Low",
+};
+
+const PRIORITY_DOT: Record<ProjectPriority, string> = {
+  critical: "bg-rose-500 shadow-sm",
+  high: "bg-orange-400 shadow-sm",
+  medium: "bg-amber-400 shadow-sm",
+  low: "bg-muted/60",
+};
+
+const AVATAR_COLORS = [
+  "bg-indigo-500", "bg-blue-500", "bg-amber-500",
+  "bg-emerald-500", "bg-rose-500", "bg-violet-500", "bg-cyan-500",
+];
+
+function avatarColor(id: number) {
+  return AVATAR_COLORS[id % AVATAR_COLORS.length];
+}
+
+function fmtDate(date: string) {
+  return new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
 
 function healthColor(v: number) {
   if (v >= 75) return "bg-gradient-to-r from-emerald-400 to-emerald-500";
   if (v >= 55) return "bg-gradient-to-r from-amber-400 to-amber-500";
   return "bg-gradient-to-r from-rose-400 to-rose-500";
+}
+
+function healthTextColor(v: number) {
+  if (v >= 75) return "text-emerald-600";
+  if (v >= 55) return "text-amber-500";
+  return "text-rose-500";
 }
 
 function riskColor(v: number) {
@@ -46,149 +83,80 @@ function riskColor(v: number) {
   return "text-emerald-500";
 }
 
+function riskDotColor(v: number) {
+  if (v >= 20) return "bg-rose-500";
+  if (v >= 12) return "bg-amber-400";
+  return "bg-emerald-500";
+}
+
 function busFactorColor(v: number) {
   if (v <= 1) return "text-rose-500";
   if (v <= 2) return "text-amber-500";
   return "text-emerald-500";
 }
 
-function fmt(date: string) {
-  return new Date(date).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+function progressBarColor(v: number) {
+  if (v === 100) return "bg-gradient-to-r from-blue-500 to-blue-600";
+  if (v >= 60) return "bg-gradient-to-r from-primary/80 to-primary";
+  if (v >= 35) return "bg-gradient-to-r from-amber-400 to-amber-500";
+  return "bg-muted";
 }
 
-/* ─── Status & priority badges ─────────────────────────────── */
-
-const STATUS_STYLES: Record<ProjectStatus, string> = {
-  Active:
-    "bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-700 ring-1 ring-emerald-200/60",
-  Completed:
-    "bg-gradient-to-br from-blue-50 to-blue-100 text-blue-700 ring-1 ring-blue-200/60",
-  "On Hold":
-    "bg-gradient-to-br from-amber-50 to-amber-100 text-amber-700 ring-1 ring-amber-200/60",
-  Planning:
-    "bg-gradient-to-br from-violet-50 to-violet-100 text-violet-700 ring-1 ring-violet-200/60",
-};
+/* ─── Sub-components ────────────────────────────────────────── */
 
 function StatusBadge({ value }: { value: ProjectStatus }) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold",
-        STATUS_STYLES[value],
-      )}
-    >
-      {value}
+    <span className={cn("inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold", STATUS_STYLES[value])}>
+      {STATUS_LABELS[value]}
     </span>
   );
 }
 
 function PriorityDot({ value }: { value: ProjectPriority }) {
-  const dot: Record<ProjectPriority, string> = {
-    Critical: "bg-gradient-to-br from-rose-500 to-rose-600 shadow-sm",
-    High: "bg-gradient-to-br from-orange-400 to-orange-500 shadow-sm",
-    Medium: "bg-gradient-to-br from-amber-400 to-amber-500 shadow-sm",
-    Low: "bg-muted/40",
-  };
   return (
     <div className="flex items-center gap-1.5">
-      <div className={cn("size-1.5 rounded-full shrink-0", dot[value])} />
-      <span className="text-[12px] text-foreground">{value}</span>
+      <div className={cn("size-1.5 rounded-full shrink-0", PRIORITY_DOT[value])} />
+      <span className="text-[12px] text-foreground">{PRIORITY_LABELS[value]}</span>
     </div>
   );
 }
 
-/* ─── Progress bar ─────────────────────────────────────────── */
-
 function ProgressBar({ value }: { value: number }) {
-  const color =
-    value === 100
-      ? "bg-gradient-to-r from-blue-500 to-blue-600"
-      : value >= 60
-        ? "bg-gradient-to-r from-primary/80 to-primary"
-        : value >= 35
-          ? "bg-gradient-to-r from-amber-400 to-amber-500"
-          : "bg-muted";
   return (
     <div className="flex items-center gap-2.5 min-w-[110px]">
       <div className="h-1.5 flex-1 rounded-full bg-muted shadow-inner overflow-hidden">
-        <div
-          className={cn("h-full rounded-full shadow-sm", color)}
-          style={{ width: `${value}%` }}
-        />
+        <div className={cn("h-full rounded-full shadow-sm", progressBarColor(value))} style={{ width: `${value}%` }} />
       </div>
-      <span className="text-[12px] font-medium tabular-nums text-foreground w-8 text-right">
-        {value}%
-      </span>
+      <span className="text-[12px] font-medium tabular-nums text-foreground w-8 text-right">{value}%</span>
     </div>
   );
 }
-
-/* ─── Health bar ───────────────────────────────────────────── */
 
 function HealthBar({ value }: { value: number }) {
   return (
     <div className="flex items-center gap-2.5 min-w-[100px]">
       <div className="h-1.5 flex-1 rounded-full bg-muted shadow-inner overflow-hidden">
-        <div
-          className={cn("h-full rounded-full shadow-sm", healthColor(value))}
-          style={{ width: `${value}%` }}
-        />
+        <div className={cn("h-full rounded-full shadow-sm", healthColor(value))} style={{ width: `${value}%` }} />
       </div>
-      <span
-        className={cn(
-          "text-[12px] font-semibold tabular-nums w-8 text-right",
-          value >= 75
-            ? "text-emerald-600"
-            : value >= 55
-              ? "text-amber-500"
-              : "text-rose-500",
-        )}
-      >
-        {value}
-      </span>
+      <span className={cn("text-[12px] font-semibold tabular-nums w-8 text-right", healthTextColor(value))}>{value}</span>
     </div>
   );
 }
 
-/* ─── Avatar group ─────────────────────────────────────────── */
-
-function AvatarGroup({
-  members,
-  max = 4,
-}: {
-  members: ProjectData["team"];
-  max?: number;
-}) {
+function AvatarGroup({ members, max = 4 }: { members: ProjectListItem["team"]; max?: number }) {
   const visible = members.slice(0, max);
   const extra = members.length - max;
   return (
     <div className="flex items-center">
       {visible.map((m, i) => (
-        <div
-          key={m.id}
-          title={m.name}
-          className="ring-2 ring-card rounded-full"
-          style={{ marginLeft: i === 0 ? 0 : -8 }}
-        >
-          <div
-            className={cn(
-              "flex size-7 items-center justify-center rounded-full text-[10px] font-semibold text-white shrink-0 shadow-sm",
-              m.color,
-            )}
-          >
+        <div key={m.id} title={m.name} className="ring-2 ring-card rounded-full" style={{ marginLeft: i === 0 ? 0 : -8 }}>
+          <div className={cn("flex size-7 items-center justify-center rounded-full text-[10px] font-semibold text-white shrink-0 shadow-sm", avatarColor(m.id))}>
             {m.initials}
           </div>
         </div>
       ))}
       {extra > 0 && (
-        <div
-          className="ring-2 ring-card flex size-7 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-muted-foreground"
-          style={{ marginLeft: -8 }}
-        >
+        <div className="ring-2 ring-card flex size-7 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-muted-foreground" style={{ marginLeft: -8 }}>
           +{extra}
         </div>
       )}
@@ -196,150 +164,23 @@ function AvatarGroup({
   );
 }
 
-/* ─── Sort header cell ─────────────────────────────────────── */
+/* ─── Project Modal ─────────────────────────────────────────── */
 
-function SortTh({
-  label,
-  col,
-  sort,
-  onSort,
-  className,
-}: {
-  label: string;
-  col: SortKey;
-  sort: { key: SortKey; dir: SortDir };
-  onSort: (k: SortKey) => void;
-  className?: string;
-}) {
-  const active = sort.key === col;
-  return (
-    <th
-      onClick={() => onSort(col)}
-      className={cn(
-        "px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 cursor-pointer select-none hover:text-foreground transition-colors",
-        className,
-      )}
-    >
-      <span className="flex items-center gap-1">
-        {label}
-        {active ? (
-          sort.dir === "asc" ? (
-            <ChevronUp className="size-3" />
-          ) : (
-            <ChevronDown className="size-3" />
-          )
-        ) : (
-          <ChevronsUpDown className="size-3 opacity-40" />
-        )}
-      </span>
-    </th>
-  );
-}
-
-/* ─── Stat card ────────────────────────────────────────────── */
-
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  sub,
-  color = "text-foreground",
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string | number;
-  sub?: string;
-  color?: string;
-}) {
-  return (
-    <div className="group relative flex items-center gap-4 rounded-2xl bg-card border border-border/60 px-5 py-4 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground/60 group-hover:bg-muted group-hover:text-muted-foreground transition-colors">
-        <Icon className="size-4" />
-      </div>
-      <div>
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-          {label}
-        </p>
-        <p
-          className={cn(
-            "text-[24px] font-bold tracking-tight leading-none mt-0.5",
-            color,
-          )}
-        >
-          {value}
-        </p>
-        {sub && (
-          <p className="text-[11px] text-muted-foreground mt-0.5">{sub}</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Status filter ────────────────────────────────────────── */
-
-const STATUS_FILTERS: (ProjectStatus | "All")[] = [
-  "All",
-  "Active",
-  "On Hold",
-  "Planning",
-  "Completed",
-];
-
-/* ─── New Project Modal ────────────────────────────────────── */
-
-function FieldInput({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactElement;
-}) {
-  const inputCls =
-    "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
-  return (
-    <div className="space-y-1.5">
-      <label className="block text-[12px] font-medium text-foreground/70">
-        {label}
-      </label>
-      {children.type === "select" ? (
-        <select
-          className={cn(inputCls, "appearance-none cursor-pointer")}
-          {...(children.props as object)}
-        >
-          {(children.props as { children: React.ReactNode }).children}
-        </select>
-      ) : (
-        <input className={inputCls} {...(children.props as object)} />
-      )}
-    </div>
-  );
-}
-
-function NewProjectModal({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+function ProjectModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null;
+
+  const fieldCls =
+    "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-end">
-      <div
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 flex h-full w-[480px] flex-col bg-card shadow-2xl">
         <div className="h-[3px] w-full shrink-0 bg-gradient-to-r from-primary via-primary to-transparent" />
         <div className="flex items-start justify-between px-8 pt-7 pb-5">
           <div>
-            <h2 className="text-[18px] font-bold text-foreground tracking-tight">
-              New Project
-            </h2>
-            <p className="mt-1 text-[13px] text-muted-foreground">
-              Create a new project in your portfolio
-            </p>
+            <h2 className="text-[18px] font-bold text-foreground tracking-tight">New Project</h2>
+            <p className="mt-1 text-[13px] text-muted-foreground">Create a new project in your portfolio</p>
           </div>
           <button
             onClick={onClose}
@@ -349,49 +190,42 @@ function NewProjectModal({
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-5">
-          <FieldInput label="Project Name">
-            <input type="text" placeholder="e.g. API Modernization" />
-          </FieldInput>
-          <FieldInput label="Description">
-            <input
-              type="text"
-              placeholder="Brief description of the project"
-            />
-          </FieldInput>
-          <FieldInput label="Department">
-            <select defaultValue="">
-              <option value="" disabled>
-                Select a department
-              </option>
-              {[
-                "Engineering",
-                "Data",
-                "Design",
-                "Security",
-                "DevOps",
-                "Management",
-              ].map((d) => (
+          {[
+            { label: "Project Name", type: "text", placeholder: "e.g. API Modernization" },
+            { label: "Description", type: "text", placeholder: "Brief description of the project" },
+          ].map(({ label, ...props }) => (
+            <div key={label} className="space-y-1.5">
+              <label className="block text-[12px] font-medium text-foreground/70">{label}</label>
+              <input className={fieldCls} {...props} />
+            </div>
+          ))}
+          <div className="space-y-1.5">
+            <label className="block text-[12px] font-medium text-foreground/70">Department</label>
+            <select defaultValue="" className={cn(fieldCls, "appearance-none cursor-pointer")}>
+              <option value="" disabled>Select a department</option>
+              {["Engineering", "Data", "Design", "Security", "DevOps", "Management"].map((d) => (
                 <option key={d}>{d}</option>
               ))}
             </select>
-          </FieldInput>
-          <FieldInput label="Priority">
-            <select defaultValue="">
-              <option value="" disabled>
-                Select priority
-              </option>
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-[12px] font-medium text-foreground/70">Priority</label>
+            <select defaultValue="" className={cn(fieldCls, "appearance-none cursor-pointer")}>
+              <option value="" disabled>Select priority</option>
               {["Critical", "High", "Medium", "Low"].map((p) => (
                 <option key={p}>{p}</option>
               ))}
             </select>
-          </FieldInput>
+          </div>
           <div className="grid grid-cols-2 gap-4">
-            <FieldInput label="Start Date">
-              <input type="date" />
-            </FieldInput>
-            <FieldInput label="Target End Date">
-              <input type="date" />
-            </FieldInput>
+            <div className="space-y-1.5">
+              <label className="block text-[12px] font-medium text-foreground/70">Start Date</label>
+              <input type="date" className={fieldCls} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="block text-[12px] font-medium text-foreground/70">Target End Date</label>
+              <input type="date" className={fieldCls} />
+            </div>
           </div>
         </div>
         <div className="shrink-0 px-8 py-5 border-t border-border/60">
@@ -399,7 +233,7 @@ function NewProjectModal({
             className="w-full justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-11 text-[13px] font-semibold shadow-sm shadow-primary/10 btn-press"
             onClick={onClose}
           >
-            <Plus className="size-4" />
+            <PlusIcon className="size-4" />
             Create Project
           </Button>
         </div>
@@ -408,18 +242,229 @@ function NewProjectModal({
   );
 }
 
-/* ─── Projects Page ────────────────────────────────────────── */
+/* ─── Project List ──────────────────────────────────────────── */
+
+const STATUS_FILTER_OPTIONS: (ProjectStatus | null)[] = [null, "active", "on_hold", "planning", "completed"];
+
+function ProjectList() {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ProjectStatus | null>(null);
+  const { sort, toggleSort } = useTableSort<ProjSortKey>("name");
+  const { page, setPage, perPage, setPerPage } = useTablePagination(15, [search, statusFilter]);
+
+  const { data, isLoading, isError } = useGetProjects({
+    page,
+    per_page: perPage,
+    search: search || undefined,
+    sorts: [{ field: sort.key, direction: sort.dir }],
+    filters: statusFilter !== null ? [{ field: "status", value: statusFilter }] : undefined,
+    includes: ["team", "skills"],
+  });
+
+  const projects = data?.data ?? [];
+  const total = data?.total ?? 0;
+  const lastPage = data?.last_page ?? 1;
+  const from = data?.from ?? 0;
+  const to = data?.to ?? 0;
+
+  const toolbarAction = (
+    <>
+      {!isLoading && (
+        <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
+          {total}
+        </span>
+      )}
+      <div className="flex-1" />
+      <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-1">
+        {STATUS_FILTER_OPTIONS.map((val) => (
+          <button
+            key={String(val)}
+            onClick={() => setStatusFilter(val)}
+            className={cn(
+              "px-3 py-1 rounded-lg text-[11px] font-medium transition-all duration-150 cursor-pointer",
+              statusFilter === val
+                ? "bg-card shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {val === null ? "All" : STATUS_LABELS[val]}
+          </button>
+        ))}
+      </div>
+      <SearchBar value={search} onChange={setSearch} placeholder="Search projects..." />
+    </>
+  );
+
+  return (
+    <ComposedCard
+      title="All Projects"
+      action={toolbarAction}
+      className="p-0 overflow-hidden"
+      headerClassName="px-6 pt-4 flex-wrap gap-3"
+    >
+      <Table className="text-sm">
+        <TableHeader>
+          <TableRow className="border-b border-t border-border/60 bg-muted/30 hover:bg-muted/30">
+            <SortableTableHead label="Project" col="name" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
+            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              Status
+            </TableHead>
+            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              Priority
+            </TableHead>
+            <SortableTableHead label="Progress" col="progress" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
+            <SortableTableHead label="Risk" col="risk_score" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
+            <SortableTableHead label="Bus Factor" col="bus_factor" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
+            <SortableTableHead label="Health" col="health" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
+            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              Team
+            </TableHead>
+            <SortableTableHead label="Due" col="end_date" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
+            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              Actions
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody className="[&_tr]:border-border/40">
+          {isLoading ? (
+            Array.from({ length: perPage > 10 ? 8 : perPage }).map((_, i) => (
+              <TableRow key={i} className="border-border/40">
+                <TableCell className="px-5 py-4">
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-3.5 w-40" />
+                    <Skeleton className="h-3 w-56" />
+                    <div className="flex gap-1 mt-1">
+                      <Skeleton className="h-4 w-14 rounded-md" />
+                      <Skeleton className="h-4 w-12 rounded-md" />
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="px-5 py-4"><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                <TableCell className="px-5 py-4"><Skeleton className="h-3.5 w-16" /></TableCell>
+                <TableCell className="px-5 py-4"><Skeleton className="h-3 w-28 rounded-full" /></TableCell>
+                <TableCell className="px-5 py-4"><Skeleton className="h-4 w-8" /></TableCell>
+                <TableCell className="px-5 py-4"><Skeleton className="h-4 w-6" /></TableCell>
+                <TableCell className="px-5 py-4"><Skeleton className="h-3 w-24 rounded-full" /></TableCell>
+                <TableCell className="px-5 py-4"><Skeleton className="h-7 w-20 rounded-full" /></TableCell>
+                <TableCell className="px-5 py-4"><Skeleton className="h-3.5 w-20" /></TableCell>
+                <TableCell className="px-5 py-4"><Skeleton className="h-8 w-14 rounded-lg" /></TableCell>
+              </TableRow>
+            ))
+          ) : isError ? (
+            <TableRow className="border-border/40">
+              <TableCell colSpan={10} className="px-6 py-12 text-center text-sm text-muted-foreground">
+                Failed to load projects. Check API connection.
+              </TableCell>
+            </TableRow>
+          ) : projects.length === 0 ? (
+            <TableRow className="border-border/40">
+              <TableCell colSpan={10} className="px-6 py-12 text-center text-sm text-muted-foreground">
+                No projects match your filters.
+              </TableCell>
+            </TableRow>
+          ) : (
+            projects.map((project) => {
+              const overdue = new Date(project.end_date) < new Date() && project.status !== "completed";
+              return (
+                <TableRow
+                  key={project.id}
+                  className="hover:bg-muted/20 transition-colors group cursor-pointer border-border/40"
+                  onClick={() => navigate(`/projects/${project.id}`)}
+                >
+                  <TableCell className="px-5 py-4 max-w-[260px]">
+                    <p className="font-semibold text-foreground text-[14px] truncate">
+                      <HighlightMatch text={project.name} searchTerm={search} />
+                    </p>
+                    <p className="text-[12px] text-muted-foreground mt-0.5 truncate">
+                      <HighlightMatch text={project.description} searchTerm={search} />
+                    </p>
+                    <div className="flex gap-1 mt-1.5 flex-wrap">
+                      {(project.skills ?? []).slice(0, 3).map((s) => (
+                        <span key={s.id} className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60">
+                          {s.name}
+                        </span>
+                      ))}
+                      {(project.skills ?? []).length > 3 && (
+                        <span className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60">
+                          +{(project.skills ?? []).length - 3}
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
+                    <StatusBadge value={project.status} />
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
+                    <PriorityDot value={project.priority} />
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
+                    <ProgressBar value={project.progress} />
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
+                    <div className="flex items-center gap-1.5">
+                      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", riskDotColor(project.risk_score))} />
+                      <span className={cn("text-[14px] font-bold tabular-nums", riskColor(project.risk_score))}>
+                        {project.risk_score}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
+                    <span className={cn("text-[14px] font-bold tabular-nums", busFactorColor(project.bus_factor))}>
+                      {project.bus_factor}
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
+                    <HealthBar value={project.health} />
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
+                    <AvatarGroup members={project.team ?? []} />
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
+                    <span className={cn("text-[12px] font-medium whitespace-nowrap", overdue ? "text-rose-500" : "text-foreground")}>
+                      {fmtDate(project.end_date)}
+                    </span>
+                    {overdue && <p className="text-[10px] text-rose-400 mt-0.5 font-medium">Overdue</p>}
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
+                    <Button
+                      size="sm"
+                      className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/projects/${project.id}`);
+                      }}
+                    >
+                      <Eye className="size-3.5" /> View
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
+
+      {!isLoading && !isError && (
+        <TablePagination
+          page={page}
+          lastPage={lastPage}
+          perPage={perPage}
+          total={total}
+          from={from}
+          to={to}
+          onPageChange={setPage}
+          onPerPageChange={setPerPage}
+        />
+      )}
+    </ComposedCard>
+  );
+}
+
+/* ─── Projects Page ─────────────────────────────────────────── */
 
 export default function Projects() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ProjectStatus | "All">(
-    "All",
-  );
-  const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({
-    key: "name",
-    dir: "asc",
-  });
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
@@ -429,382 +474,25 @@ export default function Projects() {
     }
   }, [searchParams, setSearchParams]);
 
-  function toggleSort(key: SortKey) {
-    setSort((prev) =>
-      prev.key === key
-        ? { key, dir: prev.dir === "asc" ? "desc" : "asc" }
-        : { key, dir: "asc" },
-    );
-  }
-
-  const filtered = useMemo(() => {
-    let list = PROJECTS.filter((p) => {
-      const q = search.toLowerCase();
-      const matchSearch =
-        p.name.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q) ||
-        p.department.toLowerCase().includes(q) ||
-        p.id.toLowerCase().includes(q);
-      const matchStatus = statusFilter === "All" || p.status === statusFilter;
-      return matchSearch && matchStatus;
-    });
-
-    list = [...list].sort((a, b) => {
-      let av: string | number, bv: string | number;
-      switch (sort.key) {
-        case "name":
-          av = a.name;
-          bv = b.name;
-          break;
-        case "progress":
-          av = a.progress;
-          bv = b.progress;
-          break;
-        case "riskScore":
-          av = a.riskScore;
-          bv = b.riskScore;
-          break;
-        case "busFactor":
-          av = a.busFactor;
-          bv = b.busFactor;
-          break;
-        case "health":
-          av = a.health;
-          bv = b.health;
-          break;
-        case "endDate":
-          av = a.endDate;
-          bv = b.endDate;
-          break;
-      }
-      const cmp =
-        typeof av === "string"
-          ? av.localeCompare(bv as string)
-          : (av as number) - (bv as number);
-      return sort.dir === "asc" ? cmp : -cmp;
-    });
-
-    return list;
-  }, [search, statusFilter, sort]);
-
-  const total = PROJECTS.length;
-  const active = PROJECTS.filter((p) => p.status === "Active").length;
-  const atRisk = PROJECTS.filter(
-    (p) => p.health < 55 || p.riskScore >= 20,
-  ).length;
-  const avgProgress = Math.round(
-    PROJECTS.filter((p) => p.status !== "Completed").reduce(
-      (s, p) => s + p.progress,
-      0,
-    ) / PROJECTS.filter((p) => p.status !== "Completed").length,
-  );
+  const { data, isLoading: statsLoading } = useGetProjects({ per_page: 1 });
+  const total = data?.total;
+  const totalDisplay = total != null ? String(total).padStart(2, "0") : "—";
 
   return (
     <>
-    <div className="space-y-5 page-enter">
-      <div className="grid grid-cols-4 gap-4">
-        <StatCard
-          icon={Layers}
-          label="Total Projects"
-          value={total}
-          sub={`${PROJECTS.filter((p) => p.status === "Completed").length} completed`}
-        />
-        <StatCard
-          icon={CheckCircle2}
-          label="Active"
-          value={active}
-          sub="Currently running"
-          color="text-emerald-600"
-        />
-        <StatCard
-          icon={AlertTriangle}
-          label="At Risk"
-          value={atRisk}
-          sub="Low health or high risk"
-          color={atRisk > 0 ? "text-rose-500" : "text-foreground"}
-        />
-        <StatCard
-          icon={Clock}
-          label="Avg. Progress"
-          value={`${avgProgress}%`}
-          sub="Excluding completed"
-        />
-      </div>
-
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-1.5">
-          {STATUS_FILTERS.map((s) => (
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={cn(
-                "px-4 py-1.5 rounded-xl text-[12px] font-medium transition-all duration-200",
-                statusFilter === s
-                  ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                  : "bg-card border border-border/60 text-foreground hover:bg-muted/50",
-              )}
-            >
-              {s}
-              {s !== "All" && (
-                <span
-                  className={cn(
-                    "ml-1.5 text-[10px]",
-                    statusFilter === s
-                      ? "text-primary-foreground/60"
-                      : "text-muted-foreground",
-                  )}
-                >
-                  {PROJECTS.filter((p) => p.status === s).length}
-                </span>
-              )}
-            </button>
-          ))}
+      <TopBar title="All Projects" />
+      <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
+        <div className="grid grid-cols-4 gap-4">
+          <StatCard title="Total Projects" value={totalDisplay} icon={Layers} isLoading={statsLoading} comment={null} />
+          <StatCard title="Active" value="—" icon={CheckCircle2} isLoading={statsLoading} comment={null} />
+          <StatCard title="At Risk" value="—" icon={AlertTriangle} isLoading={statsLoading} comment={null} />
+          <StatCard title="Avg. Progress" value="—" icon={Clock} isLoading={statsLoading} comment={null} />
         </div>
 
-        <div className="relative w-64">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground/50 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search projects ..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-border/60 bg-card pl-10 pr-4 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all"
-          />
-        </div>
+        <ProjectList />
       </div>
 
-      <div className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h3 className="font-semibold text-foreground text-sm">Projects</h3>
-            <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
-              {filtered.length}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-            <Filter className="size-3.5" />
-            <span>Filtered by {statusFilter}</span>
-          </div>
-        </div>
-
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border/60 bg-muted/30">
-              <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 w-14">
-                ID
-              </th>
-              <SortTh
-                label="Project"
-                col="name"
-                sort={sort}
-                onSort={toggleSort}
-              />
-              <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                Status
-              </th>
-              <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                Priority
-              </th>
-              <SortTh
-                label="Progress"
-                col="progress"
-                sort={sort}
-                onSort={toggleSort}
-              />
-              <SortTh
-                label="Risk"
-                col="riskScore"
-                sort={sort}
-                onSort={toggleSort}
-              />
-              <SortTh
-                label="Bus Factor"
-                col="busFactor"
-                sort={sort}
-                onSort={toggleSort}
-              />
-              <SortTh
-                label="Health"
-                col="health"
-                sort={sort}
-                onSort={toggleSort}
-              />
-              <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                Team
-              </th>
-              <SortTh
-                label="Due"
-                col="endDate"
-                sort={sort}
-                onSort={toggleSort}
-              />
-              <th className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                Actions
-              </th>
-            </tr>
-          </thead>
-
-          <tbody className="divide-y divide-border/40">
-            {filtered.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={11}
-                  className="px-6 py-12 text-center text-sm text-muted-foreground"
-                >
-                  No projects match your filters
-                </td>
-              </tr>
-            ) : (
-              filtered.map((project) => (
-                <ProjectRow
-                  key={project.id}
-                  project={project}
-                  sort={sort}
-                  onSort={toggleSort}
-                />
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <NewProjectModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <ProjectModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </>
-  );
-}
-
-/* ─── Project row ─────────────────────────────────────────── */
-
-function ProjectRow({
-  project,
-}: {
-  project: ProjectData;
-  sort: { key: SortKey; dir: SortDir };
-  onSort: (k: SortKey) => void;
-}) {
-  const navigate = useNavigate();
-  const overdue =
-    new Date(project.endDate) < new Date() && project.status !== "Completed";
-
-  return (
-    <tr
-      className="hover:bg-muted/20 transition-colors group cursor-pointer"
-      onClick={() => navigate(`/projects/${project.id}`)}
-    >
-      <td className="px-5 py-4">
-        <span className="text-[11px] font-mono font-semibold text-muted-foreground/70">
-          {project.id}
-        </span>
-      </td>
-
-      <td className="px-5 py-4 max-w-[260px]">
-        <p className="font-semibold text-foreground text-[14px] truncate">
-          {project.name}
-        </p>
-        <p className="text-[12px] text-muted-foreground mt-0.5 truncate">
-          {project.description}
-        </p>
-        <div className="flex gap-1 mt-2 flex-wrap">
-          {project.skills.slice(0, 3).map((s) => (
-            <span
-              key={s}
-              className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60"
-            >
-              {s}
-            </span>
-          ))}
-          {project.skills.length > 3 && (
-            <span className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60">
-              +{project.skills.length - 3}
-            </span>
-          )}
-        </div>
-      </td>
-
-      <td className="px-5 py-4">
-        <StatusBadge value={project.status} />
-      </td>
-
-      <td className="px-5 py-4">
-        <PriorityDot value={project.priority} />
-      </td>
-
-      <td className="px-5 py-4">
-        <ProgressBar value={project.progress} />
-      </td>
-
-      <td className="px-5 py-4">
-        <div className="flex items-center gap-1.5">
-          <div
-            className={cn(
-              "size-1.5 rounded-full shrink-0 shadow-sm",
-              project.riskScore >= 20
-                ? "bg-rose-500"
-                : project.riskScore >= 12
-                  ? "bg-amber-400"
-                  : "bg-emerald-500",
-            )}
-          />
-          <span
-            className={cn(
-              "text-[14px] font-bold tabular-nums",
-              riskColor(project.riskScore),
-            )}
-          >
-            {project.riskScore}
-          </span>
-        </div>
-      </td>
-
-      <td className="px-5 py-4">
-        <span
-          className={cn(
-            "text-[14px] font-bold tabular-nums",
-            busFactorColor(project.busFactor),
-          )}
-        >
-          {project.busFactor}
-        </span>
-      </td>
-
-      <td className="px-5 py-4">
-        <HealthBar value={project.health} />
-      </td>
-
-      <td className="px-5 py-4">
-        <AvatarGroup members={project.team} />
-      </td>
-
-      <td className="px-5 py-4">
-        <span
-          className={cn(
-            "text-[12px] font-medium whitespace-nowrap",
-            overdue ? "text-rose-500" : "text-foreground",
-          )}
-        >
-          {fmt(project.endDate)}
-        </span>
-        {overdue && (
-          <p className="text-[10px] text-rose-400 mt-0.5 font-medium">
-            Overdue
-          </p>
-        )}
-      </td>
-
-      <td className="px-5 py-4">
-        <Button
-          size="sm"
-          className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 opacity-0 group-hover:opacity-100 transition-opacity btn-press"
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/projects/${project.id}`);
-          }}
-        >
-          <Eye className="size-3.5" />
-          View
-        </Button>
-      </td>
-    </tr>
   );
 }
