@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Activity, AlertTriangle, ArrowRightIcon, Users, Zap } from "lucide-react";
+import { ArrowRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import StatCard from "@/components/common/cards/StatCard";
 import useGetDashboardStats from "@/hooks/useGetDashboardStats";
@@ -7,7 +7,7 @@ import ProjectsAtRiskModal from "@/components/specified/pages/home/stat-modals/P
 import KnowledgeCoverageModal from "@/components/specified/pages/home/stat-modals/KnowledgeCoverageModal";
 import TeamAvailabilityModal from "@/components/specified/pages/home/stat-modals/TeamAvailabilityModal";
 import AbsenceImpactModal from "@/components/specified/pages/home/stat-modals/AbsenceImpactModal";
-import { ChartPolarIcon, LightningIcon, UserIcon, UsersIcon, WarningIcon } from "@phosphor-icons/react";
+import { ChartPolarIcon, LightningIcon, UserIcon, WarningIcon } from "@phosphor-icons/react";
 
 type ModalKey = "risk" | "coverage" | "availability" | "impact";
 

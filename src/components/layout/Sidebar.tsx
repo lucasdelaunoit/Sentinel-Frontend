@@ -4,6 +4,7 @@ import { Settings, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePage } from "@/context/PageContext";
 import { CalendarDotsIcon, FolderOpenIcon, GearIcon, HouseIcon, UsersIcon } from "@phosphor-icons/react";
+import { Button } from "@/components/ui/button.tsx";
 
 const WIDTH_EXPANDED = 240;
 const WIDTH_COLLAPSED = 72;
@@ -61,9 +62,7 @@ function SidebarRow({
 }) {
   return (
     <div className={cn("flex items-center", className)}>
-      <div className="flex shrink-0 items-center justify-center" style={{ width: SQUARE, height: SQUARE }}>
-        {leading}
-      </div>
+      <div className="flex shrink-0 items-center justify-center w-11 h-11">{leading}</div>
       {children}
       {!collapsed && trailing}
     </div>
@@ -111,6 +110,7 @@ function SidebarProfile({ collapsed }: { collapsed: boolean }) {
   return (
     <SidebarRow
       collapsed={collapsed}
+      className="gap-2"
       leading={
         <div
           className="flex size-10 items-center justify-center rounded-xl bg-secondary-foreground text-xs font-bold text-primary-foreground shadow-lg shadow-sidebar-primary/20"
@@ -120,13 +120,13 @@ function SidebarProfile({ collapsed }: { collapsed: boolean }) {
         </div>
       }
       trailing={
-        <button
-          type="button"
-          className="flex size-7 shrink-0 items-center justify-center rounded-lg text-sidebar-foreground/40 transition-colors duration-200 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-          aria-label="Account settings"
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-primary-foreground hover:bg-secondary-foreground hover:text-primary-foreground"
         >
-          <Settings className="size-3.5" />
-        </button>
+          <GearIcon className="size-4" />
+        </Button>
       }
     >
       <SidebarLabel collapsed={collapsed}>
