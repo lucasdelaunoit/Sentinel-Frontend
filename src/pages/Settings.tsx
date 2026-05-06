@@ -1,6 +1,9 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import TopBar from "@/components/layout/TopBar";
+import SharedStatCard from "@/components/common/cards/StatCard";
 import {
   Shield,
   BookOpen,
@@ -10,10 +13,12 @@ import {
   X,
   Check,
   CalendarDays,
+  Building2,
+  Briefcase,
+  Users,
+  MapPin,
 } from "lucide-react";
 import { useCalendarSettings, type CompanyHoliday } from "@/hooks/useCalendarSettings";
-
-type Tab = "organization" | "skills" | "rules" | "calendar";
 
 const SKILL_CATEGORIES = [
   "FRONTEND",
@@ -150,16 +155,6 @@ const SEVERITY_STYLES = {
 
 /* ─── Shared small components ────────────────────────────── */
 
-function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
-  return (
-    <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
-      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">{label}</p>
-      <p className="text-[24px] font-bold text-foreground mt-1 tracking-tight">{value}</p>
-      {sub && <p className="text-[11px] text-muted-foreground mt-0.5">{sub}</p>}
-    </div>
-  );
-}
-
 function Badge({ children, variant }: { children: React.ReactNode; variant: "critical" | "warning" | "info" | "neutral" }) {
   const styles = {
     critical: "bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-sm",
@@ -191,10 +186,10 @@ function OrganizationTab({ settings, onSave }: { settings: OrganizationSettings;
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-4 gap-4">
-        <StatCard label="Organization" value={form.name} />
-        <StatCard label="Industry" value={form.industry} />
-        <StatCard label="Size" value={form.size} />
-        <StatCard label="Location" value={form.location} />
+        <SharedStatCard title="Organization" value={form.name} comment={null} icon={Building2} isLoading={false} />
+        <SharedStatCard title="Industry"     value={form.industry} comment={null} icon={Briefcase} isLoading={false} />
+        <SharedStatCard title="Size"         value={form.size}     comment={null} icon={Users}     isLoading={false} />
+        <SharedStatCard title="Location"     value={form.location} comment={null} icon={MapPin}    isLoading={false} />
       </div>
 
       <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm">
@@ -759,42 +754,49 @@ function CalendarTab() {
 /* ─── Settings Page ──────────────────────────────────────── */
 
 export default function Settings() {
-  const [activeTab, setActiveTab] = useState<Tab>("organization");
   const [orgSettings, setOrgSettings] = useState(DEFAULT_ORG);
   const [skills, setSkills] = useState(DEFAULT_SKILLS);
   const [rules, setRules] = useState(DEFAULT_RULES);
 
-  const tabs = [
-    { key: "organization" as Tab, label: "Organization", icon: Shield },
-    { key: "skills" as Tab, label: "Skills", icon: BookOpen },
-    { key: "rules" as Tab, label: "Rules", icon: Sliders },
-    { key: "calendar" as Tab, label: "Calendar", icon: CalendarDays },
-  ];
-
   return (
-    <div className="space-y-6 page-enter">
-      <div className="flex items-center gap-2">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={cn(
-              "flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-medium transition-all duration-200",
-              activeTab === tab.key
-                ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                : "bg-card border border-border/60 text-foreground hover:bg-muted/50",
-            )}
-          >
-            <tab.icon className="size-4" />
-            {tab.label}
-          </button>
-        ))}
-      </div>
+    <>
+      <TopBar title="Settings" />
+      <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
+        <Tabs defaultValue="organization">
+          <TabsList className="h-auto bg-transparent p-0 gap-2">
+            {(
+              [
+                { value: "organization", label: "Organization", icon: Shield },
+                { value: "skills",       label: "Skills",       icon: BookOpen },
+                { value: "rules",        label: "Rules",        icon: Sliders },
+                { value: "calendar",     label: "Calendar",     icon: CalendarDays },
+              ] as const
+            ).map(({ value, label, icon: Icon }) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className="flex items-center gap-2 px-5 py-2 rounded-full text-[13px] font-medium border border-border/60 bg-card text-foreground shadow-none transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-sm"
+              >
+                <Icon className="size-4" />
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-      {activeTab === "organization" && <OrganizationTab settings={orgSettings} onSave={setOrgSettings} />}
-      {activeTab === "skills" && <SkillsTab skills={skills} onSave={setSkills} />}
-      {activeTab === "rules" && <RulesTab rules={rules} onSave={setRules} />}
-      {activeTab === "calendar" && <CalendarTab />}
-    </div>
+          <TabsContent value="organization" className="mt-5">
+            <OrganizationTab settings={orgSettings} onSave={setOrgSettings} />
+          </TabsContent>
+          <TabsContent value="skills" className="mt-5">
+            <SkillsTab skills={skills} onSave={setSkills} />
+          </TabsContent>
+          <TabsContent value="rules" className="mt-5">
+            <RulesTab rules={rules} onSave={setRules} />
+          </TabsContent>
+          <TabsContent value="calendar" className="mt-5">
+            <CalendarTab />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </>
   );
 }
