@@ -1,24 +1,25 @@
-import { useState } from "react"
-import { Activity, AlertTriangle, ArrowRightIcon, Users, Zap } from "lucide-react"
-import { cn } from "@/lib/utils"
-import StatCard from "@/components/common/cards/StatCard"
-import useGetDashboardStats from "@/hooks/useGetDashboardStats"
-import ProjectsAtRiskModal from "@/components/specified/pages/home/stat-modals/ProjectsAtRiskModal"
-import KnowledgeCoverageModal from "@/components/specified/pages/home/stat-modals/KnowledgeCoverageModal"
-import TeamAvailabilityModal from "@/components/specified/pages/home/stat-modals/TeamAvailabilityModal"
-import AbsenceImpactModal from "@/components/specified/pages/home/stat-modals/AbsenceImpactModal"
+import { useState } from "react";
+import { Activity, AlertTriangle, ArrowRightIcon, Users, Zap } from "lucide-react";
+import { cn } from "@/lib/utils";
+import StatCard from "@/components/common/cards/StatCard";
+import useGetDashboardStats from "@/hooks/useGetDashboardStats";
+import ProjectsAtRiskModal from "@/components/specified/pages/home/stat-modals/ProjectsAtRiskModal";
+import KnowledgeCoverageModal from "@/components/specified/pages/home/stat-modals/KnowledgeCoverageModal";
+import TeamAvailabilityModal from "@/components/specified/pages/home/stat-modals/TeamAvailabilityModal";
+import AbsenceImpactModal from "@/components/specified/pages/home/stat-modals/AbsenceImpactModal";
+import { ChartPolarIcon, LightningIcon, UserIcon, UsersIcon, WarningIcon } from "@phosphor-icons/react";
 
-type ModalKey = "risk" | "coverage" | "availability" | "impact"
+type ModalKey = "risk" | "coverage" | "availability" | "impact";
 
 const SEVERITY_COLOR: Record<Severity, string> = {
   critical: "text-destructive-foreground",
   warning: "text-amber-500",
   ok: "text-emerald-600",
-}
+};
 
 export default function HomeStatCardsSection() {
-  const { data: stats, isLoading: statsLoading } = useGetDashboardStats()
-  const [modalOpen, setModalOpen] = useState<ModalKey | null>(null)
+  const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
+  const [modalOpen, setModalOpen] = useState<ModalKey | null>(null);
 
   return (
     <>
@@ -26,11 +27,16 @@ export default function HomeStatCardsSection() {
         <StatCard
           title="Projects at Risk"
           value={stats ? String(stats.projects_at_risk.value) : "—"}
-          icon={AlertTriangle}
+          icon={WarningIcon}
           onClick={() => setModalOpen("risk")}
           isLoading={statsLoading}
           comment={
-            <div className={cn("text-sm flex items-center gap-1", stats ? SEVERITY_COLOR[stats.projects_at_risk.severity] : "text-secondary-foreground")}>
+            <div
+              className={cn(
+                "text-sm flex items-center gap-1",
+                stats ? SEVERITY_COLOR[stats.projects_at_risk.severity] : "text-secondary-foreground",
+              )}
+            >
               <ArrowRightIcon size={13} />
               <span className="font-semibold">{stats?.projects_at_risk.insight ?? "Unavailable"}</span>
             </div>
@@ -39,11 +45,16 @@ export default function HomeStatCardsSection() {
         <StatCard
           title="Knowledge Coverage"
           value={stats ? `${stats.knowledge_coverage.value}%` : "—"}
-          icon={Activity}
+          icon={ChartPolarIcon}
           onClick={() => setModalOpen("coverage")}
           isLoading={statsLoading}
           comment={
-            <div className={cn("text-sm flex items-center gap-1", stats ? SEVERITY_COLOR[stats.knowledge_coverage.severity] : "text-secondary-foreground")}>
+            <div
+              className={cn(
+                "text-sm flex items-center gap-1",
+                stats ? SEVERITY_COLOR[stats.knowledge_coverage.severity] : "text-secondary-foreground",
+              )}
+            >
               <ArrowRightIcon size={13} />
               <span className="font-semibold">{stats?.knowledge_coverage.insight ?? "Unavailable"}</span>
             </div>
@@ -52,11 +63,16 @@ export default function HomeStatCardsSection() {
         <StatCard
           title="Team Availability"
           value={stats ? stats.team_availability.value : "—"}
-          icon={Users}
+          icon={UserIcon}
           onClick={() => setModalOpen("availability")}
           isLoading={statsLoading}
           comment={
-            <div className={cn("text-sm flex items-center gap-1", stats ? SEVERITY_COLOR[stats.team_availability.severity] : "text-secondary-foreground")}>
+            <div
+              className={cn(
+                "text-sm flex items-center gap-1",
+                stats ? SEVERITY_COLOR[stats.team_availability.severity] : "text-secondary-foreground",
+              )}
+            >
               <ArrowRightIcon size={13} />
               <span className="font-semibold">{stats?.team_availability.insight ?? "Unavailable"}</span>
             </div>
@@ -65,11 +81,16 @@ export default function HomeStatCardsSection() {
         <StatCard
           title="Absence Impact"
           value={stats ? String(stats.absence_impact.value) : "—"}
-          icon={Zap}
+          icon={LightningIcon}
           onClick={() => setModalOpen("impact")}
           isLoading={statsLoading}
           comment={
-            <div className={cn("text-sm flex items-center gap-1", stats ? SEVERITY_COLOR[stats.absence_impact.severity] : "text-secondary-foreground")}>
+            <div
+              className={cn(
+                "text-sm flex items-center gap-1",
+                stats ? SEVERITY_COLOR[stats.absence_impact.severity] : "text-secondary-foreground",
+              )}
+            >
               <ArrowRightIcon size={13} />
               <span className="font-semibold">{stats?.absence_impact.insight ?? "Unavailable"}</span>
             </div>
@@ -77,10 +98,10 @@ export default function HomeStatCardsSection() {
         />
       </div>
 
-      {modalOpen === "risk"         && <ProjectsAtRiskModal    onClose={() => setModalOpen(null)} />}
-      {modalOpen === "coverage"     && <KnowledgeCoverageModal  onClose={() => setModalOpen(null)} />}
-      {modalOpen === "availability" && <TeamAvailabilityModal   onClose={() => setModalOpen(null)} />}
-      {modalOpen === "impact"       && <AbsenceImpactModal      onClose={() => setModalOpen(null)} />}
+      {modalOpen === "risk" && <ProjectsAtRiskModal onClose={() => setModalOpen(null)} />}
+      {modalOpen === "coverage" && <KnowledgeCoverageModal onClose={() => setModalOpen(null)} />}
+      {modalOpen === "availability" && <TeamAvailabilityModal onClose={() => setModalOpen(null)} />}
+      {modalOpen === "impact" && <AbsenceImpactModal onClose={() => setModalOpen(null)} />}
     </>
-  )
+  );
 }

@@ -12,27 +12,23 @@ interface StatCardProps {
   isLoading: boolean;
 }
 
-export default function StatCard({
-  title,
-  value,
-  comment,
-  icon: Icon,
-  onClick,
-  isLoading
-}: StatCardProps) {
-
-  if(isLoading)
-    return <StatCardSkeleton />;
+export default function StatCard({ title, value, comment, icon: Icon, onClick, isLoading }: StatCardProps) {
+  if (isLoading) return <StatCardSkeleton />;
 
   return (
-    <Card className={cn("py-6 gap-3", onClick && "cursor-pointer hover:bg-muted/30 transition-colors")} onClick={onClick}>
+    <Card
+      className={cn("py-6 gap-3", onClick && "cursor-pointer hover:bg-muted/30 transition-colors")}
+      onClick={onClick}
+    >
       <div className="flex justify-between items-start">
-        <span className="text-sm font-normal text-muted-foreground tracking-wide">
-          {title}
+        <span className="text-sm font-normal text-muted-foreground tracking-wide">{title}</span>
+        <span className="text-muted-foreground opacity-60">
+          <Icon className="size-5" />
         </span>
-        <span className="text-muted-foreground opacity-60"><Icon className="h-4"/></span>
       </div>
-      <div className="text-3xl font-semibold"> {/*style={{ fontSize: "34px", fontWeight: 800, color: theme.text, letterSpacing: "-0.03em", lineHeight: 1.15, marginTop: "2px" }}*/}
+      <div className="text-3xl font-semibold">
+        {" "}
+        {/*style={{ fontSize: "34px", fontWeight: 800, color: theme.text, letterSpacing: "-0.03em", lineHeight: 1.15, marginTop: "2px" }}*/}
         {value}
       </div>
       {comment}

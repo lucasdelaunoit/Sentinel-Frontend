@@ -1,8 +1,9 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChevronRight, PlayCircle, PenSquare, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { ChevronRight, PlayCircle, PenSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePage } from "@/context/PageContext";
 import type { ReactNode } from "react";
+import { SidebarIcon, SidebarSimpleIcon } from "@phosphor-icons/react";
 
 interface TopBarProps {
   title: string;
@@ -54,17 +55,15 @@ export default function TopBar({ title, actions }: TopBarProps): ReactNode {
           className="size-8 shrink-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
           title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {sidebarCollapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
+          {sidebarCollapsed ? <SidebarSimpleIcon className="size-5" /> : <SidebarIcon className="size-5" />}
         </Button>
         <div>
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70">
-          <span className="font-medium">Sentinel</span>
-          <ChevronRight className="size-3 text-muted-foreground/40" />
-          <span className="font-medium text-foreground/60">{breadcrumb}</span>
-        </div>
-        <h1 className="text-xl font-bold text-foreground leading-tight tracking-tight mt-0.5">
-          {title}
-        </h1>
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70">
+            <span className="font-medium">Sentinel</span>
+            <ChevronRight className="size-3 text-muted-foreground/40" />
+            <span className="font-medium text-foreground/60">{breadcrumb}</span>
+          </div>
+          <h1 className="text-xl font-bold text-foreground leading-tight tracking-tight mt-0.5">{title}</h1>
         </div>
       </div>
 
