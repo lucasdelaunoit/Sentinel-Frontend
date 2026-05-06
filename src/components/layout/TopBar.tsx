@@ -1,8 +1,8 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChevronRight, PlayCircle, PenSquare } from "lucide-react";
+import { ChevronRight, PlayCircle, PenSquare, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePage } from "@/context/PageContext";
-import type {ReactNode} from "react";
+import type { ReactNode } from "react";
 
 interface TopBarProps {
   title: string;
@@ -13,7 +13,7 @@ export default function TopBar({ title, actions }: TopBarProps): ReactNode {
   const location = useLocation();
   const navigate = useNavigate();
   const path = location.pathname;
-  const { title: contextTitle, breadcrumb: contextBreadcrumb } = usePage();
+  const { title: contextTitle, breadcrumb: contextBreadcrumb, sidebarCollapsed, toggleSidebar } = usePage();
 
   const isHome = path === "/" || path === "/dashboard";
   const isEmployees = path === "/employees";
@@ -46,7 +46,17 @@ export default function TopBar({ title, actions }: TopBarProps): ReactNode {
 
   return (
     <header className="flex h-[60px] shrink-0 items-center justify-between border-b border-border bg-card/80 backdrop-blur-sm px-6">
-      <div>
+      <div className="flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          className="size-8 shrink-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
+          title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {sidebarCollapsed ? <PanelLeftOpen className="size-4" /> : <PanelLeftClose className="size-4" />}
+        </Button>
+        <div>
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70">
           <span className="font-medium">Sentinel</span>
           <ChevronRight className="size-3 text-muted-foreground/40" />
@@ -55,6 +65,7 @@ export default function TopBar({ title, actions }: TopBarProps): ReactNode {
         <h1 className="text-xl font-bold text-foreground leading-tight tracking-tight mt-0.5">
           {title}
         </h1>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">

@@ -5,6 +5,8 @@ interface PageContextType {
   breadcrumb: string;
   setTitle: (t: string) => void;
   setBreadcrumb: (b: string) => void;
+  sidebarCollapsed: boolean;
+  toggleSidebar: () => void;
 }
 
 const PageContext = createContext<PageContextType>({
@@ -12,6 +14,8 @@ const PageContext = createContext<PageContextType>({
   breadcrumb: "",
   setTitle: () => {},
   setBreadcrumb: () => {},
+  sidebarCollapsed: false,
+  toggleSidebar: () => {},
 });
 
 export function usePage() {
@@ -21,8 +25,19 @@ export function usePage() {
 export function PageProvider({ children }: { children: ReactNode }) {
   const [title, setTitle] = useState("");
   const [breadcrumb, setBreadcrumb] = useState("");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   return (
-    <PageContext.Provider value={{ title, breadcrumb, setTitle, setBreadcrumb }}>
+    <PageContext.Provider
+      value={{
+        title,
+        breadcrumb,
+        setTitle,
+        setBreadcrumb,
+        sidebarCollapsed,
+        toggleSidebar: () => setSidebarCollapsed((v) => !v),
+      }}
+    >
       {children}
     </PageContext.Provider>
   );
