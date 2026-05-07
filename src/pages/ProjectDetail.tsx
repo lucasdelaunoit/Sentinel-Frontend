@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { usePage } from "@/context/PageContext";
 import {
   AlertTriangle,
@@ -7,11 +7,17 @@ import {
   Brain,
   Users,
   PlayCircle,
+  Building2,
+  CalendarDays,
+  Target,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PROJECTS, type ProjectData } from "@/data/projects";
 import { EMPLOYEE_DETAILS, type EmployeeDetail } from "@/data/employees";
+import TopBar from "@/components/layout/topbar/TopBar.tsx";
+import StatCard from "@/components/common/cards/StatCard";
 
 /* ─── Risk computation ────────────────────────────────────── */
 
@@ -265,40 +271,24 @@ function AlertCard({ alert }: { alert: RiskAlert }) {
   );
 }
 
-function RiskKpi({
+function InfoChip({
+  icon,
   label,
   value,
-  sub,
-  color = "text-foreground",
-  icon: Icon,
 }: {
+  icon: React.ReactNode;
   label: string;
-  value: string | number;
-  sub?: string;
-  color?: string;
-  icon: React.ComponentType<{ className?: string }>;
+  value: string;
 }) {
   return (
-    <div className="group relative flex items-center gap-4 rounded-2xl bg-card border border-border/60 px-5 py-4 shadow-sm hover:shadow-md hover:border-border transition-all duration-200">
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground/60 group-hover:bg-muted group-hover:text-muted-foreground transition-colors">
-        <Icon className="size-4" />
+    <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2.5">
+      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+        {icon}
+        {label}
       </div>
-      <div>
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-          {label}
-        </p>
-        <p
-          className={cn(
-            "text-[24px] font-bold tracking-tight leading-none mt-0.5",
-            color,
-          )}
-        >
-          {value}
-        </p>
-        {sub && (
-          <p className="text-[11px] text-muted-foreground mt-0.5">{sub}</p>
-        )}
-      </div>
+      <p className="text-[13px] font-medium text-foreground truncate">
+        {value}
+      </p>
     </div>
   );
 }
@@ -1048,7 +1038,7 @@ export default function ProjectDetail() {
   const { setTitle, setBreadcrumb } = usePage();
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
 
-  const project = PROJECTS.find((p) => p.id === id);
+  const project = PROJECTS.find((p) => p.id === id) ?? PROJECTS[0];
 
   useEffect(() => {
     if (project) {
@@ -1079,22 +1069,6 @@ export default function ProjectDetail() {
     [project, members, coverage],
   );
 
-  if (!project) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <p className="text-[16px] font-semibold text-foreground">
-          Project not found
-        </p>
-        <Link
-          to="/projects"
-          className="text-[13px] text-primary hover:underline underline-offset-4"
-        >
-          Back to projects
-        </Link>
-      </div>
-    );
-  }
-
   const onLeaveCount = members.filter(
     (m) => m.todayStatus === "Has Leave",
   ).length;
@@ -1108,77 +1082,190 @@ export default function ProjectDetail() {
     { key: "knowledge", label: "Knowledge" },
   ];
 
+  const riskColor =
+    project.riskScore >= 20
+      ? "text-rose-500"
+      : project.riskScore >= 12
+        ? "text-amber-500"
+        : "text-emerald-600";
+  const busColor =
+    project.busFactor <= 1
+      ? "text-rose-500"
+      : project.busFactor <= 2
+        ? "text-amber-500"
+        : "text-emerald-600";
+  const healthColor =
+    project.health >= 75
+      ? "text-emerald-600"
+      : project.health >= 55
+        ? "text-amber-500"
+        : "text-rose-500";
+
+  const statusColor =
+    project.status === "Active"
+      ? "bg-emerald-100 text-emerald-700 border-emerald-200/50"
+      : project.status === "On Hold"
+        ? "bg-amber-100 text-amber-700 border-amber-200/50"
+        : project.status === "Completed"
+          ? "bg-blue-100 text-blue-700 border-blue-200/50"
+          : "bg-muted text-muted-foreground border-border";
+
+  const priorityColor =
+    project.priority === "Critical"
+      ? "bg-rose-100 text-rose-700 border-rose-200/50"
+      : project.priority === "High"
+        ? "bg-amber-100 text-amber-700 border-amber-200/50"
+        : project.priority === "Medium"
+          ? "bg-blue-100 text-blue-700 border-blue-200/50"
+          : "bg-muted text-muted-foreground border-border";
+
   return (
     <>
-      <div className="space-y-5 page-enter">
-        <div className="grid grid-cols-4 gap-4">
-          <RiskKpi
-            label="Risk Score"
-            value={`${project.riskScore}/100`}
-            sub={
-              project.riskScore >= 20
-                ? "High risk"
-                : project.riskScore >= 12
-                  ? "Moderate"
-                  : "Low risk"
-            }
-            color={
-              project.riskScore >= 20
-                ? "text-rose-500"
-                : project.riskScore >= 12
-                  ? "text-amber-500"
-                  : "text-emerald-600"
-            }
+      <TopBar title={project.name} />
+      <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
+        {/* ── Hero card ─────────────────────────────────────────── */}
+        <section className="rounded-2xl bg-card border border-border/60 shadow-sm p-6">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="flex items-start gap-4">
+              <div className="flex size-20 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-xl font-bold text-white shadow-md">
+                {project.id.slice(-2)}
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">
+                    {project.name}
+                  </h2>
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold",
+                      statusColor,
+                    )}
+                  >
+                    {project.status}
+                  </span>
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold",
+                      priorityColor,
+                    )}
+                  >
+                    {project.priority}
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
+                  {project.description}
+                </p>
+              </div>
+            </div>
+            <Button
+              className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => navigate("/employees?tab=calendar")}
+            >
+              <PlayCircle className="size-4" />
+              Simulate Leave
+            </Button>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <InfoChip
+              icon={<Building2 className="size-3.5" />}
+              label="Department"
+              value={project.department}
+            />
+            <InfoChip
+              icon={<CalendarDays className="size-3.5" />}
+              label="Start Date"
+              value={new Date(project.startDate).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+            />
+            <InfoChip
+              icon={<Target className="size-3.5" />}
+              label="End Date"
+              value={new Date(project.endDate).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+            />
+            <InfoChip
+              icon={<Activity className="size-3.5" />}
+              label="Progress"
+              value={`${project.progress}%`}
+            />
+          </div>
+        </section>
+
+        {/* ── Stats ─────────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard
+            title="Risk Score"
             icon={ShieldAlert}
+            isLoading={false}
+            value={
+              <span className={riskColor}>{project.riskScore}/100</span>
+            }
+            comment={
+              <span className="text-[12px] text-muted-foreground">
+                {project.riskScore >= 20
+                  ? "High risk"
+                  : project.riskScore >= 12
+                    ? "Moderate"
+                    : "Low risk"}
+              </span>
+            }
           />
-          <RiskKpi
-            label="Bus Factor"
-            value={project.busFactor}
-            sub={
-              project.busFactor <= 1
-                ? "Critical — 1 person"
-                : project.busFactor <= 2
-                  ? "Low — 2 people"
-                  : "Acceptable"
-            }
-            color={
-              project.busFactor <= 1
-                ? "text-rose-500"
-                : project.busFactor <= 2
-                  ? "text-amber-500"
-                  : "text-emerald-600"
-            }
+          <StatCard
+            title="Bus Factor"
             icon={AlertTriangle}
+            isLoading={false}
+            value={<span className={busColor}>{project.busFactor}</span>}
+            comment={
+              <span className="text-[12px] text-muted-foreground">
+                {project.busFactor <= 1
+                  ? "Critical — 1 person"
+                  : project.busFactor <= 2
+                    ? "Low — 2 people"
+                    : "Acceptable"}
+              </span>
+            }
           />
-          <RiskKpi
-            label="Health Score"
-            value={`${project.health}/100`}
-            sub={
-              project.health >= 75
-                ? "Healthy"
-                : project.health >= 55
-                  ? "Degraded"
-                  : "Critical"
-            }
-            color={
-              project.health >= 75
-                ? "text-emerald-600"
-                : project.health >= 55
-                  ? "text-amber-500"
-                  : "text-rose-500"
-            }
+          <StatCard
+            title="Health Score"
             icon={Brain}
-          />
-          <RiskKpi
-            label="Team"
-            value={`${members.length} members`}
-            sub={
-              onLeaveCount > 0
-                ? `${onLeaveCount} currently on leave`
-                : "All available"
+            isLoading={false}
+            value={
+              <span className={healthColor}>{project.health}/100</span>
             }
-            color={onLeaveCount > 0 ? "text-amber-500" : "text-foreground"}
+            comment={
+              <span className="text-[12px] text-muted-foreground">
+                {project.health >= 75
+                  ? "Healthy"
+                  : project.health >= 55
+                    ? "Degraded"
+                    : "Critical"}
+              </span>
+            }
+          />
+          <StatCard
+            title="Team"
             icon={Users}
+            isLoading={false}
+            value={members.length}
+            comment={
+              <span
+                className={cn(
+                  "text-[12px]",
+                  onLeaveCount > 0 ? "text-amber-500" : "text-muted-foreground",
+                )}
+              >
+                {onLeaveCount > 0
+                  ? `${onLeaveCount} on leave`
+                  : "All available"}
+              </span>
+            }
           />
         </div>
 
