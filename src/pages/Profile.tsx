@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, type FormEvent } from "react";
+import { toast } from "sonner";
 import {
   Mail,
   Phone,
@@ -15,6 +15,7 @@ import TopBar from "@/components/layout/TopBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ComposedCard from "@/components/common/cards/ComposedCard";
+import { useAuth } from "@/context/AuthContext";
 
 type Profile = {
   firstName: string;
@@ -28,23 +29,38 @@ type Profile = {
   initials: string;
 };
 
-const INITIAL_PROFILE: Profile = {
-  firstName: "Admin",
-  lastName: "User",
-  email: "admin@sentinel.io",
-  phone: "+33 6 12 34 56 78",
-  role: "Manager",
-  department: "Operations",
-  location: "Brussels, BE",
-  joinedAt: "2024-09-01",
-  initials: "AD",
+const FALLBACK_PROFILE: Profile = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "—",
+  role: "Member",
+  department: "—",
+  location: "—",
+  joinedAt: new Date().toISOString(),
+  initials: "?",
 };
 
+function buildProfileFromUser(user: { name: string; email: string } | null): Profile {
+  if (!user) return FALLBACK_PROFILE;
+  const [firstName = "", ...rest] = user.name.split(/\s+/).filter(Boolean);
+  const lastName = rest.join(" ");
+  const initials = ((firstName[0] ?? "") + (lastName[0] ?? "")).toUpperCase() || "?";
+  return { ...FALLBACK_PROFILE, firstName, lastName, email: user.email, initials };
+}
+
 export default function ProfilePage() {
-  const navigate = useNavigate();
-  const [profile, setProfile] = useState<Profile>(INITIAL_PROFILE);
+  const { user, logout } = useAuth();
+  const [profile, setProfile] = useState<Profile>(() => buildProfileFromUser(user));
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState<Profile>(INITIAL_PROFILE);
+  const [draft, setDraft] = useState<Profile>(() => buildProfileFromUser(user));
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  useEffect(() => {
+    const next = buildProfileFromUser(user);
+    setProfile(next);
+    setDraft(next);
+  }, [user]);
 
   function startEdit() {
     setDraft(profile);
@@ -59,14 +75,17 @@ export default function ProfilePage() {
     setProfile(draft);
     setEditing(false);
   }
-  function handleLogout() {
+  async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
     try {
-      localStorage.removeItem("sentinel.auth");
-      sessionStorage.removeItem("sentinel.auth");
+      await logout();
+      toast.success("Signed out");
     } catch {
-      /* ignore */
+      toast.error("Could not sign out cleanly. Session cleared locally.");
+    } finally {
+      setLoggingOut(false);
     }
-    navigate("/login");
   }
 
   const fullName = `${profile.firstName} ${profile.lastName}`.trim();
@@ -80,6 +99,7 @@ export default function ProfilePage() {
             variant="outline"
             size="lg"
             onClick={handleLogout}
+            disabled={loggingOut}
             className="gap-2 text-rose-600 hover:text-rose-600 hover:bg-rose-50 border-rose-200/60"
           >
             <LogOut className="size-4" />
@@ -232,6 +252,7 @@ export default function ProfilePage() {
             <Button
               variant="outline"
               onClick={handleLogout}
+            disabled={loggingOut}
               className="gap-2 border-rose-300/60 text-rose-600 hover:bg-rose-100 hover:text-rose-700"
             >
               <LogOut className="size-4" />

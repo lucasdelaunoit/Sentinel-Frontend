@@ -11,6 +11,7 @@ import Planning from "./pages/Planning";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import { PageProvider } from "./context/PageContext";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
 function AppShell() {
   return (
@@ -38,7 +39,14 @@ export default function App() {
     <PageProvider>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="*" element={<AppShell />} />
+        <Route
+          path="*"
+          element={
+            <ProtectedRoute>
+              <AppShell />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </PageProvider>
   );
