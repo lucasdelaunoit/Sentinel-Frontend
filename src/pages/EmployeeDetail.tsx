@@ -5,14 +5,20 @@ import {
   PenSquare,
   Plus,
   Calendar,
-  Briefcase,
   Mail,
   Phone,
   User,
   CalendarDays,
+  ShieldAlert,
+  Users as UsersIcon,
+  Code2,
+  FolderKanban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import TopBar from "@/components/layout/topbar/TopBar.tsx";
+import ComposedCard from "@/components/common/cards/ComposedCard";
+import StatCard from "@/components/common/cards/StatCard";
 import {
   EMPLOYEE_DETAILS,
   type EmployeeDetail,
@@ -236,71 +242,20 @@ function LeaveStatusBadge({
 
 function OverviewTab({ employee }: { employee: EmployeeDetail }) {
   return (
-    <div className="grid grid-cols-3 gap-4">
-      <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm hover:shadow-md transition-all">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="font-semibold text-foreground text-sm">
-            Informations
-          </h3>
-          <Button
-            size="xs"
-            variant="outline"
-            className="gap-1.5 text-[10px] rounded-lg bg-muted/30 hover:bg-muted"
-          >
-            <PenSquare className="size-3" />
-            Edit
-          </Button>
-        </div>
-        <div className="space-y-4">
-          {[
-            { icon: Mail, label: "Email", value: employee.email },
-            { icon: Phone, label: "Phone", value: employee.phone },
-            {
-              icon: Briefcase,
-              label: "Department",
-              value: employee.department,
-            },
-            { icon: User, label: "Role", value: employee.role },
-            {
-              icon: CalendarDays,
-              label: "Start Date",
-              value: new Date(employee.startDate).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              }),
-            },
-            { icon: User, label: "Manager", value: employee.manager },
-          ].map(({ icon: Icon, label, value }) => (
-            <div key={label} className="flex items-start gap-3">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-muted/50">
-                <Icon className="size-3.5 text-muted-foreground/70" />
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground/70 uppercase tracking-wide">
-                  {label}
-                </p>
-                <p className="text-[13px] font-medium text-foreground mt-0.5">
-                  {value}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm hover:shadow-md transition-all">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="font-semibold text-foreground text-sm">Leaves</h3>
-          <Button
-            size="xs"
-            variant="outline"
-            className="gap-1.5 text-[10px] rounded-lg bg-muted/30 hover:bg-muted"
-          >
-            <Calendar className="size-3" />
-            Request
-          </Button>
-        </div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <ComposedCard
+        title="Leaves"
+        action={
+          <>
+            <div className="flex-1" />
+            <Button size="xs" variant="outline" className="gap-1.5 text-[10px]">
+              <Calendar className="size-3" />
+              Request
+            </Button>
+          </>
+        }
+        headerClassName="mb-4"
+      >
         <div className="space-y-2.5">
           {employee.leaves.length === 0 ? (
             <p className="text-[13px] text-muted-foreground text-center py-8">
@@ -314,40 +269,39 @@ function OverviewTab({ employee }: { employee: EmployeeDetail }) {
               >
                 <div className="flex items-center gap-2.5">
                   <LeaveBadge type={leave.type} />
-                  <div>
-                    <p className="text-[12px] font-medium text-foreground">
-                      {new Date(leave.startDate).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                      })}
-                      {" → "}
-                      {new Date(leave.endDate).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
+                  <p className="text-[12px] font-medium text-foreground">
+                    {new Date(leave.startDate).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                    })}
+                    {" → "}
+                    {new Date(leave.endDate).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </p>
                 </div>
                 <LeaveStatusBadge status={leave.status} />
               </div>
             ))
           )}
         </div>
-      </div>
+      </ComposedCard>
 
-      <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm hover:shadow-md transition-all">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="font-semibold text-foreground text-sm">Projects</h3>
-          <Button
-            size="xs"
-            variant="outline"
-            className="gap-1.5 text-[10px] rounded-lg bg-muted/30 hover:bg-muted"
-          >
-            <Plus className="size-3" />
-            Assign
-          </Button>
-        </div>
+      <ComposedCard
+        title="Projects"
+        action={
+          <>
+            <div className="flex-1" />
+            <Button size="xs" variant="outline" className="gap-1.5 text-[10px]">
+              <Plus className="size-3" />
+              Assign
+            </Button>
+          </>
+        }
+        headerClassName="mb-4"
+      >
         <div className="space-y-2.5">
           {employee.projects.length === 0 ? (
             <p className="text-[13px] text-muted-foreground text-center py-8">
@@ -383,7 +337,7 @@ function OverviewTab({ employee }: { employee: EmployeeDetail }) {
             ))
           )}
         </div>
-      </div>
+      </ComposedCard>
     </div>
   );
 }
@@ -392,18 +346,20 @@ function OverviewTab({ employee }: { employee: EmployeeDetail }) {
 
 function ProjectsTab({ employee }: { employee: EmployeeDetail }) {
   return (
-    <div className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
-      <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
-        <h3 className="font-semibold text-foreground text-sm">Projects</h3>
-        <Button
-          size="xs"
-          variant="outline"
-          className="gap-1.5 text-[10px] rounded-lg bg-muted/30 hover:bg-muted"
-        >
-          <Plus className="size-3" />
-          Assign project
-        </Button>
-      </div>
+    <ComposedCard
+      title="Projects"
+      action={
+        <>
+          <div className="flex-1" />
+          <Button size="xs" variant="outline" className="gap-1.5 text-[10px]">
+            <Plus className="size-3" />
+            Assign project
+          </Button>
+        </>
+      }
+      className="p-0 overflow-hidden"
+      headerClassName="px-6 pt-5 pb-4 border-b border-border/60"
+    >
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border/60 bg-muted/30">
@@ -445,7 +401,7 @@ function ProjectsTab({ employee }: { employee: EmployeeDetail }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </ComposedCard>
   );
 }
 
@@ -456,21 +412,25 @@ function SkillsTab({ employee }: { employee: EmployeeDetail }) {
   const right = employee.skills.filter((_, i) => i % 2 !== 0);
 
   return (
-    <div className="grid grid-cols-5 gap-4">
-      <div className="col-span-3 rounded-2xl bg-card border border-border/60 p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="font-semibold text-foreground text-sm">
-            Skills & Proficiency
-          </h3>
-          <Button
-            size="xs"
-            variant="ghost"
-            className="gap-1.5 text-[11px] rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          >
-            <Plus className="size-3.5" />
-            Add Skill
-          </Button>
-        </div>
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      <ComposedCard
+        title="Skills & Proficiency"
+        action={
+          <>
+            <div className="flex-1" />
+            <Button
+              size="xs"
+              variant="ghost"
+              className="gap-1.5 text-[11px] text-muted-foreground"
+            >
+              <Plus className="size-3.5" />
+              Add Skill
+            </Button>
+          </>
+        }
+        className="lg:col-span-3"
+        headerClassName="mb-5"
+      >
         <div className="grid grid-cols-2 gap-x-8 gap-y-5">
           {left.map((skill) => (
             <SkillBar key={skill.name} name={skill.name} level={skill.level} />
@@ -479,14 +439,15 @@ function SkillsTab({ employee }: { employee: EmployeeDetail }) {
             <SkillBar key={skill.name} name={skill.name} level={skill.level} />
           ))}
         </div>
-      </div>
+      </ComposedCard>
 
-      <div className="col-span-2 rounded-2xl bg-card border border-border/60 p-6 shadow-sm">
-        <h3 className="font-semibold text-foreground text-sm mb-4">
-          Competency Radar
-        </h3>
+      <ComposedCard
+        title="Competency Radar"
+        className="lg:col-span-2"
+        headerClassName="mb-4"
+      >
         <CompetencyRadar employee={employee} />
-      </div>
+      </ComposedCard>
     </div>
   );
 }
@@ -498,9 +459,9 @@ export default function EmployeeDetail() {
 
   const { setTitle, setBreadcrumb } = usePage();
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
-  const employee: EmployeeDetail | undefined = id
-    ? EMPLOYEE_DETAILS[id]
-    : undefined;
+  const fallbackKey = Object.keys(EMPLOYEE_DETAILS)[0];
+  const employee: EmployeeDetail | undefined =
+    (id && EMPLOYEE_DETAILS[id]) || EMPLOYEE_DETAILS[fallbackKey];
 
   useEffect(() => {
     if (employee) {
@@ -538,73 +499,126 @@ export default function EmployeeDetail() {
 
   return (
     <>
-      <div className="space-y-5 page-enter">
-        <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-1 rounded-2xl bg-card border border-border/60 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-all">
-            <div
-              className={cn(
-                "flex size-16 shrink-0 items-center justify-center rounded-2xl text-[18px] font-bold text-white shadow-md",
-                employee.color,
-              )}
-            >
-              {employee.initials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-[18px] font-bold text-foreground tracking-tight">
-                  {employee.name}
-                </h2>
-                <span className="inline-flex items-center rounded-md bg-muted/60 px-2 py-0.5 text-[11px] font-medium text-foreground/70">
-                  {employee.department}
-                </span>
+      <TopBar title={employee.name} />
+      <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
+        {/* ── Hero card ─────────────────────────────────────────── */}
+        <section className="rounded-2xl bg-card border border-border/60 shadow-sm p-6">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-4">
+              <div
+                className={cn(
+                  "flex size-20 items-center justify-center rounded-2xl text-xl font-bold text-white shadow-md",
+                  employee.color,
+                )}
+              >
+                {employee.initials}
               </div>
-              <p className="text-[13px] text-muted-foreground mt-0.5">
-                {employee.role}
-              </p>
-              {employee.onLeaveUntil && (
-                <span className="mt-2 inline-flex items-center rounded-full bg-gradient-to-br from-rose-500 to-rose-600 px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-sm">
-                  On Leave until {employee.onLeaveUntil}
-                </span>
-              )}
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-xl font-bold tracking-tight text-foreground">
+                    {employee.name}
+                  </h2>
+                  {employee.onLeaveUntil && (
+                    <span className="inline-flex items-center rounded-full bg-gradient-to-br from-rose-500 to-rose-600 px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-sm">
+                      On Leave until {employee.onLeaveUntil}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {employee.role} · {employee.department}
+                </p>
+              </div>
             </div>
+            <Button variant="outline" className="gap-2">
+              <PenSquare className="size-4" />
+              Edit profile
+            </Button>
           </div>
 
-          <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm hover:shadow-md transition-all">
-            <div className="flex items-start justify-between">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                Criticality
-              </p>
-              <button className="flex size-7 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground transition-colors">
-                <PenSquare className="size-3.5" />
-              </button>
-            </div>
-            <p
-              className={cn(
-                "mt-3 text-[32px] font-bold",
-                employee.criticality === "High"
-                  ? "text-rose-500"
-                  : employee.criticality === "Medium"
-                    ? "text-amber-500"
-                    : "text-emerald-500",
-              )}
-            >
-              {employee.criticality}
-            </p>
+          <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <InfoChip
+              icon={<Mail className="size-3.5" />}
+              label="Email"
+              value={employee.email}
+            />
+            <InfoChip
+              icon={<Phone className="size-3.5" />}
+              label="Phone"
+              value={employee.phone}
+            />
+            <InfoChip
+              icon={<User className="size-3.5" />}
+              label="Manager"
+              value={employee.manager}
+            />
+            <InfoChip
+              icon={<CalendarDays className="size-3.5" />}
+              label="Start Date"
+              value={new Date(employee.startDate).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+            />
           </div>
+        </section>
 
-          <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm hover:shadow-md transition-all">
-            <div className="flex items-start justify-between">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                Bus Factor in Org
-              </p>
-              <button className="flex size-7 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground transition-colors">
-                <Briefcase className="size-3.5" />
-              </button>
-            </div>
-            <p className="mt-3 text-[32px] font-bold text-amber-500">
-              {employee.busFactor}
-            </p>
-          </div>
+        {/* ── Stats ─────────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard
+            title="Criticality"
+            icon={ShieldAlert}
+            isLoading={false}
+            comment={null}
+            value={
+              <span
+                className={cn(
+                  employee.criticality === "High"
+                    ? "text-rose-500"
+                    : employee.criticality === "Medium"
+                      ? "text-amber-500"
+                      : "text-emerald-500",
+                )}
+              >
+                {employee.criticality}
+              </span>
+            }
+          />
+          <StatCard
+            title="Bus Factor in Org"
+            icon={UsersIcon}
+            isLoading={false}
+            value={<span className="text-amber-500">{employee.busFactor}</span>}
+            comment={
+              <span className="text-[12px] text-muted-foreground">
+                {employee.busFactor <= 1 ? "Critical dependency" : "Distributed"}
+              </span>
+            }
+          />
+          <StatCard
+            title="Skills"
+            icon={Code2}
+            isLoading={false}
+            value={employee.skills.length}
+            comment={
+              <span className="text-[12px] text-muted-foreground">
+                {employee.skills.filter((s) => s.level >= 4).length} expert-level
+              </span>
+            }
+          />
+          <StatCard
+            title="Active Projects"
+            icon={FolderKanban}
+            isLoading={false}
+            value={
+              employee.projects.filter((p) => p.status === "Active").length
+            }
+            comment={
+              <span className="text-[12px] text-muted-foreground">
+                {employee.projects.length} total
+              </span>
+            }
+          />
         </div>
 
         <div className="flex items-center gap-2">
@@ -630,5 +644,29 @@ export default function EmployeeDetail() {
       </div>
 
     </>
+  );
+}
+
+/* ─── Bits ────────────────────────────────────────────────── */
+
+function InfoChip({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2.5">
+      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+        {icon}
+        {label}
+      </div>
+      <p className="text-[13px] font-medium text-foreground truncate">
+        {value}
+      </p>
+    </div>
   );
 }
