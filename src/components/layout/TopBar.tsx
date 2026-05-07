@@ -22,6 +22,7 @@ export default function TopBar({ title, actions }: TopBarProps): ReactNode {
   const isEmployeeDetail = /^\/employees\/[^/]+$/.test(path);
   const isProjectDetail = /^\/projects\/[^/]+$/.test(path);
   const isSettings = path === "/settings";
+  const isProfile = path === "/profile";
 
   let breadcrumb = "Overview";
 
@@ -43,6 +44,9 @@ export default function TopBar({ title, actions }: TopBarProps): ReactNode {
   } else if (isSettings) {
     breadcrumb = "Admin";
     title = "Settings";
+  } else if (isProfile) {
+    breadcrumb = "Account";
+    title = "Profile";
   }
 
   return (

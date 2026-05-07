@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import "./App.css";
-import Sidebar from "./components/layout/Sidebar";
+import Sidebar from "./components/layout/sidebar/Sidebar.tsx";
 import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
 import EmployeeDetail from "./pages/EmployeeDetail";
@@ -9,6 +9,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import Settings from "./pages/Settings";
 import Planning from "./pages/Planning";
 import Login from "./pages/Login";
+import Profile from "./pages/Profile";
 import { PageProvider } from "./context/PageContext";
 
 function AppShell() {
@@ -24,6 +25,7 @@ function AppShell() {
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/planning" element={<Planning />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>
       </div>
