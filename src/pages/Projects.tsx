@@ -7,7 +7,7 @@ import ComposedCard from "@/components/common/cards/ComposedCard";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import TopBar from "@/components/layout/TopBar.tsx";
+import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import useGetProjects from "@/api/projects/useGetProjects";
 import type { ProjectListItem } from "@/types/dashboard";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -53,8 +53,13 @@ const PRIORITY_DOT: Record<ProjectPriority, string> = {
 };
 
 const AVATAR_COLORS = [
-  "bg-indigo-500", "bg-blue-500", "bg-amber-500",
-  "bg-emerald-500", "bg-rose-500", "bg-violet-500", "bg-cyan-500",
+  "bg-indigo-500",
+  "bg-blue-500",
+  "bg-amber-500",
+  "bg-emerald-500",
+  "bg-rose-500",
+  "bg-violet-500",
+  "bg-cyan-500",
 ];
 
 function avatarColor(id: number) {
@@ -106,7 +111,12 @@ function progressBarColor(v: number) {
 
 function StatusBadge({ value }: { value: ProjectStatus }) {
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold", STATUS_STYLES[value])}>
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold",
+        STATUS_STYLES[value],
+      )}
+    >
       {STATUS_LABELS[value]}
     </span>
   );
@@ -138,7 +148,9 @@ function HealthBar({ value }: { value: number }) {
       <div className="h-1.5 flex-1 rounded-full bg-muted shadow-inner overflow-hidden">
         <div className={cn("h-full rounded-full shadow-sm", healthColor(value))} style={{ width: `${value}%` }} />
       </div>
-      <span className={cn("text-[12px] font-semibold tabular-nums w-8 text-right", healthTextColor(value))}>{value}</span>
+      <span className={cn("text-[12px] font-semibold tabular-nums w-8 text-right", healthTextColor(value))}>
+        {value}
+      </span>
     </div>
   );
 }
@@ -149,14 +161,27 @@ function AvatarGroup({ members, max = 4 }: { members: ProjectListItem["team"]; m
   return (
     <div className="flex items-center">
       {visible.map((m, i) => (
-        <div key={m.id} title={m.name} className="ring-2 ring-card rounded-full" style={{ marginLeft: i === 0 ? 0 : -8 }}>
-          <div className={cn("flex size-7 items-center justify-center rounded-full text-[10px] font-semibold text-white shrink-0 shadow-sm", avatarColor(m.id))}>
+        <div
+          key={m.id}
+          title={m.name}
+          className="ring-2 ring-card rounded-full"
+          style={{ marginLeft: i === 0 ? 0 : -8 }}
+        >
+          <div
+            className={cn(
+              "flex size-7 items-center justify-center rounded-full text-[10px] font-semibold text-white shrink-0 shadow-sm",
+              avatarColor(m.id),
+            )}
+          >
             {m.initials}
           </div>
         </div>
       ))}
       {extra > 0 && (
-        <div className="ring-2 ring-card flex size-7 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-muted-foreground" style={{ marginLeft: -8 }}>
+        <div
+          className="ring-2 ring-card flex size-7 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-muted-foreground"
+          style={{ marginLeft: -8 }}
+        >
           +{extra}
         </div>
       )}
@@ -202,7 +227,9 @@ function ProjectModal({ open, onClose }: { open: boolean; onClose: () => void })
           <div className="space-y-1.5">
             <label className="block text-[12px] font-medium text-foreground/70">Department</label>
             <select defaultValue="" className={cn(fieldCls, "appearance-none cursor-pointer")}>
-              <option value="" disabled>Select a department</option>
+              <option value="" disabled>
+                Select a department
+              </option>
               {["Engineering", "Data", "Design", "Security", "DevOps", "Management"].map((d) => (
                 <option key={d}>{d}</option>
               ))}
@@ -211,7 +238,9 @@ function ProjectModal({ open, onClose }: { open: boolean; onClose: () => void })
           <div className="space-y-1.5">
             <label className="block text-[12px] font-medium text-foreground/70">Priority</label>
             <select defaultValue="" className={cn(fieldCls, "appearance-none cursor-pointer")}>
-              <option value="" disabled>Select priority</option>
+              <option value="" disabled>
+                Select priority
+              </option>
               {["Critical", "High", "Medium", "Low"].map((p) => (
                 <option key={p}>{p}</option>
               ))}
@@ -313,9 +342,27 @@ function ProjectList() {
             <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Priority
             </TableHead>
-            <SortableTableHead label="Progress" col="progress" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
-            <SortableTableHead label="Risk" col="risk_score" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
-            <SortableTableHead label="Bus Factor" col="bus_factor" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
+            <SortableTableHead
+              label="Progress"
+              col="progress"
+              sortKey={sort.key}
+              sortDir={sort.dir}
+              onSort={toggleSort}
+            />
+            <SortableTableHead
+              label="Risk"
+              col="risk_score"
+              sortKey={sort.key}
+              sortDir={sort.dir}
+              onSort={toggleSort}
+            />
+            <SortableTableHead
+              label="Bus Factor"
+              col="bus_factor"
+              sortKey={sort.key}
+              sortDir={sort.dir}
+              onSort={toggleSort}
+            />
             <SortableTableHead label="Health" col="health" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
             <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Team
@@ -340,15 +387,33 @@ function ProjectList() {
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="px-5 py-4"><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
-                <TableCell className="px-5 py-4"><Skeleton className="h-3.5 w-16" /></TableCell>
-                <TableCell className="px-5 py-4"><Skeleton className="h-3 w-28 rounded-full" /></TableCell>
-                <TableCell className="px-5 py-4"><Skeleton className="h-4 w-8" /></TableCell>
-                <TableCell className="px-5 py-4"><Skeleton className="h-4 w-6" /></TableCell>
-                <TableCell className="px-5 py-4"><Skeleton className="h-3 w-24 rounded-full" /></TableCell>
-                <TableCell className="px-5 py-4"><Skeleton className="h-7 w-20 rounded-full" /></TableCell>
-                <TableCell className="px-5 py-4"><Skeleton className="h-3.5 w-20" /></TableCell>
-                <TableCell className="px-5 py-4"><Skeleton className="h-8 w-14 rounded-lg" /></TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-3.5 w-16" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-3 w-28 rounded-full" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-4 w-8" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-4 w-6" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-3 w-24 rounded-full" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-7 w-20 rounded-full" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-3.5 w-20" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-8 w-14 rounded-lg" />
+                </TableCell>
               </TableRow>
             ))
           ) : isError ? (
@@ -381,7 +446,10 @@ function ProjectList() {
                     </p>
                     <div className="flex gap-1 mt-1.5 flex-wrap">
                       {(project.skills ?? []).slice(0, 3).map((s) => (
-                        <span key={s.id} className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60">
+                        <span
+                          key={s.id}
+                          className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60"
+                        >
                           {s.name}
                         </span>
                       ))}
@@ -403,7 +471,9 @@ function ProjectList() {
                   </TableCell>
                   <TableCell className="px-5 py-4">
                     <div className="flex items-center gap-1.5">
-                      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", riskDotColor(project.risk_score))} />
+                      <div
+                        className={cn("size-1.5 rounded-full shrink-0 shadow-sm", riskDotColor(project.risk_score))}
+                      />
                       <span className={cn("text-[14px] font-bold tabular-nums", riskColor(project.risk_score))}>
                         {project.risk_score}
                       </span>
@@ -421,7 +491,12 @@ function ProjectList() {
                     <AvatarGroup members={project.team ?? []} />
                   </TableCell>
                   <TableCell className="px-5 py-4">
-                    <span className={cn("text-[12px] font-medium whitespace-nowrap", overdue ? "text-rose-500" : "text-foreground")}>
+                    <span
+                      className={cn(
+                        "text-[12px] font-medium whitespace-nowrap",
+                        overdue ? "text-rose-500" : "text-foreground",
+                      )}
+                    >
                       {fmtDate(project.end_date)}
                     </span>
                     {overdue && <p className="text-[10px] text-rose-400 mt-0.5 font-medium">Overdue</p>}

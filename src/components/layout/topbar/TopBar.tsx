@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronRight, PlayCircle, PenSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { usePage } from "@/context/PageContext";
+import { Button } from "@/components/ui/button.tsx";
+import { usePage } from "@/context/PageContext.tsx";
 import type { ReactNode } from "react";
 import { SidebarIcon, SidebarSimpleIcon } from "@phosphor-icons/react";
 

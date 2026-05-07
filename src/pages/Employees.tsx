@@ -6,7 +6,7 @@ import ComposedCard from "@/components/common/cards/ComposedCard";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import TopBar from "@/components/layout/TopBar.tsx";
+import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { PlusIcon } from "@phosphor-icons/react";
 import useGetEmployees from "@/api/employees/useGetEmployees";
 import useGetTeamToday from "@/api/employees/useGetTeamToday";

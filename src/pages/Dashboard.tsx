@@ -1,16 +1,11 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Eye,
-  ArrowRight,
-  Calendar,
-  Zap, CalendarCheck, PlayCircle,
-} from "lucide-react";
+import { Eye, ArrowRight, Calendar, Zap, CalendarCheck, PlayCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PROJECTS } from "@/data/projects";
 import { EMPLOYEE_DETAILS, type EmployeeDetail } from "@/data/employees";
-import TopBar from "@/components/layout/TopBar.tsx";
-import {Button} from "@/components/ui/button.tsx";
+import TopBar from "@/components/layout/topbar/TopBar.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import HomeStatCardsSection from "@/components/specified/pages/home/HomeStatCardsSection.tsx";
 import TeamStatusOfTodayCard from "@/components/specified/pages/home/TeamStatusOfTodayCard.tsx";
 import KnowledgeCoverageOfToday from "@/components/specified/pages/home/KnowledgeCoverageOfToday.tsx";
@@ -19,15 +14,7 @@ import CriticalProjectsCard from "@/components/specified/pages/home/CriticalProj
 
 /* ─── Avatar ──────────────────────────────────────────────── */
 
-function Avatar({
-  initials,
-  color,
-  size = "sm",
-}: {
-  initials: string;
-  color: string;
-  size?: "sm" | "md";
-}) {
+function Avatar({ initials, color, size = "sm" }: { initials: string; color: string; size?: "sm" | "md" }) {
   return (
     <div
       className={cn(
@@ -41,21 +28,11 @@ function Avatar({
   );
 }
 
-function AvatarGroup({
-  members,
-  extra,
-}: {
-  members: Array<{ initials: string; color: string }>;
-  extra?: number;
-}) {
+function AvatarGroup({ members, extra }: { members: Array<{ initials: string; color: string }>; extra?: number }) {
   return (
     <div className="flex items-center">
       {members.map((m, i) => (
-        <div
-          key={i}
-          className="ring-2 ring-card rounded-full"
-          style={{ marginLeft: i === 0 ? 0 : -8 }}
-        >
+        <div key={i} className="ring-2 ring-card rounded-full" style={{ marginLeft: i === 0 ? 0 : -8 }}>
           <Avatar initials={m.initials} color={m.color} size="sm" />
         </div>
       ))}
@@ -83,10 +60,7 @@ function HealthBar({ value }: { value: number }) {
   return (
     <div className="flex items-center gap-2">
       <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted shadow-inner">
-        <div
-          className={cn("h-full rounded-full shadow-sm", color)}
-          style={{ width: `${value}%` }}
-        />
+        <div className={cn("h-full rounded-full shadow-sm", color)} style={{ width: `${value}%` }} />
       </div>
       <span className="text-sm font-medium text-foreground">{value}</span>
     </div>
@@ -140,9 +114,7 @@ function CriticalEmployeeCard({
       <Avatar initials={employee.initials} color={employee.color} size="md" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2 mb-0.5">
-          <p className="text-sm font-semibold text-foreground truncate group-hover:text-foreground">
-            {employee.name}
-          </p>
+          <p className="text-sm font-semibold text-foreground truncate group-hover:text-foreground">{employee.name}</p>
           <span className={cn("shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full border", bfColor)}>
             BF {employee.busFactor}
           </span>
@@ -154,7 +126,8 @@ function CriticalEmployeeCard({
           </span>
           <span className="text-muted-foreground/40 text-[10px]">·</span>
           <span className="text-[10px] text-muted-foreground">
-            {employee.projects.filter(p => p.status === "Active").length} active project{employee.projects.filter(p => p.status === "Active").length !== 1 ? "s" : ""}
+            {employee.projects.filter((p) => p.status === "Active").length} active project
+            {employee.projects.filter((p) => p.status === "Active").length !== 1 ? "s" : ""}
           </span>
         </div>
         {uniqueSkills.length > 0 && (
@@ -182,18 +155,40 @@ function CriticalEmployeeCard({
 /* ─── Risk Distribution Bar ───────────────────────────────── */
 
 const RISK_LEVELS = [
-  { label: "Critical", threshold: 25, color: "bg-rose-500", text: "text-rose-600", badge: "bg-rose-50 text-rose-600 border-rose-200/60" },
-  { label: "High",     threshold: 15, color: "bg-orange-500", text: "text-orange-600", badge: "bg-orange-50 text-orange-600 border-orange-200/60" },
-  { label: "Medium",   threshold: 8,  color: "bg-amber-400", text: "text-amber-600", badge: "bg-amber-50 text-amber-600 border-amber-200/60" },
-  { label: "Low",      threshold: 0,  color: "bg-emerald-500", text: "text-emerald-600", badge: "bg-emerald-50 text-emerald-600 border-emerald-200/60" },
+  {
+    label: "Critical",
+    threshold: 25,
+    color: "bg-rose-500",
+    text: "text-rose-600",
+    badge: "bg-rose-50 text-rose-600 border-rose-200/60",
+  },
+  {
+    label: "High",
+    threshold: 15,
+    color: "bg-orange-500",
+    text: "text-orange-600",
+    badge: "bg-orange-50 text-orange-600 border-orange-200/60",
+  },
+  {
+    label: "Medium",
+    threshold: 8,
+    color: "bg-amber-400",
+    text: "text-amber-600",
+    badge: "bg-amber-50 text-amber-600 border-amber-200/60",
+  },
+  {
+    label: "Low",
+    threshold: 0,
+    color: "bg-emerald-500",
+    text: "text-emerald-600",
+    badge: "bg-emerald-50 text-emerald-600 border-emerald-200/60",
+  },
 ];
 
 function getRiskLevel(score: number) {
   return (
-    RISK_LEVELS.find((l, i) =>
-      score >= l.threshold &&
-      (i === 0 || score < RISK_LEVELS[i - 1].threshold),
-    ) ?? RISK_LEVELS[3]
+    RISK_LEVELS.find((l, i) => score >= l.threshold && (i === 0 || score < RISK_LEVELS[i - 1].threshold)) ??
+    RISK_LEVELS[3]
   );
 }
 
@@ -206,15 +201,16 @@ export default function Dashboard() {
   /* ── Unique skills per employee ────────────────────────── */
   const uniqueSkillsMap = useMemo(() => {
     const map: Record<string, string[]> = {};
-    employees.forEach(emp => {
+    employees.forEach((emp) => {
       map[emp.id] = emp.skills
-        .filter(s => s.level >= 3)
-        .filter(s =>
-          !employees
-            .filter(e => e.id !== emp.id)
-            .some(e => e.skills.some(es => es.name === s.name && es.level >= 3)),
+        .filter((s) => s.level >= 3)
+        .filter(
+          (s) =>
+            !employees
+              .filter((e) => e.id !== emp.id)
+              .some((e) => e.skills.some((es) => es.name === s.name && es.level >= 3)),
         )
-        .map(s => s.name);
+        .map((s) => s.name);
     });
     return map;
   }, [employees]);
@@ -227,45 +223,45 @@ export default function Dashboard() {
   /* ── Dashboard stats (live) ────────────────────────────── */
 
   const criticalEmployees = useMemo(
-    () => employees.filter(e => e.criticality === "High").sort((a, b) => a.busFactor - b.busFactor),
+    () => employees.filter((e) => e.criticality === "High").sort((a, b) => a.busFactor - b.busFactor),
     [employees],
   );
 
   /* ── Risk distribution ─────────────────────────────────── */
-  const riskDistribution = useMemo(() =>
-    RISK_LEVELS.map((level, levelIdx) => {
-      const prevThreshold = levelIdx > 0 ? RISK_LEVELS[levelIdx - 1].threshold : Infinity;
-      const count = PROJECTS.filter(p => {
-        const score = p.riskScore;
-        return score >= level.threshold && score < prevThreshold;
-      }).length;
-      return { ...level, count };
-    }),
+  const riskDistribution = useMemo(
+    () =>
+      RISK_LEVELS.map((level, levelIdx) => {
+        const prevThreshold = levelIdx > 0 ? RISK_LEVELS[levelIdx - 1].threshold : Infinity;
+        const count = PROJECTS.filter((p) => {
+          const score = p.riskScore;
+          return score >= level.threshold && score < prevThreshold;
+        }).length;
+        return { ...level, count };
+      }),
     [],
   );
-  const maxRiskCount = Math.max(...riskDistribution.map(r => r.count), 1);
+  const maxRiskCount = Math.max(...riskDistribution.map((r) => r.count), 1);
 
   /* ── Upcoming leaves (next 30 days) ────────────────────── */
   const upcomingLeaves = useMemo(() => {
     const today = new Date("2026-04-21");
     const limit = new Date("2026-05-21");
     return employees
-      .flatMap(e =>
+      .flatMap((e) =>
         e.leaves
-          .filter(l => {
+          .filter((l) => {
             const d = new Date(l.startDate);
             return d >= today && d <= limit && l.status === "approved";
           })
-          .map(l => ({ employee: e, leave: l })),
+          .map((l) => ({ employee: e, leave: l })),
       )
       .sort((a, b) => new Date(a.leave.startDate).getTime() - new Date(b.leave.startDate).getTime());
   }, [employees]);
 
   /* ── Display lists ─────────────────────────────────────── */
 
-
   const displayProjects = [...PROJECTS]
-    .filter(p => p.status !== "Completed")
+    .filter((p) => p.status !== "Completed")
     .sort((a, b) => b.riskScore - a.riskScore);
 
   return (
@@ -313,7 +309,7 @@ export default function Dashboard() {
               Employees whose absence would critically impact operations — highlighted skills are unique to them.
             </p>
             <div className="grid grid-cols-2 gap-3">
-              {criticalEmployees.map(emp => (
+              {criticalEmployees.map((emp) => (
                 <CriticalEmployeeCard
                   key={emp.id}
                   employee={emp}
@@ -329,7 +325,9 @@ export default function Dashboard() {
                   Bus Factor 1 = single point of failure
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-semibold text-amber-700 bg-amber-50 border border-amber-200/60 px-1 py-0.5 rounded-full">skill</span>
+                  <span className="text-[9px] font-semibold text-amber-700 bg-amber-50 border border-amber-200/60 px-1 py-0.5 rounded-full">
+                    skill
+                  </span>
                   Unique to this person
                 </span>
               </div>
@@ -353,7 +351,7 @@ export default function Dashboard() {
                 </span>
               </div>
               <div className="space-y-2.5">
-                {riskDistribution.map(level => (
+                {riskDistribution.map((level) => (
                   <div key={level.label}>
                     <div className="flex items-center justify-between mb-1">
                       <span className={cn("text-[11px] font-semibold", level.text)}>{level.label}</span>
@@ -394,11 +392,15 @@ export default function Dashboard() {
                 <div className="space-y-2">
                   {upcomingLeaves.map(({ employee, leave }) => {
                     const start = new Date(leave.startDate);
-                    const daysUntil = Math.ceil((start.getTime() - new Date("2026-04-21").getTime()) / (1000 * 60 * 60 * 24));
+                    const daysUntil = Math.ceil(
+                      (start.getTime() - new Date("2026-04-21").getTime()) / (1000 * 60 * 60 * 24),
+                    );
                     const typeColor =
-                      leave.type === "vacation" ? "text-blue-600 bg-blue-50" :
-                      leave.type === "sick" ? "text-rose-600 bg-rose-50" :
-                      "text-violet-600 bg-violet-50";
+                      leave.type === "vacation"
+                        ? "text-blue-600 bg-blue-50"
+                        : leave.type === "sick"
+                          ? "text-rose-600 bg-rose-50"
+                          : "text-violet-600 bg-violet-50";
                     return (
                       <div
                         key={`${employee.id}-${leave.id}`}
@@ -416,10 +418,16 @@ export default function Dashboard() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <span className={cn(
-                            "text-[10px] font-bold",
-                            daysUntil <= 1 ? "text-rose-500" : daysUntil <= 3 ? "text-amber-500" : "text-muted-foreground"
-                          )}>
+                          <span
+                            className={cn(
+                              "text-[10px] font-bold",
+                              daysUntil <= 1
+                                ? "text-rose-500"
+                                : daysUntil <= 3
+                                  ? "text-amber-500"
+                                  : "text-muted-foreground",
+                            )}
+                          >
                             {daysUntil === 0 ? "Today" : daysUntil === 1 ? "Tomorrow" : `in ${daysUntil}d`}
                           </span>
                         </div>
@@ -509,7 +517,12 @@ export default function Dashboard() {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-1.5">
                         <span className={cn("text-sm font-bold", level.text)}>{p.riskScore}</span>
-                        <span className={cn("text-[9px] font-bold uppercase tracking-wide px-1 py-0.5 rounded border hidden group-hover:inline", level.badge)}>
+                        <span
+                          className={cn(
+                            "text-[9px] font-bold uppercase tracking-wide px-1 py-0.5 rounded border hidden group-hover:inline",
+                            level.badge,
+                          )}
+                        >
                           {level.label}
                         </span>
                       </div>

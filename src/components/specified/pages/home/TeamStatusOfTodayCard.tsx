@@ -6,7 +6,7 @@ import { ChartContainer, type ChartConfig } from "@/components/ui/chart.tsx";
 import { RadialBarChart, RadialBar } from "recharts";
 import useGetEmployees from "@/api/employees/useGetEmployees.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import Feedback from "@/components/layout/Feedback";
+import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import useGetTeamToday from "@/api/employees/useGetTeamToday.ts";
 import EmployeeAvatar from "@/components/specified/models/employees/avatars/EmployeeAvatar.tsx";
 import EmployeeStatusBadge from "@/components/specified/models/employees/badges/EmployeeStatusBadge.tsx";

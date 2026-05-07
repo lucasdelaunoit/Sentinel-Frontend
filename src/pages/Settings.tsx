@@ -2,7 +2,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import TopBar from "@/components/layout/TopBar";
+import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import SharedStatCard from "@/components/common/cards/StatCard";
 import {
   Shield,
@@ -78,25 +78,137 @@ const DEFAULT_ORG: OrganizationSettings = {
 };
 
 const DEFAULT_SKILLS: SkillDefinition[] = [
-  { id: "s1", name: "React", category: "FRONTEND", description: "React.js framework", criticality: "critical", minRedundancy: 3 },
-  { id: "s2", name: "Vue.js", category: "FRONTEND", description: "Vue.js framework", criticality: "medium", minRedundancy: 2 },
-  { id: "s3", name: "TypeScript", category: "FRONTEND", description: "TypeScript language", criticality: "high", minRedundancy: 2 },
-  { id: "s4", name: "Node.js", category: "BACKEND", description: "Node.js runtime", criticality: "high", minRedundancy: 2 },
-  { id: "s5", name: "Python", category: "BACKEND", description: "Python language", criticality: "medium", minRedundancy: 2 },
-  { id: "s6", name: "AWS", category: "DEVOPS", description: "Amazon Web Services", criticality: "critical", minRedundancy: 2 },
-  { id: "s7", name: "Kubernetes", category: "DEVOPS", description: "Container orchestration", criticality: "high", minRedundancy: 2 },
-  { id: "s8", name: "PostgreSQL", category: "DATABASE", description: "PostgreSQL database", criticality: "medium", minRedundancy: 2 },
-  { id: "s9", name: "Security", category: "SECURITY", description: "Security engineering", criticality: "critical", minRedundancy: 2 },
-  { id: "s10", name: "Testing", category: "TESTING", description: "QA and testing", criticality: "low", minRedundancy: 1 },
+  {
+    id: "s1",
+    name: "React",
+    category: "FRONTEND",
+    description: "React.js framework",
+    criticality: "critical",
+    minRedundancy: 3,
+  },
+  {
+    id: "s2",
+    name: "Vue.js",
+    category: "FRONTEND",
+    description: "Vue.js framework",
+    criticality: "medium",
+    minRedundancy: 2,
+  },
+  {
+    id: "s3",
+    name: "TypeScript",
+    category: "FRONTEND",
+    description: "TypeScript language",
+    criticality: "high",
+    minRedundancy: 2,
+  },
+  {
+    id: "s4",
+    name: "Node.js",
+    category: "BACKEND",
+    description: "Node.js runtime",
+    criticality: "high",
+    minRedundancy: 2,
+  },
+  {
+    id: "s5",
+    name: "Python",
+    category: "BACKEND",
+    description: "Python language",
+    criticality: "medium",
+    minRedundancy: 2,
+  },
+  {
+    id: "s6",
+    name: "AWS",
+    category: "DEVOPS",
+    description: "Amazon Web Services",
+    criticality: "critical",
+    minRedundancy: 2,
+  },
+  {
+    id: "s7",
+    name: "Kubernetes",
+    category: "DEVOPS",
+    description: "Container orchestration",
+    criticality: "high",
+    minRedundancy: 2,
+  },
+  {
+    id: "s8",
+    name: "PostgreSQL",
+    category: "DATABASE",
+    description: "PostgreSQL database",
+    criticality: "medium",
+    minRedundancy: 2,
+  },
+  {
+    id: "s9",
+    name: "Security",
+    category: "SECURITY",
+    description: "Security engineering",
+    criticality: "critical",
+    minRedundancy: 2,
+  },
+  {
+    id: "s10",
+    name: "Testing",
+    category: "TESTING",
+    description: "QA and testing",
+    criticality: "low",
+    minRedundancy: 1,
+  },
 ];
 
 const DEFAULT_RULES: Rule[] = [
-  { id: "r1", name: "Minimum Frontend Developers", type: "min_staff", enabled: true, params: { department: "Engineering", role: "Frontend Developer", minCount: 3 }, severity: "critical" },
-  { id: "r2", name: "Minimum Project Managers", type: "min_staff", enabled: true, params: { role: "Project Manager", minCount: 2 }, severity: "critical" },
-  { id: "r3", name: "Minimum React Experts", type: "min_skill", enabled: true, params: { skill: "React", minLevel: 4, minCount: 3 }, severity: "warning" },
-  { id: "r4", name: "Bus Factor Risk", type: "bus_factor", enabled: true, params: { maxBusFactor: 2 }, severity: "critical" },
-  { id: "r5", name: "Backend Coverage", type: "coverage", enabled: false, params: { category: "BACKEND", minCoverage: 2 }, severity: "warning" },
-  { id: "r6", name: "Security Coverage", type: "coverage", enabled: true, params: { category: "SECURITY", minCoverage: 2 }, severity: "critical" },
+  {
+    id: "r1",
+    name: "Minimum Frontend Developers",
+    type: "min_staff",
+    enabled: true,
+    params: { department: "Engineering", role: "Frontend Developer", minCount: 3 },
+    severity: "critical",
+  },
+  {
+    id: "r2",
+    name: "Minimum Project Managers",
+    type: "min_staff",
+    enabled: true,
+    params: { role: "Project Manager", minCount: 2 },
+    severity: "critical",
+  },
+  {
+    id: "r3",
+    name: "Minimum React Experts",
+    type: "min_skill",
+    enabled: true,
+    params: { skill: "React", minLevel: 4, minCount: 3 },
+    severity: "warning",
+  },
+  {
+    id: "r4",
+    name: "Bus Factor Risk",
+    type: "bus_factor",
+    enabled: true,
+    params: { maxBusFactor: 2 },
+    severity: "critical",
+  },
+  {
+    id: "r5",
+    name: "Backend Coverage",
+    type: "coverage",
+    enabled: false,
+    params: { category: "BACKEND", minCoverage: 2 },
+    severity: "warning",
+  },
+  {
+    id: "r6",
+    name: "Security Coverage",
+    type: "coverage",
+    enabled: true,
+    params: { category: "SECURITY", minCoverage: 2 },
+    severity: "critical",
+  },
 ];
 
 const DEFAULT_ANALYTICS: AnalyticsConfig = {
@@ -116,9 +228,24 @@ const RULE_TYPE_LABELS: Record<RuleType, string> = {
 };
 
 const SEVERITY_STYLES = {
-  critical: { bg: "bg-gradient-to-br from-rose-500 to-rose-600", text: "text-rose-700", bgLight: "bg-rose-50", border: "border-rose-200" },
-  warning: { bg: "bg-gradient-to-br from-amber-500 to-amber-600", text: "text-amber-700", bgLight: "bg-amber-50", border: "border-amber-200" },
-  info: { bg: "bg-gradient-to-br from-blue-500 to-blue-600", text: "text-blue-700", bgLight: "bg-blue-50", border: "border-blue-200" },
+  critical: {
+    bg: "bg-gradient-to-br from-rose-500 to-rose-600",
+    text: "text-rose-700",
+    bgLight: "bg-rose-50",
+    border: "border-rose-200",
+  },
+  warning: {
+    bg: "bg-gradient-to-br from-amber-500 to-amber-600",
+    text: "text-amber-700",
+    bgLight: "bg-amber-50",
+    border: "border-amber-200",
+  },
+  info: {
+    bg: "bg-gradient-to-br from-blue-500 to-blue-600",
+    text: "text-blue-700",
+    bgLight: "bg-blue-50",
+    border: "border-blue-200",
+  },
 };
 
 const SKILL_CRITICALITY_STYLES = {
@@ -198,14 +325,44 @@ const RULE_GROUPS = [
 ];
 
 const SENSITIVITY_CONFIG = {
-  conservative: { label: "Conservative", description: "Fewer alerts, higher thresholds", color: "text-blue-700", bg: "bg-blue-50", border: "border-blue-200", activeBg: "bg-blue-600", ring: "ring-blue-300" },
-  balanced: { label: "Balanced", description: "Standard sensitivity", color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200", activeBg: "bg-amber-500", ring: "ring-amber-300" },
-  aggressive: { label: "Aggressive", description: "More alerts, lower thresholds", color: "text-rose-700", bg: "bg-rose-50", border: "border-rose-200", activeBg: "bg-rose-600", ring: "ring-rose-300" },
+  conservative: {
+    label: "Conservative",
+    description: "Fewer alerts, higher thresholds",
+    color: "text-blue-700",
+    bg: "bg-blue-50",
+    border: "border-blue-200",
+    activeBg: "bg-blue-600",
+    ring: "ring-blue-300",
+  },
+  balanced: {
+    label: "Balanced",
+    description: "Standard sensitivity",
+    color: "text-amber-700",
+    bg: "bg-amber-50",
+    border: "border-amber-200",
+    activeBg: "bg-amber-500",
+    ring: "ring-amber-300",
+  },
+  aggressive: {
+    label: "Aggressive",
+    description: "More alerts, lower thresholds",
+    color: "text-rose-700",
+    bg: "bg-rose-50",
+    border: "border-rose-200",
+    activeBg: "bg-rose-600",
+    ring: "ring-rose-300",
+  },
 } as const;
 
 // ─── Shared small components ───────────────────────────────────────────────────
 
-function Badge({ children, variant }: { children: React.ReactNode; variant: "critical" | "warning" | "info" | "neutral" }) {
+function Badge({
+  children,
+  variant,
+}: {
+  children: React.ReactNode;
+  variant: "critical" | "warning" | "info" | "neutral";
+}) {
   const styles = {
     critical: "bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-sm",
     warning: "bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm",
@@ -213,17 +370,29 @@ function Badge({ children, variant }: { children: React.ReactNode; variant: "cri
     neutral: "bg-muted/60 text-muted-foreground",
   };
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold shadow-sm", styles[variant])}>
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold shadow-sm",
+        styles[variant],
+      )}
+    >
       {children}
     </span>
   );
 }
 
-const inputCls = "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
+const inputCls =
+  "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
 
 // ─── Organization Tab ─────────────────────────────────────────────────────────
 
-function OrganizationTab({ settings, onSave }: { settings: OrganizationSettings; onSave: (s: OrganizationSettings) => void }) {
+function OrganizationTab({
+  settings,
+  onSave,
+}: {
+  settings: OrganizationSettings;
+  onSave: (s: OrganizationSettings) => void;
+}) {
   const [form, setForm] = useState(settings);
   const [saved, setSaved] = useState(false);
 
@@ -246,24 +415,50 @@ function OrganizationTab({ settings, onSave }: { settings: OrganizationSettings;
         <h3 className="text-[14px] font-semibold text-foreground mb-4">Organization Details</h3>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Organization Name</label>
-            <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} />
+            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
+              Organization Name
+            </label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className={inputCls}
+            />
           </div>
           <div className="space-y-1.5">
             <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Industry</label>
-            <select value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })} className={cn(inputCls, "cursor-pointer")}>
-              {["Technology", "Finance", "Healthcare", "Retail", "Manufacturing"].map((i) => <option key={i}>{i}</option>)}
+            <select
+              value={form.industry}
+              onChange={(e) => setForm({ ...form, industry: e.target.value })}
+              className={cn(inputCls, "cursor-pointer")}
+            >
+              {["Technology", "Finance", "Healthcare", "Retail", "Manufacturing"].map((i) => (
+                <option key={i}>{i}</option>
+              ))}
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Company Size</label>
-            <select value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value })} className={cn(inputCls, "cursor-pointer")}>
-              {["1-10", "11-50", "51-200", "201-500", "500+"].map((s) => <option key={s}>{s}</option>)}
+            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
+              Company Size
+            </label>
+            <select
+              value={form.size}
+              onChange={(e) => setForm({ ...form, size: e.target.value })}
+              className={cn(inputCls, "cursor-pointer")}
+            >
+              {["1-10", "11-50", "51-200", "201-500", "500+"].map((s) => (
+                <option key={s}>{s}</option>
+              ))}
             </select>
           </div>
           <div className="space-y-1.5">
             <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Location</label>
-            <input type="text" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className={inputCls} />
+            <input
+              type="text"
+              value={form.location}
+              onChange={(e) => setForm({ ...form, location: e.target.value })}
+              className={inputCls}
+            />
           </div>
         </div>
       </div>
@@ -278,7 +473,9 @@ function OrganizationTab({ settings, onSave }: { settings: OrganizationSettings;
 
         <div className="grid grid-cols-2 gap-5">
           <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Engineering Methodology</label>
+            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
+              Engineering Methodology
+            </label>
             <select
               value={form.methodology}
               onChange={(e) => setForm({ ...form, methodology: e.target.value as OrganizationSettings["methodology"] })}
@@ -292,10 +489,14 @@ function OrganizationTab({ settings, onSave }: { settings: OrganizationSettings;
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Team Structure</label>
+            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
+              Team Structure
+            </label>
             <select
               value={form.teamStructure}
-              onChange={(e) => setForm({ ...form, teamStructure: e.target.value as OrganizationSettings["teamStructure"] })}
+              onChange={(e) =>
+                setForm({ ...form, teamStructure: e.target.value as OrganizationSettings["teamStructure"] })
+              }
               className={cn(inputCls, "cursor-pointer")}
             >
               <option value="cross-functional">Cross-functional</option>
@@ -306,7 +507,9 @@ function OrganizationTab({ settings, onSave }: { settings: OrganizationSettings;
         </div>
 
         <div className="space-y-2">
-          <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Risk Tolerance</label>
+          <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
+            Risk Tolerance
+          </label>
           <div className="grid grid-cols-3 gap-3">
             {(["conservative", "balanced", "aggressive"] as const).map((opt) => {
               const cfg = RISK_TOLERANCE_CONFIG[opt];
@@ -323,12 +526,21 @@ function OrganizationTab({ settings, onSave }: { settings: OrganizationSettings;
                   )}
                 >
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className={cn("text-[13px] font-semibold", active ? cfg.color : "text-foreground")}>{cfg.label}</span>
-                    <div className={cn("size-4 rounded-full border-2 flex items-center justify-center transition-all", active ? `${cfg.activeBg} border-transparent` : "border-muted-foreground/30")}>
+                    <span className={cn("text-[13px] font-semibold", active ? cfg.color : "text-foreground")}>
+                      {cfg.label}
+                    </span>
+                    <div
+                      className={cn(
+                        "size-4 rounded-full border-2 flex items-center justify-center transition-all",
+                        active ? `${cfg.activeBg} border-transparent` : "border-muted-foreground/30",
+                      )}
+                    >
                       {active && <Check className="size-2.5 text-white" />}
                     </div>
                   </div>
-                  <p className={cn("text-[11px] font-medium", active ? cfg.color : "text-muted-foreground")}>{cfg.description}</p>
+                  <p className={cn("text-[11px] font-medium", active ? cfg.color : "text-muted-foreground")}>
+                    {cfg.description}
+                  </p>
                   <p className="text-[10px] text-muted-foreground/60 mt-0.5">{cfg.sub}</p>
                 </button>
               );
@@ -358,7 +570,11 @@ function OrganizationTab({ settings, onSave }: { settings: OrganizationSettings;
 function SkillsTab({ skills, onSave }: { skills: SkillDefinition[]; onSave: (s: SkillDefinition[]) => void }) {
   const [list, setList] = useState(skills);
   const [newSkill, setNewSkill] = useState<Partial<SkillDefinition>>({
-    name: "", category: "FRONTEND", description: "", criticality: "medium", minRedundancy: 2,
+    name: "",
+    category: "FRONTEND",
+    description: "",
+    criticality: "medium",
+    minRedundancy: 2,
   });
   const [showAdd, setShowAdd] = useState(false);
 
@@ -386,7 +602,10 @@ function SkillsTab({ skills, onSave }: { skills: SkillDefinition[]; onSave: (s: 
   }
 
   const grouped = SKILL_CATEGORIES.reduce(
-    (acc, cat) => { acc[cat] = list.filter((s) => s.category === cat); return acc; },
+    (acc, cat) => {
+      acc[cat] = list.filter((s) => s.category === cat);
+      return acc;
+    },
     {} as Record<string, SkillDefinition[]>,
   );
 
@@ -398,11 +617,16 @@ function SkillsTab({ skills, onSave }: { skills: SkillDefinition[]; onSave: (s: 
         <div className="flex items-center gap-3">
           <div>
             <p className="text-[12px] font-medium text-muted-foreground">Organizational capability catalog</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{list.length} skills · {criticalCount} critical</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {list.length} skills · {criticalCount} critical
+            </p>
           </div>
           {criticalCount > 0 && <Badge variant="critical">{criticalCount} critical</Badge>}
         </div>
-        <Button onClick={() => setShowAdd(true)} className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press">
+        <Button
+          onClick={() => setShowAdd(true)}
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press"
+        >
           <Plus className="size-4" />
           Add Skill
         </Button>
@@ -412,20 +636,28 @@ function SkillsTab({ skills, onSave }: { skills: SkillDefinition[]; onSave: (s: 
         <div className="rounded-2xl bg-card border border-border/60 p-4 shadow-sm space-y-3">
           <div className="grid grid-cols-4 gap-3">
             <input
-              type="text" placeholder="Skill name" value={newSkill.name}
+              type="text"
+              placeholder="Skill name"
+              value={newSkill.name}
               onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
               className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
             />
             <select
               value={newSkill.category}
-              onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value as (typeof SKILL_CATEGORIES)[number] })}
+              onChange={(e) =>
+                setNewSkill({ ...newSkill, category: e.target.value as (typeof SKILL_CATEGORIES)[number] })
+              }
               className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
             >
-              {SKILL_CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+              {SKILL_CATEGORIES.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
             </select>
             <select
               value={newSkill.criticality}
-              onChange={(e) => setNewSkill({ ...newSkill, criticality: e.target.value as SkillDefinition["criticality"] })}
+              onChange={(e) =>
+                setNewSkill({ ...newSkill, criticality: e.target.value as SkillDefinition["criticality"] })
+              }
               className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
             >
               <option value="low">Low criticality</option>
@@ -434,7 +666,10 @@ function SkillsTab({ skills, onSave }: { skills: SkillDefinition[]; onSave: (s: 
               <option value="critical">Critical</option>
             </select>
             <input
-              type="number" min={1} max={10} placeholder="Min redundancy"
+              type="number"
+              min={1}
+              max={10}
+              placeholder="Min redundancy"
               value={newSkill.minRedundancy}
               onChange={(e) => setNewSkill({ ...newSkill, minRedundancy: parseInt(e.target.value) || 1 })}
               className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
@@ -442,19 +677,35 @@ function SkillsTab({ skills, onSave }: { skills: SkillDefinition[]; onSave: (s: 
           </div>
           <div className="flex gap-3">
             <input
-              type="text" placeholder="Description (optional)" value={newSkill.description}
+              type="text"
+              placeholder="Description (optional)"
+              value={newSkill.description}
               onChange={(e) => setNewSkill({ ...newSkill, description: e.target.value })}
               className="flex-1 rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
             />
-            <Button onClick={handleAdd} className="bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-600 text-white rounded-xl h-9 px-4 shadow-sm">Add</Button>
-            <Button onClick={() => setShowAdd(false)} variant="outline" className="rounded-xl h-9 px-3 hover:bg-muted/50"><X className="size-4" /></Button>
+            <Button
+              onClick={handleAdd}
+              className="bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-600 text-white rounded-xl h-9 px-4 shadow-sm"
+            >
+              Add
+            </Button>
+            <Button
+              onClick={() => setShowAdd(false)}
+              variant="outline"
+              className="rounded-xl h-9 px-3 hover:bg-muted/50"
+            >
+              <X className="size-4" />
+            </Button>
           </div>
         </div>
       )}
 
       <div className="grid grid-cols-3 gap-4">
         {SKILL_CATEGORIES.map((cat) => (
-          <div key={cat} className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-all">
+          <div
+            key={cat}
+            className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm hover:shadow-md transition-all"
+          >
             <div className="px-4 py-3 border-b border-border/60 bg-muted/20">
               <div className="flex items-center justify-between">
                 <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">{cat}</h4>
@@ -468,24 +719,40 @@ function SkillsTab({ skills, onSave }: { skills: SkillDefinition[]; onSave: (s: 
                 grouped[cat]?.map((skill) => {
                   const crit = SKILL_CRITICALITY_STYLES[skill.criticality];
                   return (
-                    <div key={skill.id} className="flex items-center justify-between px-4 py-3 hover:bg-muted/20 transition-colors">
+                    <div
+                      key={skill.id}
+                      className="flex items-center justify-between px-4 py-3 hover:bg-muted/20 transition-colors"
+                    >
                       <div className="flex items-start gap-2.5 min-w-0">
                         <div className={cn("size-2 rounded-full mt-1.5 shrink-0", crit.dot)} />
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="text-[13px] font-medium text-foreground">{skill.name}</p>
-                            <span className={cn("inline-flex items-center rounded-full px-1.5 py-0 text-[9px] font-semibold", crit.pill)}>
+                            <span
+                              className={cn(
+                                "inline-flex items-center rounded-full px-1.5 py-0 text-[9px] font-semibold",
+                                crit.pill,
+                              )}
+                            >
                               {skill.criticality}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">
-                            {skill.description && <p className="text-[11px] text-muted-foreground truncate max-w-[100px]">{skill.description}</p>}
-                            <span className="text-[10px] text-muted-foreground/60 shrink-0">Min ×{skill.minRedundancy}</span>
+                            {skill.description && (
+                              <p className="text-[11px] text-muted-foreground truncate max-w-[100px]">
+                                {skill.description}
+                              </p>
+                            )}
+                            <span className="text-[10px] text-muted-foreground/60 shrink-0">
+                              Min ×{skill.minRedundancy}
+                            </span>
                           </div>
                         </div>
                       </div>
                       <Button
-                        onClick={() => handleDelete(skill.id)} size="sm" variant="ghost"
+                        onClick={() => handleDelete(skill.id)}
+                        size="sm"
+                        variant="ghost"
                         className="text-muted-foreground/50 hover:text-rose-500 h-7 w-7 p-0 rounded-lg hover:bg-rose-50/50 shrink-0"
                       >
                         <Trash2 className="size-3.5" />
@@ -506,18 +773,29 @@ function SkillsTab({ skills, onSave }: { skills: SkillDefinition[]; onSave: (s: 
 
 function formatRuleParams(rule: Rule): string {
   switch (rule.type) {
-    case "min_staff": return `Min ${rule.params.minCount} ${rule.params.role || rule.params.department}`;
-    case "min_skill": return `${rule.params.minCount}x ${rule.params.skill} (lv.${rule.params.minLevel}+)`;
-    case "bus_factor": return `Max: ${rule.params.maxBusFactor}`;
-    case "coverage": return `${rule.params.minCoverage}x ${rule.params.category}`;
-    default: return "";
+    case "min_staff":
+      return `Min ${rule.params.minCount} ${rule.params.role || rule.params.department}`;
+    case "min_skill":
+      return `${rule.params.minCount}x ${rule.params.skill} (lv.${rule.params.minLevel}+)`;
+    case "bus_factor":
+      return `Max: ${rule.params.maxBusFactor}`;
+    case "coverage":
+      return `${rule.params.minCoverage}x ${rule.params.category}`;
+    default:
+      return "";
   }
 }
 
 function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => void }) {
   const [list, setList] = useState(rules);
   const [showAdd, setShowAdd] = useState(false);
-  const [newRule, setNewRule] = useState<Partial<Rule>>({ name: "", type: "min_staff", enabled: true, severity: "warning", params: { minCount: 1 } });
+  const [newRule, setNewRule] = useState<Partial<Rule>>({
+    name: "",
+    type: "min_staff",
+    enabled: true,
+    severity: "warning",
+    params: { minCount: 1 },
+  });
 
   function toggleRule(id: string) {
     const updated = list.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r));
@@ -557,14 +835,19 @@ function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => voi
         <div className="flex items-center gap-4">
           <div>
             <p className="text-[12px] font-medium text-muted-foreground">Organizational Resilience Policies</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{activeRules.length} active · {criticalRules.length} critical</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {activeRules.length} active · {criticalRules.length} critical
+            </p>
           </div>
           <div className="flex gap-2">
             <Badge variant="neutral">{list.length} rules</Badge>
             <Badge variant="critical">{criticalRules.length} critical</Badge>
           </div>
         </div>
-        <Button onClick={() => setShowAdd(true)} className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press">
+        <Button
+          onClick={() => setShowAdd(true)}
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press"
+        >
           <Plus className="size-4" />
           Add Rule
         </Button>
@@ -574,7 +857,9 @@ function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => voi
         <div className="rounded-2xl bg-card border border-border/60 p-4 shadow-sm">
           <div className="grid grid-cols-4 gap-3">
             <input
-              type="text" placeholder="Rule name" value={newRule.name}
+              type="text"
+              placeholder="Rule name"
+              value={newRule.name}
               onChange={(e) => setNewRule({ ...newRule, name: e.target.value })}
               className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
             />
@@ -598,8 +883,19 @@ function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => voi
               <option value="info">Info</option>
             </select>
             <div className="flex gap-2">
-              <Button onClick={handleAdd} className="bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-600 text-white rounded-xl h-10 px-4 shadow-sm">Add</Button>
-              <Button onClick={() => setShowAdd(false)} variant="outline" className="rounded-xl h-10 px-3 hover:bg-muted/50"><X className="size-4" /></Button>
+              <Button
+                onClick={handleAdd}
+                className="bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-600 text-white rounded-xl h-10 px-4 shadow-sm"
+              >
+                Add
+              </Button>
+              <Button
+                onClick={() => setShowAdd(false)}
+                variant="outline"
+                className="rounded-xl h-10 px-3 hover:bg-muted/50"
+              >
+                <X className="size-4" />
+              </Button>
             </div>
           </div>
         </div>
@@ -633,7 +929,9 @@ function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => voi
                         key={rule.id}
                         className={cn(
                           "rounded-xl border p-3.5 transition-all duration-200",
-                          rule.enabled ? "bg-card border-border/60 hover:shadow-sm hover:border-border" : "bg-muted/20 border-border/30 opacity-60",
+                          rule.enabled
+                            ? "bg-card border-border/60 hover:shadow-sm hover:border-border"
+                            : "bg-muted/20 border-border/30 opacity-60",
                         )}
                       >
                         <div className="flex items-start justify-between">
@@ -642,13 +940,22 @@ function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => voi
                               onClick={() => toggleRule(rule.id)}
                               className={cn(
                                 "mt-0.5 size-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0 shadow-sm",
-                                rule.enabled ? `${s.bg} border-transparent` : "border-muted-foreground/30 bg-transparent",
+                                rule.enabled
+                                  ? `${s.bg} border-transparent`
+                                  : "border-muted-foreground/30 bg-transparent",
                               )}
                             >
                               {rule.enabled && <Check className="size-2.5 text-white" />}
                             </button>
                             <div>
-                              <p className={cn("text-[12px] font-semibold", rule.enabled ? "text-foreground" : "text-muted-foreground")}>{rule.name}</p>
+                              <p
+                                className={cn(
+                                  "text-[12px] font-semibold",
+                                  rule.enabled ? "text-foreground" : "text-muted-foreground",
+                                )}
+                              >
+                                {rule.name}
+                              </p>
                               <div className="flex items-center gap-2 mt-1">
                                 <Badge variant={rule.severity}>{RULE_TYPE_LABELS[rule.type]}</Badge>
                                 <span className="text-[10px] text-muted-foreground">{formatRuleParams(rule)}</span>
@@ -656,7 +963,9 @@ function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => voi
                             </div>
                           </div>
                           <Button
-                            onClick={() => handleDelete(rule.id)} size="sm" variant="ghost"
+                            onClick={() => handleDelete(rule.id)}
+                            size="sm"
+                            variant="ghost"
                             className="text-muted-foreground/50 hover:text-rose-500 h-6 w-6 p-0 rounded-lg hover:bg-rose-50/50"
                           >
                             <Trash2 className="size-3" />
@@ -773,12 +1082,27 @@ function CalendarTab() {
         <AlertTriangle className="size-3.5 text-muted-foreground/50 shrink-0" />
         <p className="text-[12px] text-muted-foreground leading-relaxed">
           <span className="font-medium text-foreground">{workingDayCount}-day</span> working week
-          {settings.holidays.length > 0 && <> · <span className="font-medium text-foreground">{settings.holidays.length} holiday{settings.holidays.length !== 1 ? "s" : ""}</span></>}
+          {settings.holidays.length > 0 && (
+            <>
+              {" "}
+              ·{" "}
+              <span className="font-medium text-foreground">
+                {settings.holidays.length} holiday{settings.holidays.length !== 1 ? "s" : ""}
+              </span>
+            </>
+          )}
           {" · "}
           <span className="font-semibold text-foreground">{workingDaysInApril} working days in April 2026</span>
           {" — "}
-          <span className={cn("font-semibold", capacityDiff < 0 ? "text-amber-600" : capacityDiff === 0 ? "text-muted-foreground" : "text-emerald-600")}>
-            {capacityDiff === 0 ? "standard capacity" : `${capacityPct}% ${capacityDiff < 0 ? "below" : "above"} standard`}
+          <span
+            className={cn(
+              "font-semibold",
+              capacityDiff < 0 ? "text-amber-600" : capacityDiff === 0 ? "text-muted-foreground" : "text-emerald-600",
+            )}
+          >
+            {capacityDiff === 0
+              ? "standard capacity"
+              : `${capacityPct}% ${capacityDiff < 0 ? "below" : "above"} standard`}
           </span>
         </p>
       </div>
@@ -821,7 +1145,9 @@ function CalendarTab() {
           <div>
             <div className="grid grid-cols-7 mb-1">
               {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
-                <div key={d} className="text-center text-[10px] font-semibold text-muted-foreground/50 pb-1">{d}</div>
+                <div key={d} className="text-center text-[10px] font-semibold text-muted-foreground/50 pb-1">
+                  {d}
+                </div>
               ))}
             </div>
             <div className="space-y-1">
@@ -842,8 +1168,8 @@ function CalendarTab() {
                           isHoliday
                             ? "bg-amber-100 text-amber-600 line-through"
                             : isWorking
-                            ? "bg-muted/40 text-foreground"
-                            : "text-muted-foreground/30",
+                              ? "bg-muted/40 text-foreground"
+                              : "text-muted-foreground/30",
                         )}
                       >
                         {day}
@@ -854,9 +1180,18 @@ function CalendarTab() {
               ))}
             </div>
             <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/40">
-              <div className="flex items-center gap-1.5"><div className="size-2.5 rounded-sm bg-muted/40" /><span className="text-[10px] text-muted-foreground">Working</span></div>
-              <div className="flex items-center gap-1.5"><div className="size-2.5 rounded-sm bg-amber-100" /><span className="text-[10px] text-muted-foreground">Holiday</span></div>
-              <div className="flex items-center gap-1.5"><div className="size-2.5 rounded-sm border border-muted-foreground/20" /><span className="text-[10px] text-muted-foreground">Off</span></div>
+              <div className="flex items-center gap-1.5">
+                <div className="size-2.5 rounded-sm bg-muted/40" />
+                <span className="text-[10px] text-muted-foreground">Working</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="size-2.5 rounded-sm bg-amber-100" />
+                <span className="text-[10px] text-muted-foreground">Holiday</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="size-2.5 rounded-sm border border-muted-foreground/20" />
+                <span className="text-[10px] text-muted-foreground">Off</span>
+              </div>
             </div>
           </div>
         </div>
@@ -883,18 +1218,26 @@ function CalendarTab() {
           <div className="px-6 py-4 border-b border-border/60 bg-muted/20">
             <div className="flex items-center gap-3">
               <div className="space-y-1 w-28">
-                <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Day (1–30)</label>
+                <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Day (1–30)
+                </label>
                 <input
-                  type="number" min={1} max={30} placeholder="21"
+                  type="number"
+                  min={1}
+                  max={30}
+                  placeholder="21"
                   value={newHoliday.day}
                   onChange={(e) => setNewHoliday({ ...newHoliday, day: e.target.value })}
                   className="w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                 />
               </div>
               <div className="space-y-1 flex-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Holiday Name</label>
+                <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Holiday Name
+                </label>
                 <input
-                  type="text" placeholder="e.g. Easter Monday"
+                  type="text"
+                  placeholder="e.g. Easter Monday"
                   value={newHoliday.label}
                   onChange={(e) => setNewHoliday({ ...newHoliday, label: e.target.value })}
                   onKeyDown={(e) => e.key === "Enter" && addHoliday()}
@@ -902,8 +1245,15 @@ function CalendarTab() {
                 />
               </div>
               <div className="flex gap-2 pt-5">
-                <Button onClick={addHoliday} className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-xl h-9 px-4 shadow-sm">Add</Button>
-                <Button onClick={() => setShowAddHoliday(false)} variant="outline" className="rounded-xl h-9 px-3"><X className="size-4" /></Button>
+                <Button
+                  onClick={addHoliday}
+                  className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-xl h-9 px-4 shadow-sm"
+                >
+                  Add
+                </Button>
+                <Button onClick={() => setShowAddHoliday(false)} variant="outline" className="rounded-xl h-9 px-3">
+                  <X className="size-4" />
+                </Button>
               </div>
             </div>
           </div>
@@ -927,11 +1277,17 @@ function CalendarTab() {
                   </div>
                   <div className="flex-1">
                     <p className="text-[13px] font-semibold text-foreground">{h.label}</p>
-                    <p className="text-[11px] text-muted-foreground">April {h.day}, 2026 · {dayNames[dow]}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      April {h.day}, 2026 · {dayNames[dow]}
+                    </p>
                   </div>
-                  <span className="text-[10px] font-medium bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">Day off</span>
+                  <span className="text-[10px] font-medium bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
+                    Day off
+                  </span>
                   <Button
-                    onClick={() => removeHoliday(h.id)} size="sm" variant="ghost"
+                    onClick={() => removeHoliday(h.id)}
+                    size="sm"
+                    variant="ghost"
                     className="text-muted-foreground/50 hover:text-rose-500 h-7 w-7 p-0 rounded-lg hover:bg-rose-50/50"
                   >
                     <Trash2 className="size-3.5" />
@@ -971,9 +1327,27 @@ function AnalyticsTab({ config, onSave }: { config: AnalyticsConfig; onSave: (c:
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-4">
-        <SharedStatCard title="Bus Factor Alert" value={`≤ ${form.alertThresholds.busFactorMax}`} comment="Trigger when bus factor reaches this" icon={AlertTriangle} isLoading={false} />
-        <SharedStatCard title="Coverage Alert" value={`< ${form.alertThresholds.coverageMin}%`} comment="Trigger when coverage drops below" icon={Layers} isLoading={false} />
-        <SharedStatCard title="Risk Score Alert" value={`≥ ${form.alertThresholds.riskScore}`} comment="Trigger when risk score exceeds" icon={Activity} isLoading={false} />
+        <SharedStatCard
+          title="Bus Factor Alert"
+          value={`≤ ${form.alertThresholds.busFactorMax}`}
+          comment="Trigger when bus factor reaches this"
+          icon={AlertTriangle}
+          isLoading={false}
+        />
+        <SharedStatCard
+          title="Coverage Alert"
+          value={`< ${form.alertThresholds.coverageMin}%`}
+          comment="Trigger when coverage drops below"
+          icon={Layers}
+          isLoading={false}
+        />
+        <SharedStatCard
+          title="Risk Score Alert"
+          value={`≥ ${form.alertThresholds.riskScore}`}
+          comment="Trigger when risk score exceeds"
+          icon={Activity}
+          isLoading={false}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-6">
@@ -981,11 +1355,15 @@ function AnalyticsTab({ config, onSave }: { config: AnalyticsConfig; onSave: (c:
         <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-5">
           <div>
             <h3 className="text-[14px] font-semibold text-foreground">Risk Calculation Model</h3>
-            <p className="text-[12px] text-muted-foreground mt-0.5">Controls how Sentinel evaluates and scores organizational risk.</p>
+            <p className="text-[12px] text-muted-foreground mt-0.5">
+              Controls how Sentinel evaluates and scores organizational risk.
+            </p>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Coverage Sensitivity</label>
+            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
+              Coverage Sensitivity
+            </label>
             <div className="grid grid-cols-3 gap-2">
               {(["conservative", "balanced", "aggressive"] as const).map((opt) => {
                 const cfg = SENSITIVITY_CONFIG[opt];
@@ -996,12 +1374,21 @@ function AnalyticsTab({ config, onSave }: { config: AnalyticsConfig; onSave: (c:
                     onClick={() => setForm({ ...form, coverageSensitivity: opt })}
                     className={cn(
                       "rounded-xl border-2 p-3 text-left transition-all duration-200",
-                      active ? `${cfg.bg} ${cfg.border} ring-2 ${cfg.ring} ring-offset-1` : "border-border/40 bg-muted/20 hover:bg-muted/40",
+                      active
+                        ? `${cfg.bg} ${cfg.border} ring-2 ${cfg.ring} ring-offset-1`
+                        : "border-border/40 bg-muted/20 hover:bg-muted/40",
                     )}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className={cn("text-[11px] font-semibold", active ? cfg.color : "text-foreground")}>{cfg.label}</span>
-                      <div className={cn("size-3.5 rounded-full border-2 flex items-center justify-center transition-all", active ? `${cfg.activeBg} border-transparent` : "border-muted-foreground/30")}>
+                      <span className={cn("text-[11px] font-semibold", active ? cfg.color : "text-foreground")}>
+                        {cfg.label}
+                      </span>
+                      <div
+                        className={cn(
+                          "size-3.5 rounded-full border-2 flex items-center justify-center transition-all",
+                          active ? `${cfg.activeBg} border-transparent` : "border-muted-foreground/30",
+                        )}
+                      >
                         {active && <Check className="size-2 text-white" />}
                       </div>
                     </div>
@@ -1013,10 +1400,14 @@ function AnalyticsTab({ config, onSave }: { config: AnalyticsConfig; onSave: (c:
           </div>
 
           <div className="space-y-2">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Bus Factor Alert Threshold</label>
+            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
+              Bus Factor Alert Threshold
+            </label>
             <div className="flex items-center gap-3">
               <input
-                type="number" min={1} max={5}
+                type="number"
+                min={1}
+                max={5}
                 value={form.busFactorThreshold}
                 onChange={(e) => setForm({ ...form, busFactorThreshold: parseInt(e.target.value) || 1 })}
                 className="w-20 rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-center font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
@@ -1031,23 +1422,42 @@ function AnalyticsTab({ config, onSave }: { config: AnalyticsConfig; onSave: (c:
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-[14px] font-semibold text-foreground">Risk Score Weights</h3>
-              <p className="text-[12px] text-muted-foreground mt-0.5">How each factor contributes to overall risk score.</p>
+              <p className="text-[12px] text-muted-foreground mt-0.5">
+                How each factor contributes to overall risk score.
+              </p>
             </div>
-            <span className={cn(
-              "text-[11px] font-semibold px-2.5 py-1 rounded-full border",
-              weightsValid ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200",
-            )}>
+            <span
+              className={cn(
+                "text-[11px] font-semibold px-2.5 py-1 rounded-full border",
+                weightsValid
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border-rose-200",
+              )}
+            >
               {weightsTotal}/100
             </span>
           </div>
 
-          {(
-            [
-              { key: "busFactor" as const, label: "Bus Factor", color: "bg-rose-500", description: "Dependency concentration weight" },
-              { key: "skillCoverage" as const, label: "Skill Coverage", color: "bg-violet-500", description: "Skill redundancy weight" },
-              { key: "teamAvailability" as const, label: "Team Availability", color: "bg-blue-500", description: "Capacity availability weight" },
-            ]
-          ).map(({ key, label, color, description }) => (
+          {[
+            {
+              key: "busFactor" as const,
+              label: "Bus Factor",
+              color: "bg-rose-500",
+              description: "Dependency concentration weight",
+            },
+            {
+              key: "skillCoverage" as const,
+              label: "Skill Coverage",
+              color: "bg-violet-500",
+              description: "Skill redundancy weight",
+            },
+            {
+              key: "teamAvailability" as const,
+              label: "Team Availability",
+              color: "bg-blue-500",
+              description: "Capacity availability weight",
+            },
+          ].map(({ key, label, color, description }) => (
             <div key={key} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div>
@@ -1055,14 +1465,21 @@ function AnalyticsTab({ config, onSave }: { config: AnalyticsConfig; onSave: (c:
                   <p className="text-[10px] text-muted-foreground">{description}</p>
                 </div>
                 <input
-                  type="number" min={0} max={100}
+                  type="number"
+                  min={0}
+                  max={100}
                   value={form.riskWeights[key]}
-                  onChange={(e) => setForm({ ...form, riskWeights: { ...form.riskWeights, [key]: parseInt(e.target.value) || 0 } })}
+                  onChange={(e) =>
+                    setForm({ ...form, riskWeights: { ...form.riskWeights, [key]: parseInt(e.target.value) || 0 } })
+                  }
                   className="w-16 rounded-xl border border-border/60 bg-background px-2 py-1.5 text-[12px] text-center font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                 />
               </div>
               <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
-                <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${Math.min(form.riskWeights[key], 100)}%` }} />
+                <div
+                  className={cn("h-full rounded-full transition-all", color)}
+                  style={{ width: `${Math.min(form.riskWeights[key], 100)}%` }}
+                />
               </div>
             </div>
           ))}
@@ -1073,40 +1490,69 @@ function AnalyticsTab({ config, onSave }: { config: AnalyticsConfig; onSave: (c:
       <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-4">
         <div>
           <h3 className="text-[14px] font-semibold text-foreground">Alert Thresholds</h3>
-          <p className="text-[12px] text-muted-foreground mt-0.5">Values that trigger risk alerts across the platform.</p>
+          <p className="text-[12px] text-muted-foreground mt-0.5">
+            Values that trigger risk alerts across the platform.
+          </p>
         </div>
         <div className="grid grid-cols-3 gap-5">
           <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Risk Score Alert (≥)</label>
+            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
+              Risk Score Alert (≥)
+            </label>
             <div className="flex items-center gap-2">
               <input
-                type="number" min={0} max={100}
+                type="number"
+                min={0}
+                max={100}
                 value={form.alertThresholds.riskScore}
-                onChange={(e) => setForm({ ...form, alertThresholds: { ...form.alertThresholds, riskScore: parseInt(e.target.value) || 0 } })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    alertThresholds: { ...form.alertThresholds, riskScore: parseInt(e.target.value) || 0 },
+                  })
+                }
                 className="w-20 rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-center font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
               />
               <span className="text-[12px] text-muted-foreground">/ 100</span>
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Coverage Alert (&lt;)</label>
+            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
+              Coverage Alert (&lt;)
+            </label>
             <div className="flex items-center gap-2">
               <input
-                type="number" min={0} max={100}
+                type="number"
+                min={0}
+                max={100}
                 value={form.alertThresholds.coverageMin}
-                onChange={(e) => setForm({ ...form, alertThresholds: { ...form.alertThresholds, coverageMin: parseInt(e.target.value) || 0 } })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    alertThresholds: { ...form.alertThresholds, coverageMin: parseInt(e.target.value) || 0 },
+                  })
+                }
                 className="w-20 rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-center font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
               />
               <span className="text-[12px] text-muted-foreground">%</span>
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Bus Factor Alert (≤)</label>
+            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
+              Bus Factor Alert (≤)
+            </label>
             <div className="flex items-center gap-2">
               <input
-                type="number" min={1} max={10}
+                type="number"
+                min={1}
+                max={10}
                 value={form.alertThresholds.busFactorMax}
-                onChange={(e) => setForm({ ...form, alertThresholds: { ...form.alertThresholds, busFactorMax: parseInt(e.target.value) || 1 } })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    alertThresholds: { ...form.alertThresholds, busFactorMax: parseInt(e.target.value) || 1 },
+                  })
+                }
                 className="w-20 rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-center font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
               />
               <span className="text-[12px] text-muted-foreground">persons</span>
@@ -1148,10 +1594,10 @@ export default function Settings() {
             {(
               [
                 { value: "organization", label: "Organization", icon: Shield },
-                { value: "skills",       label: "Skills",       icon: BookOpen },
-                { value: "rules",        label: "Rules",        icon: Sliders },
-                { value: "calendar",     label: "Calendar",     icon: CalendarDays },
-                { value: "analytics",    label: "Analytics",    icon: Activity },
+                { value: "skills", label: "Skills", icon: BookOpen },
+                { value: "rules", label: "Rules", icon: Sliders },
+                { value: "calendar", label: "Calendar", icon: CalendarDays },
+                { value: "analytics", label: "Analytics", icon: Activity },
               ] as const
             ).map(({ value, label, icon: Icon }) => (
               <TabsTrigger

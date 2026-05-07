@@ -17,7 +17,7 @@ import {
   ArrowRight,
   ArrowLeft,
 } from "lucide-react";
-import TopBar from "@/components/layout/TopBar";
+import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { EMPLOYEE_DETAILS, EMPLOYEES_LIST } from "@/data/employees";
@@ -94,17 +94,69 @@ const NAME_COL_WIDTH = 192;
 const CAPACITY_ROW_HEIGHT = 36;
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 const SIM_COLORS = [
-  { bg: "bg-amber-100", border: "border-amber-400", text: "text-amber-800", handle: "bg-amber-400", dot: "bg-amber-400", ring: "ring-amber-300" },
-  { bg: "bg-violet-100", border: "border-violet-400", text: "text-violet-800", handle: "bg-violet-400", dot: "bg-violet-400", ring: "ring-violet-300" },
-  { bg: "bg-teal-100", border: "border-teal-400", text: "text-teal-800", handle: "bg-teal-400", dot: "bg-teal-400", ring: "ring-teal-300" },
-  { bg: "bg-orange-100", border: "border-orange-400", text: "text-orange-800", handle: "bg-orange-400", dot: "bg-orange-400", ring: "ring-orange-300" },
-  { bg: "bg-pink-100", border: "border-pink-400", text: "text-pink-800", handle: "bg-pink-400", dot: "bg-pink-400", ring: "ring-pink-300" },
-  { bg: "bg-sky-100", border: "border-sky-400", text: "text-sky-800", handle: "bg-sky-400", dot: "bg-sky-400", ring: "ring-sky-300" },
+  {
+    bg: "bg-amber-100",
+    border: "border-amber-400",
+    text: "text-amber-800",
+    handle: "bg-amber-400",
+    dot: "bg-amber-400",
+    ring: "ring-amber-300",
+  },
+  {
+    bg: "bg-violet-100",
+    border: "border-violet-400",
+    text: "text-violet-800",
+    handle: "bg-violet-400",
+    dot: "bg-violet-400",
+    ring: "ring-violet-300",
+  },
+  {
+    bg: "bg-teal-100",
+    border: "border-teal-400",
+    text: "text-teal-800",
+    handle: "bg-teal-400",
+    dot: "bg-teal-400",
+    ring: "ring-teal-300",
+  },
+  {
+    bg: "bg-orange-100",
+    border: "border-orange-400",
+    text: "text-orange-800",
+    handle: "bg-orange-400",
+    dot: "bg-orange-400",
+    ring: "ring-orange-300",
+  },
+  {
+    bg: "bg-pink-100",
+    border: "border-pink-400",
+    text: "text-pink-800",
+    handle: "bg-pink-400",
+    dot: "bg-pink-400",
+    ring: "ring-pink-300",
+  },
+  {
+    bg: "bg-sky-100",
+    border: "border-sky-400",
+    text: "text-sky-800",
+    handle: "bg-sky-400",
+    dot: "bg-sky-400",
+    ring: "ring-sky-300",
+  },
 ] as const;
 
 const LEAVE_BAND_BG: Record<LeaveType, string> = {
@@ -172,9 +224,10 @@ function formatHalfDate(dateStr: string, half: 0 | 1): string {
 }
 
 function blockDurationLabel(b: SimBlock): string {
-  const days = Math.round(
-    (new Date(b.endDate + "T12:00:00").getTime() - new Date(b.startDate + "T12:00:00").getTime()) / 86400000,
-  ) + 1;
+  const days =
+    Math.round(
+      (new Date(b.endDate + "T12:00:00").getTime() - new Date(b.startDate + "T12:00:00").getTime()) / 86400000,
+    ) + 1;
   const halves = days * 2 - b.startHalf - (1 - b.endHalf);
   if (halves === 1) return "½ day";
   if (halves === 2) return "1 day";
@@ -249,22 +302,33 @@ function isOnRealLeave(empId: string, day: number, viewYear: number, viewMonth: 
   return getViewLeaves(empId, viewYear, viewMonth).some((l) => day >= l.start && day <= l.end);
 }
 
-function hasLeaveOverlap(empId: string, startDay: number, endDay: number, viewYear: number, viewMonth: number): boolean {
+function hasLeaveOverlap(
+  empId: string,
+  startDay: number,
+  endDay: number,
+  viewYear: number,
+  viewMonth: number,
+): boolean {
   return getViewLeaves(empId, viewYear, viewMonth).some((l) => l.start <= endDay && l.end >= startDay);
 }
 
 function clampDrawEnd(
   empId: string,
-  anchorDay: number, anchorHalf: 0 | 1,
-  targetDay: number, targetHalf: 0 | 1,
-  viewYear: number, viewMonth: number,
+  anchorDay: number,
+  anchorHalf: 0 | 1,
+  targetDay: number,
+  targetHalf: 0 | 1,
+  viewYear: number,
+  viewMonth: number,
   daysInMonth: number,
 ): { day: number; half: 0 | 1 } {
   const leaves = getViewLeaves(empId, viewYear, viewMonth);
   const anchorH = toHalves(anchorDay, anchorHalf);
   const targetH = toHalves(targetDay, targetHalf);
   if (anchorH <= targetH) {
-    const blocking = leaves.filter((l) => l.start <= targetDay && l.end >= anchorDay).sort((a, b) => a.start - b.start)[0];
+    const blocking = leaves
+      .filter((l) => l.start <= targetDay && l.end >= anchorDay)
+      .sort((a, b) => a.start - b.start)[0];
     if (!blocking) return { day: targetDay, half: targetHalf };
     return fromHalves(Math.max(anchorH, toHalves(blocking.start, 0) - 1), daysInMonth);
   } else {
@@ -287,7 +351,8 @@ function isOnSimLeave(empId: string, day: number, blocks: SimBlock[], viewYear: 
 
 function skillMatch(required: string, empSkill: string): boolean {
   const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
-  const r = norm(required), e = norm(empSkill);
+  const r = norm(required),
+    e = norm(empSkill);
   return r === e || r.includes(e) || e.includes(r);
 }
 
@@ -307,7 +372,9 @@ function runCombinedSimulation(blocks: SimBlock[]): { projects: ProjectImpact[];
         .filter((m) => !absentIds.has(m.id))
         .map((m) => EMPLOYEE_DETAILS[m.id])
         .filter(Boolean);
-      const uncovered: string[] = [], siloed: string[] = [], safe: string[] = [];
+      const uncovered: string[] = [],
+        siloed: string[] = [],
+        safe: string[] = [];
       for (const skill of project.skills) {
         const n = activeTeam.filter((m) => m.skills.some((s) => skillMatch(skill, s.name) && s.level >= 2)).length;
         if (n === 0) uncovered.push(skill);
@@ -352,13 +419,36 @@ function SimBlockSheet({
   const { projects, overallLevel } = useMemo(() => runCombinedSimulation([block]), [block]);
 
   const levelMeta = {
-    critical: { label: "Critical Impact", sub: "Key skills will be uncovered", Icon: ShieldAlert, cls: "text-rose-700 bg-rose-50 border-rose-200" },
-    warning: { label: "Moderate Impact", sub: "Some skills may be at risk", Icon: AlertTriangle, cls: "text-amber-700 bg-amber-50 border-amber-200" },
-    safe: { label: "Safe to Approve", sub: "All required skills are covered", Icon: CheckCircle2, cls: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+    critical: {
+      label: "Critical Impact",
+      sub: "Key skills will be uncovered",
+      Icon: ShieldAlert,
+      cls: "text-rose-700 bg-rose-50 border-rose-200",
+    },
+    warning: {
+      label: "Moderate Impact",
+      sub: "Some skills may be at risk",
+      Icon: AlertTriangle,
+      cls: "text-amber-700 bg-amber-50 border-amber-200",
+    },
+    safe: {
+      label: "Safe to Approve",
+      sub: "All required skills are covered",
+      Icon: CheckCircle2,
+      cls: "text-emerald-700 bg-emerald-50 border-emerald-200",
+    },
   };
   const lm = levelMeta[overallLevel];
-  const projectDot: Record<ImpactLevel, string> = { critical: "bg-rose-400", warning: "bg-amber-400", safe: "bg-emerald-400" };
-  const projectCard: Record<ImpactLevel, string> = { critical: "border-rose-200 bg-rose-50/60", warning: "border-amber-200 bg-amber-50/60", safe: "border-emerald-200 bg-emerald-50/60" };
+  const projectDot: Record<ImpactLevel, string> = {
+    critical: "bg-rose-400",
+    warning: "bg-amber-400",
+    safe: "bg-emerald-400",
+  };
+  const projectCard: Record<ImpactLevel, string> = {
+    critical: "border-rose-200 bg-rose-50/60",
+    warning: "border-amber-200 bg-amber-50/60",
+    safe: "border-emerald-200 bg-emerald-50/60",
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-end">
@@ -367,7 +457,12 @@ function SimBlockSheet({
         <div className={cn("h-[3px] w-full shrink-0", color.handle)} />
         <div className="flex items-start justify-between px-7 pt-6 pb-4 border-b border-border/60">
           <div className="flex items-center gap-3">
-            <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-md", employee.color)}>
+            <div
+              className={cn(
+                "flex size-10 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-md",
+                employee.color,
+              )}
+            >
               {employee.initials}
             </div>
             <div>
@@ -375,7 +470,10 @@ function SimBlockSheet({
               <p className="text-[12px] text-muted-foreground">{employee.department} · Absence simulation</p>
             </div>
           </div>
-          <button onClick={onClose} className="flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+          <button
+            onClick={onClose}
+            className="flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
             <X className="size-4" />
           </button>
         </div>
@@ -385,9 +483,13 @@ function SimBlockSheet({
             <p className={cn("text-[10px] font-bold uppercase tracking-wider", color.text)}>Simulated Absence Period</p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[12px]">
               <span className="text-muted-foreground">From</span>
-              <span className={cn("font-semibold text-right", color.text)}>{formatHalfDate(block.startDate, block.startHalf)}</span>
+              <span className={cn("font-semibold text-right", color.text)}>
+                {formatHalfDate(block.startDate, block.startHalf)}
+              </span>
               <span className="text-muted-foreground">To</span>
-              <span className={cn("font-semibold text-right", color.text)}>{formatHalfDate(block.endDate, block.endHalf)}</span>
+              <span className={cn("font-semibold text-right", color.text)}>
+                {formatHalfDate(block.endDate, block.endHalf)}
+              </span>
               <span className="text-muted-foreground">Duration</span>
               <span className="font-semibold text-foreground text-right">{blockDurationLabel(block)}</span>
             </div>
@@ -403,7 +505,9 @@ function SimBlockSheet({
 
           {projects.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Project Impact ({projects.length})</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                Project Impact ({projects.length})
+              </p>
               {projects.map((p) => (
                 <div key={p.id} className={cn("rounded-xl border p-3.5 space-y-2", projectCard[p.level])}>
                   <div className="flex items-center gap-2">
@@ -411,13 +515,22 @@ function SimBlockSheet({
                     <span className="text-[13px] font-semibold text-foreground">{p.name}</span>
                   </div>
                   {p.uncovered.length > 0 && (
-                    <p className="text-[11px] text-rose-700"><span className="font-semibold">Uncovered: </span>{p.uncovered.join(", ")}</p>
+                    <p className="text-[11px] text-rose-700">
+                      <span className="font-semibold">Uncovered: </span>
+                      {p.uncovered.join(", ")}
+                    </p>
                   )}
                   {p.siloed.length > 0 && (
-                    <p className="text-[11px] text-amber-700"><span className="font-semibold">At risk: </span>{p.siloed.join(", ")}</p>
+                    <p className="text-[11px] text-amber-700">
+                      <span className="font-semibold">At risk: </span>
+                      {p.siloed.join(", ")}
+                    </p>
                   )}
                   {p.safe.length > 0 && (
-                    <p className="text-[11px] text-emerald-700"><span className="font-semibold">Covered: </span>{p.safe.join(", ")}</p>
+                    <p className="text-[11px] text-emerald-700">
+                      <span className="font-semibold">Covered: </span>
+                      {p.safe.join(", ")}
+                    </p>
                   )}
                 </div>
               ))}
@@ -426,7 +539,11 @@ function SimBlockSheet({
         </div>
 
         <div className="shrink-0 px-7 py-5 border-t border-border/60">
-          <Button variant="ghost" onClick={onDelete} className="w-full text-muted-foreground hover:text-rose-600 hover:bg-rose-50 rounded-xl h-9 text-[12px] gap-1.5">
+          <Button
+            variant="ghost"
+            onClick={onDelete}
+            className="w-full text-muted-foreground hover:text-rose-600 hover:bg-rose-50 rounded-xl h-9 text-[12px] gap-1.5"
+          >
             <Trash2 className="size-3.5" /> Remove simulation block
           </Button>
         </div>
@@ -474,9 +591,9 @@ function AddBlockSheet({
 
   const durationLabel = useMemo(() => {
     if (!isValid) return "Invalid range";
-    const days = Math.round(
-      (new Date(endDate + "T12:00:00").getTime() - new Date(startDate + "T12:00:00").getTime()) / 86400000,
-    ) + 1;
+    const days =
+      Math.round((new Date(endDate + "T12:00:00").getTime() - new Date(startDate + "T12:00:00").getTime()) / 86400000) +
+      1;
     const halves = days * 2 - startHalf - (1 - endHalf);
     if (halves <= 0) return "Invalid range";
     if (halves === 1) return "½ day";
@@ -500,7 +617,10 @@ function AddBlockSheet({
             <Zap className="size-4 text-amber-500" />
             <h2 className="text-[16px] font-bold text-foreground">Add Absence</h2>
           </div>
-          <button onClick={onClose} className="flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+          <button
+            onClick={onClose}
+            className="flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
             <X className="size-4" />
           </button>
         </div>
@@ -518,7 +638,12 @@ function AddBlockSheet({
                   )}
                   onClick={() => setSelectedEmpId(emp.id)}
                 >
-                  <div className={cn("flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white shadow-sm", emp.color)}>
+                  <div
+                    className={cn(
+                      "flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white shadow-sm",
+                      emp.color,
+                    )}
+                  >
                     {emp.initials}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -543,13 +668,19 @@ function AddBlockSheet({
               <div className="flex rounded-xl border border-border/60 overflow-hidden">
                 <button
                   onClick={() => setStartHalf(0)}
-                  className={cn("flex-1 py-1.5 text-[11px] font-semibold transition-colors", startHalf === 0 ? "bg-amber-400 text-white" : "bg-muted/20 text-muted-foreground hover:bg-muted/40")}
+                  className={cn(
+                    "flex-1 py-1.5 text-[11px] font-semibold transition-colors",
+                    startHalf === 0 ? "bg-amber-400 text-white" : "bg-muted/20 text-muted-foreground hover:bg-muted/40",
+                  )}
                 >
                   AM
                 </button>
                 <button
                   onClick={() => setStartHalf(1)}
-                  className={cn("flex-1 py-1.5 text-[11px] font-semibold transition-colors", startHalf === 1 ? "bg-amber-400 text-white" : "bg-muted/20 text-muted-foreground hover:bg-muted/40")}
+                  className={cn(
+                    "flex-1 py-1.5 text-[11px] font-semibold transition-colors",
+                    startHalf === 1 ? "bg-amber-400 text-white" : "bg-muted/20 text-muted-foreground hover:bg-muted/40",
+                  )}
                 >
                   PM
                 </button>
@@ -566,13 +697,19 @@ function AddBlockSheet({
               <div className="flex rounded-xl border border-border/60 overflow-hidden">
                 <button
                   onClick={() => setEndHalf(0)}
-                  className={cn("flex-1 py-1.5 text-[11px] font-semibold transition-colors", endHalf === 0 ? "bg-amber-400 text-white" : "bg-muted/20 text-muted-foreground hover:bg-muted/40")}
+                  className={cn(
+                    "flex-1 py-1.5 text-[11px] font-semibold transition-colors",
+                    endHalf === 0 ? "bg-amber-400 text-white" : "bg-muted/20 text-muted-foreground hover:bg-muted/40",
+                  )}
                 >
                   AM
                 </button>
                 <button
                   onClick={() => setEndHalf(1)}
-                  className={cn("flex-1 py-1.5 text-[11px] font-semibold transition-colors", endHalf === 1 ? "bg-amber-400 text-white" : "bg-muted/20 text-muted-foreground hover:bg-muted/40")}
+                  className={cn(
+                    "flex-1 py-1.5 text-[11px] font-semibold transition-colors",
+                    endHalf === 1 ? "bg-amber-400 text-white" : "bg-muted/20 text-muted-foreground hover:bg-muted/40",
+                  )}
                 >
                   PM
                 </button>
@@ -580,14 +717,19 @@ function AddBlockSheet({
             </div>
           </div>
 
-          <div className={cn("rounded-xl border-2 border-dashed px-4 py-3 flex items-center justify-between", isValid ? "border-amber-300 bg-amber-50" : "border-rose-300 bg-rose-50")}>
+          <div
+            className={cn(
+              "rounded-xl border-2 border-dashed px-4 py-3 flex items-center justify-between",
+              isValid ? "border-amber-300 bg-amber-50" : "border-rose-300 bg-rose-50",
+            )}
+          >
             <span className="text-[11px] text-muted-foreground">Duration</span>
-            <span className={cn("text-[13px] font-bold", isValid ? "text-amber-800" : "text-rose-700")}>{durationLabel}</span>
+            <span className={cn("text-[13px] font-bold", isValid ? "text-amber-800" : "text-rose-700")}>
+              {durationLabel}
+            </span>
           </div>
 
-          {!isValid && (
-            <p className="text-[11px] text-rose-600">End date must be on or after start date.</p>
-          )}
+          {!isValid && <p className="text-[11px] text-rose-600">End date must be on or after start date.</p>}
         </div>
 
         <div className="shrink-0 px-7 py-5 border-t border-border/60 flex gap-3">
@@ -644,7 +786,11 @@ function ContextPanel({
     warning: <AlertTriangle className="size-3.5" />,
     safe: <CheckCircle2 className="size-3.5" />,
   };
-  const projectDot: Record<ImpactLevel, string> = { critical: "bg-rose-400", warning: "bg-amber-400", safe: "bg-emerald-400" };
+  const projectDot: Record<ImpactLevel, string> = {
+    critical: "bg-rose-400",
+    warning: "bg-amber-400",
+    safe: "bg-emerald-400",
+  };
 
   if (mode === "view") {
     const totalEmps = EMPLOYEES_LIST.length;
@@ -662,7 +808,9 @@ function ContextPanel({
       getViewLeaves(emp.id, viewYear, viewMonth)
         .filter((l) => todayDay === null || l.start >= todayDay)
         .map((l) => ({ emp, leave: l })),
-    ).sort((a, b) => a.leave.start - b.leave.start).slice(0, 6);
+    )
+      .sort((a, b) => a.leave.start - b.leave.start)
+      .slice(0, 6);
 
     const leaveTypeMeta: Record<LeaveType, { label: string; dot: string }> = {
       vacation: { label: "Vacation", dot: "bg-blue-400" },
@@ -700,9 +848,14 @@ function ContextPanel({
             {availableToday !== null && (
               <>
                 <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
-                  <div className="h-full bg-emerald-400 rounded-full transition-all" style={{ width: `${(availableToday / totalEmps) * 100}%` }} />
+                  <div
+                    className="h-full bg-emerald-400 rounded-full transition-all"
+                    style={{ width: `${(availableToday / totalEmps) * 100}%` }}
+                  />
                 </div>
-                <p className="text-[11px] text-muted-foreground">{Math.round((availableToday / totalEmps) * 100)}% team available</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {Math.round((availableToday / totalEmps) * 100)}% team available
+                </p>
               </>
             )}
           </div>
@@ -718,12 +871,19 @@ function ContextPanel({
                 const meta = leaveTypeMeta[leave.type];
                 return (
                   <div key={i} className="px-5 py-3 flex items-center gap-3">
-                    <div className={cn("flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white shadow-sm", emp.color)}>
+                    <div
+                      className={cn(
+                        "flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white shadow-sm",
+                        emp.color,
+                      )}
+                    >
                       {emp.initials}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[12px] font-medium text-foreground truncate">{emp.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{monthAbbr} {leave.start}–{leave.end}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {monthAbbr} {leave.start}–{leave.end}
+                      </p>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <div className={cn("size-1.5 rounded-full", meta.dot)} />
@@ -739,7 +899,13 @@ function ContextPanel({
         <div className="rounded-2xl border border-border/60 bg-card shadow-sm px-5 py-4">
           <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Legend</p>
           <div className="space-y-2">
-            {([["bg-blue-400", "Vacation"], ["bg-rose-400", "Sick Leave"], ["bg-indigo-500", "Conference"]] as const).map(([dot, label]) => (
+            {(
+              [
+                ["bg-blue-400", "Vacation"],
+                ["bg-rose-400", "Sick Leave"],
+                ["bg-indigo-500", "Conference"],
+              ] as const
+            ).map(([dot, label]) => (
               <div key={label} className="flex items-center gap-2">
                 <div className={cn("size-2 rounded-full", dot)} />
                 <span className="text-[12px] text-muted-foreground">{label}</span>
@@ -769,7 +935,10 @@ function ContextPanel({
             )}
           </div>
           {simBlocks.length > 0 && (
-            <button onClick={onClearAll} className="text-[11px] text-amber-700/60 hover:text-rose-600 transition-colors font-medium">
+            <button
+              onClick={onClearAll}
+              className="text-[11px] text-amber-700/60 hover:text-rose-600 transition-colors font-medium"
+            >
               Clear all
             </button>
           )}
@@ -795,23 +964,42 @@ function ContextPanel({
               const impact = getEmployeeImpactLevel(block.employeeId, [block]);
               return (
                 <div key={block.id} className="flex items-center gap-2.5 px-4 py-2.5 group">
-                  <button className="flex items-center gap-2.5 flex-1 min-w-0 text-left" onClick={() => onSelectBlock(block.id)}>
+                  <button
+                    className="flex items-center gap-2.5 flex-1 min-w-0 text-left"
+                    onClick={() => onSelectBlock(block.id)}
+                  >
                     <div className={cn("size-2 rounded-full shrink-0", color.dot)} />
-                    <div className={cn("flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white", emp?.color ?? "bg-muted")}>
+                    <div
+                      className={cn(
+                        "flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white",
+                        emp?.color ?? "bg-muted",
+                      )}
+                    >
                       {emp?.initials}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[12px] font-medium text-foreground truncate">{emp?.name}</p>
-                      <p className="text-[10px] text-muted-foreground">{formatHalfDate(block.startDate, block.startHalf)} – {formatHalfDate(block.endDate, block.endHalf)} · {blockDurationLabel(block)}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {formatHalfDate(block.startDate, block.startHalf)} –{" "}
+                        {formatHalfDate(block.endDate, block.endHalf)} · {blockDurationLabel(block)}
+                      </p>
                     </div>
                   </button>
                   {impact && (
-                    <div className={cn("flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold shrink-0", levelBadge[impact])}>
+                    <div
+                      className={cn(
+                        "flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold shrink-0",
+                        levelBadge[impact],
+                      )}
+                    >
                       {levelIcon[impact]}
                       <span className="capitalize">{impact}</span>
                     </div>
                   )}
-                  <button onClick={() => onRemoveBlock(block.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-rose-500 ml-1">
+                  <button
+                    onClick={() => onRemoveBlock(block.id)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-rose-500 ml-1"
+                  >
                     <X className="size-3.5" />
                   </button>
                 </div>
@@ -834,7 +1022,12 @@ function ContextPanel({
             <Play className="size-3.5 text-primary" />
             <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Combined Impact</p>
             {combinedResult.projects.length > 0 && (
-              <div className={cn("flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ml-auto", levelBadge[combinedResult.overallLevel])}>
+              <div
+                className={cn(
+                  "flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ml-auto",
+                  levelBadge[combinedResult.overallLevel],
+                )}
+              >
                 {levelIcon[combinedResult.overallLevel]}
                 <span className="capitalize">{combinedResult.overallLevel}</span>
               </div>
@@ -856,13 +1049,22 @@ function ContextPanel({
                     <span className="text-[12px] font-semibold text-foreground truncate">{p.name}</span>
                   </div>
                   {p.uncovered.length > 0 && (
-                    <p className="text-[11px] text-rose-700 pl-4"><span className="font-semibold">Uncovered: </span>{p.uncovered.join(", ")}</p>
+                    <p className="text-[11px] text-rose-700 pl-4">
+                      <span className="font-semibold">Uncovered: </span>
+                      {p.uncovered.join(", ")}
+                    </p>
                   )}
                   {p.siloed.length > 0 && (
-                    <p className="text-[11px] text-amber-700 pl-4"><span className="font-semibold">At risk: </span>{p.siloed.join(", ")}</p>
+                    <p className="text-[11px] text-amber-700 pl-4">
+                      <span className="font-semibold">At risk: </span>
+                      {p.siloed.join(", ")}
+                    </p>
                   )}
                   {p.safe.length > 0 && (
-                    <p className="text-[11px] text-emerald-700 pl-4"><span className="font-semibold">Covered: </span>{p.safe.join(", ")}</p>
+                    <p className="text-[11px] text-emerald-700 pl-4">
+                      <span className="font-semibold">Covered: </span>
+                      {p.safe.join(", ")}
+                    </p>
                   )}
                 </div>
               ))}
@@ -922,7 +1124,10 @@ function CapacityStrip({
           return (
             <div
               key={d}
-              className={cn("border-r border-border/10 last:border-r-0 flex flex-col items-center justify-end pb-1 gap-1", closed && "bg-muted/40")}
+              className={cn(
+                "border-r border-border/10 last:border-r-0 flex flex-col items-center justify-end pb-1 gap-1",
+                closed && "bg-muted/40",
+              )}
               style={{ width: DAY_COL_WIDTH, height: CAPACITY_ROW_HEIGHT }}
             >
               {!closed && (
@@ -971,7 +1176,9 @@ function PlanningGantt({
   const [drawState, setDrawState] = useState<DrawState | null>(null);
   const drawStateRef = useRef<DrawState | null>(null);
   const onCreateBlockRef = useRef(onCreateBlock);
-  useEffect(() => { onCreateBlockRef.current = onCreateBlock; }, [onCreateBlock]);
+  useEffect(() => {
+    onCreateBlockRef.current = onCreateBlock;
+  }, [onCreateBlock]);
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const firstDayOfWeek = getFirstDayOfWeek(viewYear, viewMonth);
@@ -1006,7 +1213,13 @@ function PlanningGantt({
               const { day: sd, half: sh } = fromHalves(ns, daysInMonth);
               const { day: ed, half: eh } = fromHalves(ns + span, daysInMonth);
               if (hasLeaveOverlap(b.employeeId, sd, ed, viewYear, viewMonth)) return b;
-              return { ...b, startDate: makeDateStr(viewYear, viewMonth, sd), startHalf: sh, endDate: makeDateStr(viewYear, viewMonth, ed), endHalf: eh };
+              return {
+                ...b,
+                startDate: makeDateStr(viewYear, viewMonth, sd),
+                startHalf: sh,
+                endDate: makeDateStr(viewYear, viewMonth, ed),
+                endHalf: eh,
+              };
             }
             if (drag.mode === "resize-left") {
               const oe = toHalves(drag.origEndDay, drag.origEndHalf);
@@ -1016,7 +1229,10 @@ function PlanningGantt({
               return { ...b, startDate: makeDateStr(viewYear, viewMonth, sd), startHalf: sh };
             }
             const os = toHalves(drag.origStartDay, drag.origStartHalf);
-            const ne = Math.max(os + 1, Math.min(daysInMonth * 2 - 1, toHalves(drag.origEndDay, drag.origEndHalf) + dH));
+            const ne = Math.max(
+              os + 1,
+              Math.min(daysInMonth * 2 - 1, toHalves(drag.origEndDay, drag.origEndHalf) + dH),
+            );
             const { day: ed, half: eh } = fromHalves(ne, daysInMonth);
             if (hasLeaveOverlap(b.employeeId, drag.origStartDay, ed, viewYear, viewMonth)) return b;
             return { ...b, endDate: makeDateStr(viewYear, viewMonth, ed), endHalf: eh };
@@ -1030,7 +1246,16 @@ function PlanningGantt({
         const relX = Math.max(0, e.clientX - draw.containerLeft);
         const halfIdx = Math.max(0, Math.min(daysInMonth * 2 - 1, Math.floor(relX / (DAY_COL_WIDTH / 2))));
         const { day, half } = fromHalves(halfIdx, daysInMonth);
-        const clamped = clampDrawEnd(draw.employeeId, draw.anchorDay, draw.anchorHalf, day, half, viewYear, viewMonth, daysInMonth);
+        const clamped = clampDrawEnd(
+          draw.employeeId,
+          draw.anchorDay,
+          draw.anchorHalf,
+          day,
+          half,
+          viewYear,
+          viewMonth,
+          daysInMonth,
+        );
         const updated = { ...draw, currentDay: clamped.day, currentHalf: clamped.half };
         drawStateRef.current = updated;
         setDrawState(updated);
@@ -1058,7 +1283,10 @@ function PlanningGantt({
 
     document.addEventListener("mousemove", onMove);
     document.addEventListener("mouseup", onUp);
-    return () => { document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp); };
+    return () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
   }, [setSimBlocks, viewYear, viewMonth, daysInMonth]);
 
   function startDrag(e: React.MouseEvent, block: SimBlock, dragMode: DragMode) {
@@ -1068,9 +1296,13 @@ function PlanningGantt({
     const range = getBlockDisplayRange(block, viewYear, viewMonth);
     if (!range) return;
     const drag: DragState = {
-      blockId: block.id, mode: dragMode, startMouseX: e.clientX,
-      origStartDay: range.startDay, origStartHalf: range.startHalf,
-      origEndDay: range.endDay, origEndHalf: range.endHalf,
+      blockId: block.id,
+      mode: dragMode,
+      startMouseX: e.clientX,
+      origStartDay: range.startDay,
+      origStartHalf: range.startHalf,
+      origEndDay: range.endDay,
+      origEndHalf: range.endHalf,
     };
     dragStateRef.current = drag;
     setDragState(drag);
@@ -1086,8 +1318,10 @@ function PlanningGantt({
     if (isOnRealLeave(empId, day, viewYear, viewMonth)) return;
     const draw: DrawState = {
       employeeId: empId,
-      anchorDay: day, anchorHalf: half,
-      currentDay: day, currentHalf: half,
+      anchorDay: day,
+      anchorHalf: half,
+      currentDay: day,
+      currentHalf: half,
       containerLeft: rect.left,
     };
     drawStateRef.current = draw;
@@ -1096,10 +1330,16 @@ function PlanningGantt({
 
   return (
     <div className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
-      <div className="overflow-x-auto select-none" style={{ cursor: dragState ? "grabbing" : drawState ? "crosshair" : "default" }}>
+      <div
+        className="overflow-x-auto select-none"
+        style={{ cursor: dragState ? "grabbing" : drawState ? "crosshair" : "default" }}
+      >
         <div style={{ minWidth: NAME_COL_WIDTH + totalDaysWidth }}>
           <div className="flex border-b border-border/60 bg-muted/20">
-            <div className="shrink-0 sticky left-0 z-20 bg-muted/20 border-r border-border/40 flex items-end px-5 pb-2 pt-3" style={{ width: NAME_COL_WIDTH }}>
+            <div
+              className="shrink-0 sticky left-0 z-20 bg-muted/20 border-r border-border/40 flex items-end px-5 pb-2 pt-3"
+              style={{ width: NAME_COL_WIDTH }}
+            >
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50">Employee</span>
             </div>
             <div className="flex" style={{ width: totalDaysWidth }}>
@@ -1110,15 +1350,33 @@ function PlanningGantt({
                 return (
                   <div
                     key={d}
-                    className={cn("flex flex-col items-center justify-end border-r border-border/20 last:border-r-0 pb-1.5 pt-2 relative", closed && "bg-muted/40")}
+                    className={cn(
+                      "flex flex-col items-center justify-end border-r border-border/20 last:border-r-0 pb-1.5 pt-2 relative",
+                      closed && "bg-muted/40",
+                    )}
                     style={{ width: DAY_COL_WIDTH }}
                     title={isHoliday ? settings.holidays.find((h) => h.day === d)?.label : undefined}
                   >
                     {isToday && <div className="absolute top-0 inset-x-0 h-0.5 bg-primary rounded-b" />}
-                    <span className={cn("text-[9px] font-medium leading-none", closed ? "text-muted-foreground/25" : isToday ? "text-primary font-bold" : "text-muted-foreground/50")}>
+                    <span
+                      className={cn(
+                        "text-[9px] font-medium leading-none",
+                        closed
+                          ? "text-muted-foreground/25"
+                          : isToday
+                            ? "text-primary font-bold"
+                            : "text-muted-foreground/50",
+                      )}
+                    >
                       {getDayLabel(d, firstDayOfWeek)}
                     </span>
-                    <span className={cn("text-[11px] font-bold leading-snug", closed ? "text-muted-foreground/25" : isToday ? "text-primary" : "text-foreground/70", isHoliday && "line-through")}>
+                    <span
+                      className={cn(
+                        "text-[11px] font-bold leading-snug",
+                        closed ? "text-muted-foreground/25" : isToday ? "text-primary" : "text-foreground/70",
+                        isHoliday && "line-through",
+                      )}
+                    >
                       {d}
                     </span>
                     <div className="flex w-full px-px mt-0.5">
@@ -1143,7 +1401,9 @@ function PlanningGantt({
           {EMPLOYEES_LIST.map((emp) => {
             const viewLeaves = getViewLeaves(emp.id, viewYear, viewMonth);
             const empBlocks = simBlocks.filter((b) => b.employeeId === emp.id);
-            const empBlocksInView = empBlocks.map((b) => ({ block: b, range: getBlockDisplayRange(b, viewYear, viewMonth) })).filter((x) => x.range !== null) as { block: SimBlock; range: BlockDisplayRange }[];
+            const empBlocksInView = empBlocks
+              .map((b) => ({ block: b, range: getBlockDisplayRange(b, viewYear, viewMonth) }))
+              .filter((x) => x.range !== null) as { block: SimBlock; range: BlockDisplayRange }[];
             const impactLevel = mode === "simulate" ? getEmployeeImpactLevel(emp.id, simBlocks) : null;
 
             return (
@@ -1152,8 +1412,16 @@ function PlanningGantt({
                 className="flex border-b border-border/40 hover:bg-muted/10 transition-colors group last:border-b-0"
                 style={{ minHeight: ROW_HEIGHT }}
               >
-                <div className="shrink-0 sticky left-0 z-10 bg-card group-hover:bg-muted/10 transition-colors border-r border-border/40 flex items-center px-5 gap-2.5" style={{ width: NAME_COL_WIDTH }}>
-                  <div className={cn("flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white shadow-sm", emp.color)}>
+                <div
+                  className="shrink-0 sticky left-0 z-10 bg-card group-hover:bg-muted/10 transition-colors border-r border-border/40 flex items-center px-5 gap-2.5"
+                  style={{ width: NAME_COL_WIDTH }}
+                >
+                  <div
+                    className={cn(
+                      "flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white shadow-sm",
+                      emp.color,
+                    )}
+                  >
                     {emp.initials}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -1161,36 +1429,61 @@ function PlanningGantt({
                     <p className="text-[10px] text-muted-foreground">{emp.department}</p>
                   </div>
                   {impactLevel && impactLevel !== "safe" && (
-                    <div className={cn(
-                      "flex shrink-0 size-5 items-center justify-center rounded-full",
-                      impactLevel === "critical" ? "bg-rose-100 text-rose-600" : "bg-amber-100 text-amber-600",
-                    )}>
-                      {impactLevel === "critical" ? <ShieldAlert className="size-3" /> : <AlertTriangle className="size-3" />}
+                    <div
+                      className={cn(
+                        "flex shrink-0 size-5 items-center justify-center rounded-full",
+                        impactLevel === "critical" ? "bg-rose-100 text-rose-600" : "bg-amber-100 text-amber-600",
+                      )}
+                    >
+                      {impactLevel === "critical" ? (
+                        <ShieldAlert className="size-3" />
+                      ) : (
+                        <AlertTriangle className="size-3" />
+                      )}
                     </div>
                   )}
                 </div>
 
                 <div
                   className="relative"
-                  style={{ width: totalDaysWidth, height: ROW_HEIGHT, cursor: mode === "simulate" && !dragState && !drawState ? "crosshair" : undefined }}
+                  style={{
+                    width: totalDaysWidth,
+                    height: ROW_HEIGHT,
+                    cursor: mode === "simulate" && !dragState && !drawState ? "crosshair" : undefined,
+                  }}
                   onMouseDown={(e) => startDraw(e, emp.id)}
                 >
                   {todayDay !== null && (
-                    <div className="absolute inset-y-0 pointer-events-none bg-primary/5" style={{ left: toX(todayDay), width: DAY_COL_WIDTH }} />
+                    <div
+                      className="absolute inset-y-0 pointer-events-none bg-primary/5"
+                      style={{ left: toX(todayDay), width: DAY_COL_WIDTH }}
+                    />
                   )}
 
                   {days.map((d) =>
                     isClosedDay(d) ? (
-                      <div key={d} className="absolute inset-y-0 bg-muted/30 pointer-events-none" style={{ left: toX(d), width: DAY_COL_WIDTH }} />
+                      <div
+                        key={d}
+                        className="absolute inset-y-0 bg-muted/30 pointer-events-none"
+                        style={{ left: toX(d), width: DAY_COL_WIDTH }}
+                      />
                     ) : null,
                   )}
 
                   {days.map((d) => (
-                    <div key={d} className="absolute inset-y-0 border-r border-border/10 pointer-events-none" style={{ left: toX(d) + DAY_COL_WIDTH - 1, width: 1 }} />
+                    <div
+                      key={d}
+                      className="absolute inset-y-0 border-r border-border/10 pointer-events-none"
+                      style={{ left: toX(d) + DAY_COL_WIDTH - 1, width: 1 }}
+                    />
                   ))}
 
                   {days.map((d) => (
-                    <div key={`h${d}`} className="absolute inset-y-0 border-r border-dashed border-border/8 pointer-events-none" style={{ left: toX(d) + DAY_COL_WIDTH / 2 - 1, width: 1 }} />
+                    <div
+                      key={`h${d}`}
+                      className="absolute inset-y-0 border-r border-dashed border-border/8 pointer-events-none"
+                      style={{ left: toX(d) + DAY_COL_WIDTH / 2 - 1, width: 1 }}
+                    />
                   ))}
 
                   {viewLeaves.map((lr, i) => {
@@ -1199,7 +1492,11 @@ function PlanningGantt({
                     return (
                       <div
                         key={i}
-                        className={cn("absolute rounded-lg flex items-center justify-center border", LEAVE_BAND_BG[lr.type], LEAVE_BAND_BORDER[lr.type])}
+                        className={cn(
+                          "absolute rounded-lg flex items-center justify-center border",
+                          LEAVE_BAND_BG[lr.type],
+                          LEAVE_BAND_BORDER[lr.type],
+                        )}
                         style={{ left: left + 2, width: width - 4, top: 10, height: 34 }}
                       >
                         <div className={cn("size-1.5 rounded-full", LEAVE_DOT[lr.type])} />
@@ -1208,18 +1505,19 @@ function PlanningGantt({
                   })}
 
                   {/* Draw preview */}
-                  {drawState?.employeeId === emp.id && (() => {
-                    const { startDay, startHalf, endDay, endHalf } = drawDisplayRange(drawState);
-                    const left = toX(startDay, startHalf);
-                    const right = toX(endDay, endHalf) + DAY_COL_WIDTH / 2;
-                    const width = Math.max(right - left, DAY_COL_WIDTH / 2);
-                    return (
-                      <div
-                        className="absolute rounded-xl border-2 border-dashed border-amber-400 bg-amber-100/50 pointer-events-none"
-                        style={{ left: left + 2, width: width - 4, top: 6, height: 44, zIndex: 30 }}
-                      />
-                    );
-                  })()}
+                  {drawState?.employeeId === emp.id &&
+                    (() => {
+                      const { startDay, startHalf, endDay, endHalf } = drawDisplayRange(drawState);
+                      const left = toX(startDay, startHalf);
+                      const right = toX(endDay, endHalf) + DAY_COL_WIDTH / 2;
+                      const width = Math.max(right - left, DAY_COL_WIDTH / 2);
+                      return (
+                        <div
+                          className="absolute rounded-xl border-2 border-dashed border-amber-400 bg-amber-100/50 pointer-events-none"
+                          style={{ left: left + 2, width: width - 4, top: 6, height: 44, zIndex: 30 }}
+                        />
+                      );
+                    })()}
 
                   {empBlocksInView.map(({ block, range }) => {
                     const color = SIM_COLORS[block.colorIdx % SIM_COLORS.length];
@@ -1234,36 +1532,73 @@ function PlanningGantt({
                         key={block.id}
                         className={cn(
                           "absolute flex items-center rounded-xl border-2 border-dashed select-none transition-shadow duration-100",
-                          color.bg, color.border,
+                          color.bg,
+                          color.border,
                           range.clippedStart && "rounded-l-none opacity-90",
                           range.clippedEnd && "rounded-r-none opacity-90",
                           isDragging && "shadow-xl opacity-95 z-20",
                           isSelected && `ring-2 ${color.ring} ring-offset-1 z-10 shadow-md`,
                         )}
-                        style={{ left: left + 2, width: width - 4, top: 6, height: 44, zIndex: isDragging ? 20 : isSelected ? 10 : 5, cursor: isDragging ? "grabbing" : "grab" }}
+                        style={{
+                          left: left + 2,
+                          width: width - 4,
+                          top: 6,
+                          height: 44,
+                          zIndex: isDragging ? 20 : isSelected ? 10 : 5,
+                          cursor: isDragging ? "grabbing" : "grab",
+                        }}
                         onMouseUp={() => {
                           if (!didMoveRef.current) setSelectedBlockId(block.id === selectedBlockId ? null : block.id);
                           didMoveRef.current = false;
                         }}
                       >
                         {range.clippedStart ? (
-                          <div className={cn("absolute left-0 inset-y-0 w-5 flex items-center justify-center opacity-60", color.text)}>
+                          <div
+                            className={cn(
+                              "absolute left-0 inset-y-0 w-5 flex items-center justify-center opacity-60",
+                              color.text,
+                            )}
+                          >
                             <ArrowLeft className="size-3" />
                           </div>
                         ) : (
-                          <div className={cn("absolute left-0 inset-y-0 w-3.5 rounded-l-xl cursor-ew-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity", color.handle)} onMouseDown={(e) => startDrag(e, block, "resize-left")}>
+                          <div
+                            className={cn(
+                              "absolute left-0 inset-y-0 w-3.5 rounded-l-xl cursor-ew-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity",
+                              color.handle,
+                            )}
+                            onMouseDown={(e) => startDrag(e, block, "resize-left")}
+                          >
                             <GripVertical className="size-2.5 text-white" />
                           </div>
                         )}
-                        <div className="flex-1 flex items-center justify-center mx-3.5 overflow-hidden" onMouseDown={(e) => startDrag(e, block, "move")}>
-                          {width > 50 && <span className={cn("text-[11px] font-bold truncate", color.text)}>{blockDurationLabel(block)}</span>}
+                        <div
+                          className="flex-1 flex items-center justify-center mx-3.5 overflow-hidden"
+                          onMouseDown={(e) => startDrag(e, block, "move")}
+                        >
+                          {width > 50 && (
+                            <span className={cn("text-[11px] font-bold truncate", color.text)}>
+                              {blockDurationLabel(block)}
+                            </span>
+                          )}
                         </div>
                         {range.clippedEnd ? (
-                          <div className={cn("absolute right-0 inset-y-0 w-5 flex items-center justify-center opacity-60", color.text)}>
+                          <div
+                            className={cn(
+                              "absolute right-0 inset-y-0 w-5 flex items-center justify-center opacity-60",
+                              color.text,
+                            )}
+                          >
                             <ArrowRight className="size-3" />
                           </div>
                         ) : (
-                          <div className={cn("absolute right-0 inset-y-0 w-3.5 rounded-r-xl cursor-ew-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity", color.handle)} onMouseDown={(e) => startDrag(e, block, "resize-right")}>
+                          <div
+                            className={cn(
+                              "absolute right-0 inset-y-0 w-3.5 rounded-r-xl cursor-ew-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity",
+                              color.handle,
+                            )}
+                            onMouseDown={(e) => startDrag(e, block, "resize-right")}
+                          >
                             <GripVertical className="size-2.5 text-white" />
                           </div>
                         )}
@@ -1277,7 +1612,13 @@ function PlanningGantt({
         </div>
 
         <div className="flex flex-wrap items-center gap-5 px-5 py-3.5 border-t border-border/60 bg-muted/10">
-          {([["bg-blue-400", "Vacation"], ["bg-rose-400", "Sick leave"], ["bg-indigo-500", "Conference"]] as const).map(([dot, label]) => (
+          {(
+            [
+              ["bg-blue-400", "Vacation"],
+              ["bg-rose-400", "Sick leave"],
+              ["bg-indigo-500", "Conference"],
+            ] as const
+          ).map(([dot, label]) => (
             <div key={label} className="flex items-center gap-1.5">
               <div className={cn("size-2 rounded-full", dot)} />
               <span className="text-[11px] text-muted-foreground">{label}</span>
@@ -1301,7 +1642,9 @@ function PlanningGantt({
           )}
           {settings.holidays.length > 0 && (
             <span className="text-[10px] text-muted-foreground/50 ml-auto">
-              {settings.holidays.map((h) => `${MONTH_NAMES[viewMonth - 1].slice(0, 3)} ${h.day} (${h.label})`).join(" · ")}
+              {settings.holidays
+                .map((h) => `${MONTH_NAMES[viewMonth - 1].slice(0, 3)} ${h.day} (${h.label})`)
+                .join(" · ")}
             </span>
           )}
         </div>
@@ -1333,8 +1676,14 @@ export default function Planning() {
   function navigateMonth(delta: number) {
     let m = viewMonth + delta;
     let y = viewYear;
-    if (m > 12) { m = 1; y++; }
-    if (m < 1) { m = 12; y--; }
+    if (m > 12) {
+      m = 1;
+      y++;
+    }
+    if (m < 1) {
+      m = 12;
+      y--;
+    }
     setViewMonth(m);
     setViewYear(y);
   }
@@ -1343,7 +1692,15 @@ export default function Planning() {
     const colorIdx = colorCounterRef.current++ % SIM_COLORS.length;
     setSimBlocks((prev) => [
       ...prev,
-      { id: `sim-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`, employeeId: empId, startDate, startHalf, endDate, endHalf, colorIdx },
+      {
+        id: `sim-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+        employeeId: empId,
+        startDate,
+        startHalf,
+        endDate,
+        endHalf,
+        colorIdx,
+      },
     ]);
   }
 
@@ -1388,9 +1745,8 @@ export default function Planning() {
   const todayDay = todayInView ? TODAY.getDate() : null;
 
   const totalEmps = EMPLOYEES_LIST.length;
-  const availableToday = todayDay !== null
-    ? EMPLOYEES_LIST.filter((e) => !isOnRealLeave(e.id, todayDay, viewYear, viewMonth)).length
-    : null;
+  const availableToday =
+    todayDay !== null ? EMPLOYEES_LIST.filter((e) => !isOnRealLeave(e.id, todayDay, viewYear, viewMonth)).length : null;
   const onLeaveToday = availableToday !== null ? totalEmps - availableToday : null;
 
   const workingDaysLeft = (() => {

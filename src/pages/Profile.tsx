@@ -1,17 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Building2,
-  Briefcase,
-  Calendar,
-  LogOut,
-  Camera,
-  Pencil,
-} from "lucide-react";
-import TopBar from "@/components/layout/TopBar";
+import { Mail, Phone, MapPin, Building2, Briefcase, Calendar, LogOut, Camera, Pencil } from "lucide-react";
+import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ComposedCard from "@/components/common/cards/ComposedCard";
@@ -165,79 +155,79 @@ export default function ProfilePage() {
 
         {/* ── Account ───────────────────────────────────────────── */}
         <form onSubmit={saveEdit} className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-              <ComposedCard title="Personal info" className="lg:col-span-2 gap-4">
-                <p className="text-[12px] text-muted-foreground -mt-1">Identity and contact details</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                  <Field label="First name">
-                    <Input
-                      disabled={!editing}
-                      value={editing ? draft.firstName : profile.firstName}
-                      onChange={(e) => setDraft({ ...draft, firstName: e.target.value })}
-                    />
-                  </Field>
-                  <Field label="Last name">
-                    <Input
-                      disabled={!editing}
-                      value={editing ? draft.lastName : profile.lastName}
-                      onChange={(e) => setDraft({ ...draft, lastName: e.target.value })}
-                    />
-                  </Field>
-                  <Field label="Email">
-                    <Input
-                      type="email"
-                      disabled={!editing}
-                      value={editing ? draft.email : profile.email}
-                      onChange={(e) => setDraft({ ...draft, email: e.target.value })}
-                    />
-                  </Field>
-                  <Field label="Phone">
-                    <Input
-                      disabled={!editing}
-                      value={editing ? draft.phone : profile.phone}
-                      onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
-                    />
-                  </Field>
-                  <Field label="Location">
-                    <Input
-                      disabled={!editing}
-                      value={editing ? draft.location : profile.location}
-                      onChange={(e) => setDraft({ ...draft, location: e.target.value })}
-                    />
-                  </Field>
-                </div>
-              </ComposedCard>
+          <ComposedCard title="Personal info" className="lg:col-span-2 gap-4">
+            <p className="text-[12px] text-muted-foreground -mt-1">Identity and contact details</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <Field label="First name">
+                <Input
+                  disabled={!editing}
+                  value={editing ? draft.firstName : profile.firstName}
+                  onChange={(e) => setDraft({ ...draft, firstName: e.target.value })}
+                />
+              </Field>
+              <Field label="Last name">
+                <Input
+                  disabled={!editing}
+                  value={editing ? draft.lastName : profile.lastName}
+                  onChange={(e) => setDraft({ ...draft, lastName: e.target.value })}
+                />
+              </Field>
+              <Field label="Email">
+                <Input
+                  type="email"
+                  disabled={!editing}
+                  value={editing ? draft.email : profile.email}
+                  onChange={(e) => setDraft({ ...draft, email: e.target.value })}
+                />
+              </Field>
+              <Field label="Phone">
+                <Input
+                  disabled={!editing}
+                  value={editing ? draft.phone : profile.phone}
+                  onChange={(e) => setDraft({ ...draft, phone: e.target.value })}
+                />
+              </Field>
+              <Field label="Location">
+                <Input
+                  disabled={!editing}
+                  value={editing ? draft.location : profile.location}
+                  onChange={(e) => setDraft({ ...draft, location: e.target.value })}
+                />
+              </Field>
+            </div>
+          </ComposedCard>
 
-              <ComposedCard title="Work" className="gap-4">
-                <p className="text-[12px] text-muted-foreground -mt-1">Role and team affiliation</p>
-                <div className="space-y-4 mt-4">
-                  <Field label="Role" icon={<Briefcase className="size-3.5" />}>
-                    <Input
-                      disabled={!editing}
-                      value={editing ? draft.role : profile.role}
-                      onChange={(e) => setDraft({ ...draft, role: e.target.value })}
-                    />
-                  </Field>
-                  <Field label="Department" icon={<Building2 className="size-3.5" />}>
-                    <Input
-                      disabled={!editing}
-                      value={editing ? draft.department : profile.department}
-                      onChange={(e) => setDraft({ ...draft, department: e.target.value })}
-                    />
-                  </Field>
-                  <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                      Member since
-                    </p>
-                    <p className="text-sm font-medium text-foreground">
-                      {new Date(profile.joinedAt).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
-                </div>
-              </ComposedCard>
+          <ComposedCard title="Work" className="gap-4">
+            <p className="text-[12px] text-muted-foreground -mt-1">Role and team affiliation</p>
+            <div className="space-y-4 mt-4">
+              <Field label="Role" icon={<Briefcase className="size-3.5" />}>
+                <Input
+                  disabled={!editing}
+                  value={editing ? draft.role : profile.role}
+                  onChange={(e) => setDraft({ ...draft, role: e.target.value })}
+                />
+              </Field>
+              <Field label="Department" icon={<Building2 className="size-3.5" />}>
+                <Input
+                  disabled={!editing}
+                  value={editing ? draft.department : profile.department}
+                  onChange={(e) => setDraft({ ...draft, department: e.target.value })}
+                />
+              </Field>
+              <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                  Member since
+                </p>
+                <p className="text-sm font-medium text-foreground">
+                  {new Date(profile.joinedAt).toLocaleDateString("en-GB", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+            </div>
+          </ComposedCard>
         </form>
 
         {/* ── Danger zone ───────────────────────────────────────── */}
@@ -252,7 +242,7 @@ export default function ProfilePage() {
             <Button
               variant="outline"
               onClick={handleLogout}
-            disabled={loggingOut}
+              disabled={loggingOut}
               className="gap-2 border-rose-300/60 text-rose-600 hover:bg-rose-100 hover:text-rose-700"
             >
               <LogOut className="size-4" />
@@ -290,4 +280,3 @@ function Field({ label, icon, children }: { label: string; icon?: React.ReactNod
     </div>
   );
 }
-
