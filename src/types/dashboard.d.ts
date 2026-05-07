@@ -87,6 +87,39 @@ export interface AbsenceImpactStat {
   severity: Severity
 }
 
+/* ── Employees page stats (GET /employees/stats) ─────────── */
+
+export interface TotalEmployeesStat {
+  value: number
+  insight: string
+  severity: Severity
+}
+
+export interface CriticalEmployeesStat {
+  value: number
+  insight: string
+  severity: Severity
+}
+
+export interface SkillCoverageStat {
+  value: number
+  insight: string
+  severity: Severity
+}
+
+export interface DepartmentBalanceStat {
+  value: string
+  insight: string
+  severity: Severity
+}
+
+export interface EmployeesStats {
+  total_employees: TotalEmployeesStat
+  critical_employees: CriticalEmployeesStat
+  skill_coverage: SkillCoverageStat
+  department_balance: DepartmentBalanceStat
+}
+
 /* ── Team status (GET /employees/today-status) ───────────── */
 
 export type TodayStatus = "Available" | "Has Leave" | "Remote"

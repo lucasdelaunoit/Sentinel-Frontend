@@ -1,16 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Eye, PenSquare, X, ShieldAlert, CalendarCheck, Users, Activity } from "lucide-react";
-import StatCard from "@/components/common/cards/StatCard";
+import { Eye, PenSquare, X } from "lucide-react";
 import ComposedCard from "@/components/common/cards/ComposedCard";
+import EmployeesStatCardsSection from "@/components/specified/pages/employees/EmployeesStatCardsSection";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { PlusIcon } from "@phosphor-icons/react";
 import useGetEmployees from "@/api/employees/useGetEmployees";
-import useGetTeamToday from "@/api/employees/useGetTeamToday";
-import type { LaravelQueryParams } from "@/types/laravel";
 import EmployeeAvatar from "@/components/specified/models/employees/avatars/EmployeeAvatar.tsx";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -359,12 +357,6 @@ export default function Employees() {
     }
   }, [searchParams, setSearchParams]);
 
-  const { data: teamToday, isLoading: statsLoading } = useGetTeamToday();
-  const totalEmployee = teamToday?.total != null ? String(teamToday.total).padStart(2, "0") : "—";
-  const onLeave = teamToday
-    ? String(teamToday.employees.filter((e) => e.today_status === "Has Leave").length).padStart(2, "0")
-    : "—";
-
   return (
     <>
       <TopBar
@@ -378,18 +370,7 @@ export default function Employees() {
         }
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
-        <div className="grid grid-cols-4 gap-4">
-          <StatCard
-            title="Total Employees"
-            value={totalEmployee}
-            icon={Users}
-            isLoading={statsLoading}
-            comment={null}
-          />
-          <StatCard title="Critical Staff" value="—" icon={ShieldAlert} isLoading={statsLoading} comment={null} />
-          <StatCard title="On Leave" value={onLeave} icon={CalendarCheck} isLoading={statsLoading} comment={null} />
-          <StatCard title="Avg. Skills/Person" value="—" icon={Activity} isLoading={statsLoading} comment={null} />
-        </div>
+        <EmployeesStatCardsSection />
 
         <EmployeeList />
       </div>
