@@ -10,7 +10,7 @@ const WIDTH_COLLAPSED = 72;
 
 const navItems: SidebarNavItemData[] = [
   { label: "Dashboard", icon: HouseIcon, to: "/dashboard" },
-  { label: "Employees", icon: UsersIcon, to: "/employees" },
+  { label: "Employees", icon: UsersIcon, to: "/users" },
   { label: "Projects", icon: FolderOpenIcon, to: "/projects" },
   { label: "Planning", icon: CalendarDotsIcon, to: "/planning" },
   { label: "Settings", icon: GearIcon, to: "/settings" },

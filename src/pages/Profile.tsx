@@ -229,27 +229,6 @@ export default function ProfilePage() {
             </div>
           </ComposedCard>
         </form>
-
-        {/* ── Danger zone ───────────────────────────────────────── */}
-        <section className="rounded-2xl border border-rose-200/60 bg-rose-50/30 p-5">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <h3 className="text-sm font-semibold text-rose-700">Sign out of Sentinel</h3>
-              <p className="text-[12px] text-rose-700/70 mt-1">
-                You will be returned to the login screen. Your data will be preserved.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              disabled={loggingOut}
-              className="gap-2 border-rose-300/60 text-rose-600 hover:bg-rose-100 hover:text-rose-700"
-            >
-              <LogOut className="size-4" />
-              Sign out
-            </Button>
-          </div>
-        </section>
       </div>
     </>
   );

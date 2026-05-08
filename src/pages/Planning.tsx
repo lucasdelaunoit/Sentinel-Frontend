@@ -20,8 +20,8 @@ import {
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { EMPLOYEE_DETAILS, EMPLOYEES_LIST } from "@/data/employees";
-import type { EmployeeDetail } from "@/data/employees";
+import { USER_DETAILS, USERS_LIST } from "@/data/users";
+import type { UserDetail } from "@/data/users";
 import { PROJECTS } from "@/data/projects";
 import { useCalendarSettings } from "@/hooks/useCalendarSettings";
 import StatCard from "@/components/common/cards/StatCard";
@@ -35,7 +35,7 @@ type DragMode = "move" | "resize-left" | "resize-right";
 
 interface SimBlock {
   id: string;
-  employeeId: string;
+  userId: string;
   startDate: string;
   startHalf: 0 | 1;
   endDate: string;
@@ -54,7 +54,7 @@ interface DragState {
 }
 
 interface DrawState {
-  employeeId: string;
+  userId: string;
   anchorDay: number;
   anchorHalf: 0 | 1;
   currentDay: number;
@@ -281,7 +281,7 @@ function drawDisplayRange(draw: DrawState): { startDay: number; startHalf: 0 | 1
 /* ─── Leave data helpers ──────────────────────────────────── */
 
 function getViewLeaves(empId: string, viewYear: number, viewMonth: number): ViewLeave[] {
-  const emp = EMPLOYEE_DETAILS[empId];
+  const emp = USER_DETAILS[empId];
   if (!emp) return [];
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const viewStart = makeDateStr(viewYear, viewMonth, 1);
@@ -340,7 +340,7 @@ function clampDrawEnd(
 
 function isOnSimLeave(empId: string, day: number, blocks: SimBlock[], viewYear: number, viewMonth: number): boolean {
   return blocks.some((b) => {
-    if (b.employeeId !== empId) return false;
+    if (b.userId !== empId) return false;
     const range = getBlockDisplayRange(b, viewYear, viewMonth);
     if (!range) return false;
     return day >= range.startDay && day <= range.endDay;
@@ -358,11 +358,11 @@ function skillMatch(required: string, empSkill: string): boolean {
 
 function runCombinedSimulation(blocks: SimBlock[]): { projects: ProjectImpact[]; overallLevel: ImpactLevel } {
   if (blocks.length === 0) return { projects: [], overallLevel: "safe" };
-  const absentIds = new Set(blocks.map((b) => b.employeeId));
+  const absentIds = new Set(blocks.map((b) => b.userId));
   const projectMap = new Map<string, ProjectImpact>();
 
   for (const empId of absentIds) {
-    const emp = EMPLOYEE_DETAILS[empId];
+    const emp = USER_DETAILS[empId];
     if (!emp) continue;
     for (const pr of emp.projects) {
       if (projectMap.has(pr.id)) continue;
@@ -370,7 +370,7 @@ function runCombinedSimulation(blocks: SimBlock[]): { projects: ProjectImpact[];
       if (!project) continue;
       const activeTeam = project.team
         .filter((m) => !absentIds.has(m.id))
-        .map((m) => EMPLOYEE_DETAILS[m.id])
+        .map((m) => USER_DETAILS[m.id])
         .filter(Boolean);
       const uncovered: string[] = [],
         siloed: string[] = [],
@@ -395,8 +395,8 @@ function runCombinedSimulation(blocks: SimBlock[]): { projects: ProjectImpact[];
   return { projects, overallLevel };
 }
 
-function getEmployeeImpactLevel(empId: string, blocks: SimBlock[]): ImpactLevel | null {
-  const empBlocks = blocks.filter((b) => b.employeeId === empId);
+function getUserImpactLevel(empId: string, blocks: SimBlock[]): ImpactLevel | null {
+  const empBlocks = blocks.filter((b) => b.userId === empId);
   if (empBlocks.length === 0) return null;
   const { overallLevel } = runCombinedSimulation(empBlocks);
   return overallLevel;
@@ -406,12 +406,12 @@ function getEmployeeImpactLevel(empId: string, blocks: SimBlock[]): ImpactLevel 
 
 function SimBlockSheet({
   block,
-  employee,
+  user,
   onClose,
   onDelete,
 }: {
   block: SimBlock;
-  employee: EmployeeDetail;
+  user: UserDetail;
   onClose: () => void;
   onDelete: () => void;
 }) {
@@ -460,14 +460,14 @@ function SimBlockSheet({
             <div
               className={cn(
                 "flex size-10 shrink-0 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-md",
-                employee.color,
+                user.color,
               )}
             >
-              {employee.initials}
+              {user.initials}
             </div>
             <div>
-              <h2 className="text-[16px] font-bold text-foreground leading-tight">{employee.name}</h2>
-              <p className="text-[12px] text-muted-foreground">{employee.department} · Absence simulation</p>
+              <h2 className="text-[16px] font-bold text-foreground leading-tight">{user.name}</h2>
+              <p className="text-[12px] text-muted-foreground">{user.department} · Absence simulation</p>
             </div>
           </div>
           <button
@@ -581,7 +581,7 @@ function AddBlockSheet({
   const defaultStart = nextWorkingDay(Math.min(new Date().getDate() + 1, daysInMonth));
   const defaultEnd = Math.min(defaultStart + 4, daysInMonth);
 
-  const [selectedEmpId, setSelectedEmpId] = useState(EMPLOYEES_LIST[0]?.id ?? "");
+  const [selectedEmpId, setSelectedEmpId] = useState(USERS_LIST[0]?.id ?? "");
   const [startDate, setStartDate] = useState(makeDateStr(viewYear, viewMonth, defaultStart));
   const [startHalf, setStartHalf] = useState<0 | 1>(0);
   const [endDate, setEndDate] = useState(makeDateStr(viewYear, viewMonth, defaultEnd));
@@ -629,7 +629,7 @@ function AddBlockSheet({
           <div className="space-y-2">
             <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Employee</label>
             <div className="rounded-xl border border-border/60 overflow-hidden divide-y divide-border/40 max-h-48 overflow-y-auto">
-              {EMPLOYEES_LIST.map((emp) => (
+              {USERS_LIST.map((emp) => (
                 <button
                   key={emp.id}
                   className={cn(
@@ -793,18 +793,18 @@ function ContextPanel({
   };
 
   if (mode === "view") {
-    const totalEmps = EMPLOYEES_LIST.length;
+    const totalEmps = USERS_LIST.length;
     let availableToday: number | null = null;
     let onLeaveToday: number | null = null;
 
     if (todayDay !== null) {
-      onLeaveToday = EMPLOYEES_LIST.filter((e) => isOnRealLeave(e.id, todayDay, viewYear, viewMonth)).length;
+      onLeaveToday = USERS_LIST.filter((e) => isOnRealLeave(e.id, todayDay, viewYear, viewMonth)).length;
       availableToday = totalEmps - onLeaveToday;
     }
 
     const monthAbbr = MONTH_NAMES[viewMonth - 1].slice(0, 3);
 
-    const upcomingLeaves = EMPLOYEES_LIST.flatMap((emp) =>
+    const upcomingLeaves = USERS_LIST.flatMap((emp) =>
       getViewLeaves(emp.id, viewYear, viewMonth)
         .filter((l) => todayDay === null || l.start >= todayDay)
         .map((l) => ({ emp, leave: l })),
@@ -959,9 +959,9 @@ function ContextPanel({
         {simBlocks.length > 0 && (
           <div className="border-t border-amber-200/60 divide-y divide-amber-200/40">
             {simBlocks.map((block) => {
-              const emp = EMPLOYEE_DETAILS[block.employeeId];
+              const emp = USER_DETAILS[block.userId];
               const color = SIM_COLORS[block.colorIdx % SIM_COLORS.length];
-              const impact = getEmployeeImpactLevel(block.employeeId, [block]);
+              const impact = getUserImpactLevel(block.userId, [block]);
               return (
                 <div key={block.id} className="flex items-center gap-2.5 px-4 py-2.5 group">
                   <button
@@ -1091,11 +1091,11 @@ function CapacityStrip({
   viewMonth: number;
   isClosedDay: (d: number) => boolean;
 }) {
-  const total = EMPLOYEES_LIST.length;
+  const total = USERS_LIST.length;
 
   function getAvailability(day: number): number {
     if (isClosedDay(day)) return -1;
-    const absent = EMPLOYEES_LIST.filter(
+    const absent = USERS_LIST.filter(
       (e) => isOnRealLeave(e.id, day, viewYear, viewMonth) || isOnSimLeave(e.id, day, simBlocks, viewYear, viewMonth),
     ).length;
     return (total - absent) / total;
@@ -1212,7 +1212,7 @@ function PlanningGantt({
               const ns = Math.max(0, Math.min(daysInMonth * 2 - 1 - span, os + dH));
               const { day: sd, half: sh } = fromHalves(ns, daysInMonth);
               const { day: ed, half: eh } = fromHalves(ns + span, daysInMonth);
-              if (hasLeaveOverlap(b.employeeId, sd, ed, viewYear, viewMonth)) return b;
+              if (hasLeaveOverlap(b.userId, sd, ed, viewYear, viewMonth)) return b;
               return {
                 ...b,
                 startDate: makeDateStr(viewYear, viewMonth, sd),
@@ -1225,7 +1225,7 @@ function PlanningGantt({
               const oe = toHalves(drag.origEndDay, drag.origEndHalf);
               const ns = Math.max(0, Math.min(oe - 1, toHalves(drag.origStartDay, drag.origStartHalf) + dH));
               const { day: sd, half: sh } = fromHalves(ns, daysInMonth);
-              if (hasLeaveOverlap(b.employeeId, sd, drag.origEndDay, viewYear, viewMonth)) return b;
+              if (hasLeaveOverlap(b.userId, sd, drag.origEndDay, viewYear, viewMonth)) return b;
               return { ...b, startDate: makeDateStr(viewYear, viewMonth, sd), startHalf: sh };
             }
             const os = toHalves(drag.origStartDay, drag.origStartHalf);
@@ -1234,7 +1234,7 @@ function PlanningGantt({
               Math.min(daysInMonth * 2 - 1, toHalves(drag.origEndDay, drag.origEndHalf) + dH),
             );
             const { day: ed, half: eh } = fromHalves(ne, daysInMonth);
-            if (hasLeaveOverlap(b.employeeId, drag.origStartDay, ed, viewYear, viewMonth)) return b;
+            if (hasLeaveOverlap(b.userId, drag.origStartDay, ed, viewYear, viewMonth)) return b;
             return { ...b, endDate: makeDateStr(viewYear, viewMonth, ed), endHalf: eh };
           }),
         );
@@ -1247,7 +1247,7 @@ function PlanningGantt({
         const halfIdx = Math.max(0, Math.min(daysInMonth * 2 - 1, Math.floor(relX / (DAY_COL_WIDTH / 2))));
         const { day, half } = fromHalves(halfIdx, daysInMonth);
         const clamped = clampDrawEnd(
-          draw.employeeId,
+          draw.userId,
           draw.anchorDay,
           draw.anchorHalf,
           day,
@@ -1267,7 +1267,7 @@ function PlanningGantt({
       if (draw) {
         const { startDay, startHalf, endDay, endHalf } = drawDisplayRange(draw);
         onCreateBlockRef.current(
-          draw.employeeId,
+          draw.userId,
           makeDateStr(viewYear, viewMonth, startDay),
           startHalf,
           makeDateStr(viewYear, viewMonth, endDay),
@@ -1317,7 +1317,7 @@ function PlanningGantt({
     const { day, half } = fromHalves(halfIdx, daysInMonth);
     if (isOnRealLeave(empId, day, viewYear, viewMonth)) return;
     const draw: DrawState = {
-      employeeId: empId,
+      userId: empId,
       anchorDay: day,
       anchorHalf: half,
       currentDay: day,
@@ -1398,13 +1398,13 @@ function PlanningGantt({
             isClosedDay={isClosedDay}
           />
 
-          {EMPLOYEES_LIST.map((emp) => {
+          {USERS_LIST.map((emp) => {
             const viewLeaves = getViewLeaves(emp.id, viewYear, viewMonth);
-            const empBlocks = simBlocks.filter((b) => b.employeeId === emp.id);
+            const empBlocks = simBlocks.filter((b) => b.userId === emp.id);
             const empBlocksInView = empBlocks
               .map((b) => ({ block: b, range: getBlockDisplayRange(b, viewYear, viewMonth) }))
               .filter((x) => x.range !== null) as { block: SimBlock; range: BlockDisplayRange }[];
-            const impactLevel = mode === "simulate" ? getEmployeeImpactLevel(emp.id, simBlocks) : null;
+            const impactLevel = mode === "simulate" ? getUserImpactLevel(emp.id, simBlocks) : null;
 
             return (
               <div
@@ -1505,7 +1505,7 @@ function PlanningGantt({
                   })}
 
                   {/* Draw preview */}
-                  {drawState?.employeeId === emp.id &&
+                  {drawState?.userId === emp.id &&
                     (() => {
                       const { startDay, startHalf, endDay, endHalf } = drawDisplayRange(drawState);
                       const left = toX(startDay, startHalf);
@@ -1694,7 +1694,7 @@ export default function Planning() {
       ...prev,
       {
         id: `sim-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
-        employeeId: empId,
+        userId: empId,
         startDate,
         startHalf,
         endDate,
@@ -1715,7 +1715,7 @@ export default function Planning() {
       ...prev,
       {
         id: `sim-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
-        employeeId: empId,
+        userId: empId,
         startDate: makeDateStr(viewYear, viewMonth, startDay),
         startHalf: 0,
         endDate: makeDateStr(viewYear, viewMonth, endDay),
@@ -1738,15 +1738,15 @@ export default function Planning() {
   const combinedResult = useMemo(() => runCombinedSimulation(simBlocks), [simBlocks]);
 
   const selectedBlock = simBlocks.find((b) => b.id === selectedBlockId);
-  const selectedEmployee = selectedBlock ? EMPLOYEE_DETAILS[selectedBlock.employeeId] : undefined;
+  const selectedUser = selectedBlock ? USER_DETAILS[selectedBlock.userId] : undefined;
 
   const TODAY = new Date(2026, 4, 6);
   const todayInView = TODAY.getFullYear() === viewYear && TODAY.getMonth() + 1 === viewMonth;
   const todayDay = todayInView ? TODAY.getDate() : null;
 
-  const totalEmps = EMPLOYEES_LIST.length;
+  const totalEmps = USERS_LIST.length;
   const availableToday =
-    todayDay !== null ? EMPLOYEES_LIST.filter((e) => !isOnRealLeave(e.id, todayDay, viewYear, viewMonth)).length : null;
+    todayDay !== null ? USERS_LIST.filter((e) => !isOnRealLeave(e.id, todayDay, viewYear, viewMonth)).length : null;
   const onLeaveToday = availableToday !== null ? totalEmps - availableToday : null;
 
   const workingDaysLeft = (() => {
@@ -1867,10 +1867,10 @@ export default function Planning() {
         </div>
       </div>
 
-      {selectedBlock && selectedEmployee && (
+      {selectedBlock && selectedUser && (
         <SimBlockSheet
           block={selectedBlock}
-          employee={selectedEmployee}
+          user={selectedUser}
           onClose={() => setSelectedBlockId(null)}
           onDelete={() => removeBlock(selectedBlock.id)}
         />

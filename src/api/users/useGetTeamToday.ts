@@ -15,9 +15,9 @@ export default function useGetTeamToday() {
   const privateApi = usePrivateApi()
 
   return useQuery<TeamTodayStatusResponse>({
-    queryKey: ["employees", "today"],
+    queryKey: ["users", "today"],
     queryFn: async () => {
-      const { data } = await privateApi.get<TeamTodayStatusResponse>("/api/employees/today")
+      const { data } = await privateApi.get<TeamTodayStatusResponse>("/api/users/today")
       return data
     },
     staleTime: 1000 * 60,

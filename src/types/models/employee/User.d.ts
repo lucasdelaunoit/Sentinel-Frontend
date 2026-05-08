@@ -1,4 +1,4 @@
-interface Employee {
+interface User {
   id: string;
   name: string;
   email: string;
@@ -7,7 +7,7 @@ interface Employee {
   projects: number;
   criticality: Criticality;
   busFactor: number;
-  todayStatus: EmployeeStatus;
+  todayStatus: UserStatus;
   initials: string;
   color: string;
   leaves: LeaveRange[];

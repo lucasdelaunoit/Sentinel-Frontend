@@ -24,7 +24,7 @@ export interface ProjectRecord {
   status: 'Active' | 'Completed' | 'On Hold'
 }
 
-export interface EmployeeDetail {
+export interface UserDetail {
   id: string
   name: string
   email: string
@@ -44,7 +44,7 @@ export interface EmployeeDetail {
   projects: ProjectRecord[]
 }
 
-export const EMPLOYEE_DETAILS: Record<string, EmployeeDetail> = {
+export const USER_DETAILS: Record<string, UserDetail> = {
   E001: {
     id: 'E001',
     name: 'Clint Cambier',
@@ -279,4 +279,4 @@ export const EMPLOYEE_DETAILS: Record<string, EmployeeDetail> = {
   },
 }
 
-export const EMPLOYEES_LIST = Object.values(EMPLOYEE_DETAILS)
+export const USERS_LIST = Object.values(USER_DETAILS)

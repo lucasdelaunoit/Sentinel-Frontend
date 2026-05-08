@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Eye, ArrowRight, Calendar, Zap, CalendarCheck, PlayCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PROJECTS } from "@/data/projects";
-import { EMPLOYEE_DETAILS, type EmployeeDetail } from "@/data/employees";
+import { USER_DETAILS, type UserDetail } from "@/data/users";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import HomeStatCardsSection from "@/components/specified/pages/home/HomeStatCardsSection.tsx";
@@ -83,26 +83,26 @@ function ProgressBar({ value }: { value: number }) {
 
 /* ─── Critical Employee Card ──────────────────────────────── */
 
-function CriticalEmployeeCard({
-  employee,
+function CriticalUserCard({
+  user,
   uniqueSkills,
   onClick,
 }: {
-  employee: EmployeeDetail;
+  user: UserDetail;
   uniqueSkills: string[];
   onClick: () => void;
 }) {
   const bfColor =
-    employee.busFactor <= 1
+    user.busFactor <= 1
       ? "text-rose-600 bg-rose-50 border-rose-200/60"
-      : employee.busFactor <= 2
+      : user.busFactor <= 2
         ? "text-orange-600 bg-orange-50 border-orange-200/60"
         : "text-amber-600 bg-amber-50 border-amber-200/60";
 
   const critColor =
-    employee.criticality === "High"
+    user.criticality === "High"
       ? "text-rose-500"
-      : employee.criticality === "Medium"
+      : user.criticality === "Medium"
         ? "text-amber-500"
         : "text-emerald-500";
 
@@ -111,23 +111,23 @@ function CriticalEmployeeCard({
       onClick={onClick}
       className="flex gap-3 p-3.5 rounded-xl border border-border/50 bg-muted/10 hover:bg-muted/30 hover:border-border/80 transition-all text-left w-full group"
     >
-      <Avatar initials={employee.initials} color={employee.color} size="md" />
+      <Avatar initials={user.initials} color={user.color} size="md" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2 mb-0.5">
-          <p className="text-sm font-semibold text-foreground truncate group-hover:text-foreground">{employee.name}</p>
+          <p className="text-sm font-semibold text-foreground truncate group-hover:text-foreground">{user.name}</p>
           <span className={cn("shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full border", bfColor)}>
-            BF {employee.busFactor}
+            BF {user.busFactor}
           </span>
         </div>
-        <p className="text-[11px] text-muted-foreground mb-2 truncate">{employee.role}</p>
+        <p className="text-[11px] text-muted-foreground mb-2 truncate">{user.role}</p>
         <div className="flex items-center gap-1.5 mb-2">
           <span className={cn("text-[10px] font-semibold uppercase tracking-wide", critColor)}>
-            {employee.criticality}
+            {user.criticality}
           </span>
           <span className="text-muted-foreground/40 text-[10px]">·</span>
           <span className="text-[10px] text-muted-foreground">
-            {employee.projects.filter((p) => p.status === "Active").length} active project
-            {employee.projects.filter((p) => p.status === "Active").length !== 1 ? "s" : ""}
+            {user.projects.filter((p) => p.status === "Active").length} active project
+            {user.projects.filter((p) => p.status === "Active").length !== 1 ? "s" : ""}
           </span>
         </div>
         {uniqueSkills.length > 0 && (
@@ -196,24 +196,24 @@ function getRiskLevel(score: number) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const employees = useMemo(() => Object.values(EMPLOYEE_DETAILS), []);
+  const users = useMemo(() => Object.values(USER_DETAILS), []);
 
   /* ── Unique skills per employee ────────────────────────── */
   const uniqueSkillsMap = useMemo(() => {
     const map: Record<string, string[]> = {};
-    employees.forEach((emp) => {
+    users.forEach((emp) => {
       map[emp.id] = emp.skills
         .filter((s) => s.level >= 3)
         .filter(
           (s) =>
-            !employees
+            !users
               .filter((e) => e.id !== emp.id)
               .some((e) => e.skills.some((es) => es.name === s.name && es.level >= 3)),
         )
         .map((s) => s.name);
     });
     return map;
-  }, [employees]);
+  }, [users]);
 
   /* ── Derived stats ─────────────────────────────────────── */
 
@@ -222,9 +222,9 @@ export default function Dashboard() {
 
   /* ── Dashboard stats (live) ────────────────────────────── */
 
-  const criticalEmployees = useMemo(
-    () => employees.filter((e) => e.criticality === "High").sort((a, b) => a.busFactor - b.busFactor),
-    [employees],
+  const criticalUsers = useMemo(
+    () => users.filter((e) => e.criticality === "High").sort((a, b) => a.busFactor - b.busFactor),
+    [users],
   );
 
   /* ── Risk distribution ─────────────────────────────────── */
@@ -246,17 +246,17 @@ export default function Dashboard() {
   const upcomingLeaves = useMemo(() => {
     const today = new Date("2026-04-21");
     const limit = new Date("2026-05-21");
-    return employees
+    return users
       .flatMap((e) =>
         e.leaves
           .filter((l) => {
             const d = new Date(l.startDate);
             return d >= today && d <= limit && l.status === "approved";
           })
-          .map((l) => ({ employee: e, leave: l })),
+          .map((l) => ({ user: e, leave: l })),
       )
       .sort((a, b) => new Date(a.leave.startDate).getTime() - new Date(b.leave.startDate).getTime());
-  }, [employees]);
+  }, [users]);
 
   /* ── Display lists ─────────────────────────────────────── */
 
@@ -302,19 +302,19 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-1.5">
               <h3 className="font-semibold text-foreground text-sm">Critical Staff</h3>
               <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                {criticalEmployees.length} high-risk dependencies
+                {criticalUsers.length} high-risk dependencies
               </span>
             </div>
             <p className="text-[11px] text-muted-foreground mb-4">
               Employees whose absence would critically impact operations — highlighted skills are unique to them.
             </p>
             <div className="grid grid-cols-2 gap-3">
-              {criticalEmployees.map((emp) => (
-                <CriticalEmployeeCard
+              {criticalUsers.map((emp) => (
+                <CriticalUserCard
                   key={emp.id}
-                  employee={emp}
+                  user={emp}
                   uniqueSkills={uniqueSkillsMap[emp.id] ?? []}
-                  onClick={() => navigate(`/employees/${emp.id}`)}
+                  onClick={() => navigate(`/users/${emp.id}`)}
                 />
               ))}
             </div>
@@ -332,7 +332,7 @@ export default function Dashboard() {
                 </span>
               </div>
               <button
-                onClick={() => navigate("/employees")}
+                onClick={() => navigate("/users")}
                 className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors font-medium"
               >
                 View all staff <ArrowRight className="size-3" />
@@ -390,7 +390,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {upcomingLeaves.map(({ employee, leave }) => {
+                  {upcomingLeaves.map(({ user, leave }) => {
                     const start = new Date(leave.startDate);
                     const daysUntil = Math.ceil(
                       (start.getTime() - new Date("2026-04-21").getTime()) / (1000 * 60 * 60 * 24),
@@ -403,12 +403,12 @@ export default function Dashboard() {
                           : "text-violet-600 bg-violet-50";
                     return (
                       <div
-                        key={`${employee.id}-${leave.id}`}
+                        key={`${user.id}-${leave.id}`}
                         className="flex items-center gap-2.5 p-2.5 rounded-xl bg-muted/20 hover:bg-muted/40 transition-colors"
                       >
-                        <Avatar initials={employee.initials} color={employee.color} size="sm" />
+                        <Avatar initials={user.initials} color={user.color} size="sm" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-semibold text-foreground truncate">{employee.name}</p>
+                          <p className="text-[11px] font-semibold text-foreground truncate">{user.name}</p>
                           <p className="text-[10px] text-muted-foreground">
                             {start.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                             {" · "}
@@ -441,7 +441,7 @@ export default function Dashboard() {
             {/* Quick action */}
             <div className="mt-auto">
               <button
-                onClick={() => navigate("/employees?tab=calendar")}
+                onClick={() => navigate("/users?tab=calendar")}
                 className="w-full flex items-center justify-center gap-1.5 text-[11px] font-semibold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 py-2 rounded-xl transition-colors"
               >
                 <Zap className="size-3" />

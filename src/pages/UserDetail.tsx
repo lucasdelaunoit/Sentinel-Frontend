@@ -20,11 +20,11 @@ import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import StatCard from "@/components/common/cards/StatCard";
 import {
-  EMPLOYEE_DETAILS,
-  type EmployeeDetail,
+  USER_DETAILS,
+  type UserDetail,
   type LeaveType,
   type SkillCategory,
-} from "@/data/employees";
+} from "@/data/users";
 
 /* ─── Types ───────────────────────────────────────────────── */
 
@@ -67,7 +67,7 @@ function hexPath(cx: number, cy: number, r: number) {
   );
 }
 
-function CompetencyRadar({ employee }: { employee: EmployeeDetail }) {
+function CompetencyRadar({ user }: { user: UserDetail }) {
   const cx = 145;
   const cy = 145;
   const maxR = 95;
@@ -75,7 +75,7 @@ function CompetencyRadar({ employee }: { employee: EmployeeDetail }) {
   const gridLevels = [0.2, 0.4, 0.6, 0.8, 1.0];
 
   const scores = RADAR_AXES.map((cat) => {
-    const catSkills = employee.skills.filter((s) => s.category === cat);
+    const catSkills = user.skills.filter((s) => s.category === cat);
     if (catSkills.length === 0) return 0.25;
     return (
       catSkills.reduce((sum, s) => sum + s.level, 0) / (catSkills.length * 5)
@@ -240,7 +240,7 @@ function LeaveStatusBadge({
 
 /* ─── Overview Tab ────────────────────────────────────────── */
 
-function OverviewTab({ employee }: { employee: EmployeeDetail }) {
+function OverviewTab({ user }: { user: UserDetail }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <ComposedCard
@@ -257,12 +257,12 @@ function OverviewTab({ employee }: { employee: EmployeeDetail }) {
         headerClassName="mb-4"
       >
         <div className="space-y-2.5">
-          {employee.leaves.length === 0 ? (
+          {user.leaves.length === 0 ? (
             <p className="text-[13px] text-muted-foreground text-center py-8">
               No leaves recorded
             </p>
           ) : (
-            employee.leaves.map((leave) => (
+            user.leaves.map((leave) => (
               <div
                 key={leave.id}
                 className="flex items-center justify-between rounded-xl border border-border/60 p-3 hover:bg-muted/20 transition-colors"
@@ -303,12 +303,12 @@ function OverviewTab({ employee }: { employee: EmployeeDetail }) {
         headerClassName="mb-4"
       >
         <div className="space-y-2.5">
-          {employee.projects.length === 0 ? (
+          {user.projects.length === 0 ? (
             <p className="text-[13px] text-muted-foreground text-center py-8">
               No projects assigned
             </p>
           ) : (
-            employee.projects.map((proj) => (
+            user.projects.map((proj) => (
               <div
                 key={proj.id}
                 className="flex items-center justify-between rounded-xl border border-border/60 p-3 hover:bg-muted/20 transition-colors"
@@ -344,7 +344,7 @@ function OverviewTab({ employee }: { employee: EmployeeDetail }) {
 
 /* ─── Projects Tab ────────────────────────────────────────── */
 
-function ProjectsTab({ employee }: { employee: EmployeeDetail }) {
+function ProjectsTab({ user }: { user: UserDetail }) {
   return (
     <ComposedCard
       title="Projects"
@@ -374,7 +374,7 @@ function ProjectsTab({ employee }: { employee: EmployeeDetail }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-border/40">
-          {employee.projects.map((proj) => (
+          {user.projects.map((proj) => (
             <tr key={proj.id} className="hover:bg-muted/20 transition-colors">
               <td className="px-6 py-4">
                 <p className="font-semibold text-foreground text-[14px]">
@@ -407,9 +407,9 @@ function ProjectsTab({ employee }: { employee: EmployeeDetail }) {
 
 /* ─── Skills Tab ──────────────────────────────────────────── */
 
-function SkillsTab({ employee }: { employee: EmployeeDetail }) {
-  const left = employee.skills.filter((_, i) => i % 2 === 0);
-  const right = employee.skills.filter((_, i) => i % 2 !== 0);
+function SkillsTab({ user }: { user: UserDetail }) {
+  const left = user.skills.filter((_, i) => i % 2 === 0);
+  const right = user.skills.filter((_, i) => i % 2 !== 0);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
@@ -446,7 +446,7 @@ function SkillsTab({ employee }: { employee: EmployeeDetail }) {
         className="lg:col-span-2"
         headerClassName="mb-4"
       >
-        <CompetencyRadar employee={employee} />
+        <CompetencyRadar user={user} />
       </ComposedCard>
     </div>
   );
@@ -454,35 +454,35 @@ function SkillsTab({ employee }: { employee: EmployeeDetail }) {
 
 /* ─── Employee Detail Page ────────────────────────────────── */
 
-export default function EmployeeDetail() {
+export default function UserDetail() {
   const { id } = useParams<{ id: string }>();
 
   const { setTitle, setBreadcrumb } = usePage();
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
-  const fallbackKey = Object.keys(EMPLOYEE_DETAILS)[0];
-  const employee: EmployeeDetail | undefined =
-    (id && EMPLOYEE_DETAILS[id]) || EMPLOYEE_DETAILS[fallbackKey];
+  const fallbackKey = Object.keys(USER_DETAILS)[0];
+  const user: UserDetail | undefined =
+    (id && USER_DETAILS[id]) || USER_DETAILS[fallbackKey];
 
   useEffect(() => {
-    if (employee) {
-      setTitle(employee.name);
+    if (user) {
+      setTitle(user.name);
       setBreadcrumb("HR");
     }
     return () => {
       setTitle("");
       setBreadcrumb("");
     };
-  }, [employee?.id]);
+  }, [user?.id]);
 
 
-  if (!employee) {
+  if (!user) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
         <p className="text-[16px] font-semibold text-foreground">
           Employee not found
         </p>
         <Link
-          to="/employees"
+          to="/users"
           className="text-[13px] text-primary hover:underline underline-offset-4"
         >
           Back to employees
@@ -499,7 +499,7 @@ export default function EmployeeDetail() {
 
   return (
     <>
-      <TopBar title={employee.name} />
+      <TopBar title={user.name} />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         {/* ── Hero card ─────────────────────────────────────────── */}
         <section className="rounded-2xl bg-card border border-border/60 shadow-sm p-6">
@@ -508,24 +508,24 @@ export default function EmployeeDetail() {
               <div
                 className={cn(
                   "flex size-20 items-center justify-center rounded-2xl text-xl font-bold text-white shadow-md",
-                  employee.color,
+                  user.color,
                 )}
               >
-                {employee.initials}
+                {user.initials}
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-xl font-bold tracking-tight text-foreground">
-                    {employee.name}
+                    {user.name}
                   </h2>
-                  {employee.onLeaveUntil && (
+                  {user.onLeaveUntil && (
                     <span className="inline-flex items-center rounded-full bg-gradient-to-br from-rose-500 to-rose-600 px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-sm">
-                      On Leave until {employee.onLeaveUntil}
+                      On Leave until {user.onLeaveUntil}
                     </span>
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  {employee.role} · {employee.department}
+                  {user.role} · {user.department}
                 </p>
               </div>
             </div>
@@ -539,22 +539,22 @@ export default function EmployeeDetail() {
             <InfoChip
               icon={<Mail className="size-3.5" />}
               label="Email"
-              value={employee.email}
+              value={user.email}
             />
             <InfoChip
               icon={<Phone className="size-3.5" />}
               label="Phone"
-              value={employee.phone}
+              value={user.phone}
             />
             <InfoChip
               icon={<User className="size-3.5" />}
               label="Manager"
-              value={employee.manager}
+              value={user.manager}
             />
             <InfoChip
               icon={<CalendarDays className="size-3.5" />}
               label="Start Date"
-              value={new Date(employee.startDate).toLocaleDateString("en-GB", {
+              value={new Date(user.startDate).toLocaleDateString("en-GB", {
                 day: "2-digit",
                 month: "short",
                 year: "numeric",
@@ -573,14 +573,14 @@ export default function EmployeeDetail() {
             value={
               <span
                 className={cn(
-                  employee.criticality === "High"
+                  user.criticality === "High"
                     ? "text-rose-500"
-                    : employee.criticality === "Medium"
+                    : user.criticality === "Medium"
                       ? "text-amber-500"
                       : "text-emerald-500",
                 )}
               >
-                {employee.criticality}
+                {user.criticality}
               </span>
             }
           />
@@ -588,10 +588,10 @@ export default function EmployeeDetail() {
             title="Bus Factor in Org"
             icon={UsersIcon}
             isLoading={false}
-            value={<span className="text-amber-500">{employee.busFactor}</span>}
+            value={<span className="text-amber-500">{user.busFactor}</span>}
             comment={
               <span className="text-[12px] text-muted-foreground">
-                {employee.busFactor <= 1 ? "Critical dependency" : "Distributed"}
+                {user.busFactor <= 1 ? "Critical dependency" : "Distributed"}
               </span>
             }
           />
@@ -599,10 +599,10 @@ export default function EmployeeDetail() {
             title="Skills"
             icon={Code2}
             isLoading={false}
-            value={employee.skills.length}
+            value={user.skills.length}
             comment={
               <span className="text-[12px] text-muted-foreground">
-                {employee.skills.filter((s) => s.level >= 4).length} expert-level
+                {user.skills.filter((s) => s.level >= 4).length} expert-level
               </span>
             }
           />
@@ -611,11 +611,11 @@ export default function EmployeeDetail() {
             icon={FolderKanban}
             isLoading={false}
             value={
-              employee.projects.filter((p) => p.status === "Active").length
+              user.projects.filter((p) => p.status === "Active").length
             }
             comment={
               <span className="text-[12px] text-muted-foreground">
-                {employee.projects.length} total
+                {user.projects.length} total
               </span>
             }
           />
@@ -638,9 +638,9 @@ export default function EmployeeDetail() {
           ))}
         </div>
 
-        {activeTab === "overview" && <OverviewTab employee={employee} />}
-        {activeTab === "projects" && <ProjectsTab employee={employee} />}
-        {activeTab === "skills" && <SkillsTab employee={employee} />}
+        {activeTab === "overview" && <OverviewTab user={user} />}
+        {activeTab === "projects" && <ProjectsTab user={user} />}
+        {activeTab === "skills" && <SkillsTab user={user} />}
       </div>
 
     </>

@@ -2,29 +2,29 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, PenSquare, X } from "lucide-react";
 import ComposedCard from "@/components/common/cards/ComposedCard";
-import EmployeesStatCardsSection from "@/components/specified/pages/employees/EmployeesStatCardsSection";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { PlusIcon } from "@phosphor-icons/react";
-import useGetEmployees from "@/api/employees/useGetEmployees";
-import EmployeeAvatar from "@/components/specified/models/employees/avatars/EmployeeAvatar.tsx";
+import useGetUsers from "@/api/users/useGetUsers";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import EmployeeStatusBadge from "@/components/specified/models/employees/badges/EmployeeStatusBadge.tsx";
 import { getInitials } from "@/utils/formatters/persons.ts";
 import { HighlightMatch } from "@/utils/useHighlightableText";
 import { SortableTableHead } from "@/components/common/table/SortableTableHead";
 import { TablePagination } from "@/components/common/table/TablePagination";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useTablePagination } from "@/hooks/useTablePagination";
+import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
+import UserStatusBadge from "@/components/specified/models/employees/badges/UserStatusBadge.tsx";
+import UsersStatCardsSection from "@/components/specified/pages/employees/UsersStatCardsSection.tsx";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
 type EmpSortKey = "name" | "email" | "title";
 
-interface EmployeeFormData {
+interface UserFormData {
   name?: string;
   email?: string;
   department?: string;
@@ -33,15 +33,15 @@ interface EmployeeFormData {
 
 /* ─── Employee Modal ────────────────────────────────────────── */
 
-interface EmployeeModalProps {
+interface UserModalProps {
   open: boolean;
   onClose: () => void;
-  employee?: EmployeeFormData;
+  user?: UserFormData;
 }
 
-function EmployeeModal({ open, onClose, employee }: EmployeeModalProps) {
+function UserModal({ open, onClose, user }: UserModalProps) {
   if (!open) return null;
-  const isEdit = !!employee;
+  const isEdit = !!user;
 
   const fieldCls =
     "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
@@ -71,12 +71,12 @@ function EmployeeModal({ open, onClose, employee }: EmployeeModalProps) {
         </div>
         <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-5">
           {[
-            { label: "Full Name", type: "text", placeholder: "e.g. John Doe", defaultValue: employee?.name },
+            { label: "Full Name", type: "text", placeholder: "e.g. John Doe", defaultValue: user?.name },
             {
               label: "Email Address",
               type: "email",
               placeholder: "e.g. john@company.com",
-              defaultValue: employee?.email,
+              defaultValue: user?.email,
             },
           ].map(({ label, ...props }) => (
             <div key={label} className="space-y-1.5">
@@ -86,10 +86,7 @@ function EmployeeModal({ open, onClose, employee }: EmployeeModalProps) {
           ))}
           <div className="space-y-1.5">
             <label className="block text-[12px] font-medium text-foreground/70">Department</label>
-            <select
-              defaultValue={employee?.department ?? ""}
-              className={cn(fieldCls, "appearance-none cursor-pointer")}
-            >
+            <select defaultValue={user?.department ?? ""} className={cn(fieldCls, "appearance-none cursor-pointer")}>
               <option value="" disabled>
                 Select a department
               </option>
@@ -108,10 +105,7 @@ function EmployeeModal({ open, onClose, employee }: EmployeeModalProps) {
           </div>
           <div className="space-y-1.5">
             <label className="block text-[12px] font-medium text-foreground/70">Criticality Level</label>
-            <select
-              defaultValue={employee?.criticality ?? ""}
-              className={cn(fieldCls, "appearance-none cursor-pointer")}
-            >
+            <select defaultValue={user?.criticality ?? ""} className={cn(fieldCls, "appearance-none cursor-pointer")}>
               <option value="" disabled>
                 Select criticality
               </option>
@@ -137,14 +131,14 @@ function EmployeeModal({ open, onClose, employee }: EmployeeModalProps) {
 
 /* ─── Employee List ─────────────────────────────────────────── */
 
-function EmployeeList() {
+function UserList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<EmployeeStatus | null>(null);
+  const [statusFilter, setStatusFilter] = useState<UserStatus | null>(null);
   const { sort, toggleSort } = useTableSort<EmpSortKey>("name");
   const { page, setPage, perPage, setPerPage } = useTablePagination(15, [search, statusFilter]);
 
-  const { data, isLoading, isError } = useGetEmployees({
+  const { data, isLoading, isError } = useGetUsers({
     page,
     per_page: perPage,
     search: search || undefined,
@@ -153,7 +147,7 @@ function EmployeeList() {
     includes: ["department", "skills"],
   });
 
-  const employees = data?.data ?? [];
+  const users = data?.data ?? [];
   const total = data?.total ?? 0;
   const lastPage = data?.last_page ?? 1;
   const from = data?.from ?? 0;
@@ -168,7 +162,7 @@ function EmployeeList() {
       )}
       <div className="flex-1" />
       <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-1">
-        {([null, "available", "away"] as (EmployeeStatus | null)[]).map((val) => (
+        {([null, "available", "away"] as (UserStatus | null)[]).map((val) => (
           <button
             key={String(val)}
             onClick={() => setStatusFilter(val)}
@@ -252,22 +246,22 @@ function EmployeeList() {
                 Failed to load employees. Check API connection.
               </TableCell>
             </TableRow>
-          ) : employees.length === 0 ? (
+          ) : users.length === 0 ? (
             <TableRow className="border-border/40">
               <TableCell colSpan={6} className="px-6 py-12 text-center text-sm text-muted-foreground">
                 No employees match your filters.
               </TableCell>
             </TableRow>
           ) : (
-            employees.map((emp) => (
+            users.map((emp) => (
               <TableRow
                 key={emp.id}
                 className="hover:bg-muted/20 transition-colors group cursor-pointer border-border/40"
-                onClick={() => navigate(`/employees/${emp.id}`)}
+                onClick={() => navigate(`/users/${emp.id}`)}
               >
                 <TableCell className="px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <EmployeeAvatar initials={getInitials(emp.name)} variant={emp.status} size="lg" />
+                    <UserAvatar initials={getInitials(emp.name)} variant={emp.status} size="lg" />
                     <div>
                       <p className="font-semibold text-foreground text-[14px]">
                         <HighlightMatch text={emp.name} searchTerm={search} />
@@ -287,7 +281,7 @@ function EmployeeList() {
                   <span className="text-[13px] text-foreground">{emp.title || "—"}</span>
                 </TableCell>
                 <TableCell className="px-5 py-4">
-                  <EmployeeStatusBadge status={emp.status} />
+                  <UserStatusBadge status={emp.status} />
                 </TableCell>
                 <TableCell className="px-5 py-4">
                   <div className="flex items-center gap-1.5 flex-wrap">
@@ -316,7 +310,7 @@ function EmployeeList() {
                     className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/employees/${emp.id}`);
+                      navigate(`/users/${emp.id}`);
                     }}
                   >
                     <Eye className="size-3.5" /> View
@@ -346,7 +340,7 @@ function EmployeeList() {
 
 /* ─── Employees Page ─────────────────────────────────────────── */
 
-export default function Employees() {
+export default function Users() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -370,12 +364,12 @@ export default function Employees() {
         }
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
-        <EmployeesStatCardsSection />
+        <UsersStatCardsSection />
 
-        <EmployeeList />
+        <UserList />
       </div>
 
-      <EmployeeModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <UserModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </>
   );
 }

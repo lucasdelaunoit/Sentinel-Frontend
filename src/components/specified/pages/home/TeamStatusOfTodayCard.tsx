@@ -4,12 +4,12 @@ import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import { useState } from "react";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart.tsx";
 import { RadialBarChart, RadialBar } from "recharts";
-import useGetEmployees from "@/api/employees/useGetEmployees.ts";
+import useGetUsers from "@/api/users/useGetUsers.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
-import useGetTeamToday from "@/api/employees/useGetTeamToday.ts";
-import EmployeeAvatar from "@/components/specified/models/employees/avatars/EmployeeAvatar.tsx";
-import EmployeeStatusBadge from "@/components/specified/models/employees/badges/EmployeeStatusBadge.tsx";
+import useGetTeamToday from "@/api/users/useGetTeamToday.ts";
+import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
+import UserStatusBadge from "@/components/specified/models/employees/badges/UserStatusBadge.tsx";
 
 type SheetFilter = "all" | "available" | "remote";
 
@@ -37,7 +37,7 @@ function CapacityDonut({ percent }: { percent: number }) {
   );
 }
 
-function toEmployeeStatus(todayStatus: string): EmployeeStatus {
+function toUserStatus(todayStatus: string): UserStatus {
   return todayStatus === "Has Leave" ? "away" : "available";
 }
 
@@ -72,7 +72,7 @@ export default function TeamStatusOfTodayCard() {
   const { data, isLoading } = useGetTeamToday();
 
   const isRemoteFilter = FILTER_IS_REMOTE[filter];
-  const { data: employeesPage } = useGetEmployees(
+  const { data: usersPage } = useGetUsers(
     {
       search,
       filters: isRemoteFilter !== undefined ? [{ field: "is_remote", value: isRemoteFilter }] : [],
@@ -81,7 +81,7 @@ export default function TeamStatusOfTodayCard() {
     sheetOpen,
   );
 
-  const cardEmployees = data?.employees ?? [];
+  const cardUsers = data?.employees ?? [];
   const capacityPct = data?.capacity_pct ?? 0;
 
   const capacityAction = (
@@ -99,17 +99,17 @@ export default function TeamStatusOfTodayCard() {
         <div className="flex-1 flex flex-col justify-center mb-4">
           {isLoading ? (
             <TeamStatusSkeleton />
-          ) : cardEmployees.length === 0 ? (
+          ) : cardUsers.length === 0 ? (
             <Feedback variant="success" title="All hands on deck" description="Everyone is available today" />
           ) : (
             <div className="space-y-4 p-0.5">
-              {cardEmployees.map((e) => (
+              {cardUsers.map((e) => (
                 <SecondaryCard
                   key={e.id}
-                  before={<EmployeeAvatar initials={initials(e.name)} variant={toEmployeeStatus(e.today_status)} />}
+                  before={<UserAvatar initials={initials(e.name)} variant={toUserStatus(e.today_status)} />}
                   title={e.name}
                   description={e.role}
-                  action={<EmployeeStatusBadge status={toEmployeeStatus(e.today_status)} />}
+                  action={<UserStatusBadge status={toUserStatus(e.today_status)} />}
                 />
               ))}
             </div>

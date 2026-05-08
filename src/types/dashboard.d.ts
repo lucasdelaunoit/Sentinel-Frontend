@@ -21,7 +21,7 @@ export interface CategoryDetail {
   uncovered_skills: string[]
 }
 
-export interface AbsentEmployeeDetail {
+export interface AbsentUserDetail {
   id: string
   name: string
   criticality: string
@@ -51,7 +51,7 @@ export interface KnowledgeCoverageDetail {
 }
 
 export interface TeamAvailabilityDetail {
-  absent_employees: AbsentEmployeeDetail[]
+  absent_users: AbsentUserDetail[]
   degraded_projects?: string[]
 }
 
@@ -113,7 +113,7 @@ export interface DepartmentBalanceStat {
   severity: Severity
 }
 
-export interface EmployeesStats {
+export interface UsersStats {
   total_employees: TotalEmployeesStat
   critical_employees: CriticalEmployeesStat
   skill_coverage: SkillCoverageStat
@@ -124,7 +124,7 @@ export interface EmployeesStats {
 
 export type TodayStatus = "Available" | "Has Leave" | "Remote"
 
-export interface EmployeeTodayStatus {
+export interface UserTodayStatus {
   id: number
   name: string
   role: string
@@ -135,28 +135,28 @@ export interface EmployeeTodayStatus {
 export interface TeamTodayStatusResponse {
   capacity_pct: number
   total: number
-  employees: EmployeeTodayStatus[]
+  employees: UserTodayStatus[]
 }
 
 /* ── Employee list (GET /employees) ──────────────────────── */
 
-export interface EmployeeSkillItem {
+export interface UserSkillItem {
   id: number
   name: string
   category: { id: number; name: string }
   pivot: { level: number }
 }
 
-export interface EmployeeListItem {
+export interface UserListItem {
   id: number
   department_id: number
   name: string
   email: string
   title: string
   is_remote: boolean
-  status: EmployeeStatus
+  status: UserStatus
   department: { id: number; name: string }
-  skills: EmployeeSkillItem[]
+  skills: UserSkillItem[]
 }
 
 /* ── Project list (GET /projects) ───────────────────────── */

@@ -4,8 +4,8 @@ import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SecondaryCard from "@/components/common/cards/SecondaryCard";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import useGetTeamToday from "@/api/employees/useGetTeamToday";
-import useGetEmployees from "@/api/employees/useGetEmployees";
+import useGetTeamToday from "@/api/users/useGetTeamToday";
+import useGetUsers from "@/api/users/useGetUsers";
 
 type SheetFilter = "all" | "available" | "remote";
 
@@ -67,18 +67,18 @@ function TeamStatusSkeleton() {
   );
 }
 
-interface EmployeesTodayStatusSheetProps {
+interface UsersTodayStatusSheetProps {
   trigger?: React.ReactNode;
 }
 
-export default function EmployeesTodayStatusSheet({ trigger }: EmployeesTodayStatusSheetProps) {
+export default function UsersTodayStatusSheet({ trigger }: UsersTodayStatusSheetProps) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<SheetFilter>("all");
 
   const { data } = useGetTeamToday();
 
   const isRemoteFilter = FILTER_IS_REMOTE[filter];
-  const { data: employeesPage, isLoading } = useGetEmployees(
+  const { data: usersPage, isLoading } = useGetUsers(
     {
       search,
       filters: isRemoteFilter !== undefined ? [{ field: "is_remote", value: isRemoteFilter }] : [],
@@ -89,7 +89,7 @@ export default function EmployeesTodayStatusSheet({ trigger }: EmployeesTodaySta
   const total = data?.total ?? 0;
   const capacityPct = data?.capacity_pct ?? 0;
   const availableCount = Math.round((capacityPct / 100) * total);
-  const employees = employeesPage?.data ?? [];
+  const users = usersPage?.data ?? [];
 
   return (
     <ComposedSheet
@@ -124,10 +124,10 @@ export default function EmployeesTodayStatusSheet({ trigger }: EmployeesTodaySta
       <div className="space-y-1">
         {isLoading ? (
           <TeamStatusSkeleton />
-        ) : employees.length === 0 ? (
+        ) : users.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-8">No results</p>
         ) : (
-          employees.map((e) => {
+          users.map((e) => {
             const s = STATUS_STYLES[toStatus(e.is_remote)];
             return (
               <SecondaryCard

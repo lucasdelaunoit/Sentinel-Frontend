@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { EMPLOYEE_DETAILS, type SkillCategory } from "@/data/employees.ts";
+import { USER_DETAILS, type SkillCategory } from "@/data/users.ts";
 import { ChartContainer, type ChartConfig, ChartLegend, ChartLegendContent } from "@/components/ui/chart.tsx";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis } from "recharts";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
@@ -21,19 +21,19 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function KnowledgeCoverageOfToday() {
-  const employees = useMemo(() => Object.values(EMPLOYEE_DETAILS), []);
+  const users = useMemo(() => Object.values(USER_DETAILS), []);
 
   const chartData = useMemo(
     () =>
       AXES.map((cat) => {
-        const count = employees.filter((e) => e.skills.some((s) => s.category === cat && s.level >= 3)).length;
+        const count = users.filter((e) => e.skills.some((s) => s.category === cat && s.level >= 3)).length;
         return {
           axis: cat,
-          coverage: Math.round((count / employees.length) * 100),
+          coverage: Math.round((count / users.length) * 100),
           target: TARGET_BY_AXIS[cat],
         };
       }),
-    [employees],
+    [users],
   );
 
   return (

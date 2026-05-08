@@ -1,7 +1,7 @@
 import { ArrowRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import StatCard from "@/components/common/cards/StatCard";
-import useGetEmployeesStats from "@/api/employees/useGetEmployeesStats.ts";
+import useGetUsersStats from "@/api/users/useGetUsersStats.ts";
 import { ChartPolarIcon, ScalesIcon, ShieldWarningIcon, UsersIcon } from "@phosphor-icons/react";
 
 const SEVERITY_COLOR: Record<Severity, string> = {
@@ -10,8 +10,8 @@ const SEVERITY_COLOR: Record<Severity, string> = {
   ok: "text-emerald-600",
 };
 
-export default function EmployeesStatCardsSection() {
-  const { data: stats, isLoading: statsLoading } = useGetEmployeesStats();
+export default function UsersStatCardsSection() {
+  const { data: stats, isLoading: statsLoading } = useGetUsersStats();
 
   return (
     <div className="grid grid-cols-4 gap-4">

@@ -17,9 +17,9 @@ export default function TopBar({ title, actions }: TopBarProps): ReactNode {
   const { title: contextTitle, breadcrumb: contextBreadcrumb, sidebarCollapsed, toggleSidebar } = usePage();
 
   const isHome = path === "/" || path === "/dashboard";
-  const isEmployees = path === "/employees";
+  const isUsers = path === "/users";
   const isProjects = path === "/projects";
-  const isEmployeeDetail = /^\/employees\/[^/]+$/.test(path);
+  const isUserDetail = /^\/users\/[^/]+$/.test(path);
   const isProjectDetail = /^\/projects\/[^/]+$/.test(path);
   const isSettings = path === "/settings";
   const isProfile = path === "/profile";
@@ -29,13 +29,13 @@ export default function TopBar({ title, actions }: TopBarProps): ReactNode {
   if (isHome) {
     breadcrumb = "Overview";
     title = "Today";
-  } else if (isEmployees) {
+  } else if (isUsers) {
     breadcrumb = "HR";
     title = "All Employees";
   } else if (isProjects) {
     breadcrumb = "Portfolio";
     title = "All Projects";
-  } else if (isEmployeeDetail) {
+  } else if (isUserDetail) {
     breadcrumb = contextBreadcrumb || "HR";
     title = contextTitle || "Employee Detail";
   } else if (isProjectDetail) {
@@ -81,7 +81,7 @@ export default function TopBar({ title, actions }: TopBarProps): ReactNode {
             New Project
           </Button>
         )}
-        {isEmployeeDetail && (
+        {isUserDetail && (
           <Button
             className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-5 text-[13px] font-medium rounded-xl shadow-sm shadow-primary/10 btn-press"
             onClick={() => navigate(`${path}?simulate=true`)}

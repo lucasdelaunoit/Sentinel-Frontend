@@ -17,7 +17,7 @@ export default function TeamAvailabilityModal({ onClose }: Props) {
         <TeamAvailabilitySkeleton />
       ) : !data ? (
         <p className="text-sm text-muted-foreground py-6 text-center">Data unavailable</p>
-      ) : data.absent_employees.length === 0 ? (
+      ) : data.absent_users.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-8">
           <Users className="size-8 text-emerald-500" />
           <p className="text-sm font-medium text-foreground">Full team is available today</p>
@@ -30,7 +30,7 @@ export default function TeamAvailabilityModal({ onClose }: Props) {
           </p>
 
           <div className="space-y-3">
-            {data.absent_employees.map(emp => (
+            {data.absent_users.map(emp => (
               <div key={emp.id} className="rounded-xl border border-border/60 p-4 space-y-2">
                 <div className="flex items-center gap-3">
                   <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-foreground">

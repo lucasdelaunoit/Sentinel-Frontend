@@ -1,0 +1,1 @@
+type UserStatus = "available" | "away";

@@ -15,7 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PROJECTS, type ProjectData } from "@/data/projects";
-import { EMPLOYEE_DETAILS, type EmployeeDetail } from "@/data/employees";
+import { USER_DETAILS, type UserDetail } from "@/data/users";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import StatCard from "@/components/common/cards/StatCard";
 
@@ -23,8 +23,8 @@ import StatCard from "@/components/common/cards/StatCard";
 
 interface SkillCoverage {
   skill: string;
-  holders: EmployeeDetail[];
-  activeHolders: EmployeeDetail[];
+  holders: UserDetail[];
+  activeHolders: UserDetail[];
   maxLevel: number;
 }
 
@@ -37,7 +37,7 @@ function skillMatch(required: string, empSkillName: string) {
 
 function computeCoverage(
   project: ProjectData,
-  members: EmployeeDetail[],
+  members: UserDetail[],
 ): SkillCoverage[] {
   return project.skills.map((skill) => {
     const holders = members.filter((m) =>
@@ -69,7 +69,7 @@ interface RiskAlert {
 
 function generateAlerts(
   project: ProjectData,
-  members: EmployeeDetail[],
+  members: UserDetail[],
   coverage: SkillCoverage[],
 ): RiskAlert[] {
   const alerts: RiskAlert[] = [];
@@ -190,7 +190,7 @@ interface AbsenceImpact {
 }
 
 function absenceImpact(
-  member: EmployeeDetail,
+  member: UserDetail,
   coverage: SkillCoverage[],
 ): AbsenceImpact {
   const uncovered: string[] = [];
@@ -297,7 +297,7 @@ function MemberAvatar({
   emp,
   size = "md",
 }: {
-  emp: EmployeeDetail;
+  emp: UserDetail;
   size?: "sm" | "md";
 }) {
   return (
@@ -357,7 +357,7 @@ function RiskOverviewTab({
   onSimulate,
 }: {
   project: ProjectData;
-  members: EmployeeDetail[];
+  members: UserDetail[];
   coverage: SkillCoverage[];
   alerts: RiskAlert[];
   onSimulate: () => void;
@@ -563,7 +563,7 @@ function TeamTab({
   members,
   coverage,
 }: {
-  members: EmployeeDetail[];
+  members: UserDetail[];
   coverage: SkillCoverage[];
 }) {
   return (
@@ -745,7 +745,7 @@ function hexPath(cx: number, cy: number, r: number) {
   );
 }
 
-function CoverageRadar({ members }: { members: EmployeeDetail[] }) {
+function CoverageRadar({ members }: { members: UserDetail[] }) {
   const cx = 140;
   const cy = 140;
   const maxR = 95;
@@ -821,7 +821,7 @@ function KnowledgeTab({
   coverage,
 }: {
   project: ProjectData;
-  members: EmployeeDetail[];
+  members: UserDetail[];
   coverage: SkillCoverage[];
 }) {
   return (
@@ -1054,8 +1054,8 @@ export default function ProjectDetail() {
   const members = useMemo(
     () =>
       (project?.team
-        .map((m) => EMPLOYEE_DETAILS[m.id])
-        .filter(Boolean) as EmployeeDetail[]) ?? [],
+        .map((m) => USER_DETAILS[m.id])
+        .filter(Boolean) as UserDetail[]) ?? [],
     [project],
   );
 
@@ -1159,7 +1159,7 @@ export default function ProjectDetail() {
             </div>
             <Button
               className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={() => navigate("/employees?tab=calendar")}
+              onClick={() => navigate("/users?tab=calendar")}
             >
               <PlayCircle className="size-4" />
               Simulate Leave
@@ -1313,7 +1313,7 @@ export default function ProjectDetail() {
             members={members}
             coverage={coverage}
             alerts={alerts}
-            onSimulate={() => navigate("/employees?tab=calendar")}
+            onSimulate={() => navigate("/users?tab=calendar")}
           />
         )}
         {activeTab === "team" && (
