@@ -7,47 +7,18 @@ import { SidebarIcon, SidebarSimpleIcon } from "@phosphor-icons/react";
 
 interface TopBarProps {
   title: string;
+  breadcrumb?: string;
   actions?: ReactNode;
 }
 
-export default function TopBar({ title, actions }: TopBarProps): ReactNode {
+export default function TopBar({ title, breadcrumb = "ssss", actions }: TopBarProps): ReactNode {
   const location = useLocation();
   const navigate = useNavigate();
   const path = location.pathname;
   const { title: contextTitle, breadcrumb: contextBreadcrumb, sidebarCollapsed, toggleSidebar } = usePage();
 
-  const isHome = path === "/" || path === "/dashboard";
-  const isUsers = path === "/users";
   const isProjects = path === "/projects";
   const isUserDetail = /^\/users\/[^/]+$/.test(path);
-  const isProjectDetail = /^\/projects\/[^/]+$/.test(path);
-  const isSettings = path === "/settings";
-  const isProfile = path === "/profile";
-
-  let breadcrumb = "Overview";
-
-  if (isHome) {
-    breadcrumb = "Overview";
-    title = "Today";
-  } else if (isUsers) {
-    breadcrumb = "HR";
-    title = "All Employees";
-  } else if (isProjects) {
-    breadcrumb = "Portfolio";
-    title = "All Projects";
-  } else if (isUserDetail) {
-    breadcrumb = contextBreadcrumb || "HR";
-    title = contextTitle || "Employee Detail";
-  } else if (isProjectDetail) {
-    breadcrumb = contextBreadcrumb || "Portfolio";
-    title = contextTitle || "Project Detail";
-  } else if (isSettings) {
-    breadcrumb = "Admin";
-    title = "Settings";
-  } else if (isProfile) {
-    breadcrumb = "Account";
-    title = "Profile";
-  }
 
   return (
     <header className="flex h-[60px] shrink-0 items-center justify-between border-b border-border bg-card/80 backdrop-blur-sm px-6">

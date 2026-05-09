@@ -9,4 +9,4 @@
  * To restrict to a subset inside a component:
  *   size?: Extract<ComponentSize, "sm" | "base" | "lg">
  */
-type Sizes = "xs" | "sm" | "base" | "lg" | "xl";
+type Sizes = "xs" | "sm" | "base" | "lg" | "xl" | "2xl";

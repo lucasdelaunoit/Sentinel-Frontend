@@ -187,6 +187,52 @@ export interface ProjectListItem {
   skills: ProjectSkillItem[]
 }
 
+/* ── User detail (GET /users/:id) ────────────────────────── */
+
+export interface UserDetailResponse {
+  id: number
+  name: string
+  email: string
+  title: string
+  phone?: string
+  is_remote: boolean
+  status: UserStatus
+  criticality: "high" | "medium" | "low"
+  bus_factor: number
+  start_date: string
+  department: { id: number; name: string }
+  manager?: { id: number; name: string } | null
+  skills_count?: number
+  expert_skills_count?: number
+  projects_count?: number
+  active_projects_count?: number
+}
+
+/* ── User projects (GET /users/:id/projects) ─────────────── */
+
+export interface UserProjectItem {
+  id: number
+  name: string
+  description: string
+  status: ProjectStatus
+  priority: ProjectPriority
+  role: string
+  progress: number
+  risk_score: number
+  bus_factor: number
+  health: number
+  end_date: string
+}
+
+/* ── User skills (GET /users/:id/skills) ─────────────────── */
+
+export interface UserSkillDetail {
+  id: number
+  name: string
+  category: { id: number; name: string }
+  level: number
+}
+
 /* ── Root response ───────────────────────────────────────── */
 
 export interface DashboardStats {

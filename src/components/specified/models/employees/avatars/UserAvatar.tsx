@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils.ts";
 
-export type UserAvatarSizes = Extract<Sizes, "base" | "lg">;
+export type UserAvatarSizes = Extract<Sizes, "base" | "lg" | "xl" | "2xl">;
 
 interface StatusAvatarProps {
   initials: string;
@@ -16,6 +16,8 @@ const STATUS_VARIANTS: Record<UserStatus, string> = {
 const SIZE_VARIANTS: Record<UserAvatarSizes, string> = {
   base: "size-8 text-[11px] font-bold",
   lg: "size-10 text-[13px] font-medium",
+  xl: "size-14 text-[15px] font-semibold",
+  "2xl": "size-20 text-xl font-bold",
 };
 
 export default function UserAvatar({ initials, variant = "available", size = "base" }: StatusAvatarProps) {
