@@ -2,7 +2,8 @@ import axiosClient from "@/api/axiosClient"
 
 export interface AuthUser {
   id: number
-  name: string
+  firstname: string
+  lastname: string
   email: string
 }
 

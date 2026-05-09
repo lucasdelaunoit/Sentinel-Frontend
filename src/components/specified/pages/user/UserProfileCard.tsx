@@ -15,21 +15,11 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
     <Card className="p-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
-          <UserAvatar initials={getInitials(user.name)} size="2xl" variant={user.status} />
+          <UserAvatar initials={getInitials(`${user.firstname} ${user.lastname}`)} size="2xl" variant={user.status} />
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl font-bold tracking-tight text-foreground">{user.name}</h2>
+              <h2 className="text-xl font-bold tracking-tight text-foreground">{`${user.firstname} ${user.lastname}`}</h2>
               <UserStatusBadge status={user.status} />
-              <span
-                className={cn(
-                  "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-sm",
-                  user.status === "available"
-                    ? "bg-gradient-to-br from-emerald-500 to-emerald-600"
-                    : "bg-gradient-to-br from-amber-500 to-amber-600",
-                )}
-              >
-                {user.status === "available" ? "Available" : "Away"}
-              </span>
             </div>
             <p className="text-sm text-muted-foreground mt-0.5">
               {user.title} · {user.department?.name ?? "—"}
@@ -45,7 +35,11 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
       <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
         <InfoChip icon={<Mail className="size-3.5" />} label="Email" value={user.email} />
         <InfoChip icon={<Phone className="size-3.5" />} label="Phone" value={user.phone ?? "—"} />
-        <InfoChip icon={<User className="size-3.5" />} label="Manager" value={user.manager?.name ?? "—"} />
+        <InfoChip
+          icon={<User className="size-3.5" />}
+          label="Manager"
+          value={user.manager ? `${user.manager.firstname} ${user.manager.lastname}` : "—"}
+        />
         <InfoChip
           icon={<CalendarDays className="size-3.5" />}
           label="Start Date"

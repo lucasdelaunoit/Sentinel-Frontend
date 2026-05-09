@@ -1,3 +1,7 @@
+export function getFullName(user: { firstname: string; lastname: string }): string {
+  return `${user.firstname} ${user.lastname}`.trim();
+}
+
 export function getInitials(fullName: string): string {
   if (!fullName) return "?";
   return fullName

@@ -34,10 +34,10 @@ export default function TeamAvailabilityModal({ onClose }: Props) {
               <div key={emp.id} className="rounded-xl border border-border/60 p-4 space-y-2">
                 <div className="flex items-center gap-3">
                   <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-foreground">
-                    {emp.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                    {`${emp.firstname[0] ?? ""}${emp.lastname[0] ?? ""}`.toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate">{emp.name}</p>
+                    <p className="text-sm font-semibold truncate">{`${emp.firstname} ${emp.lastname}`}</p>
                   </div>
                   <span className={cn(
                     "text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0",

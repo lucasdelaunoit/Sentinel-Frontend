@@ -106,8 +106,8 @@ export default function TeamStatusOfTodayCard() {
               {cardUsers.map((e) => (
                 <SecondaryCard
                   key={e.id}
-                  before={<UserAvatar initials={initials(e.name)} variant={toUserStatus(e.today_status)} />}
-                  title={e.name}
+                  before={<UserAvatar initials={initials(`${e.firstname} ${e.lastname}`)} variant={toUserStatus(e.today_status)} />}
+                  title={`${e.firstname} ${e.lastname}`}
                   description={e.role}
                   action={<UserStatusBadge status={toUserStatus(e.today_status)} />}
                 />

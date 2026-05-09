@@ -139,10 +139,10 @@ export default function UsersTodayStatusSheet({ trigger }: UsersTodayStatusSheet
                       s.avatar,
                     )}
                   >
-                    {initials(e.name)}
+                    {initials(`${e.firstname} ${e.lastname}`)}
                   </div>
                 }
-                title={e.name}
+                title={`${e.firstname} ${e.lastname}`}
                 description={e.title}
                 action={
                   <span className={cn("text-[11px] font-semibold px-2 py-0.5 rounded-full", s.badge)}>

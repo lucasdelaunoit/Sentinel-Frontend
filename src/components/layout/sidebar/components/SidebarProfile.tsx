@@ -14,9 +14,9 @@ function getInitials(name: string): string {
 
 export default function SidebarProfile({ collapsed }: { collapsed: boolean }) {
   const { user } = useAuth();
-  const displayName = user?.name ?? "Guest";
+  const displayName = user ? `${user.firstname} ${user.lastname}` : "Guest";
   const subtitle = user?.email ?? "Not signed in";
-  const initials = user ? getInitials(user.name) : "·";
+  const initials = user ? getInitials(`${user.firstname} ${user.lastname}`) : "·";
 
   return (
     <NavLink

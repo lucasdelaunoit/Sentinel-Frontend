@@ -31,10 +31,10 @@ const FALLBACK_PROFILE: Profile = {
   initials: "?",
 };
 
-function buildProfileFromUser(user: { name: string; email: string } | null): Profile {
+function buildProfileFromUser(user: { firstname: string; lastname: string; email: string } | null): Profile {
   if (!user) return FALLBACK_PROFILE;
-  const [firstName = "", ...rest] = user.name.split(/\s+/).filter(Boolean);
-  const lastName = rest.join(" ");
+  const firstName = user.firstname;
+  const lastName = user.lastname;
   const initials = ((firstName[0] ?? "") + (lastName[0] ?? "")).toUpperCase() || "?";
   return { ...FALLBACK_PROFILE, firstName, lastName, email: user.email, initials };
 }

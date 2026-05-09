@@ -23,7 +23,8 @@ export interface CategoryDetail {
 
 export interface AbsentUserDetail {
   id: string
-  name: string
+  firstname: string
+  lastname: string
   criticality: string
   is_critical: boolean
   projects: string[]
@@ -126,7 +127,8 @@ export type TodayStatus = "Available" | "Has Leave" | "Remote"
 
 export interface UserTodayStatus {
   id: number
-  name: string
+  firstname: string
+  lastname: string
   role: string
   initials: string
   today_status: TodayStatus
@@ -150,7 +152,8 @@ export interface UserSkillItem {
 export interface UserListItem {
   id: number
   department_id: number
-  name: string
+  firstname: string
+  lastname: string
   email: string
   title: string
   is_remote: boolean
@@ -163,7 +166,8 @@ export interface UserListItem {
 
 export interface ProjectMemberSnippet {
   id: number
-  name: string
+  firstname: string
+  lastname: string
   initials: string
 }
 
@@ -191,7 +195,8 @@ export interface ProjectListItem {
 
 export interface UserDetailResponse {
   id: number
-  name: string
+  firstname: string
+  lastname: string
   email: string
   title: string
   phone?: string
@@ -201,7 +206,7 @@ export interface UserDetailResponse {
   bus_factor: number
   start_date: string
   department: { id: number; name: string }
-  manager?: { id: number; name: string } | null
+  manager?: { id: number; firstname: string; lastname: string } | null
   skills_count?: number
   expert_skills_count?: number
   projects_count?: number

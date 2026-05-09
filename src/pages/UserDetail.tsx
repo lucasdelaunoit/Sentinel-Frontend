@@ -614,17 +614,11 @@ export default function UserDetail() {
   const { setTitle, setBreadcrumb } = usePage();
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
 
-  const {
-    data: user,
-    isLoading,
-    isError,
-  } = useGetUser(id, {
-    includes: ["department", "manager"],
-  });
+  const { data: user, isLoading, isError } = useGetUser(id);
 
   useEffect(() => {
     if (user) {
-      setTitle(user.name);
+      setTitle(`${user.firstname} ${user.lastname}`);
       setBreadcrumb("HR");
     }
     return () => {
@@ -652,54 +646,13 @@ export default function UserDetail() {
 
   return (
     <>
-      <TopBar title={isLoading ? "Loading…" : (user?.name ?? "Employee")} breadcrumb="Employee" />
+      <TopBar
+        title={isLoading ? "Loading…" : user ? `${user.firstname} ${user.lastname}` : "Employee"}
+        breadcrumb="Employee"
+      />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         {/* ── Hero ─────────────────────────────────────────────── */}
-        {isLoading ? (
-          <HeroSkeleton />
-        ) : user ? (
-          <section className="rounded-2xl bg-card border border-border/60 shadow-sm p-6">
-            <div className="flex items-start justify-between gap-4 flex-wrap">
-              <div className="flex items-center gap-4">
-                <UserAvatar initials={getInitials(user.name)} size="2xl" variant={user.status} />
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-xl font-bold tracking-tight text-foreground">{user.name}</h2>
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold text-white shadow-sm",
-                        user.status === "available"
-                          ? "bg-gradient-to-br from-emerald-500 to-emerald-600"
-                          : "bg-gradient-to-br from-amber-500 to-amber-600",
-                      )}
-                    >
-                      {user.status === "available" ? "Available" : "Away"}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {user.title} · {user.department?.name ?? "—"}
-                  </p>
-                </div>
-              </div>
-              <Button variant="outline" className="gap-2">
-                <PenSquare className="size-4" />
-                Edit profile
-              </Button>
-            </div>
-
-            <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
-              <InfoChip icon={<Mail className="size-3.5" />} label="Email" value={user.email} />
-              <InfoChip icon={<Phone className="size-3.5" />} label="Phone" value={user.phone ?? "—"} />
-              <InfoChip icon={<User className="size-3.5" />} label="Manager" value={user.manager?.name ?? "—"} />
-              <InfoChip
-                icon={<CalendarDays className="size-3.5" />}
-                label="Start Date"
-                value={fmtDate(user.start_date)}
-              />
-            </div>
-          </section>
-        ) : null}
-        <UserProfileCard user={user} />
+        {isLoading ? <HeroSkeleton /> : user ? <UserProfileCard user={user} /> : null}
 
         {/* ── Stats ─────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

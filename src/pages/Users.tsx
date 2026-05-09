@@ -71,7 +71,7 @@ function UserModal({ open, onClose, user }: UserModalProps) {
         </div>
         <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-5">
           {[
-            { label: "Full Name", type: "text", placeholder: "e.g. John Doe", defaultValue: user?.name },
+            { label: "Full Name", type: "text", placeholder: "e.g. John Doe", defaultValue: user ? `${user.firstname} ${user.lastname}` : undefined },
             {
               label: "Email Address",
               type: "email",
@@ -261,10 +261,10 @@ function UserList() {
               >
                 <TableCell className="px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <UserAvatar initials={getInitials(emp.name)} variant={emp.status} size="lg" />
+                    <UserAvatar initials={getInitials(`${emp.firstname} ${emp.lastname}`)} variant={emp.status} size="lg" />
                     <div>
                       <p className="font-semibold text-foreground text-[14px]">
-                        <HighlightMatch text={emp.name} searchTerm={search} />
+                        <HighlightMatch text={`${emp.firstname} ${emp.lastname}`} searchTerm={search} />
                       </p>
                       <p className="text-[12px] text-muted-foreground">
                         <HighlightMatch text={emp.email} searchTerm={search} />
