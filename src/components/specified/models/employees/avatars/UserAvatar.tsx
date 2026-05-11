@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils.ts";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 
 export type UserAvatarSizes = Extract<Sizes, "base" | "lg" | "xl" | "2xl">;
 
@@ -33,3 +34,7 @@ export default function UserAvatar({ initials, variant = "available", size = "ba
     </div>
   );
 }
+
+UserAvatar.Skeleton = function UserAvatarSkeleton({ size = "base" }: { size?: UserAvatarSizes }) {
+  return <Skeleton className={cn("rounded-xl shrink-0", SIZE_VARIANTS[size])} />;
+};

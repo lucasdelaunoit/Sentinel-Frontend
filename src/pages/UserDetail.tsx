@@ -4,7 +4,6 @@ import { usePage } from "@/context/PageContext";
 import {
   PenSquare,
   Plus,
-  Mail,
   Phone,
   User,
   CalendarDays,
@@ -231,28 +230,6 @@ function InfoChip({ icon, label, value }: { icon: React.ReactNode; label: string
 }
 
 /* ─── Skeletons ───────────────────────────────────────────── */
-
-function HeroSkeleton() {
-  return (
-    <section className="rounded-2xl bg-card border border-border/60 shadow-sm p-6">
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-4">
-          <Skeleton className="size-20 rounded-2xl shrink-0" />
-          <div className="space-y-2">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-32" />
-          </div>
-        </div>
-        <Skeleton className="h-9 w-28 rounded-lg" />
-      </div>
-      <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-16 rounded-xl" />
-        ))}
-      </div>
-    </section>
-  );
-}
 
 function SkillBarSkeleton() {
   return (
@@ -652,7 +629,7 @@ export default function UserDetail() {
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         {/* ── Hero ─────────────────────────────────────────────── */}
-        {isLoading ? <HeroSkeleton /> : user ? <UserProfileCard user={user} /> : null}
+        {isLoading ? <UserProfileCard.Skeleton /> : user && <UserProfileCard user={user} />}
 
         {/* ── Stats ─────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

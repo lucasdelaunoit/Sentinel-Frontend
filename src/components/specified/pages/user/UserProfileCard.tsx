@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card.tsx";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
 import { getInitials } from "@/utils/formatters/persons.ts";
-import { cn } from "@/lib/utils.ts";
 import { Button } from "@/components/ui/button.tsx";
-import { Mail, User, CalendarDays, Phone, PenSquare } from "lucide-react";
+import { Mail, Phone, User as UserIcon, CalendarDays, PenSquare } from "lucide-react";
 import UserStatusBadge from "@/components/specified/models/employees/badges/UserStatusBadge.tsx";
+import DataDisplay from "@/components/common/data/DataDisplay.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 
 interface UserProfileCardProps {
   user: User;
@@ -33,33 +34,37 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
       </div>
 
       <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
-        <InfoChip icon={<Mail className="size-3.5" />} label="Email" value={user.email} />
-        <InfoChip icon={<Phone className="size-3.5" />} label="Phone" value={user.phone ?? "—"} />
-        <InfoChip
-          icon={<User className="size-3.5" />}
-          label="Manager"
-          value={user.manager ? `${user.manager.firstname} ${user.manager.lastname}` : "—"}
-        />
-        <InfoChip
-          icon={<CalendarDays className="size-3.5" />}
-          label="Start Date"
-          value={/*fmtDate(user.start_date)*/ "ss"}
-        />
+        <DataDisplay icon={Mail} label="Email" value={user.email} />
+        <DataDisplay icon={Phone} label="Phone" value={user.phone} />
+        <DataDisplay icon={UserIcon} label="Manager" value={user.phone} />
+        <DataDisplay icon={CalendarDays} label="Start Date" value={user.phone} />
       </div>
     </Card>
   );
 }
 
-/* ─── InfoChip ────────────────────────────────────────────── */
-
-function InfoChip({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+UserProfileCard.Skeleton = function UserProfileCardSkeleton() {
   return (
-    <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2.5">
-      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-        {icon}
-        {label}
+    <Card className="p-6">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-4">
+          <UserAvatar.Skeleton size="2xl" />
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </div>
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+        <Skeleton className="h-9 w-28 rounded-lg" />
       </div>
-      <p className="text-[13px] font-medium text-foreground truncate">{value}</p>
-    </div>
+      <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <DataDisplay.Skeleton icon={Mail} label="Email" />
+        <DataDisplay.Skeleton icon={Phone} label="Phone" />
+        <DataDisplay.Skeleton icon={UserIcon} label="Manager" />
+        <DataDisplay.Skeleton icon={CalendarDays} label="Start Date" />
+      </div>
+    </Card>
   );
-}
+};
