@@ -233,9 +233,18 @@ export interface UserProjectItem {
 
 export interface UserSkillDetail {
   id: number
+  skill_category_id: number
   name: string
-  category: { id: number; name: string }
-  level: number
+  created_at: string
+  updated_at: string
+  category: { id: number; name: string; created_at: string; updated_at: string }
+  pivot: {
+    user_id: number
+    skill_id: number
+    level: number
+    created_at: string
+    updated_at: string
+  }
 }
 
 /* ── User stats (GET /users/:id/stats) ───────────────────── */

@@ -15,7 +15,7 @@ import { useTablePagination } from "@/hooks/useTablePagination";
 import { getInitials } from "@/utils/formatters/persons.ts";
 import useGetUser from "@/api/users/useGetUser";
 import useGetUserProjects from "@/api/users/useGetUserProjects";
-import useGetUserSkills from "@/api/users/useGetUserSkills";
+import useGetSkillsForUser from "@/api/users/useGetSkillsForUser";
 import useGetUserStats from "@/api/users/useGetUserStats";
 import type { UserSkillDetail } from "@/types/dashboard";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
@@ -113,7 +113,7 @@ function CompetencyRadar({ skills }: { skills: UserSkillDetail[] }) {
   const scores = RADAR_AXES.map((cat) => {
     const catSkills = skills.filter((s) => s.category.name.toUpperCase() === cat);
     if (catSkills.length === 0) return 0.25;
-    return catSkills.reduce((sum, s) => sum + s.level, 0) / (catSkills.length * 5);
+    return catSkills.reduce((sum, s) => sum + s.pivot.level, 0) / (catSkills.length * 5);
   });
 
   return (
@@ -228,10 +228,10 @@ function OverviewTab({ userId }: { userId: string }) {
   const { data: projectsData, isLoading: projectsLoading } = useGetUserProjects(userId, {
     per_page: 5,
   });
-  const { data: skills, isLoading: skillsLoading } = useGetUserSkills(userId);
+  const { data: skillsData, isLoading: skillsLoading } = useGetSkillsForUser(userId);
 
   const projects = projectsData?.data ?? [];
-  const topSkills = [...(skills ?? [])].sort((a, b) => b.level - a.level).slice(0, 6);
+  const topSkills = [...(skillsData?.data ?? [])].sort((a, b) => b.pivot.level - a.pivot.level).slice(0, 6);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -272,7 +272,7 @@ function OverviewTab({ userId }: { userId: string }) {
           ) : topSkills.length === 0 ? (
             <p className="text-[13px] text-muted-foreground text-center py-8">No skills recorded</p>
           ) : (
-            topSkills.map((skill) => <SkillBar key={skill.id} name={skill.name} level={skill.level} />)
+            topSkills.map((skill) => <SkillBar key={skill.id} name={skill.name} level={skill.pivot.level} />)
           )}
         </div>
       </ComposedCard>
@@ -495,7 +495,7 @@ function ProjectsTab({ userId }: { userId: string }) {
 /* ─── Skills Tab ──────────────────────────────────────────── */
 
 function SkillsTab({ userId }: { userId: string }) {
-  const { data: skills, isLoading, isError } = useGetUserSkills(userId);
+  const { data: skillsData, isLoading, isError } = useGetSkillsForUser(userId);
 
   if (isLoading) {
     return (
@@ -518,7 +518,7 @@ function SkillsTab({ userId }: { userId: string }) {
     return <p className="text-sm text-muted-foreground text-center py-12">Failed to load skills.</p>;
   }
 
-  const list = skills ?? [];
+  const list = skillsData?.data ?? [];
   const left = list.filter((_, i) => i % 2 === 0);
   const right = list.filter((_, i) => i % 2 !== 0);
 
@@ -543,10 +543,10 @@ function SkillsTab({ userId }: { userId: string }) {
         ) : (
           <div className="grid grid-cols-2 gap-x-8 gap-y-5">
             {left.map((skill) => (
-              <SkillBar key={skill.id} name={skill.name} level={skill.level} />
+              <SkillBar key={skill.id} name={skill.name} level={skill.pivot.level} />
             ))}
             {right.map((skill) => (
-              <SkillBar key={skill.id} name={skill.name} level={skill.level} />
+              <SkillBar key={skill.id} name={skill.name} level={skill.pivot.level} />
             ))}
           </div>
         )}
