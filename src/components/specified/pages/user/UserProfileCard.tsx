@@ -33,11 +33,11 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
         </Button>
       </div>
 
-      <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
         <DataDisplay icon={Mail} label="Email" value={user.email} />
         <DataDisplay icon={Phone} label="Phone" value={user.phone} />
         <DataDisplay icon={UserIcon} label="Manager" value={user.phone} />
-        <DataDisplay icon={CalendarDays} label="Start Date" value={user.phone} />
+        <DataDisplay icon={CalendarDays} label="Start Date" value={user.created_at} />
       </div>
     </Card>
   );

@@ -8,8 +8,9 @@ interface User {
   projects: number;
   criticality: Criticality;
   busFactor: number;
-  todayStatus: UserStatus;
+  status: UserStatus;
   initials: string;
   color: string;
   leaves: LeaveRange[];
+  created_at: string;
 }
