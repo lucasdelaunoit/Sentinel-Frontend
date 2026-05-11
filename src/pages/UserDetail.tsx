@@ -1,24 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { usePage } from "@/context/PageContext";
-import {
-  PenSquare,
-  Plus,
-  Phone,
-  User,
-  CalendarDays,
-  ShieldAlert,
-  Users as UsersIcon,
-  Code2,
-  FolderKanban,
-  Eye,
-} from "lucide-react";
+import { Plus, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import ComposedCard from "@/components/common/cards/ComposedCard";
-import StatCard from "@/components/common/cards/StatCard";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SortableTableHead } from "@/components/common/table/SortableTableHead";
 import { TablePagination } from "@/components/common/table/TablePagination";
@@ -28,9 +16,11 @@ import { getInitials } from "@/utils/formatters/persons.ts";
 import useGetUser from "@/api/users/useGetUser";
 import useGetUserProjects from "@/api/users/useGetUserProjects";
 import useGetUserSkills from "@/api/users/useGetUserSkills";
+import useGetUserStats from "@/api/users/useGetUserStats";
 import type { UserSkillDetail } from "@/types/dashboard";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
 import UserProfileCard from "@/components/specified/pages/user/UserProfileCard.tsx";
+import UserStatsSection from "@/components/specified/pages/user/UserStatsSection.tsx";
 
 /* ─── Types ───────────────────────────────────────────────── */
 
@@ -50,17 +40,6 @@ const AVATAR_COLORS = [
 ];
 function avatarColor(id: number) {
   return AVATAR_COLORS[id % AVATAR_COLORS.length];
-}
-
-const CRITICALITY_STYLE: Record<string, string> = {
-  high: "text-rose-500",
-  medium: "text-amber-500",
-  low: "text-emerald-500",
-};
-
-function capitalize(s: string | undefined) {
-  if (!s) return "—";
-  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function fmtDate(date: string) {
@@ -592,6 +571,7 @@ export default function UserDetail() {
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
 
   const { data: user, isLoading, isError } = useGetUser(id);
+  const { data: stats, isLoading: isLoadingStats } = useGetUserStats(id);
 
   useEffect(() => {
     if (user) {
@@ -632,56 +612,11 @@ export default function UserDetail() {
         {isLoading ? <UserProfileCard.Skeleton /> : user && <UserProfileCard user={user} />}
 
         {/* ── Stats ─────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard
-            title="Criticality"
-            icon={ShieldAlert}
-            isLoading={isLoading}
-            comment={null}
-            value={
-              user ? (
-                <span className={CRITICALITY_STYLE[user.criticality ?? ""] ?? "text-foreground"}>
-                  {capitalize(user.criticality)}
-                </span>
-              ) : null
-            }
-          />
-          <StatCard
-            title="Bus Factor in Org"
-            icon={UsersIcon}
-            isLoading={isLoading}
-            value={user ? <span className="text-amber-500">{user.bus_factor}</span> : null}
-            comment={
-              user ? (
-                <span className="text-[12px] text-muted-foreground">
-                  {user.bus_factor <= 1 ? "Critical dependency" : "Distributed"}
-                </span>
-              ) : null
-            }
-          />
-          <StatCard
-            title="Skills"
-            icon={Code2}
-            isLoading={isLoading}
-            value={user?.skills_count ?? "—"}
-            comment={
-              user?.expert_skills_count != null ? (
-                <span className="text-[12px] text-muted-foreground">{user.expert_skills_count} expert-level</span>
-              ) : null
-            }
-          />
-          <StatCard
-            title="Active Projects"
-            icon={FolderKanban}
-            isLoading={isLoading}
-            value={user?.active_projects_count ?? "—"}
-            comment={
-              user?.projects_count != null ? (
-                <span className="text-[12px] text-muted-foreground">{user.projects_count} total</span>
-              ) : null
-            }
-          />
-        </div>
+        {isLoadingStats || !stats ? (
+          <UserStatsSection.Skeleton />
+        ) : (
+          <UserStatsSection stats={stats} />
+        )}
 
         {/* ── Tabs ──────────────────────────────────────────────── */}
         <div className="flex items-center gap-2">

@@ -7,7 +7,7 @@ export default function useGetUser(id: string | undefined) {
   return useQuery<User>({
     queryKey: ["users", id],
     queryFn: async () => {
-      const { data } = await privateApi.get<User>(`/api/user/${id}`);
+      const { data } = await privateApi.get<User>(`/api/users/${id}`);
       return data;
     },
     enabled: !!id,

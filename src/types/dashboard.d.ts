@@ -238,6 +238,43 @@ export interface UserSkillDetail {
   level: number
 }
 
+/* ── User stats (GET /users/:id/stats) ───────────────────── */
+
+export interface UserStatsCriticality {
+  score: number
+  unique_skills: number
+  silo_count: number
+  bus_factor_projects: number
+}
+
+export interface UserStatsBusFactor {
+  count: number
+  projects: { id: number; name: string }[]
+}
+
+export interface UserStatsSkillCategory {
+  category: string
+  count: number
+  avg_level: number
+}
+
+export interface UserStatsSkills {
+  total: number
+  by_category: UserStatsSkillCategory[]
+}
+
+export interface UserStatsActiveProjects {
+  count: number
+  projects: { id: number; name: string }[]
+}
+
+export interface UserStats {
+  criticality: UserStatsCriticality
+  bus_factor_in_org: UserStatsBusFactor
+  skills: UserStatsSkills
+  active_projects: UserStatsActiveProjects
+}
+
 /* ── Root response ───────────────────────────────────────── */
 
 export interface DashboardStats {
