@@ -5,8 +5,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import SharedStatCard from "@/components/common/cards/StatCard";
 import {
-  Shield,
-  BookOpen,
   Sliders,
   Plus,
   Trash2,
@@ -24,6 +22,7 @@ import {
 } from "lucide-react";
 import { useCalendarSettings, type CompanyHoliday } from "@/hooks/useCalendarSettings";
 import SkillsTab from "@/components/specified/pages/settings/SkillsTab.tsx";
+import { ActivityIcon, BookOpenIcon, CalendarIcon, ShieldIcon, SlidersIcon } from "@phosphor-icons/react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,15 +34,6 @@ interface OrganizationSettings {
   methodology: "agile" | "scrum" | "kanban" | "hybrid" | "waterfall";
   teamStructure: "cross-functional" | "specialized" | "matrix";
   riskTolerance: "conservative" | "balanced" | "aggressive";
-}
-
-interface SkillDefinition {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  criticality: "low" | "medium" | "high" | "critical";
-  minRedundancy: number;
 }
 
 type RuleType = "min_staff" | "min_skill" | "bus_factor" | "coverage";
@@ -75,240 +65,6 @@ const DEFAULT_ORG: OrganizationSettings = {
   teamStructure: "cross-functional",
   riskTolerance: "balanced",
 };
-
-const DEFAULT_SKILLS: SkillDefinition[] = [
-  // FRONTEND
-  {
-    id: "s1",
-    name: "React",
-    category: "FRONTEND",
-    description: "React.js framework",
-    criticality: "critical",
-    minRedundancy: 3,
-  },
-  {
-    id: "s2",
-    name: "Vue.js",
-    category: "FRONTEND",
-    description: "Vue.js framework",
-    criticality: "medium",
-    minRedundancy: 2,
-  },
-  {
-    id: "s3",
-    name: "TypeScript",
-    category: "FRONTEND",
-    description: "TypeScript language",
-    criticality: "high",
-    minRedundancy: 2,
-  },
-  {
-    id: "s11",
-    name: "Angular",
-    category: "FRONTEND",
-    description: "Angular framework",
-    criticality: "low",
-    minRedundancy: 1,
-  },
-  {
-    id: "s12",
-    name: "Next.js",
-    category: "FRONTEND",
-    description: "React SSR framework",
-    criticality: "high",
-    minRedundancy: 2,
-  },
-  {
-    id: "s13",
-    name: "TailwindCSS",
-    category: "FRONTEND",
-    description: "Utility CSS framework",
-    criticality: "medium",
-    minRedundancy: 2,
-  },
-  {
-    id: "s14",
-    name: "Figma",
-    category: "FRONTEND",
-    description: "UI/UX design tool",
-    criticality: "low",
-    minRedundancy: 1,
-  },
-  // BACKEND
-  {
-    id: "s4",
-    name: "Node.js",
-    category: "BACKEND",
-    description: "Node.js runtime",
-    criticality: "high",
-    minRedundancy: 2,
-  },
-  {
-    id: "s5",
-    name: "Python",
-    category: "BACKEND",
-    description: "Python language",
-    criticality: "medium",
-    minRedundancy: 2,
-  },
-  {
-    id: "s15",
-    name: "PHP / Laravel",
-    category: "BACKEND",
-    description: "Laravel framework",
-    criticality: "high",
-    minRedundancy: 2,
-  },
-  { id: "s16", name: "Go", category: "BACKEND", description: "Go language", criticality: "medium", minRedundancy: 1 },
-  {
-    id: "s17",
-    name: "GraphQL",
-    category: "BACKEND",
-    description: "GraphQL API design",
-    criticality: "medium",
-    minRedundancy: 2,
-  },
-  {
-    id: "s18",
-    name: "REST API Design",
-    category: "BACKEND",
-    description: "REST principles",
-    criticality: "high",
-    minRedundancy: 3,
-  },
-  // DEVOPS
-  {
-    id: "s6",
-    name: "AWS",
-    category: "DEVOPS",
-    description: "Amazon Web Services",
-    criticality: "critical",
-    minRedundancy: 2,
-  },
-  {
-    id: "s7",
-    name: "Kubernetes",
-    category: "DEVOPS",
-    description: "Container orchestration",
-    criticality: "high",
-    minRedundancy: 2,
-  },
-  {
-    id: "s19",
-    name: "Docker",
-    category: "DEVOPS",
-    description: "Containerization",
-    criticality: "high",
-    minRedundancy: 3,
-  },
-  {
-    id: "s20",
-    name: "Terraform",
-    category: "DEVOPS",
-    description: "Infrastructure as code",
-    criticality: "medium",
-    minRedundancy: 2,
-  },
-  {
-    id: "s21",
-    name: "CI/CD Pipelines",
-    category: "DEVOPS",
-    description: "GitHub Actions / GitLab CI",
-    criticality: "high",
-    minRedundancy: 2,
-  },
-  // DATABASE
-  {
-    id: "s8",
-    name: "PostgreSQL",
-    category: "DATABASE",
-    description: "PostgreSQL database",
-    criticality: "medium",
-    minRedundancy: 2,
-  },
-  {
-    id: "s22",
-    name: "MySQL",
-    category: "DATABASE",
-    description: "MySQL database",
-    criticality: "medium",
-    minRedundancy: 2,
-  },
-  {
-    id: "s23",
-    name: "MongoDB",
-    category: "DATABASE",
-    description: "NoSQL document store",
-    criticality: "low",
-    minRedundancy: 1,
-  },
-  {
-    id: "s24",
-    name: "Redis",
-    category: "DATABASE",
-    description: "In-memory cache",
-    criticality: "medium",
-    minRedundancy: 2,
-  },
-  // SECURITY
-  {
-    id: "s9",
-    name: "Security Eng.",
-    category: "SECURITY",
-    description: "Security architecture",
-    criticality: "critical",
-    minRedundancy: 2,
-  },
-  {
-    id: "s25",
-    name: "Pen Testing",
-    category: "SECURITY",
-    description: "Penetration testing",
-    criticality: "high",
-    minRedundancy: 1,
-  },
-  {
-    id: "s26",
-    name: "OWASP / Compliance",
-    category: "SECURITY",
-    description: "Regulatory compliance",
-    criticality: "critical",
-    minRedundancy: 2,
-  },
-  // TESTING
-  {
-    id: "s10",
-    name: "QA / Manual",
-    category: "TESTING",
-    description: "Manual QA",
-    criticality: "low",
-    minRedundancy: 1,
-  },
-  {
-    id: "s27",
-    name: "Jest / Vitest",
-    category: "TESTING",
-    description: "Unit testing",
-    criticality: "medium",
-    minRedundancy: 2,
-  },
-  {
-    id: "s28",
-    name: "Cypress / Playwright",
-    category: "TESTING",
-    description: "E2E testing",
-    criticality: "medium",
-    minRedundancy: 2,
-  },
-  {
-    id: "s29",
-    name: "Load Testing",
-    category: "TESTING",
-    description: "k6 / Locust",
-    criticality: "low",
-    minRedundancy: 1,
-  },
-];
 
 const DEFAULT_RULES: Rule[] = [
   {
@@ -1520,7 +1276,6 @@ function AnalyticsTab({ config, onSave }: { config: AnalyticsConfig; onSave: (c:
 
 export default function Settings() {
   const [orgSettings, setOrgSettings] = useState(DEFAULT_ORG);
-  const [skills, setSkills] = useState(DEFAULT_SKILLS);
   const [rules, setRules] = useState(DEFAULT_RULES);
   const [analytics, setAnalytics] = useState(DEFAULT_ANALYTICS);
 
@@ -1532,18 +1287,14 @@ export default function Settings() {
           <TabsList className="h-auto bg-transparent p-0 gap-2">
             {(
               [
-                { value: "organization", label: "Organization", icon: Shield },
-                { value: "skills", label: "Skills", icon: BookOpen },
-                { value: "rules", label: "Rules", icon: Sliders },
-                { value: "calendar", label: "Calendar", icon: CalendarDays },
-                { value: "analytics", label: "Analytics", icon: Activity },
+                { value: "organization", label: "Organization", icon: ShieldIcon },
+                { value: "skills", label: "Skills", icon: BookOpenIcon },
+                { value: "rules", label: "Rules", icon: SlidersIcon },
+                { value: "calendar", label: "Calendar", icon: CalendarIcon },
+                { value: "analytics", label: "Analytics", icon: ActivityIcon },
               ] as const
             ).map(({ value, label, icon: Icon }) => (
-              <TabsTrigger
-                key={value}
-                value={value}
-                className="flex items-center gap-2 px-5 py-2 rounded-full text-[13px] font-medium border border-border/60 bg-card text-foreground shadow-none transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-sm"
-              >
+              <TabsTrigger key={value} value={value}>
                 <Icon className="size-4" />
                 {label}
               </TabsTrigger>

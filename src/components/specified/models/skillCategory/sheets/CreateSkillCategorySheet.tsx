@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useCreateSkillCategory from "@/api/skill-categories/useCreateSkillCategory";
-import { cn } from "@/lib/utils";
+import SkillCategoryBadge from "@/components/specified/models/skill/badges/SkillCategoryBadge.tsx";
 
 const MAX_NAME_LENGTH = 32;
 
@@ -38,8 +38,10 @@ export default function CreateSkillCategorySheet({
       .required("Name is required.")
       .min(2, "Name must be at least 2 characters.")
       .max(MAX_NAME_LENGTH, `Name must be ${MAX_NAME_LENGTH} characters or fewer.`)
-      .test("unique", "A category with this name already exists.", (val) =>
-        !categoriesRef.current.some((c) => c.name === (val ?? "").trim().toUpperCase()),
+      .test(
+        "unique",
+        "A category with this name already exists.",
+        (val) => !categoriesRef.current.some((c) => c.name === (val ?? "").trim().toUpperCase()),
       ),
   });
 
@@ -47,7 +49,6 @@ export default function CreateSkillCategorySheet({
     control,
     handleSubmit,
     reset,
-    watch,
     formState: { errors, isValid, isDirty },
   } = useForm<FormValues>({
     resolver: yupResolver(schema),
@@ -57,36 +58,36 @@ export default function CreateSkillCategorySheet({
 
   const { mutate: createCategory, isPending } = useCreateSkillCategory();
 
-  const watchedName = watch("name");
-  const normalizedName = watchedName.trim().toUpperCase();
-
   function handleClose() {
     reset();
     onOpenChange(false);
   }
 
   function onSubmit({ name }: FormValues) {
-    createCategory({ name: name.trim().toUpperCase() }, { onSuccess: handleClose });
+    createCategory({ name: name }, { onSuccess: handleClose });
   }
 
   return (
     <ComposedSheet
       open={open}
-      onOpenChange={(v) => { if (!v) handleClose(); }}
+      onOpenChange={(v) => {
+        if (!v) handleClose();
+      }}
       title="Add Category"
       description="Categories group skills and define radar chart axes"
       icon={<Layers className="size-4 text-primary" />}
       footer={
         <>
-          <Button variant="outline" onClick={handleClose} className="flex-1 rounded-xl" disabled={isPending}>
+          <Button variant="outline" onClick={handleClose} className="flex-1" disabled={isPending} size="lg">
             Cancel
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
             disabled={!isDirty || !isValid || isPending}
-            className="flex-1 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+            className="flex-1"
+            size="lg"
           >
-            {isPending ? "Adding…" : "Add Category"}
+            {isPending ? "Adding…" : "Create the category"}
           </Button>
         </>
       }
@@ -105,7 +106,7 @@ export default function CreateSkillCategorySheet({
                 autoComplete="off"
                 maxLength={MAX_NAME_LENGTH + 1}
                 aria-invalid={!!errors.name}
-                onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                onChange={(e) => field.onChange(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSubmit(onSubmit)()}
               />
               {errors.name ? (
@@ -134,17 +135,7 @@ export default function CreateSkillCategorySheet({
             <FieldLabel>Existing categories</FieldLabel>
             <div className="flex flex-wrap gap-1.5 pt-0.5">
               {categories.map((cat) => (
-                <span
-                  key={cat.id}
-                  className={cn(
-                    "text-[11px] font-semibold rounded-full px-2.5 py-1 transition-colors",
-                    normalizedName && cat.name === normalizedName
-                      ? "bg-destructive/10 text-destructive"
-                      : "bg-muted/50 text-muted-foreground",
-                  )}
-                >
-                  {cat.name}
-                </span>
+                <SkillCategoryBadge category={cat} className="bg-secondary" />
               ))}
             </div>
           </Field>

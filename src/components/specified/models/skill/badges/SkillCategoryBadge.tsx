@@ -1,12 +1,14 @@
 import { Badge } from "@/components/ui/badge.tsx";
+import { cn } from "@/lib/utils.ts";
 
 interface SkillCategoryBadgeProps {
   category: SkillCategory;
+  className?: string;
 }
 
-export default function SkillCategoryBadge({ category }: SkillCategoryBadgeProps) {
+export default function SkillCategoryBadge({ category, className }: SkillCategoryBadgeProps) {
   return (
-    <Badge variant="secondary" className="mt-1 bg-border">
+    <Badge variant="secondary" className={cn("mt-1 bg-border", className)}>
       {category.name}
     </Badge>
   );
