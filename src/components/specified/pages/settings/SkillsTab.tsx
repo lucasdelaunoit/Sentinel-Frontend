@@ -66,7 +66,6 @@ export default function SkillsTab() {
   }
 
   const hasFilter = !!search;
-  const totalCount = skillsData?.total ?? 0;
 
   const fieldCls =
     "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
@@ -77,7 +76,7 @@ export default function SkillsTab() {
         {/* Left — Categories */}
         <ComposedCard
           title="Categories"
-          className="w-52 shrink-0"
+          className="w-60 shrink-0"
           action={
             <div className="ml-auto flex items-center gap-2">
               <span className="text-[11px] font-medium text-muted-foreground/50 tabular-nums">
@@ -90,21 +89,13 @@ export default function SkillsTab() {
             <button
               onClick={() => setSelectedCatId("ALL")}
               className={cn(
-                "flex items-center justify-between rounded-lg px-2.5 py-2 text-[12px] font-semibold mb-1 transition-colors",
+                "flex items-center justify-between rounded-lg px-2.5 py-2 text-[13px] font-semibold mb-1 transition-colors",
                 selectedCatId === "ALL"
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
               )}
             >
               All skills
-              <span
-                className={cn(
-                  "text-[11px] font-bold tabular-nums",
-                  selectedCatId === "ALL" ? "text-primary" : "text-muted-foreground/50",
-                )}
-              >
-                {selectedCatId === "ALL" ? totalCount : ""}
-              </span>
             </button>
 
             <div className="flex-1 overflow-y-auto space-y-0.5">
@@ -116,7 +107,9 @@ export default function SkillsTab() {
                       category={cat}
                       isActive={selectedCatId === cat.id}
                       onSelect={() => setSelectedCatId(cat.id)}
-                      onDeleted={() => { if (selectedCatId === cat.id) setSelectedCatId("ALL"); }}
+                      onDeleted={() => {
+                        if (selectedCatId === cat.id) setSelectedCatId("ALL");
+                      }}
                     />
                   ))}
             </div>
@@ -141,7 +134,7 @@ export default function SkillsTab() {
           action={
             <div className="flex items-center gap-2">
               <SearchBar value={search} onChange={setSearch} />
-              <Button onClick={() => setSkillSheetOpen(true)}>
+              <Button size="lg" onClick={() => setSkillSheetOpen(true)}>
                 <Plus className="size-4" />
                 Add Skill
               </Button>
@@ -160,7 +153,9 @@ export default function SkillsTab() {
                 <Feedback
                   variant={hasFilter ? "warning" : "neutral"}
                   title={hasFilter ? "No matching skills" : "No skills yet"}
-                  description={hasFilter ? "Try a different search term or category." : "Add your first skill to get started."}
+                  description={
+                    hasFilter ? "Try a different search term or category." : "Add your first skill to get started."
+                  }
                 />
                 {hasFilter && (
                   <button onClick={() => setSearch("")} className="text-[12px] text-primary hover:underline">

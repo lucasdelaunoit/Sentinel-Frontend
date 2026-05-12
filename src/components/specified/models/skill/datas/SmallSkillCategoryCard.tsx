@@ -37,7 +37,7 @@ export default function SmallSkillCategoryCard({
   const { mutate: deleteCategory, isPending: isDeleting } = useDeleteSkillCategory();
   const { mutate: updateCategory, isPending: isUpdating } = useUpdateSkillCategory();
 
-  function handleStartEdit(e: React.MouseEvent) {
+  function handleStartEdit(e: MouseEvent) {
     e.stopPropagation();
     setDraft(category.name);
     setIsEditing(true);
@@ -53,7 +53,7 @@ export default function SmallSkillCategoryCard({
     updateCategory({ id: category.id, name }, { onSuccess: () => setIsEditing(false) });
   }
 
-  function handleCancelEdit(e: React.MouseEvent) {
+  function handleCancelEdit(e: MouseEvent) {
     e.stopPropagation();
     setIsEditing(false);
     setDraft(category.name);
@@ -75,14 +75,17 @@ export default function SmallSkillCategoryCard({
             onChange={(e) => setDraft(e.target.value.toUpperCase())}
             onKeyDown={(e) => {
               if (e.key === "Enter") handleConfirmEdit();
-              if (e.key === "Escape") { setIsEditing(false); setDraft(category.name); }
+              if (e.key === "Escape") {
+                setIsEditing(false);
+                setDraft(category.name);
+              }
             }}
             onClick={(e) => e.stopPropagation()}
             disabled={isUpdating}
             className="w-full text-[12px] font-semibold bg-transparent border-b border-primary/40 focus:outline-none text-foreground"
           />
         ) : (
-          <p className={cn("text-[12px] font-semibold truncate", isActive ? "text-primary" : "text-foreground")}>
+          <p className={cn("text-[13px] font-semibold truncate", isActive ? "text-primary" : "text-foreground")}>
             {category.name}
           </p>
         )}
@@ -96,7 +99,10 @@ export default function SmallSkillCategoryCard({
           <Button
             variant="ghost"
             size="icon-xs"
-            onClick={(e) => { e.stopPropagation(); handleConfirmEdit(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleConfirmEdit();
+            }}
             disabled={isUpdating}
             className="text-muted-foreground/60 hover:text-emerald-600 hover:bg-emerald-50"
           >
@@ -112,25 +118,25 @@ export default function SmallSkillCategoryCard({
           </Button>
         </div>
       ) : (
-        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 shrink-0 transition-opacity">
+        <div className="flex items-center opacity-0 group-hover:opacity-100 shrink-0 transition-opacity">
           <Button
             variant="ghost"
-            size="icon-xs"
+            size="icon-sm"
             onClick={handleStartEdit}
             className="text-muted-foreground/40 hover:text-primary hover:bg-primary/10"
           >
-            <Pencil />
+            <Pencil className="size-3.5" />
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon-xs"
+                size="icon-sm"
                 onClick={(e) => e.stopPropagation()}
                 disabled={isDeleting}
                 className="text-muted-foreground/40 hover:text-rose-500 hover:bg-rose-50"
               >
-                <Trash2 />
+                <Trash2 className="size-3.5" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
