@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import usePrivateApi from "@/api/privateApi";
+import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
 
 export default function useDeleteSkill() {
   const privateApi = usePrivateApi();
@@ -13,8 +14,8 @@ export default function useDeleteSkill() {
       queryClient.invalidateQueries({ queryKey: ["skill-categories"] });
       toast.success("Skill deleted.");
     },
-    onError: () => {
-      toast.error("Failed to delete skill.");
+    onError: (error) => {
+      toast.error(extractApiErrorMessage(error, "Failed to delete skill."));
     },
   });
 }

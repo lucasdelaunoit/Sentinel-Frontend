@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import usePrivateApi from "@/api/privateApi";
+import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
 
 interface UpdateSkillCategoryPayload {
   id: number;
@@ -17,8 +18,8 @@ export default function useUpdateSkillCategory() {
       queryClient.invalidateQueries({ queryKey: ["skill-categories"] });
       toast.success(`Category renamed to "${name}".`);
     },
-    onError: () => {
-      toast.error("Failed to update category.");
+    onError: (error) => {
+      toast.error(extractApiErrorMessage(error, "Failed to update category."));
     },
   });
 }

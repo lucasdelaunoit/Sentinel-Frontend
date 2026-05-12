@@ -101,7 +101,9 @@ export default function CreateSkillSheet({ open, onOpenChange, categories, prese
           control={control}
           render={({ field }) => (
             <Field>
-              <FieldLabel>Skill Name</FieldLabel>
+              <FieldLabel>
+                Skill Name <span className="text-destructive-foreground">*</span>
+              </FieldLabel>
               <Input
                 {...field}
                 placeholder="e.g. React, AWS, PostgreSQL"
@@ -123,7 +125,9 @@ export default function CreateSkillSheet({ open, onOpenChange, categories, prese
 
         {presetCategory ? (
           <Field>
-            <FieldLabel>Category</FieldLabel>
+            <FieldLabel>
+              Category <span className="text-destructive-foreground">*</span>
+            </FieldLabel>
             <div className="flex items-center gap-2 rounded-xl border border-border/60 bg-muted/30 px-3 py-2">
               <SkillCategoryBadge category={presetCategory} className="bg-secondary" />
               <span className="text-[11px] text-muted-foreground">Preselected from current filter</span>
@@ -135,7 +139,9 @@ export default function CreateSkillSheet({ open, onOpenChange, categories, prese
             control={control}
             render={() => (
               <Field>
-                <FieldLabel>Category</FieldLabel>
+                <FieldLabel>
+                  Category <span className="text-destructive-foreground">*</span>
+                </FieldLabel>
                 <div className="flex flex-wrap gap-1.5 pt-0.5">
                   {categories.map((cat) => {
                     const active = selectedCategoryId === cat.id;

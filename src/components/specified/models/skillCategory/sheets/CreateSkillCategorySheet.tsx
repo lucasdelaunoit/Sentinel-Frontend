@@ -98,7 +98,9 @@ export default function CreateSkillCategorySheet({
           control={control}
           render={({ field }) => (
             <Field>
-              <FieldLabel>Category Name</FieldLabel>
+              <FieldLabel>
+                Category Name <span className="text-destructive-foreground">*</span>
+              </FieldLabel>
               <Input
                 {...field}
                 placeholder="e.g. Mobile, Data, ..."

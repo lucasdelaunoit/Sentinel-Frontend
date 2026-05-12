@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import usePrivateApi from "@/api/privateApi";
+import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
 
 export default function useCreateSkill() {
   const privateApi = usePrivateApi();
@@ -14,8 +15,8 @@ export default function useCreateSkill() {
       queryClient.invalidateQueries({ queryKey: ["skill-categories"] });
       toast.success(`Skill "${name}" created.`);
     },
-    onError: () => {
-      toast.error("Failed to create skill.");
+    onError: (error) => {
+      toast.error(extractApiErrorMessage(error, "Failed to create skill."));
     },
   });
 }
