@@ -1,9 +1,7 @@
-import { useLocation, useNavigate } from "react-router-dom";
-import { ChevronRight, PlayCircle, PenSquare } from "lucide-react";
 import { Button } from "@/components/ui/button.tsx";
 import { usePage } from "@/context/PageContext.tsx";
 import type { ReactNode } from "react";
-import { SidebarIcon, SidebarSimpleIcon } from "@phosphor-icons/react";
+import { CaretRightIcon, SidebarIcon, SidebarSimpleIcon } from "@phosphor-icons/react";
 
 interface TopBarProps {
   title: string;
@@ -12,13 +10,7 @@ interface TopBarProps {
 }
 
 export default function TopBar({ title, breadcrumb = "ssss", actions }: TopBarProps): ReactNode {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const path = location.pathname;
-  const { title: contextTitle, breadcrumb: contextBreadcrumb, sidebarCollapsed, toggleSidebar } = usePage();
-
-  const isProjects = path === "/projects";
-  const isUserDetail = /^\/users\/[^/]+$/.test(path);
+  const { sidebarCollapsed, toggleSidebar } = usePage();
 
   return (
     <header className="flex h-[60px] shrink-0 items-center justify-between border-b border-border bg-card/80 backdrop-blur-sm px-6">
@@ -35,34 +27,14 @@ export default function TopBar({ title, breadcrumb = "ssss", actions }: TopBarPr
         <div>
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70">
             <span className="font-medium">Sentinel</span>
-            <ChevronRight className="size-3 text-muted-foreground/40" />
+            <CaretRightIcon className="size-2.5 mb-0.5 text-muted-foreground" />
             <span className="font-medium text-foreground/60">{breadcrumb}</span>
           </div>
           <h1 className="text-xl font-bold text-foreground leading-tight tracking-tight mt-0.5">{title}</h1>
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        {isProjects && (
-          <Button
-            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press"
-            onClick={() => navigate("/projects?action=add")}
-          >
-            <PenSquare className="size-4" />
-            New Project
-          </Button>
-        )}
-        {isUserDetail && (
-          <Button
-            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-5 text-[13px] font-medium rounded-xl shadow-sm shadow-primary/10 btn-press"
-            onClick={() => navigate(`${path}?simulate=true`)}
-          >
-            <PlayCircle className="size-4" />
-            Simulate Leave
-          </Button>
-        )}
-        {actions}
-      </div>
+      <div className="flex items-center gap-3">{actions}</div>
     </header>
   );
 }

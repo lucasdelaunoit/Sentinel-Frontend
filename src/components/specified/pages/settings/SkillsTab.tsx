@@ -11,10 +11,10 @@ import { SecondaryButton } from "@/components/common/buttons/SecondaryButton.tsx
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import MediumSkillCard from "@/components/specified/models/skill/datas/MediumSkillCard.tsx";
 
-export default function SkillsTab() {
-  const MAX_CATEGORIES = 8;
-  const ITEMS_PER_PAGE = 12;
+const MAX_CATEGORIES = 8;
+const ITEMS_PER_PAGE = 12;
 
+export default function SkillsTab() {
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCat, setSelectedCat] = useState<string>("ALL");
   const [search, setSearch] = useState("");
@@ -218,16 +218,7 @@ export default function SkillsTab() {
             {skillsLoading ? (
               <div className="grid grid-cols-2 gap-3">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="rounded-xl border border-border/60 bg-background p-3.5 flex items-center gap-3"
-                  >
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-3.5 w-24 rounded" />
-                      <Skeleton className="h-2.5 w-16 rounded-full" />
-                    </div>
-                    <Skeleton className="size-7 rounded-lg shrink-0" />
-                  </div>
+                  <MediumSkillCard.Skeleton key={i} />
                 ))}
               </div>
             ) : list.length === 0 ? (
