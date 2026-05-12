@@ -1,11 +1,20 @@
-import { useState } from "react";
+import { useRef } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import { AlertTriangle, Layers } from "lucide-react";
-import { Button } from "@/components/ui/button.tsx";
-import ComposedSheet from "@/components/common/sheets/ComposedSheet.tsx";
-import useCreateSkillCategory from "@/api/skill-categories/useCreateSkillCategory.ts";
-import { cn } from "@/lib/utils.ts";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
+import ComposedSheet from "@/components/common/sheets/ComposedSheet";
+import useCreateSkillCategory from "@/api/skill-categories/useCreateSkillCategory";
+import { cn } from "@/lib/utils";
 
 const MAX_NAME_LENGTH = 32;
+
+interface FormValues {
+  name: string;
+}
 
 interface CreateSkillCategorySheetProps {
   open: boolean;
@@ -14,52 +23,56 @@ interface CreateSkillCategorySheetProps {
   maxCategories: number;
 }
 
-function validate(name: string, categories: SkillCategory[]): string | null {
-  if (!name.trim()) return "Name is required.";
-  if (name.trim().length < 2) return "Name must be at least 2 characters.";
-  if (name.trim().length > MAX_NAME_LENGTH) return `Name must be ${MAX_NAME_LENGTH} characters or fewer.`;
-  if (categories.some((c) => c.name === name.trim().toUpperCase())) return "A category with this name already exists.";
-  return null;
-}
-
-const fieldCls =
-  "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
-
 export default function CreateSkillCategorySheet({
   open,
   onOpenChange,
   categories,
   maxCategories,
 }: CreateSkillCategorySheetProps) {
-  const [name, setName] = useState("");
-  const [touched, setTouched] = useState(false);
+  const categoriesRef = useRef(categories);
+  categoriesRef.current = categories;
+
+  const schema = yup.object({
+    name: yup
+      .string()
+      .required("Name is required.")
+      .min(2, "Name must be at least 2 characters.")
+      .max(MAX_NAME_LENGTH, `Name must be ${MAX_NAME_LENGTH} characters or fewer.`)
+      .test("unique", "A category with this name already exists.", (val) =>
+        !categoriesRef.current.some((c) => c.name === (val ?? "").trim().toUpperCase()),
+      ),
+  });
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isValid, isDirty },
+  } = useForm<FormValues>({
+    resolver: yupResolver(schema),
+    defaultValues: { name: "" },
+    mode: "onChange",
+  });
 
   const { mutate: createCategory, isPending } = useCreateSkillCategory();
 
-  const normalizedName = name.trim().toUpperCase();
-  const error = touched ? validate(name, categories) : null;
-  const isDisabled = !!validate(name, categories) || isPending;
+  const watchedName = watch("name");
+  const normalizedName = watchedName.trim().toUpperCase();
 
   function handleClose() {
-    setName("");
-    setTouched(false);
+    reset();
     onOpenChange(false);
   }
 
-  function handleSubmit() {
-    setTouched(true);
-    const validationError = validate(name, categories);
-    if (validationError) return;
-
-    createCategory({ name: normalizedName }, { onSuccess: handleClose });
+  function onSubmit({ name }: FormValues) {
+    createCategory({ name: name.trim().toUpperCase() }, { onSuccess: handleClose });
   }
 
   return (
     <ComposedSheet
       open={open}
-      onOpenChange={(v) => {
-        if (!v) handleClose();
-      }}
+      onOpenChange={(v) => { if (!v) handleClose(); }}
       title="Add Category"
       description="Categories group skills and define radar chart axes"
       icon={<Layers className="size-4 text-primary" />}
@@ -69,8 +82,8 @@ export default function CreateSkillCategorySheet({
             Cancel
           </Button>
           <Button
-            onClick={handleSubmit}
-            disabled={isDisabled}
+            onClick={handleSubmit(onSubmit)}
+            disabled={!isDirty || !isValid || isPending}
             className="flex-1 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {isPending ? "Adding…" : "Add Category"}
@@ -79,32 +92,30 @@ export default function CreateSkillCategorySheet({
       }
     >
       <div className="space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-            Category Name
-          </label>
-          <input
-            type="text"
-            placeholder="e.g. MOBILE, DATA SCIENCE"
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value.toUpperCase());
-              if (!touched) setTouched(true);
-            }}
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-            autoFocus
-            maxLength={MAX_NAME_LENGTH + 1}
-            className={cn(
-              fieldCls,
-              touched && error && "border-destructive/60 focus:ring-destructive/30 focus:border-destructive/40",
-            )}
-          />
-          {touched && error ? (
-            <p className="text-[11px] text-destructive-foreground">{error}</p>
-          ) : (
-            <p className="text-[11px] text-muted-foreground">Will appear as a radar chart axis</p>
+        <Controller
+          name="name"
+          control={control}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>Category Name</FieldLabel>
+              <Input
+                {...field}
+                placeholder="e.g. MOBILE, DATA SCIENCE"
+                autoFocus
+                autoComplete="off"
+                maxLength={MAX_NAME_LENGTH + 1}
+                aria-invalid={!!errors.name}
+                onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit(onSubmit)()}
+              />
+              {errors.name ? (
+                <FieldError>{errors.name.message}</FieldError>
+              ) : (
+                <FieldDescription>Will appear as a radar chart axis</FieldDescription>
+              )}
+            </Field>
           )}
-        </div>
+        />
 
         <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-start gap-2.5">
           <AlertTriangle className="size-3.5 text-amber-600 mt-0.5 shrink-0" />
@@ -119,11 +130,9 @@ export default function CreateSkillCategorySheet({
         </div>
 
         {categories.length > 0 && (
-          <div className="space-y-1.5">
-            <p className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Existing categories
-            </p>
-            <div className="flex flex-wrap gap-1.5">
+          <Field>
+            <FieldLabel>Existing categories</FieldLabel>
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
               {categories.map((cat) => (
                 <span
                   key={cat.id}
@@ -138,7 +147,7 @@ export default function CreateSkillCategorySheet({
                 </span>
               ))}
             </div>
-          </div>
+          </Field>
         )}
       </div>
     </ComposedSheet>
