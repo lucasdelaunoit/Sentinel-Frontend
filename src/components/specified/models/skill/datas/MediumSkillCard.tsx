@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Loader2, Pencil } from "lucide-react";
-import { PencilIcon, PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
+import { CircleNotchIcon, PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import SkillCategoryBadge from "@/components/specified/models/skill/badges/SkillCategoryBadge.tsx";
@@ -44,7 +43,7 @@ export default function MediumSkillCard({ skill, searchTerm = "", onDeleted }: M
               onOpenChange={setDeleteOpen}
               trigger={
                 <Button variant="destructive" size="icon" disabled={isDeleting}>
-                  {isDeleting ? <Loader2 className="animate-spin" /> : <TrashIcon />}
+                  {isDeleting ? <CircleNotchIcon className="animate-spin" weight="bold" /> : <TrashIcon />}
                 </Button>
               }
               title={`Delete skill "${skill.name}"?`}

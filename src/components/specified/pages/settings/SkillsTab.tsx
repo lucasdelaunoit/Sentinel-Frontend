@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import DataPagination from "@/components/common/pagination/DataPagination";
-import { Plus } from "lucide-react";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import useGetSkillCategories from "@/hooks/useGetSkillCategories";
 import useGetSkills from "@/api/skills/useGetSkills.ts";
@@ -13,6 +12,7 @@ import SmallSkillCategoryCard from "@/components/specified/models/skill/datas/Sm
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import CreateSkillCategorySheet from "@/components/specified/models/skillCategory/sheets/CreateSkillCategorySheet.tsx";
 import CreateSkillSheet from "@/components/specified/models/skill/sheets/CreateSkillSheet.tsx";
+import { PlusIcon } from "@phosphor-icons/react";
 
 const MAX_CATEGORIES = 8;
 const ITEMS_PER_PAGE = 12;
@@ -95,7 +95,7 @@ export default function SkillsTab() {
             </div>
           </div>
           <SecondaryButton onClick={() => setCatSheetOpen(true)} disabled={categories.length >= MAX_CATEGORIES}>
-            <Plus className="size-3 mb-0.5" />
+            <PlusIcon className="size-3 mb-0.5" weight="bold" />
             Add new category
           </SecondaryButton>
         </ComposedCard>
@@ -109,7 +109,7 @@ export default function SkillsTab() {
               <div className="flex items-center gap-2">
                 <SearchBar value={search} onChange={setSearch} size="sm" />
                 <Button onClick={() => setSkillSheetOpen(true)}>
-                  <Plus className="size-3.5" />
+                  <PlusIcon className="size-3.5" weight="bold" />
                   Add Skill
                 </Button>
               </div>
@@ -131,7 +131,7 @@ export default function SkillsTab() {
                 className="h-96"
                 action={
                   <Button onClick={() => setSkillSheetOpen(true)} className="sm">
-                    <Plus className="size-3.5" />
+                    <PlusIcon className="size-3.5" />
                     Add your first skill
                   </Button>
                 }

@@ -1,5 +1,4 @@
 import { type ReactNode } from "react";
-import { Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,6 +11,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog.tsx";
 import { cn } from "@/lib/utils.ts";
+import { CircleNotchIcon } from "@phosphor-icons/react";
 
 interface ComposedAlertDialogProps {
   open?: boolean;
@@ -62,11 +62,11 @@ export default function ComposedAlertDialog({
               onConfirm();
             }}
             className={cn(confirmClassName)}
-            variant="destructive"
+            variant={variant === "destructive" ? "destructive" : "default"}
           >
             {isPending ? (
               <>
-                <Loader2 className="animate-spin" />
+                <CircleNotchIcon className="animate-spin" weight="bold" />
                 {pendingLabel ?? confirmLabel}
               </>
             ) : (

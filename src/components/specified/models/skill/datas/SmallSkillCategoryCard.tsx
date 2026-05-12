@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { Check, Loader2, Pencil, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
@@ -28,7 +28,7 @@ export default function SmallSkillCategoryCard({
   const { mutate: deleteCategory, isPending: isDeleting } = useDeleteSkillCategory();
   const { mutate: updateCategory, isPending: isUpdating } = useUpdateSkillCategory();
 
-  function handleStartEdit(e: MouseEvent) {
+  function handleStartEdit(e: React.MouseEvent<HTMLButtonElement>) {
     e.stopPropagation();
     setDraft(category.name);
     setIsEditing(true);
@@ -44,7 +44,7 @@ export default function SmallSkillCategoryCard({
     updateCategory({ id: category.id, name }, { onSuccess: () => setIsEditing(false) });
   }
 
-  function handleCancelEdit(e: MouseEvent) {
+  function handleCancelEdit(e: React.MouseEvent<HTMLButtonElement>) {
     e.stopPropagation();
     setIsEditing(false);
     setDraft(category.name);
