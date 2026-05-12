@@ -5,40 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    /* Typography */
     --font-heading: var(--font-sans);
     --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif;
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-destructive-foreground: var(--destructive-foreground);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
+
+    /* Radius */
     --radius-sm: 0.375rem;
     --radius-md: 0.625rem;
     --radius-lg: 0.875rem;
@@ -47,85 +18,126 @@
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
 
-    /* Status colors */
-    /* ---- Success */
-    --color-success-foreground: var(--success-foreground);
+    /* Base colors */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    /* Card */
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    /* Popover */
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    /* Primary */
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    /* Secondary */
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    /* Muted */
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    /* Accent */
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    /* Destructive */
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    /* Form */
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    /* Charts */
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    /* Sidebar */
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    /* Status — Success */
     --color-success: var(--success);
-    /*--color-success-border: var(--success-border);*/
+    --color-success-foreground: var(--success-foreground);
 
-    /* ---- Danger */
-    --color-danger-foreground: var(--danger-foreground);
+    /* Status — Danger */
     --color-danger: var(--danger);
-    /*--danger-bg: var(--danger-bg);
-    --danger-border: var(--danger-border);*/
+    --color-danger-foreground: var(--danger-foreground);
 
-    /* ---- Warning */
-    --color-warning-foreground: var(--warning-foreground);
+    /* Status — Warning */
     --color-warning: var(--warning);
-    /*--color-warning-bg: var(--warning-bg);
-    --color-warning-border: var(--warning-border);*/
+    --color-warning-foreground: var(--warning-foreground);
 
-    /* ---- Informative */
+    /* Status — Info */
+    --color-info: var(--info);
     --color-info-foreground: var(--info-foreground);
-    --color-info: var(--info-foreground);
-    /*--color-info-bg: var(--info-bg);
-    --color-info-border: var(--info-border);*/
 
-    /* ---- Neutral */
-    --neutral: var(--neutral);
-    --neutral-foreground: var(--neutral-foreground);
-    --neutral-bg: var(--neutral-bg);
-    --neutral-border: var(--neutral-border);
+    /* Status — Neutral */
+    --color-neutral: var(--neutral);
+    --color-neutral-foreground: var(--neutral-foreground);
+    --color-neutral-bg: var(--neutral-bg);
+    --color-neutral-border: var(--neutral-border);
 }
 
 :root {
-    /* Backgrounds & Surfaces */
+    --radius: 0.625rem;
+
+    /* --- Base surfaces --- */
     --background: #f5f5f4;
     --foreground: #1c1917;
 
-    /* Card surface */
     --card: #ffffff;
     --card-foreground: #1c1917;
 
     --popover: #ffffff;
     --popover-foreground: #1c1917;
 
-    /* Primary */
+    /* --- Brand --- */
     --primary: #097155;
     --primary-foreground: #ffffff;
 
-    /* Secondary */
     --secondary: #fafaf9;
     --secondary-foreground: #2e2b29;
 
-    /* Muted */
     --muted: #fafaf9;
     --muted-foreground: #78716c;
 
-    /* Accent */
     --accent: #fafaf9;
     --accent-foreground: #1c1917;
 
-    /* Destructive */
+    /* --- Destructive --- */
     --destructive: #fef2f2;
     --destructive-foreground: #dc2626;
 
-    /* Borders */
+    /* --- Form --- */
     --border: #e7e5e4;
     --input: #fafaf9;
     --ring: #097155;
 
-    /* Chart palette */
+    /* --- Charts --- */
     --chart-1: #097155;
     --chart-2: #16a34a;
     --chart-3: #ca8a04;
     --chart-4: #dc2626;
     --chart-5: #7c3aed;
 
-    /* Radius */
-    --radius: 0.625rem;
-
-    /* Dark sidebar */
+    /* --- Sidebar (dark) --- */
     --sidebar: #1c1917;
     --sidebar-foreground: rgba(255, 255, 255, 0.5);
     --sidebar-primary: #4ade80;
@@ -135,38 +147,25 @@
     --sidebar-border: #2a2724;
     --sidebar-ring: #097155;
 
-    /* Status colors */
-    /* ---- Success */
-    --success-foreground: #097155;
+    /* --- Status colors --- */
     --success: #f0fdf4;
-    /*--success-border: #bbf7d0;*/
+    --success-foreground: #097155;
 
-    /* ---- Danger */
-    --danger-foreground: #dc2626;
     --danger: #fef2f2;
-    /*--danger-border: #fecaca;*/
+    --danger-foreground: #dc2626;
 
-    /* ---- Warning */
-    --warning-foreground: #ca8a04;
     --warning: #fefce8;
-    /*--warning-bg: #fefce8;
-    --warning-border: #fef08a;*/
+    --warning-foreground: #ca8a04;
 
-    /* ---- Informative */
-    --info-foreground: #0ea5e9;
     --info: #ecfeff;
-    /*--info-bg: #ecfeff;
-    --info-border: #bff0ff;*/
+    --info-foreground: #0ea5e9;
 
-    /* ---- Neutral */
     --neutral: #6b7280;
     --neutral-foreground: #ffffff;
     --neutral-bg: #f3f4f6;
     --neutral-border: #e5e7eb;
 
-
-    /* ---------------------------------------------- */
-    /* Accent named palettes (kept for backwards compatibility) */
+    /* --- Named palettes --- */
     --orange: #ea580c;
     --orange-bg: #fff7ed;
     --orange-border: #fed7aa;
@@ -175,7 +174,7 @@
     --purple-bg: #faf5ff;
     --purple-border: #e9d5ff;
 
-    /* Skill Matrix Level Colors */
+    /* --- Skill matrix levels --- */
     --skill-l1-bg: #e7e5e4;
     --skill-l1-text: #78716c;
     --skill-l2-bg: #fde68a;
@@ -187,14 +186,14 @@
     --skill-l5-bg: #16a34a;
     --skill-l5-text: #ffffff;
 
-    /* Risk Heatmap */
+    /* --- Risk heatmap --- */
     --risk-very-low: #d4edda;
     --risk-low: #d1e7dd;
     --risk-medium: #fff3cd;
     --risk-high: #f8d7da;
     --risk-critical: #f5c6cb;
 
-    /* Shadows */
+    /* --- Shadows --- */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
     --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
@@ -261,18 +260,6 @@
     box-shadow: var(--shadow-lg);
 }
 
-/* Card hover elevation */
-.card-elevated {
-    transition:
-            box-shadow 0.2s ease,
-            transform 0.2s ease;
-}
-
-.card-elevated:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
-}
-
 /* Page transitions */
 .page-enter {
     animation: pageEnter 0.3s ease-out;
@@ -323,65 +310,4 @@
 
 .pulse-indicator {
     animation: pulse-subtle 2s ease-in-out infinite;
-}
-
-/* Typography scale utilities */
-.text-caption {
-    font-size: 10px;
-    letter-spacing: -0.01em;
-}
-
-.text-label {
-    font-size: 11px;
-    letter-spacing: 0;
-}
-
-.text-metadata {
-    font-size: 12px;
-    letter-spacing: 0;
-}
-
-.text-body {
-    font-size: 13px;
-    letter-spacing: -0.01em;
-}
-
-.text-secondary-heading {
-    font-size: 14px;
-    letter-spacing: -0.01em;
-}
-
-.text-card-title {
-    font-size: 15px;
-    letter-spacing: -0.02em;
-}
-
-.text-section-header {
-    font-size: 17px;
-    letter-spacing: -0.02em;
-}
-
-.text-page-title {
-    font-size: 20px;
-    letter-spacing: -0.03em;
-}
-
-.text-stat-number {
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-}
-
-/* Accent progress bar */
-.progress-accent {
-    background: #097155;
-}
-
-/* Accent light backgrounds */
-.bg-accent-light {
-    background: #d1fae5;
-}
-
-.border-accent-light {
-    border-color: #6ee7b7;
 }

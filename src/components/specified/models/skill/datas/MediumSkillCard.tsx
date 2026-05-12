@@ -1,5 +1,8 @@
 import { Badge } from "@/components/ui/badge.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { TrashIcon } from "@phosphor-icons/react";
+import SkillCategoryBadge from "@/components/specified/models/skill/badges/SkillCategoryBadge.tsx";
 
 interface MediumSkillCardProps {
   skill: Skill;
@@ -13,14 +16,14 @@ export default function MediumSkillCard({ skill }: MediumSkillCardProps) {
       key={skill.id}
       title={skill.name}
       className="bg-secondary p-3"
-      description={
+      description={<SkillCategoryBadge category={skill.category} />}
+      action={
         <>
-          <Badge variant="" className="mt-1">
-            {skill.category}
-          </Badge>
+          <Button variant="destructive" size="icon">
+            <TrashIcon />
+          </Button>
         </>
       }
-      action={<></>}
     />
   );
 }
