@@ -16,15 +16,15 @@ const MAX_CATEGORIES = 8;
 const ITEMS_PER_PAGE = 12;
 
 export default function SkillsTab() {
-  const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCat, setSelectedCat] = useState<string>("ALL");
+  const [categories, setCategories] = useState<SkillCategory[]>([]);
+  const [selectedCatId, setSelectedCatId] = useState<number | "ALL">("ALL");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
   const [skillSheetOpen, setSkillSheetOpen] = useState(false);
   const [catSheetOpen, setCatSheetOpen] = useState(false);
   const [newSkillName, setNewSkillName] = useState("");
-  const [newSkillCat, setNewSkillCat] = useState("");
+  const [newSkillCatId, setNewSkillCatId] = useState<number | "">("");
   const [newCatName, setNewCatName] = useState("");
 
   const { data: categoriesData, isLoading: catLoading } = useGetSkillCategories();
@@ -32,22 +32,22 @@ export default function SkillsTab() {
     page,
     per_page: ITEMS_PER_PAGE,
     search: search || undefined,
-    filters: selectedCat !== "ALL" ? [{ field: "category", value: selectedCat }] : undefined,
+    filters: selectedCatId !== "ALL" ? [{ field: "category_id", value: selectedCatId }] : undefined,
   });
 
   const list: Skill[] = skillsData?.data ?? [];
-  const totalPages = skillsData?.meta.last_page ?? 1;
+  const totalPages = skillsData?.last_page ?? 1;
 
   useEffect(() => {
     if (categoriesData) {
-      setCategories(categoriesData.map((c) => c.name));
-      setNewSkillCat((prev) => prev || categoriesData[0]?.name || "");
+      setCategories(categoriesData);
+      setNewSkillCatId((prev) => prev || categoriesData[0]?.id || "");
     }
   }, [categoriesData]);
 
   useEffect(() => {
     setPage(1);
-  }, [search, selectedCat]);
+  }, [search, selectedCatId]);
 
   function handleAddSkill() {
     if (!newSkillName.trim()) return;
@@ -58,17 +58,15 @@ export default function SkillsTab() {
 
   function addCategory() {
     const name = newCatName.trim().toUpperCase();
-    if (!name || categories.includes(name) || categories.length >= MAX_CATEGORIES) return;
-    setCategories([...categories, name]);
+    if (!name || categories.some((c) => c.name === name) || categories.length >= MAX_CATEGORIES) return;
+    // TODO: POST /api/skill-categories
     setNewCatName("");
     setCatSheetOpen(false);
   }
 
-  function deleteCategory(cat: string) {
-    const hasSkills = list.some((s) => s.category.name === cat);
-    if (hasSkills) return;
-    setCategories(categories.filter((c) => c !== cat));
-    if (selectedCat === cat) setSelectedCat("ALL");
+  function deleteCategory(cat: SkillCategory) {
+    if (selectedCatId === cat.id) setSelectedCatId("ALL");
+    // TODO: DELETE /api/skill-categories/:id
   }
 
   const hasFilter = !!search;
@@ -94,10 +92,10 @@ export default function SkillsTab() {
         >
           <div className="flex flex-col mt-3" style={{ minHeight: "440px" }}>
             <button
-              onClick={() => setSelectedCat("ALL")}
+              onClick={() => setSelectedCatId("ALL")}
               className={cn(
                 "flex items-center justify-between rounded-lg px-2.5 py-2 text-[12px] font-semibold mb-1 transition-colors",
-                selectedCat === "ALL"
+                selectedCatId === "ALL"
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
               )}
@@ -106,10 +104,10 @@ export default function SkillsTab() {
               <span
                 className={cn(
                   "text-[11px] font-bold tabular-nums",
-                  selectedCat === "ALL" ? "text-primary" : "text-muted-foreground/50",
+                  selectedCatId === "ALL" ? "text-primary" : "text-muted-foreground/50",
                 )}
               >
-                {selectedCat === "ALL" ? totalCount : ""}
+                {selectedCatId === "ALL" ? totalCount : ""}
               </span>
             </button>
 
@@ -125,12 +123,12 @@ export default function SkillsTab() {
                     </div>
                   ))
                 : categories.map((cat) => {
-                    const isActive = selectedCat === cat;
+                    const isActive = selectedCatId === cat.id;
                     const count = isActive ? totalCount : null;
                     return (
                       <div
-                        key={cat}
-                        onClick={() => setSelectedCat(cat)}
+                        key={cat.id}
+                        onClick={() => setSelectedCatId(cat.id)}
                         className={cn(
                           "group flex items-center gap-2 rounded-lg px-2.5 py-2 cursor-pointer transition-colors",
                           isActive ? "bg-primary/10" : "hover:bg-muted/50",
@@ -143,32 +141,21 @@ export default function SkillsTab() {
                               isActive ? "text-primary" : "text-foreground",
                             )}
                           >
-                            {cat}
+                            {cat.name}
                           </p>
-                          <p className="text-[10px] text-muted-foreground/50">
-                            {count} skill{count !== 1 ? "s" : ""}
+                          <p className="text-[11px] text-secondary-foreground/60 truncate">
+                            {`${cat.skills_count} skill${cat.skills_count !== 1 ? "s" : ""}`}
                           </p>
                         </div>
-                        {count === 0 ? (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteCategory(cat);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:text-rose-500 hover:bg-rose-50 transition-all text-muted-foreground/40 shrink-0"
-                          >
-                            <X className="size-3" />
-                          </button>
-                        ) : (
-                          <span
-                            className={cn(
-                              "text-[10px] font-bold tabular-nums shrink-0",
-                              isActive ? "text-primary" : "text-muted-foreground/40",
-                            )}
-                          >
-                            {count}
-                          </span>
-                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteCategory(cat);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:text-rose-500 hover:bg-rose-50 transition-all text-muted-foreground/40 shrink-0"
+                        >
+                          <X className="size-3" />
+                        </button>
                       </div>
                     );
                   })}
@@ -189,15 +176,12 @@ export default function SkillsTab() {
 
         {/* Right — Skills grid */}
         <ComposedCard
-          title={(selectedCat === "ALL" ? "All skills" : `${selectedCat} skills`) + ` (${skillsData?.meta.total})`}
+          title={selectedCatId === "ALL" ? "All skills" : (categories.find((c) => c.id === selectedCatId)?.name ?? "")}
           className="flex-1"
           action={
             <div className="flex items-center gap-2">
               <SearchBar value={search} onChange={setSearch} />
-              <Button
-                onClick={() => setSkillSheetOpen(true)}
-                className="gap-1.5 h-9 px-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl text-[13px] font-medium shadow-sm shadow-primary/10 shrink-0"
-              >
+              <Button onClick={() => setSkillSheetOpen(true)}>
                 <Plus className="size-4" />
                 Add Skill
               </Button>
@@ -273,12 +257,14 @@ export default function SkillsTab() {
           <div className="space-y-1.5">
             <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Category</label>
             <select
-              value={newSkillCat}
-              onChange={(e) => setNewSkillCat(e.target.value)}
+              value={newSkillCatId}
+              onChange={(e) => setNewSkillCatId(Number(e.target.value))}
               className={cn(fieldCls, "cursor-pointer")}
             >
               {categories.map((c) => (
-                <option key={c}>{c}</option>
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
               ))}
             </select>
           </div>
@@ -299,7 +285,7 @@ export default function SkillsTab() {
             </Button>
             <Button
               onClick={addCategory}
-              disabled={!newCatName.trim() || categories.includes(newCatName.trim().toUpperCase())}
+              disabled={!newCatName.trim() || categories.some((c) => c.name === newCatName.trim().toUpperCase())}
               className="flex-1 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Add Category
@@ -341,10 +327,10 @@ export default function SkillsTab() {
             <div className="flex flex-wrap gap-1.5">
               {categories.map((cat) => (
                 <span
-                  key={cat}
+                  key={cat.id}
                   className="text-[11px] font-semibold bg-muted/50 text-muted-foreground rounded-full px-2.5 py-1"
                 >
-                  {cat}
+                  {cat.name}
                 </span>
               ))}
             </div>
