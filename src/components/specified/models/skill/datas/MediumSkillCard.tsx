@@ -14,8 +14,12 @@ export default function MediumSkillCard({ skill, searchTerm = "" }: MediumSkillC
   return (
     <SecondaryCard
       key={skill.id}
-      title={<HighlightMatch text={skill.name} searchTerm={searchTerm} />}
-      className="bg-secondary p-3"
+      title={
+        <span className="font-semibold">
+          <HighlightMatch text={skill.name} searchTerm={searchTerm} />
+        </span>
+      }
+      className="bg-tertiary p-3"
       description={<SkillCategoryBadge category={skill.category} />}
       action={
         <Button variant="destructive" size="icon">

@@ -32,6 +32,7 @@ export default function SmallSkillCategoryCard({
 }: SmallSkillCategoryCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(category.name);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { mutate: deleteCategory, isPending: isDeleting } = useDeleteSkillCategory();
@@ -63,8 +64,8 @@ export default function SmallSkillCategoryCard({
     <div
       onClick={isEditing ? undefined : onSelect}
       className={cn(
-        "group flex items-center gap-2 rounded-lg px-2.5 py-2 transition-colors",
-        isEditing ? "bg-muted/60" : cn("cursor-pointer", isActive ? "bg-primary/10" : "hover:bg-muted/50"),
+        "group flex items-center gap-2 rounded-lg px-2.5 py-2 transition-colors bg-tertiary cursor-pointer",
+        isActive && "bg-primary/10",
       )}
     >
       <div className="flex-1 min-w-0">
@@ -82,7 +83,7 @@ export default function SmallSkillCategoryCard({
             }}
             onClick={(e) => e.stopPropagation()}
             disabled={isUpdating}
-            className="w-full text-[12px] font-semibold bg-transparent border-b border-primary/40 focus:outline-none text-foreground"
+            className="w-full text-[13px] font-semibold bg-transparent border-b border-primary/40 focus:outline-none text-foreground"
           />
         ) : (
           <p className={cn("text-[13px] font-semibold truncate", isActive ? "text-primary" : "text-foreground")}>
@@ -104,7 +105,7 @@ export default function SmallSkillCategoryCard({
               handleConfirmEdit();
             }}
             disabled={isUpdating}
-            className="text-muted-foreground/60 hover:text-emerald-600 hover:bg-emerald-50"
+            className="text-muted-foreground hover:text-primary hover:bg-primary/10"
           >
             {isUpdating ? <Loader2 className="animate-spin" /> : <Check />}
           </Button>
@@ -113,7 +114,7 @@ export default function SmallSkillCategoryCard({
             size="icon-sm"
             onClick={handleCancelEdit}
             disabled={isUpdating}
-            className="text-muted-foreground/40 hover:text-rose-500 hover:bg-rose-50"
+            className="text-muted-foreground hover:text-destructive-foreground hover:bg-destructive"
           >
             <X />
           </Button>
@@ -124,18 +125,18 @@ export default function SmallSkillCategoryCard({
             variant="ghost"
             size="icon-sm"
             onClick={handleStartEdit}
-            className="text-muted-foreground/40 hover:text-primary hover:bg-primary/10"
+            className="text-muted-foreground hover:text-primary hover:bg-primary/10"
           >
             <Pencil className="size-3.5" />
           </Button>
-          <AlertDialog>
+          <AlertDialog open={deleteOpen} onOpenChange={(v) => !isDeleting && setDeleteOpen(v)}>
             <AlertDialogTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon-sm"
                 onClick={(e) => e.stopPropagation()}
                 disabled={isDeleting}
-                className="text-muted-foreground/40 hover:text-rose-500 hover:bg-rose-50"
+                className="text-muted-foreground hover:text-destructive-foreground hover:bg-destructive"
               >
                 <Trash2 className="size-3.5" />
               </Button>
@@ -148,12 +149,28 @@ export default function SmallSkillCategoryCard({
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={() => deleteCategory(category.id, { onSuccess: onDeleted })}
+                  disabled={isDeleting}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    deleteCategory(category.id, {
+                      onSuccess: () => {
+                        setDeleteOpen(false);
+                        onDeleted?.();
+                      },
+                    });
+                  }}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  Delete
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                      Deleting…
+                    </>
+                  ) : (
+                    "Delete"
+                  )}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

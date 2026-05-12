@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import usePrivateApi from "@/api/privateApi";
 
 export default function useCreateSkill() {
@@ -8,9 +9,13 @@ export default function useCreateSkill() {
   return useMutation({
     mutationFn: ({ name, skill_category_id }: CreateSkillRequest) =>
       privateApi.post("/api/skills", { name, skill_category_id }),
-    onSuccess: () => {
+    onSuccess: (_, { name }) => {
       queryClient.invalidateQueries({ queryKey: ["skills"] });
       queryClient.invalidateQueries({ queryKey: ["skill-categories"] });
+      toast.success(`Skill "${name}" created.`);
+    },
+    onError: () => {
+      toast.error("Failed to create skill.");
     },
   });
 }

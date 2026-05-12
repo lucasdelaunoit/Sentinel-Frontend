@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import usePrivateApi from "@/api/privateApi";
 
 export default function useDeleteSkillCategory() {
@@ -10,6 +11,10 @@ export default function useDeleteSkillCategory() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["skill-categories"] });
       queryClient.invalidateQueries({ queryKey: ["skills"] });
+      toast.success("Category deleted.");
+    },
+    onError: () => {
+      toast.error("Failed to delete category.");
     },
   });
 }

@@ -38,6 +38,10 @@
     --color-secondary: var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
 
+    /* Tertiary */
+    --color-tertiary: var(--tertiary);
+    --color-tertiary-foreground: var(--tertiary-foreground);
+
     /* Muted */
     --color-muted: var(--muted);
     --color-muted-foreground: var(--muted-foreground);
@@ -114,6 +118,9 @@
 
     --secondary: #fafaf9;
     --secondary-foreground: #2e2b29;
+
+    --tertiary: rgba(231, 229, 228, 0.3);
+    --tertiary-foreground: #57534e;
 
     --muted: #fafaf9;
     --muted-foreground: #78716c;

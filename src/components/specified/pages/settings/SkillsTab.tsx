@@ -18,7 +18,6 @@ const MAX_CATEGORIES = 8;
 const ITEMS_PER_PAGE = 12;
 
 export default function SkillsTab() {
-  const [categories, setCategories] = useState<SkillCategory[]>([]);
   const [selectedCatId, setSelectedCatId] = useState<number | "ALL">("ALL");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -34,14 +33,9 @@ export default function SkillsTab() {
     filters: selectedCatId !== "ALL" ? [{ field: "category_id", value: selectedCatId }] : undefined,
   });
 
+  const categories: SkillCategory[] = categoriesData ?? [];
   const list: Skill[] = skillsData?.data ?? [];
   const totalPages = skillsData?.last_page ?? 1;
-
-  useEffect(() => {
-    if (categoriesData) {
-      setCategories(categoriesData);
-    }
-  }, [categoriesData]);
 
   useEffect(() => {
     setPage(1);
@@ -73,20 +67,18 @@ export default function SkillsTab() {
             </div>
           }
         >
-          <div className="flex flex-col" style={{ minHeight: "440px" }}>
+          <div className="flex flex-col mb-2" style={{ minHeight: "440px" }}>
             <button
               onClick={() => setSelectedCatId("ALL")}
               className={cn(
-                "flex items-center justify-between rounded-lg px-2.5 py-2 text-[13px] font-semibold mb-1 transition-colors",
-                selectedCatId === "ALL"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+                "flex items-center justify-between rounded-lg px-2.5 py-2 text-[13px] cursor-pointer font-semibold mb-1 transition-colors bg-tertiary",
+                selectedCatId === "ALL" ? "bg-primary/10 text-primary" : "hover:text-foreground",
               )}
             >
               All skills
             </button>
 
-            <div className="flex-1 overflow-y-auto space-y-0.5">
+            <div className="flex-1 overflow-y-auto space-y-1">
               {catLoading
                 ? Array.from({ length: 5 }).map((_, i) => <SmallSkillCategoryCard.Skeleton key={i} />)
                 : categories.map((cat) => (
