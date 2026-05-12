@@ -1,21 +1,23 @@
 import { cn } from "@/lib/utils.ts";
+import type { PropsWithChildren } from "react";
 
-interface SecondaryButtonProps {
-  label?: string;
+interface SecondaryButtonProps extends PropsWithChildren {
   onClick?: () => void;
   className?: string;
+  disabled?: boolean;
 }
 
-export function SecondaryButton({ label = "View all →", onClick, className }: SecondaryButtonProps) {
+export function SecondaryButton({ children, onClick, className, disabled }: SecondaryButtonProps) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        "w-full py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer",
+        "flex justify-center items-center gap-1 w-full py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer",
         className,
       )}
+      disabled={disabled}
     >
-      {label}
+      {children}
     </button>
   );
 }
