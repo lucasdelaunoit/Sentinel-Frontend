@@ -1554,7 +1554,7 @@ export default function Settings() {
             <OrganizationTab settings={orgSettings} onSave={setOrgSettings} />
           </TabsContent>
           <TabsContent value="skills" className="mt-5">
-            <SkillsTab skills={skills} onSave={setSkills} />
+            <SkillsTab />
           </TabsContent>
           <TabsContent value="rules" className="mt-5">
             <RulesTab rules={rules} onSave={setRules} />

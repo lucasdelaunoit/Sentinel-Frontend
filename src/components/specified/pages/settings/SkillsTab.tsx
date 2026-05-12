@@ -1,34 +1,20 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, X, Layers, AlertTriangle, Zap } from "lucide-react";
+import { Plus, X, Layers, AlertTriangle } from "lucide-react";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useGetSkillCategories from "@/hooks/useGetSkillCategories";
+import useGetSkills from "@/api/skills/useGetSkills.ts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SecondaryButton } from "@/components/common/buttons/SecondaryButton.tsx";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import MediumSkillCard from "@/components/specified/models/skill/datas/MediumSkillCard.tsx";
 
-interface SkillDefinition {
-  id: string;
-  name: string;
-  category: string;
-}
-
-export default function SkillsTab({
-  skills: initialSkills,
-  onSave,
-}: {
-  skills: SkillDefinition[];
-  onSave: (s: SkillDefinition[]) => void;
-}) {
+export default function SkillsTab() {
   const MAX_CATEGORIES = 8;
   const ITEMS_PER_PAGE = 12;
 
-  const { data: categoriesData, isLoading: catLoading } = useGetSkillCategories();
-
-  const [list, setList] = useState(initialSkills);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCat, setSelectedCat] = useState<string>("ALL");
   const [search, setSearch] = useState("");
@@ -36,16 +22,25 @@ export default function SkillsTab({
 
   const [skillSheetOpen, setSkillSheetOpen] = useState(false);
   const [catSheetOpen, setCatSheetOpen] = useState(false);
-  const [newSkill, setNewSkill] = useState<Partial<SkillDefinition>>({
-    name: "",
-    category: "",
-  });
+  const [newSkillName, setNewSkillName] = useState("");
+  const [newSkillCat, setNewSkillCat] = useState("");
   const [newCatName, setNewCatName] = useState("");
+
+  const { data: categoriesData, isLoading: catLoading } = useGetSkillCategories();
+  const { data: skillsData, isLoading: skillsLoading } = useGetSkills({
+    page,
+    per_page: ITEMS_PER_PAGE,
+    search: search || undefined,
+    filters: selectedCat !== "ALL" ? [{ field: "category", value: selectedCat }] : undefined,
+  });
+
+  const list: Skill[] = skillsData?.data ?? [];
+  const totalPages = skillsData?.last_page ?? 1;
 
   useEffect(() => {
     if (categoriesData) {
       setCategories(categoriesData.map((c) => c.name));
-      setNewSkill((prev) => ({ ...prev, category: prev.category || categoriesData[0]?.name || "" }));
+      setNewSkillCat((prev) => prev || categoriesData[0]?.name || "");
     }
   }, [categoriesData]);
 
@@ -53,23 +48,10 @@ export default function SkillsTab({
     setPage(1);
   }, [search, selectedCat]);
 
-  function handleDelete(id: string) {
-    const updated = list.filter((s) => s.id !== id);
-    setList(updated);
-    onSave(updated);
-  }
-
   function handleAddSkill() {
-    if (!newSkill.name?.trim()) return;
-    const skill: SkillDefinition = {
-      id: `s${Date.now()}`,
-      name: newSkill.name.trim(),
-      category: newSkill.category ?? categories[0],
-    };
-    const updated = [...list, skill];
-    setList(updated);
-    onSave(updated);
-    setNewSkill({ name: "", category: categories[0] });
+    if (!newSkillName.trim()) return;
+    // TODO: POST /api/skills
+    setNewSkillName("");
     setSkillSheetOpen(false);
   }
 
@@ -82,21 +64,14 @@ export default function SkillsTab({
   }
 
   function deleteCategory(cat: string) {
-    if (list.some((s) => s.category === cat)) return;
+    const hasSkills = list.some((s) => s.category.name === cat);
+    if (hasSkills) return;
     setCategories(categories.filter((c) => c !== cat));
     if (selectedCat === cat) setSelectedCat("ALL");
   }
 
-  const filtered = list.filter((s) => {
-    const matchCat = selectedCat === "ALL" || s.category === selectedCat;
-    const matchSearch = !search || s.name.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchSearch;
-  });
-
   const hasFilter = !!search;
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-  const catSkillCount = selectedCat === "ALL" ? list.length : list.filter((s) => s.category === selectedCat).length;
+  const totalCount = skillsData?.total ?? 0;
 
   const fieldCls =
     "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
@@ -133,7 +108,7 @@ export default function SkillsTab({
                   selectedCat === "ALL" ? "text-primary" : "text-muted-foreground/50",
                 )}
               >
-                {list.length}
+                {selectedCat === "ALL" ? totalCount : ""}
               </span>
             </button>
 
@@ -149,8 +124,8 @@ export default function SkillsTab({
                     </div>
                   ))
                 : categories.map((cat) => {
-                    const count = list.filter((s) => s.category === cat).length;
                     const isActive = selectedCat === cat;
+                    const count = isActive ? totalCount : null;
                     return (
                       <div
                         key={cat}
@@ -232,7 +207,7 @@ export default function SkillsTab({
             {hasFilter && (
               <div className="flex items-center gap-2">
                 <span className="text-[12px] text-muted-foreground">
-                  {filtered.length} of {catSkillCount} skill{catSkillCount !== 1 ? "s" : ""}
+                  {totalCount} skill{totalCount !== 1 ? "s" : ""}
                 </span>
                 <button onClick={() => setSearch("")} className="text-[11px] text-primary hover:underline">
                   Clear filters
@@ -240,7 +215,22 @@ export default function SkillsTab({
               </div>
             )}
 
-            {paginated.length === 0 ? (
+            {skillsLoading ? (
+              <div className="grid grid-cols-2 gap-3">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl border border-border/60 bg-background p-3.5 flex items-center gap-3"
+                  >
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-3.5 w-24 rounded" />
+                      <Skeleton className="h-2.5 w-16 rounded-full" />
+                    </div>
+                    <Skeleton className="size-7 rounded-lg shrink-0" />
+                  </div>
+                ))}
+              </div>
+            ) : list.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-48 text-muted-foreground gap-2">
                 <p className="text-[13px] font-medium">No skills</p>
                 {hasFilter && (
@@ -251,8 +241,8 @@ export default function SkillsTab({
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
-                {paginated.map((skill) => (
-                  <MediumSkillCard skill={skill} />
+                {list.map((skill) => (
+                  <MediumSkillCard key={skill.id} skill={skill} />
                 ))}
               </div>
             )}
@@ -308,7 +298,7 @@ export default function SkillsTab({
             </Button>
             <Button
               onClick={handleAddSkill}
-              disabled={!newSkill.name?.trim()}
+              disabled={!newSkillName.trim()}
               className="flex-1 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Add Skill
@@ -324,8 +314,8 @@ export default function SkillsTab({
             <input
               type="text"
               placeholder="e.g. React, AWS, PostgreSQL"
-              value={newSkill.name}
-              onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
+              value={newSkillName}
+              onChange={(e) => setNewSkillName(e.target.value)}
               autoFocus
               className={fieldCls}
             />
@@ -333,8 +323,8 @@ export default function SkillsTab({
           <div className="space-y-1.5">
             <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Category</label>
             <select
-              value={newSkill.category}
-              onChange={(e) => setNewSkill({ ...newSkill, category: e.target.value })}
+              value={newSkillCat}
+              onChange={(e) => setNewSkillCat(e.target.value)}
               className={cn(fieldCls, "cursor-pointer")}
             >
               {categories.map((c) => (
