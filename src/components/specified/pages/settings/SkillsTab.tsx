@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import DataPagination from "@/components/common/pagination/DataPagination";
 import { Plus, X, Layers, AlertTriangle } from "lucide-react";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
@@ -35,7 +36,7 @@ export default function SkillsTab() {
   });
 
   const list: Skill[] = skillsData?.data ?? [];
-  const totalPages = skillsData?.last_page ?? 1;
+  const totalPages = skillsData?.meta.last_page ?? 1;
 
   useEffect(() => {
     if (categoriesData) {
@@ -238,40 +239,9 @@ export default function SkillsTab() {
               </div>
             )}
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-3 border-t border-border/40">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="text-[12px] font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-2 py-1 rounded-lg hover:bg-muted/50"
-                >
-                  Previous
-                </button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      className={cn(
-                        "size-7 rounded-lg text-[12px] font-medium transition-colors",
-                        p === page
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
-                      )}
-                    >
-                      {p}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="text-[12px] font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors px-2 py-1 rounded-lg hover:bg-muted/50"
-                >
-                  Next
-                </button>
-              </div>
-            )}
+            <div className="pt-3 border-t border-border/40">
+              <DataPagination page={page} totalPages={totalPages} onPageChange={setPage} />
+            </div>
           </div>
         </ComposedCard>
       </div>
