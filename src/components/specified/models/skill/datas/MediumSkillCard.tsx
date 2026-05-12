@@ -5,17 +5,7 @@ import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import SkillCategoryBadge from "@/components/specified/models/skill/badges/SkillCategoryBadge.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog.tsx";
+import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
 import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
 import useDeleteSkill from "@/api/skills/useDeleteSkill.ts";
 
@@ -40,46 +30,29 @@ export default function MediumSkillCard({ skill, searchTerm = "", onDeleted }: M
       className="bg-tertiary p-3"
       description={<SkillCategoryBadge category={skill.category} />}
       action={
-        <AlertDialog open={deleteOpen} onOpenChange={(v) => !isDeleting && setDeleteOpen(v)}>
-          <AlertDialogTrigger asChild>
+        <ComposedAlertDialog
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          trigger={
             <Button variant="destructive" size="icon" disabled={isDeleting}>
               {isDeleting ? <Loader2 className="animate-spin" /> : <TrashIcon />}
             </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete skill "{skill.name}"?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently delete the skill. Employees assigned to it will lose this skill.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                disabled={isDeleting}
-                onClick={(e) => {
-                  e.preventDefault();
-                  deleteSkill(skill.id, {
-                    onSuccess: () => {
-                      setDeleteOpen(false);
-                      onDeleted?.();
-                    },
-                  });
-                }}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {isDeleting ? (
-                  <>
-                    <Loader2 className="animate-spin" />
-                    Deleting…
-                  </>
-                ) : (
-                  "Delete"
-                )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          }
+          title={`Delete skill "${skill.name}"?`}
+          description="This will permanently delete the skill. Employees assigned to it will lose this skill."
+          confirmLabel="Delete"
+          pendingLabel="Deleting…"
+          isPending={isDeleting}
+          variant="destructive"
+          onConfirm={() =>
+            deleteSkill(skill.id, {
+              onSuccess: () => {
+                setDeleteOpen(false);
+                onDeleted?.();
+              },
+            })
+          }
+        />
       }
     />
   );

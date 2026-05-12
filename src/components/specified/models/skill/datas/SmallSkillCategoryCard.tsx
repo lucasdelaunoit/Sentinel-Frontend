@@ -3,17 +3,7 @@ import { Check, Loader2, Pencil, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog.tsx";
+import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
 import useDeleteSkillCategory from "@/api/skill-categories/useDeleteSkillCategory.ts";
 import useUpdateSkillCategory from "@/api/skill-categories/useUpdateSkillCategory.ts";
 
@@ -129,8 +119,10 @@ export default function SmallSkillCategoryCard({
           >
             <Pencil className="size-3.5" />
           </Button>
-          <AlertDialog open={deleteOpen} onOpenChange={(v) => !isDeleting && setDeleteOpen(v)}>
-            <AlertDialogTrigger asChild>
+          <ComposedAlertDialog
+            open={deleteOpen}
+            onOpenChange={setDeleteOpen}
+            trigger={
               <Button
                 variant="ghost"
                 size="icon-sm"
@@ -140,41 +132,22 @@ export default function SmallSkillCategoryCard({
               >
                 <Trash2 className="size-3.5" />
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete category "{category.name}"?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently delete the category. Skills assigned to it will lose their category.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  disabled={isDeleting}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    deleteCategory(category.id, {
-                      onSuccess: () => {
-                        setDeleteOpen(false);
-                        onDeleted?.();
-                      },
-                    });
-                  }}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                >
-                  {isDeleting ? (
-                    <>
-                      <Loader2 className="animate-spin" />
-                      Deleting…
-                    </>
-                  ) : (
-                    "Delete"
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            }
+            title={`Delete category "${category.name}"?`}
+            description="This will permanently delete the category. Skills assigned to it will lose their category."
+            confirmLabel="Delete"
+            pendingLabel="Deleting…"
+            isPending={isDeleting}
+            variant="destructive"
+            onConfirm={() =>
+              deleteCategory(category.id, {
+                onSuccess: () => {
+                  setDeleteOpen(false);
+                  onDeleted?.();
+                },
+              })
+            }
+          />
         </div>
       )}
     </div>
@@ -183,12 +156,11 @@ export default function SmallSkillCategoryCard({
 
 SmallSkillCategoryCard.Skeleton = function SmallSkillCategoryCardSkeleton() {
   return (
-    <div className="flex items-center gap-2 px-2.5 py-2">
-      <div className="flex-1 space-y-1">
-        <Skeleton className="h-3 w-20 rounded" />
-        <Skeleton className="h-2 w-12 rounded" />
+    <div className="flex items-center gap-2 rounded-lg bg-tertiary px-2.5 py-2">
+      <div className="flex-1 min-w-0 space-y-1.5">
+        <Skeleton className="h-4 w-28 rounded" />
+        <Skeleton className="h-3.5 w-14 rounded" />
       </div>
-      <Skeleton className="h-3 w-4 rounded" />
     </div>
   );
 };
