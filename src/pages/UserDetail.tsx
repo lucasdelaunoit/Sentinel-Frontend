@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { usePage } from "@/context/PageContext";
 import { Plus, Eye } from "lucide-react";
+import { SquaresFourIcon, FolderIcon, CertificateIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,6 +21,7 @@ import useGetUserStats from "@/api/users/useGetUserStats";
 import type { UserSkillDetail } from "@/types/dashboard";
 import UserProfileCard from "@/components/specified/pages/user/UserProfileCard.tsx";
 import UserStatsSection from "@/components/specified/pages/user/UserStatsSection.tsx";
+import UserOverviewTab from "@/components/specified/pages/user/UserOverviewTab.tsx";
 
 /* ─── Types ───────────────────────────────────────────────── */
 
@@ -189,64 +191,6 @@ function SkillBarSkeleton() {
         <Skeleton className="h-3 w-20" />
       </div>
       <Skeleton className="h-1.5 w-full rounded-sm" />
-    </div>
-  );
-}
-
-/* ─── Overview Tab ────────────────────────────────────────── */
-
-function OverviewTab({ userId }: { userId: string }) {
-  const { data: projectsData, isLoading: projectsLoading } = useGetUserProjects(userId, {
-    per_page: 5,
-  });
-  const { data: skillsData, isLoading: skillsLoading } = useGetSkillsForUser(userId);
-
-  const projects = projectsData?.data ?? [];
-  const topSkills = [...(skillsData?.data ?? [])].sort((a, b) => b.pivot.level - a.pivot.level).slice(0, 6);
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <ComposedCard title="Projects" headerClassName="mb-4">
-        <div className="space-y-2.5">
-          {projectsLoading ? (
-            Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-[52px] rounded-xl" />)
-          ) : projects.length === 0 ? (
-            <p className="text-[13px] text-muted-foreground text-center py-8">No projects assigned</p>
-          ) : (
-            projects.map((proj) => (
-              <div
-                key={proj.id}
-                className="flex items-center justify-between rounded-xl border border-border/60 p-3 hover:bg-muted/20 transition-colors"
-              >
-                <div>
-                  <p className="text-[12px] font-semibold text-foreground">{proj.name}</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">{proj.role}</p>
-                </div>
-                <span
-                  className={cn(
-                    "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                    STATUS_STYLES[proj.status],
-                  )}
-                >
-                  {STATUS_LABELS[proj.status]}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-      </ComposedCard>
-
-      <ComposedCard title="Top Skills" headerClassName="mb-4">
-        <div className="space-y-3.5">
-          {skillsLoading ? (
-            Array.from({ length: 4 }).map((_, i) => <SkillBarSkeleton key={i} />)
-          ) : topSkills.length === 0 ? (
-            <p className="text-[13px] text-muted-foreground text-center py-8">No skills recorded</p>
-          ) : (
-            topSkills.map((skill) => <SkillBar key={skill.id} name={skill.name} level={skill.pivot.level} />)
-          )}
-        </div>
-      </ComposedCard>
     </div>
   );
 }
@@ -582,12 +526,21 @@ export default function UserDetail() {
         {id && (
           <Tabs defaultValue="overview">
             <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="projects">Projects</TabsTrigger>
-              <TabsTrigger value="skills">Skills</TabsTrigger>
+              <TabsTrigger value="overview">
+                <SquaresFourIcon className="size-4" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="projects">
+                <FolderIcon className="size-4" />
+                Projects
+              </TabsTrigger>
+              <TabsTrigger value="skills">
+                <CertificateIcon className="size-4" />
+                Skills
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="overview">
-              <OverviewTab userId={id} />
+              <UserOverviewTab userId={id} />
             </TabsContent>
             <TabsContent value="projects">
               <ProjectsTab userId={id} />

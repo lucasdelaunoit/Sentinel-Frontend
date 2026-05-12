@@ -284,6 +284,23 @@ export interface UserStats {
   active_projects: UserStatsActiveProjects
 }
 
+/* ── User absences (GET /users/:id/absences) ─────────────── */
+
+export type AbsenceType = 'vacation' | 'sick' | 'conference'
+export type AbsenceStatus = 'approved' | 'pending' | 'rejected'
+
+export interface AbsenceItem {
+  id: number
+  user_id: number
+  type: AbsenceType
+  start_date: string
+  end_date: string
+  status: AbsenceStatus
+  reason?: string | null
+  created_at: string
+  updated_at: string
+}
+
 /* ── Root response ───────────────────────────────────────── */
 
 export interface DashboardStats {
