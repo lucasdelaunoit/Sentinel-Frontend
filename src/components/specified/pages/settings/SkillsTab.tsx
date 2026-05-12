@@ -1,29 +1,20 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Plus, Trash2, X, Layers, AlertTriangle, Search } from "lucide-react";
+import { Plus, Trash2, X, Layers, AlertTriangle, Zap } from "lucide-react";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useGetSkillCategories from "@/hooks/useGetSkillCategories";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SecondaryButton } from "@/components/common/buttons/SecondaryButton.tsx";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
+import MediumSkillCard from "@/components/specified/models/skill/datas/MediumSkillCard.tsx";
 
 interface SkillDefinition {
   id: string;
   name: string;
   category: string;
-  description: string;
-  criticality: "low" | "medium" | "high" | "critical";
-  minRedundancy: number;
 }
-
-const SKILL_CRITICALITY_STYLES = {
-  low: { dot: "bg-slate-400", pill: "bg-slate-100 text-slate-600 border border-slate-200" },
-  medium: { dot: "bg-blue-400", pill: "bg-blue-50 text-blue-700 border border-blue-200" },
-  high: { dot: "bg-amber-400", pill: "bg-amber-50 text-amber-700 border border-amber-200" },
-  critical: { dot: "bg-rose-500", pill: "bg-rose-50 text-rose-700 border border-rose-200" },
-};
 
 export default function SkillsTab({
   skills: initialSkills,
@@ -41,7 +32,6 @@ export default function SkillsTab({
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCat, setSelectedCat] = useState<string>("ALL");
   const [search, setSearch] = useState("");
-  const [critFilter, setCritFilter] = useState<SkillDefinition["criticality"] | "all">("all");
   const [page, setPage] = useState(1);
 
   const [skillSheetOpen, setSkillSheetOpen] = useState(false);
@@ -49,9 +39,6 @@ export default function SkillsTab({
   const [newSkill, setNewSkill] = useState<Partial<SkillDefinition>>({
     name: "",
     category: "",
-    description: "",
-    criticality: "medium",
-    minRedundancy: 2,
   });
   const [newCatName, setNewCatName] = useState("");
 
@@ -64,7 +51,7 @@ export default function SkillsTab({
 
   useEffect(() => {
     setPage(1);
-  }, [search, critFilter, selectedCat]);
+  }, [search, selectedCat]);
 
   function handleDelete(id: string) {
     const updated = list.filter((s) => s.id !== id);
@@ -78,14 +65,11 @@ export default function SkillsTab({
       id: `s${Date.now()}`,
       name: newSkill.name.trim(),
       category: newSkill.category ?? categories[0],
-      description: newSkill.description || "",
-      criticality: (newSkill.criticality ?? "medium") as SkillDefinition["criticality"],
-      minRedundancy: newSkill.minRedundancy ?? 2,
     };
     const updated = [...list, skill];
     setList(updated);
     onSave(updated);
-    setNewSkill({ name: "", category: categories[0], description: "", criticality: "medium", minRedundancy: 2 });
+    setNewSkill({ name: "", category: categories[0] });
     setSkillSheetOpen(false);
   }
 
@@ -105,15 +89,11 @@ export default function SkillsTab({
 
   const filtered = list.filter((s) => {
     const matchCat = selectedCat === "ALL" || s.category === selectedCat;
-    const matchSearch =
-      !search ||
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.description.toLowerCase().includes(search.toLowerCase());
-    const matchCrit = critFilter === "all" || s.criticality === critFilter;
-    return matchCat && matchSearch && matchCrit;
+    const matchSearch = !search || s.name.toLowerCase().includes(search.toLowerCase());
+    return matchCat && matchSearch;
   });
 
-  const hasFilter = !!search || critFilter !== "all";
+  const hasFilter = !!search;
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
   const catSkillCount = selectedCat === "ALL" ? list.length : list.filter((s) => s.category === selectedCat).length;
@@ -123,7 +103,6 @@ export default function SkillsTab({
 
   return (
     <>
-      {/* Two ComposedCards side by side */}
       <div className="flex gap-4 items-start">
         {/* Left — Categories */}
         <ComposedCard
@@ -239,17 +218,6 @@ export default function SkillsTab({
           action={
             <div className="flex items-center gap-2">
               <SearchBar value={search} onChange={setSearch} />
-              <select
-                value={critFilter}
-                onChange={(e) => setCritFilter(e.target.value as typeof critFilter)}
-                className="h-9 rounded-xl border border-border/60 bg-background px-3 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer w-40"
-              >
-                <option value="all">All criticality</option>
-                <option value="critical">Critical</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
               <Button
                 onClick={() => setSkillSheetOpen(true)}
                 className="gap-1.5 h-9 px-3 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl text-[13px] font-medium shadow-sm shadow-primary/10 shrink-0"
@@ -261,93 +229,34 @@ export default function SkillsTab({
           }
         >
           <div className="mt-4 space-y-4">
-            {/* Filter info */}
             {hasFilter && (
               <div className="flex items-center gap-2">
                 <span className="text-[12px] text-muted-foreground">
                   {filtered.length} of {catSkillCount} skill{catSkillCount !== 1 ? "s" : ""}
                 </span>
-                <button
-                  onClick={() => {
-                    setSearch("");
-                    setCritFilter("all");
-                  }}
-                  className="text-[11px] text-primary hover:underline"
-                >
+                <button onClick={() => setSearch("")} className="text-[11px] text-primary hover:underline">
                   Clear filters
                 </button>
               </div>
             )}
 
-            {/* Grid */}
             {paginated.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-48 text-muted-foreground gap-2">
                 <p className="text-[13px] font-medium">No skills</p>
                 {hasFilter && (
-                  <button
-                    onClick={() => {
-                      setSearch("");
-                      setCritFilter("all");
-                    }}
-                    className="text-[12px] text-primary hover:underline"
-                  >
+                  <button onClick={() => setSearch("")} className="text-[12px] text-primary hover:underline">
                     Clear filters
                   </button>
                 )}
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
-                {paginated.map((skill) => {
-                  const crit = SKILL_CRITICALITY_STYLES[skill.criticality];
-                  return (
-                    <div
-                      key={skill.id}
-                      className="group rounded-xl border border-border/60 bg-background p-3.5 flex items-start gap-2.5 hover:shadow-sm hover:border-border transition-all"
-                    >
-                      <div className={cn("size-2 rounded-full mt-1.5 shrink-0", crit.dot)} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-1">
-                          <p className="text-[13px] font-semibold text-foreground leading-tight truncate">
-                            {skill.name}
-                          </p>
-                          <Button
-                            onClick={() => handleDelete(skill.id)}
-                            size="sm"
-                            variant="ghost"
-                            className="opacity-0 group-hover:opacity-100 h-5 w-5 p-0 -mt-0.5 -mr-0.5 shrink-0 text-muted-foreground/40 hover:text-rose-500 hover:bg-rose-50/50 rounded transition-all"
-                          >
-                            <Trash2 className="size-3" />
-                          </Button>
-                        </div>
-                        {skill.description && (
-                          <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{skill.description}</p>
-                        )}
-                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                          <span
-                            className={cn(
-                              "inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-semibold",
-                              crit.pill,
-                            )}
-                          >
-                            {skill.criticality}
-                          </span>
-                          {selectedCat === "ALL" && (
-                            <span className="text-[9px] font-semibold text-muted-foreground/50 bg-muted/50 rounded px-1.5 py-0.5 uppercase tracking-wide">
-                              {skill.category}
-                            </span>
-                          )}
-                          <span className="text-[9px] text-muted-foreground/40 ml-auto">
-                            Min ×{skill.minRedundancy}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {paginated.map((skill) => (
+                  <MediumSkillCard skill={skill} />
+                ))}
               </div>
             )}
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-between pt-3 border-t border-border/40">
                 <button
@@ -392,7 +301,6 @@ export default function SkillsTab({
         onOpenChange={setSkillSheetOpen}
         title="Add Skill"
         description="Define a new skill for the organizational catalog"
-        icon={<BookOpen className="size-4 text-primary" />}
         footer={
           <>
             <Button variant="outline" onClick={() => setSkillSheetOpen(false)} className="flex-1 rounded-xl">
@@ -433,49 +341,6 @@ export default function SkillsTab({
                 <option key={c}>{c}</option>
               ))}
             </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Criticality
-            </label>
-            <select
-              value={newSkill.criticality}
-              onChange={(e) =>
-                setNewSkill({ ...newSkill, criticality: e.target.value as SkillDefinition["criticality"] })
-              }
-              className={cn(fieldCls, "cursor-pointer")}
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Min Redundancy
-            </label>
-            <input
-              type="number"
-              min={1}
-              max={10}
-              value={newSkill.minRedundancy}
-              onChange={(e) => setNewSkill({ ...newSkill, minRedundancy: parseInt(e.target.value) || 1 })}
-              className={fieldCls}
-            />
-            <p className="text-[11px] text-muted-foreground">Minimum number of people who must hold this skill</p>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Description <span className="normal-case text-muted-foreground/50">(optional)</span>
-            </label>
-            <input
-              type="text"
-              placeholder="Short description"
-              value={newSkill.description}
-              onChange={(e) => setNewSkill({ ...newSkill, description: e.target.value })}
-              className={fieldCls}
-            />
           </div>
         </div>
       </ComposedSheet>
