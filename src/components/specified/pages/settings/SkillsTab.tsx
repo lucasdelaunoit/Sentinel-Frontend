@@ -189,7 +189,7 @@ export default function SkillsTab() {
 
         {/* Right — Skills grid */}
         <ComposedCard
-          title={selectedCat === "ALL" ? "All skills" : selectedCat}
+          title={(selectedCat === "ALL" ? "All skills" : `${selectedCat} skills`) + ` (${skillsData?.meta.total})`}
           className="flex-1"
           action={
             <div className="flex items-center gap-2">
@@ -204,18 +204,7 @@ export default function SkillsTab() {
             </div>
           }
         >
-          <div className="mt-4 space-y-4">
-            {hasFilter && (
-              <div className="flex items-center gap-2">
-                <span className="text-[12px] text-muted-foreground">
-                  {totalCount} skill{totalCount !== 1 ? "s" : ""}
-                </span>
-                <button onClick={() => setSearch("")} className="text-[11px] text-primary hover:underline">
-                  Clear filters
-                </button>
-              </div>
-            )}
-
+          <div className="space-y-4">
             {skillsLoading ? (
               <div className="grid grid-cols-2 gap-3">
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -234,7 +223,7 @@ export default function SkillsTab() {
             ) : (
               <div className="grid grid-cols-2 gap-3">
                 {list.map((skill) => (
-                  <MediumSkillCard key={skill.id} skill={skill} />
+                  <MediumSkillCard key={skill.id} skill={skill} searchTerm={search} />
                 ))}
               </div>
             )}

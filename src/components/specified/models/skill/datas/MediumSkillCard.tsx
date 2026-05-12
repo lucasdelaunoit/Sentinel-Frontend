@@ -3,19 +3,18 @@ import { Button } from "@/components/ui/button.tsx";
 import { TrashIcon } from "@phosphor-icons/react";
 import SkillCategoryBadge from "@/components/specified/models/skill/badges/SkillCategoryBadge.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
 
 interface MediumSkillCardProps {
   skill: Skill;
-  isLoading?: boolean;
+  searchTerm?: string;
 }
 
-export default function MediumSkillCard({ skill, isLoading = false }: MediumSkillCardProps) {
-  if (isLoading) return <MediumSkillCard.Skeleton />;
-
+export default function MediumSkillCard({ skill, searchTerm = "" }: MediumSkillCardProps) {
   return (
     <SecondaryCard
       key={skill.id}
-      title={skill.name}
+      title={<HighlightMatch text={skill.name} searchTerm={searchTerm} />}
       className="bg-secondary p-3"
       description={<SkillCategoryBadge category={skill.category} />}
       action={
