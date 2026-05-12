@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import DataPagination from "@/components/common/pagination/DataPagination";
-import { Plus, Layers, AlertTriangle } from "lucide-react";
+import { Plus, AlertTriangle } from "lucide-react";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useGetSkillCategories from "@/hooks/useGetSkillCategories";
@@ -12,6 +12,7 @@ import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import MediumSkillCard from "@/components/specified/models/skill/datas/MediumSkillCard.tsx";
 import SmallSkillCategoryCard from "@/components/specified/models/skill/datas/SmallSkillCategoryCard.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
+import CreateSkillCategorySheet from "@/components/specified/models/skillCategory/sheets/CreateSkillCategorySheet.tsx";
 
 const MAX_CATEGORIES = 8;
 const ITEMS_PER_PAGE = 12;
@@ -26,7 +27,6 @@ export default function SkillsTab() {
   const [catSheetOpen, setCatSheetOpen] = useState(false);
   const [newSkillName, setNewSkillName] = useState("");
   const [newSkillCatId, setNewSkillCatId] = useState<number | "">("");
-  const [newCatName, setNewCatName] = useState("");
 
   const { data: categoriesData, isLoading: catLoading } = useGetSkillCategories();
   const { data: skillsData, isLoading: skillsLoading } = useGetSkills({
@@ -55,14 +55,6 @@ export default function SkillsTab() {
     // TODO: POST /api/skills
     setNewSkillName("");
     setSkillSheetOpen(false);
-  }
-
-  function addCategory() {
-    const name = newCatName.trim().toUpperCase();
-    if (!name || categories.some((c) => c.name === name) || categories.length >= MAX_CATEGORIES) return;
-    // TODO: POST /api/skill-categories
-    setNewCatName("");
-    setCatSheetOpen(false);
   }
 
   const hasFilter = !!search;
@@ -230,72 +222,12 @@ export default function SkillsTab() {
         </div>
       </ComposedSheet>
 
-      {/* Category creation sheet */}
-      <ComposedSheet
+      <CreateSkillCategorySheet
         open={catSheetOpen}
         onOpenChange={setCatSheetOpen}
-        title="Add Category"
-        description="Categories group skills and define radar chart axes"
-        icon={<Layers className="size-4 text-primary" />}
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setCatSheetOpen(false)} className="flex-1 rounded-xl">
-              Cancel
-            </Button>
-            <Button
-              onClick={addCategory}
-              disabled={!newCatName.trim() || categories.some((c) => c.name === newCatName.trim().toUpperCase())}
-              className="flex-1 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              Add Category
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Category Name
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. MOBILE, DATA SCIENCE"
-              value={newCatName}
-              onChange={(e) => setNewCatName(e.target.value.toUpperCase())}
-              onKeyDown={(e) => e.key === "Enter" && addCategory()}
-              autoFocus
-              className={fieldCls}
-            />
-            <p className="text-[11px] text-muted-foreground">Will appear as a radar chart axis</p>
-          </div>
-          <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-start gap-2.5">
-            <AlertTriangle className="size-3.5 text-amber-600 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-[12px] font-semibold text-amber-700">
-                {categories.length}/{MAX_CATEGORIES} categories used
-              </p>
-              <p className="text-[11px] text-amber-600 mt-0.5">
-                Radar charts become unreadable beyond 8 axes. This is the enforced maximum.
-              </p>
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <p className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Existing categories
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {categories.map((cat) => (
-                <span
-                  key={cat.id}
-                  className="text-[11px] font-semibold bg-muted/50 text-muted-foreground rounded-full px-2.5 py-1"
-                >
-                  {cat.name}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </ComposedSheet>
+        categories={categories}
+        maxCategories={MAX_CATEGORIES}
+      />
     </>
   );
 }
