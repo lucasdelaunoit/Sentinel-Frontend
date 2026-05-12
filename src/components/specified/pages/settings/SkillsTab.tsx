@@ -2,15 +2,16 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import DataPagination from "@/components/common/pagination/DataPagination";
-import { Plus, X, Layers, AlertTriangle } from "lucide-react";
+import { Plus, Layers, AlertTriangle } from "lucide-react";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useGetSkillCategories from "@/hooks/useGetSkillCategories";
 import useGetSkills from "@/api/skills/useGetSkills.ts";
-import { Skeleton } from "@/components/ui/skeleton";
 import { SecondaryButton } from "@/components/common/buttons/SecondaryButton.tsx";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import MediumSkillCard from "@/components/specified/models/skill/datas/MediumSkillCard.tsx";
+import SmallSkillCategoryCard from "@/components/specified/models/skill/datas/SmallSkillCategoryCard.tsx";
+import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 
 const MAX_CATEGORIES = 8;
 const ITEMS_PER_PAGE = 12;
@@ -64,11 +65,6 @@ export default function SkillsTab() {
     setCatSheetOpen(false);
   }
 
-  function deleteCategory(cat: SkillCategory) {
-    if (selectedCatId === cat.id) setSelectedCatId("ALL");
-    // TODO: DELETE /api/skill-categories/:id
-  }
-
   const hasFilter = !!search;
   const totalCount = skillsData?.total ?? 0;
 
@@ -90,7 +86,7 @@ export default function SkillsTab() {
             </div>
           }
         >
-          <div className="flex flex-col mt-3" style={{ minHeight: "440px" }}>
+          <div className="flex flex-col" style={{ minHeight: "440px" }}>
             <button
               onClick={() => setSelectedCatId("ALL")}
               className={cn(
@@ -113,52 +109,16 @@ export default function SkillsTab() {
 
             <div className="flex-1 overflow-y-auto space-y-0.5">
               {catLoading
-                ? Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-2 px-2.5 py-2">
-                      <div className="flex-1 space-y-1">
-                        <Skeleton className="h-3 w-20 rounded" />
-                        <Skeleton className="h-2 w-12 rounded" />
-                      </div>
-                      <Skeleton className="h-3 w-4 rounded" />
-                    </div>
-                  ))
-                : categories.map((cat) => {
-                    const isActive = selectedCatId === cat.id;
-                    const count = isActive ? totalCount : null;
-                    return (
-                      <div
-                        key={cat.id}
-                        onClick={() => setSelectedCatId(cat.id)}
-                        className={cn(
-                          "group flex items-center gap-2 rounded-lg px-2.5 py-2 cursor-pointer transition-colors",
-                          isActive ? "bg-primary/10" : "hover:bg-muted/50",
-                        )}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className={cn(
-                              "text-[12px] font-semibold truncate",
-                              isActive ? "text-primary" : "text-foreground",
-                            )}
-                          >
-                            {cat.name}
-                          </p>
-                          <p className="text-[11px] text-secondary-foreground/60 truncate">
-                            {`${cat.skills_count} skill${cat.skills_count !== 1 ? "s" : ""}`}
-                          </p>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteCategory(cat);
-                          }}
-                          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:text-rose-500 hover:bg-rose-50 transition-all text-muted-foreground/40 shrink-0"
-                        >
-                          <X className="size-3" />
-                        </button>
-                      </div>
-                    );
-                  })}
+                ? Array.from({ length: 5 }).map((_, i) => <SmallSkillCategoryCard.Skeleton key={i} />)
+                : categories.map((cat) => (
+                    <SmallSkillCategoryCard
+                      key={cat.id}
+                      category={cat}
+                      isActive={selectedCatId === cat.id}
+                      onSelect={() => setSelectedCatId(cat.id)}
+                      onDeleted={() => { if (selectedCatId === cat.id) setSelectedCatId("ALL"); }}
+                    />
+                  ))}
             </div>
 
             {categories.length >= MAX_CATEGORIES && (
@@ -196,8 +156,12 @@ export default function SkillsTab() {
                 ))}
               </div>
             ) : list.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground gap-2">
-                <p className="text-[13px] font-medium">No skills</p>
+              <div className="flex flex-col items-center justify-center h-48 gap-2">
+                <Feedback
+                  variant={hasFilter ? "warning" : "neutral"}
+                  title={hasFilter ? "No matching skills" : "No skills yet"}
+                  description={hasFilter ? "Try a different search term or category." : "Add your first skill to get started."}
+                />
                 {hasFilter && (
                   <button onClick={() => setSearch("")} className="text-[12px] text-primary hover:underline">
                     Clear filters
