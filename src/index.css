@@ -241,12 +241,6 @@
     color: #1c1917;
 }
 
-/* Focus states */
-*:focus-visible {
-    outline: 2px solid #097155;
-    outline-offset: 2px;
-}
-
 /* Shadow utilities */
 .shadow-sm {
     box-shadow: var(--shadow-sm);

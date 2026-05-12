@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { usePage } from "@/context/PageContext";
 import { Plus, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,35 +13,19 @@ import { SortableTableHead } from "@/components/common/table/SortableTableHead";
 import { TablePagination } from "@/components/common/table/TablePagination";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useTablePagination } from "@/hooks/useTablePagination";
-import { getInitials } from "@/utils/formatters/persons.ts";
 import useGetUser from "@/api/users/useGetUser";
 import useGetUserProjects from "@/api/users/useGetUserProjects";
 import useGetSkillsForUser from "@/api/users/useGetSkillsForUser";
 import useGetUserStats from "@/api/users/useGetUserStats";
 import type { UserSkillDetail } from "@/types/dashboard";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
 import UserProfileCard from "@/components/specified/pages/user/UserProfileCard.tsx";
 import UserStatsSection from "@/components/specified/pages/user/UserStatsSection.tsx";
 
 /* ─── Types ───────────────────────────────────────────────── */
 
-type DetailTab = "overview" | "projects" | "skills";
 type ProjectSortKey = "name" | "progress" | "risk_score" | "bus_factor" | "end_date";
 
 /* ─── Helpers ─────────────────────────────────────────────── */
-
-const AVATAR_COLORS = [
-  "bg-indigo-500",
-  "bg-blue-500",
-  "bg-violet-500",
-  "bg-emerald-500",
-  "bg-rose-500",
-  "bg-amber-500",
-  "bg-cyan-500",
-];
-function avatarColor(id: number) {
-  return AVATAR_COLORS[id % AVATAR_COLORS.length];
-}
 
 function fmtDate(date: string) {
   return new Date(date).toLocaleDateString("en-GB", {
@@ -190,20 +175,6 @@ function SkillBar({ name, level }: { name: string; level: number }) {
           />
         ))}
       </div>
-    </div>
-  );
-}
-
-/* ─── InfoChip ────────────────────────────────────────────── */
-
-function InfoChip({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2.5">
-      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-        {icon}
-        {label}
-      </div>
-      <p className="text-[13px] font-medium text-foreground truncate">{value}</p>
     </div>
   );
 }
@@ -568,7 +539,6 @@ function SkillsTab({ userId }: { userId: string }) {
 export default function UserDetail() {
   const { id } = useParams<{ id: string }>();
   const { setTitle, setBreadcrumb } = usePage();
-  const [activeTab, setActiveTab] = useState<DetailTab>("overview");
 
   const { data: user, isLoading, isError } = useGetUser(id);
   const { data: stats, isLoading: isLoadingStats } = useGetUserStats(id);
@@ -583,12 +553,6 @@ export default function UserDetail() {
       setBreadcrumb("");
     };
   }, [user?.id]);
-
-  const tabs: { key: DetailTab; label: string }[] = [
-    { key: "overview", label: "Overview" },
-    { key: "projects", label: "Projects" },
-    { key: "skills", label: "Skills" },
-  ];
 
   if (isError) {
     return (
@@ -612,36 +576,26 @@ export default function UserDetail() {
         {isLoading ? <UserProfileCard.Skeleton /> : user && <UserProfileCard user={user} />}
 
         {/* ── Stats ─────────────────────────────────────────────── */}
-        {isLoadingStats || !stats ? (
-          <UserStatsSection.Skeleton />
-        ) : (
-          <UserStatsSection stats={stats} />
-        )}
+        {isLoadingStats || !stats ? <UserStatsSection.Skeleton /> : <UserStatsSection stats={stats} />}
 
         {/* ── Tabs ──────────────────────────────────────────────── */}
-        <div className="flex items-center gap-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={cn(
-                "px-5 py-2 rounded-xl text-[13px] font-medium transition-all duration-200",
-                activeTab === tab.key
-                  ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                  : "bg-card border border-border/60 text-foreground hover:bg-muted/50",
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
         {id && (
-          <>
-            {activeTab === "overview" && <OverviewTab userId={id} />}
-            {activeTab === "projects" && <ProjectsTab userId={id} />}
-            {activeTab === "skills" && <SkillsTab userId={id} />}
-          </>
+          <Tabs defaultValue="overview">
+            <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="projects">Projects</TabsTrigger>
+              <TabsTrigger value="skills">Skills</TabsTrigger>
+            </TabsList>
+            <TabsContent value="overview">
+              <OverviewTab userId={id} />
+            </TabsContent>
+            <TabsContent value="projects">
+              <ProjectsTab userId={id} />
+            </TabsContent>
+            <TabsContent value="skills">
+              <SkillsTab userId={id} />
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </>

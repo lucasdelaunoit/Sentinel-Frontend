@@ -5,7 +5,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import SharedStatCard from "@/components/common/cards/StatCard";
 import {
-  Sliders,
   Plus,
   Trash2,
   X,
@@ -1284,7 +1283,7 @@ export default function Settings() {
       <TopBar title="Settings" />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         <Tabs defaultValue="organization">
-          <TabsList className="h-auto bg-transparent p-0 gap-2">
+          <TabsList>
             {(
               [
                 { value: "organization", label: "Organization", icon: ShieldIcon },

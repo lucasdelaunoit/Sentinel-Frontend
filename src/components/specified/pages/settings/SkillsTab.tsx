@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import DataPagination from "@/components/common/pagination/DataPagination";
-import { Plus, AlertTriangle } from "lucide-react";
+import { Plus } from "lucide-react";
 import ComposedCard from "@/components/common/cards/ComposedCard";
-import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useGetSkillCategories from "@/hooks/useGetSkillCategories";
 import useGetSkills from "@/api/skills/useGetSkills.ts";
 import { SecondaryButton } from "@/components/common/buttons/SecondaryButton.tsx";
@@ -13,6 +12,7 @@ import MediumSkillCard from "@/components/specified/models/skill/datas/MediumSki
 import SmallSkillCategoryCard from "@/components/specified/models/skill/datas/SmallSkillCategoryCard.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import CreateSkillCategorySheet from "@/components/specified/models/skillCategory/sheets/CreateSkillCategorySheet.tsx";
+import CreateSkillSheet from "@/components/specified/models/skill/sheets/CreateSkillSheet.tsx";
 
 const MAX_CATEGORIES = 8;
 const ITEMS_PER_PAGE = 12;
@@ -25,8 +25,6 @@ export default function SkillsTab() {
 
   const [skillSheetOpen, setSkillSheetOpen] = useState(false);
   const [catSheetOpen, setCatSheetOpen] = useState(false);
-  const [newSkillName, setNewSkillName] = useState("");
-  const [newSkillCatId, setNewSkillCatId] = useState<number | "">("");
 
   const { data: categoriesData, isLoading: catLoading } = useGetSkillCategories();
   const { data: skillsData, isLoading: skillsLoading } = useGetSkills({
@@ -42,7 +40,6 @@ export default function SkillsTab() {
   useEffect(() => {
     if (categoriesData) {
       setCategories(categoriesData);
-      setNewSkillCatId((prev) => prev || categoriesData[0]?.id || "");
     }
   }, [categoriesData]);
 
@@ -50,17 +47,11 @@ export default function SkillsTab() {
     setPage(1);
   }, [search, selectedCatId]);
 
-  function handleAddSkill() {
-    if (!newSkillName.trim()) return;
-    // TODO: POST /api/skills
-    setNewSkillName("");
-    setSkillSheetOpen(false);
-  }
-
-  const hasFilter = !!search;
-
-  const fieldCls =
-    "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
+  const selectedCategory = selectedCatId !== "ALL" ? categories.find((c) => c.id === selectedCatId) : undefined;
+  const scopeSkillCount = selectedCategory
+    ? selectedCategory.skills_count
+    : categories.reduce((sum, c) => sum + c.skills_count, 0);
+  const isScopeEmpty = !catLoading && scopeSkillCount === 0;
 
   return (
     <>
@@ -71,7 +62,12 @@ export default function SkillsTab() {
           className="w-60 shrink-0"
           action={
             <div className="ml-auto flex items-center gap-2">
-              <span className="text-[11px] font-medium text-muted-foreground/50 tabular-nums">
+              <span
+                className={cn(
+                  "text-xs font-medium text-muted-foreground/50 tabular-nums",
+                  categories.length === MAX_CATEGORIES && "text-destructive-foreground",
+                )}
+              >
                 {categories.length}/{MAX_CATEGORIES}
               </span>
             </div>
@@ -105,13 +101,6 @@ export default function SkillsTab() {
                     />
                   ))}
             </div>
-
-            {categories.length >= MAX_CATEGORIES && (
-              <div className="border-t border-border/40 pt-3 mt-3 flex items-center gap-1.5 text-[10px] text-amber-600">
-                <AlertTriangle className="size-3 shrink-0" />
-                Max 8 — radar chart limit
-              </div>
-            )}
           </div>
           <SecondaryButton onClick={() => setCatSheetOpen(true)} disabled={categories.length >= MAX_CATEGORIES}>
             <Plus className="size-3 mb-0.5" />
@@ -121,16 +110,18 @@ export default function SkillsTab() {
 
         {/* Right — Skills grid */}
         <ComposedCard
-          title={selectedCatId === "ALL" ? "All skills" : (categories.find((c) => c.id === selectedCatId)?.name ?? "")}
-          className="flex-1"
+          title={selectedCategory?.name ?? "All skills"}
+          className="flex-1 h-auto"
           action={
-            <div className="flex items-center gap-2">
-              <SearchBar value={search} onChange={setSearch} />
-              <Button size="lg" onClick={() => setSkillSheetOpen(true)}>
-                <Plus className="size-4" />
-                Add Skill
-              </Button>
-            </div>
+            isScopeEmpty ? null : (
+              <div className="flex items-center gap-2">
+                <SearchBar value={search} onChange={setSearch} size="sm" />
+                <Button onClick={() => setSkillSheetOpen(true)}>
+                  <Plus className="size-3.5" />
+                  Add Skill
+                </Button>
+              </div>
+            )
           }
         >
           <div className="space-y-4">
@@ -140,21 +131,31 @@ export default function SkillsTab() {
                   <MediumSkillCard.Skeleton key={i} />
                 ))}
               </div>
+            ) : isScopeEmpty ? (
+              <Feedback
+                variant="warning"
+                title={selectedCategory ? `No skills in ${selectedCategory.name}` : "No skills yet"}
+                description="Add your first skill to get started."
+                className="h-96"
+                action={
+                  <Button onClick={() => setSkillSheetOpen(true)} className="sm">
+                    <Plus className="size-3.5" />
+                    Add your first skill
+                  </Button>
+                }
+              />
             ) : list.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-48 gap-2">
-                <Feedback
-                  variant={hasFilter ? "warning" : "neutral"}
-                  title={hasFilter ? "No matching skills" : "No skills yet"}
-                  description={
-                    hasFilter ? "Try a different search term or category." : "Add your first skill to get started."
-                  }
-                />
-                {hasFilter && (
-                  <button onClick={() => setSearch("")} className="text-[12px] text-primary hover:underline">
+              <Feedback
+                variant="warning"
+                title="No matching skills"
+                description="Try a different search term or category."
+                className="h-96"
+                action={
+                  <Button variant="link" onClick={() => setSearch("")}>
                     Clear filters
-                  </button>
-                )}
-              </div>
+                  </Button>
+                }
+              />
             ) : (
               <div className="grid grid-cols-2 gap-3">
                 {list.map((skill) => (
@@ -163,64 +164,17 @@ export default function SkillsTab() {
               </div>
             )}
 
-            <div className="pt-3 border-t border-border/40">
-              <DataPagination page={page} totalPages={totalPages} onPageChange={setPage} />
-            </div>
+            {!isScopeEmpty && <DataPagination page={page} totalPages={totalPages} onPageChange={setPage} />}
           </div>
         </ComposedCard>
       </div>
 
-      {/* Skill creation sheet */}
-      <ComposedSheet
+      <CreateSkillSheet
         open={skillSheetOpen}
         onOpenChange={setSkillSheetOpen}
-        title="Add Skill"
-        description="Define a new skill for the organizational catalog"
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setSkillSheetOpen(false)} className="flex-1 rounded-xl">
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAddSkill}
-              disabled={!newSkillName.trim()}
-              className="flex-1 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              Add Skill
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Skill Name
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. React, AWS, PostgreSQL"
-              value={newSkillName}
-              onChange={(e) => setNewSkillName(e.target.value)}
-              autoFocus
-              className={fieldCls}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Category</label>
-            <select
-              value={newSkillCatId}
-              onChange={(e) => setNewSkillCatId(Number(e.target.value))}
-              className={cn(fieldCls, "cursor-pointer")}
-            >
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </ComposedSheet>
+        categories={categories}
+        presetCategory={selectedCategory}
+      />
 
       <CreateSkillCategorySheet
         open={catSheetOpen}

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils.ts";
 import { CheckIcon, InfoIcon, QuestionIcon, WarningIcon, XIcon } from "@phosphor-icons/react";
-import type { ElementType, ReactNode } from "react";
+import { type ElementType, type ReactNode } from "react";
 
 type FeedbackVariant = "success" | "warning" | "danger" | "info" | "neutral";
 
@@ -18,20 +18,29 @@ interface FeedbackProps {
   variant?: FeedbackVariant;
   icon?: ReactNode;
   className?: string;
+  action?: ReactNode;
 }
 
-export default function Feedback({ title, description, variant = "neutral", icon: Icon, className }: FeedbackProps) {
+export default function Feedback({
+  title,
+  description,
+  variant = "neutral",
+  icon: Icon,
+  className,
+  action,
+}: FeedbackProps) {
   const VariantIcon = VARIANTS[variant].icon;
 
   return (
-    <div className={cn("flex flex-col items-center gap-3 text-center", className)}>
+    <div className={cn("flex flex-col items-center justify-center gap-3 text-center", className)}>
       <div className={cn("flex items-center justify-center rounded-full mb-1")}>
         <span>{Icon ? <Icon /> : <VariantIcon className={cn(VARIANTS[variant].foreground, "size-6")} />}</span>
       </div>
       <div>
         <p className={cn("text-sm font-semibold", VARIANTS[variant].foreground)}>{title}</p>
-        {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
+        {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
       </div>
+      {action}
     </div>
   );
 }

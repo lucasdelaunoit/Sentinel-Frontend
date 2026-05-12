@@ -20,45 +20,56 @@ export default function DataPagination({ page, totalPages, onPageChange }: DataP
   const pages = buildPageRange(page, totalPages);
 
   return (
-    <Pagination>
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious
-            href="#"
-            onClick={(e) => { e.preventDefault(); onPageChange(Math.max(1, page - 1)); }}
-            aria-disabled={page === 1}
-            className={page === 1 ? "pointer-events-none opacity-40" : ""}
-          />
-        </PaginationItem>
+    <div className="pt-3 border-t border-border/40">
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                onPageChange(Math.max(1, page - 1));
+              }}
+              aria-disabled={page === 1}
+              className={page === 1 ? "pointer-events-none opacity-40" : ""}
+            />
+          </PaginationItem>
 
-        {pages.map((entry, i) =>
-          entry === "ellipsis" ? (
-            <PaginationItem key={`ellipsis-${i}`}>
-              <PaginationEllipsis />
-            </PaginationItem>
-          ) : (
-            <PaginationItem key={entry}>
-              <PaginationLink
-                href="#"
-                isActive={entry === page}
-                onClick={(e) => { e.preventDefault(); onPageChange(entry); }}
-              >
-                {entry}
-              </PaginationLink>
-            </PaginationItem>
-          ),
-        )}
+          {pages.map((entry, i) =>
+            entry === "ellipsis" ? (
+              <PaginationItem key={`ellipsis-${i}`}>
+                <PaginationEllipsis />
+              </PaginationItem>
+            ) : (
+              <PaginationItem key={entry}>
+                <PaginationLink
+                  href="#"
+                  isActive={entry === page}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onPageChange(entry);
+                  }}
+                >
+                  {entry}
+                </PaginationLink>
+              </PaginationItem>
+            ),
+          )}
 
-        <PaginationItem>
-          <PaginationNext
-            href="#"
-            onClick={(e) => { e.preventDefault(); onPageChange(Math.min(totalPages, page + 1)); }}
-            aria-disabled={page === totalPages}
-            className={page === totalPages ? "pointer-events-none opacity-40" : ""}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
+          <PaginationItem>
+            <PaginationNext
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                onPageChange(Math.min(totalPages, page + 1));
+              }}
+              aria-disabled={page === totalPages}
+              className={page === totalPages ? "pointer-events-none opacity-40" : ""}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
   );
 }
 

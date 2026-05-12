@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { AlertTriangle, Layers } from "lucide-react";
+import { Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
@@ -101,7 +101,7 @@ export default function CreateSkillCategorySheet({
               <FieldLabel>Category Name</FieldLabel>
               <Input
                 {...field}
-                placeholder="e.g. MOBILE, DATA SCIENCE"
+                placeholder="e.g. Mobile, Data, ..."
                 autoFocus
                 autoComplete="off"
                 maxLength={MAX_NAME_LENGTH + 1}
@@ -118,21 +118,11 @@ export default function CreateSkillCategorySheet({
           )}
         />
 
-        <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-start gap-2.5">
-          <AlertTriangle className="size-3.5 text-amber-600 mt-0.5 shrink-0" />
-          <div>
-            <p className="text-[12px] font-semibold text-amber-700">
-              {categories.length}/{maxCategories} categories used
-            </p>
-            <p className="text-[11px] text-amber-600 mt-0.5">
-              Radar charts become unreadable beyond {maxCategories} axes. This is the enforced maximum.
-            </p>
-          </div>
-        </div>
-
         {categories.length > 0 && (
           <Field>
-            <FieldLabel>Existing categories</FieldLabel>
+            <FieldLabel>
+              Existing categories ({categories.length}/{maxCategories})
+            </FieldLabel>
             <div className="flex flex-wrap gap-1.5 pt-0.5">
               {categories.map((cat) => (
                 <SkillCategoryBadge category={cat} className="bg-secondary" />
