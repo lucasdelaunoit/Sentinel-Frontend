@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { usePage } from "@/context/PageContext";
 import { Plus, Eye } from "lucide-react";
-import { SquaresFourIcon, FolderIcon, CertificateIcon } from "@phosphor-icons/react";
+import { SquaresFourIcon, FolderIcon, CertificateIcon, CalendarDotsIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,6 +22,7 @@ import type { UserSkillDetail } from "@/types/dashboard";
 import UserProfileCard from "@/components/specified/pages/user/UserProfileCard.tsx";
 import UserStatsSection from "@/components/specified/pages/user/UserStatsSection.tsx";
 import UserOverviewTab from "@/components/specified/pages/user/UserOverviewTab.tsx";
+import UserAbsencesTab from "@/components/specified/pages/user/UserAbsencesTab.tsx";
 
 /* ─── Types ───────────────────────────────────────────────── */
 
@@ -483,6 +484,7 @@ function SkillsTab({ userId }: { userId: string }) {
 export default function UserDetail() {
   const { id } = useParams<{ id: string }>();
   const { setTitle, setBreadcrumb } = usePage();
+  const [activeTab, setActiveTab] = useState("overview");
 
   const { data: user, isLoading, isError } = useGetUser(id);
   const { data: stats, isLoading: isLoadingStats } = useGetUserStats(id);
@@ -524,7 +526,7 @@ export default function UserDetail() {
 
         {/* ── Tabs ──────────────────────────────────────────────── */}
         {id && (
-          <Tabs defaultValue="overview">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList>
               <TabsTrigger value="overview">
                 <SquaresFourIcon className="size-4" />
@@ -538,15 +540,22 @@ export default function UserDetail() {
                 <CertificateIcon className="size-4" />
                 Skills
               </TabsTrigger>
+              <TabsTrigger value="absences">
+                <CalendarDotsIcon className="size-4" />
+                Absences
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="overview">
-              <UserOverviewTab userId={id} />
+              <UserOverviewTab userId={id} onViewAbsences={() => setActiveTab("absences")} />
             </TabsContent>
             <TabsContent value="projects">
               <ProjectsTab userId={id} />
             </TabsContent>
             <TabsContent value="skills">
               <SkillsTab userId={id} />
+            </TabsContent>
+            <TabsContent value="absences">
+              <UserAbsencesTab userId={id} />
             </TabsContent>
           </Tabs>
         )}

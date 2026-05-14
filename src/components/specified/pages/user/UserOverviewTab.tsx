@@ -1,373 +1,445 @@
-import { useEffect, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
-import { CalendarBlankIcon } from "@phosphor-icons/react";
-import useGetUserProjects from "@/api/users/useGetUserProjects.ts";
-import useGetSkillsForUser from "@/api/users/useGetSkillsForUser.ts";
+import { useNavigate } from "react-router-dom";
+import { ShieldAlert, AlertTriangle, GitBranch, Layers, Lightbulb, GraduationCap, BookOpen, Users } from "lucide-react";
+import { CalendarBlankIcon, SunHorizonIcon, ClockCountdownIcon } from "@phosphor-icons/react";
+import useGetUserStats from "@/api/users/useGetUserStats.ts";
 import useGetAbsencesForUser from "@/api/absences/useGetAbsencesForUser.ts";
-import useDeleteAbsence from "@/api/absences/useDeleteAbsence.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { Button } from "@/components/ui/button.tsx";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table.tsx";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
-import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
-import SearchBar from "@/components/common/inputs/SearchBar.tsx";
-import { TablePagination } from "@/components/common/table/TablePagination.tsx";
-import CreateAbsenceSheet from "@/components/specified/models/absence/sheets/CreateAbsenceSheet.tsx";
-import { useTablePagination } from "@/hooks/useTablePagination.ts";
+import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
+import { SecondaryButton } from "@/components/common/buttons/SecondaryButton.tsx";
 import { cn } from "@/lib/utils.ts";
-import type { AbsenceItem, AbsenceType, AbsenceStatus } from "@/types/dashboard.ts";
+import type { AbsenceItem, AbsenceType } from "@/types/dashboard.ts";
 
 interface UserOverviewTabProps {
   userId: string;
+  onViewAbsences?: () => void;
 }
 
-/* ─── Status helpers ─────────────────────────────────────── */
+/* ─── Helpers ────────────────────────────────────────────── */
 
-const STATUS_STYLES: Record<ProjectStatus, string> = {
-  active: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400",
-  completed: "bg-blue-50 text-blue-700 ring-1 ring-blue-200/60 dark:bg-blue-500/10 dark:text-blue-400",
-  on_hold: "bg-amber-50 text-amber-700 ring-1 ring-amber-200/60 dark:bg-amber-500/10 dark:text-amber-400",
-  planning: "bg-violet-50 text-violet-700 ring-1 ring-violet-200/60 dark:bg-violet-500/10 dark:text-violet-400",
-};
-const STATUS_LABELS: Record<ProjectStatus, string> = {
-  active: "Active",
-  on_hold: "On Hold",
-  planning: "Planning",
-  completed: "Completed",
-};
+function critLabel(score: number): { label: string; color: string; bg: string; border: string; ring: string } {
+  if (score >= 70) return { label: "High Risk", color: "text-rose-700", bg: "bg-rose-50", border: "border-rose-200", ring: "ring-rose-200/60" };
+  if (score >= 40) return { label: "Medium Risk", color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200", ring: "ring-amber-200/60" };
+  return { label: "Low Risk", color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200", ring: "ring-emerald-200/60" };
+}
 
-/* ─── Absence helpers ────────────────────────────────────── */
+const DRIVER_WEIGHTS = { silo: 3, bus: 2.5, unique: 1 } as const;
 
-const ABSENCE_TYPE_STYLES: Record<AbsenceType, string> = {
-  vacation: "bg-blue-50 text-blue-700 ring-1 ring-blue-200/60",
-  sick: "bg-rose-50 text-rose-700 ring-1 ring-rose-200/60",
-  conference: "bg-violet-50 text-violet-700 ring-1 ring-violet-200/60",
+function computeContributions(silo: number, bus: number, unique: number) {
+  const raw = {
+    silo: silo * DRIVER_WEIGHTS.silo,
+    bus: bus * DRIVER_WEIGHTS.bus,
+    unique: unique * DRIVER_WEIGHTS.unique,
+  };
+  const total = raw.silo + raw.bus + raw.unique;
+  if (total === 0) return { silo: 0, bus: 0, unique: 0 };
+  return {
+    silo: Math.round((raw.silo / total) * 100),
+    bus: Math.round((raw.bus / total) * 100),
+    unique: Math.round((raw.unique / total) * 100),
+  };
+}
+
+const ABSENCE_TYPE_DOT: Record<AbsenceType, string> = {
+  vacation: "bg-blue-500",
+  sick: "bg-rose-500",
+  conference: "bg-violet-500",
 };
-const ABSENCE_TYPE_LABELS: Record<AbsenceType, string> = {
+const ABSENCE_TYPE_LABEL: Record<AbsenceType, string> = {
   vacation: "Vacation",
   sick: "Sick leave",
   conference: "Conference",
 };
 
-const ABSENCE_STATUS_STYLES: Record<AbsenceStatus, string> = {
-  approved: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60",
-  pending: "bg-amber-50 text-amber-700 ring-1 ring-amber-200/60",
-  rejected: "bg-rose-50 text-rose-700 ring-1 ring-rose-200/60",
-};
-const ABSENCE_STATUS_LABELS: Record<AbsenceStatus, string> = {
-  approved: "Approved",
-  pending: "Pending",
-  rejected: "Rejected",
-};
-
-function fmtDate(date: string) {
-  return new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+function fmtShort(date: string) {
+  return new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
 }
 
-function absenceDuration(start: string, end: string) {
-  const ms = new Date(end).getTime() - new Date(start).getTime();
-  const days = Math.max(1, Math.round(ms / 86_400_000) + 1);
-  return `${days}d`;
+function daysBetween(start: string, end: string) {
+  return Math.max(1, Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86_400_000) + 1);
 }
 
-/* ─── Skill bar helpers ──────────────────────────────────── */
-
-const LEVEL_LABEL: Record<number, string> = {
-  1: "Beginner",
-  2: "Elementary",
-  3: "Intermediate",
-  4: "Advanced",
-  5: "Expert",
-};
-
-function skillColor(level: number) {
-  if (level >= 4) return "bg-gradient-to-r from-emerald-400 to-emerald-500";
-  if (level >= 3) return "bg-gradient-to-r from-amber-400 to-amber-500";
-  return "bg-gradient-to-r from-rose-400 to-rose-500";
+function daysThisYear(absences: AbsenceItem[]) {
+  const year = new Date().getFullYear();
+  const yearStart = new Date(`${year}-01-01`).getTime();
+  const yearEnd = new Date(`${year}-12-31`).getTime();
+  return absences.reduce((sum, a) => {
+    const start = Math.max(new Date(a.start_date).getTime(), yearStart);
+    const end = Math.min(new Date(a.end_date).getTime(), yearEnd);
+    if (end < start) return sum;
+    return sum + Math.round((end - start) / 86_400_000) + 1;
+  }, 0);
 }
 
-function SkillBar({ name, level }: { name: string; level: number }) {
-  const filled = level * 2;
-  const color = skillColor(level);
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <span className="text-[13px] font-medium text-foreground">{name}</span>
-        <span className="text-[11px] text-muted-foreground">
-          {level}/5 — <span className="font-medium text-foreground">{LEVEL_LABEL[level]}</span>
-        </span>
-      </div>
-      <div className="flex items-center gap-[3px]">
-        {Array.from({ length: 10 }).map((_, i) => (
-          <div
-            key={i}
-            className={cn("h-1.5 flex-1 rounded-sm transition-colors shadow-inner", i < filled ? color : "bg-muted")}
-          />
-        ))}
-      </div>
-    </div>
-  );
+function upcomingAbsences(absences: AbsenceItem[]) {
+  const today = new Date().setHours(0, 0, 0, 0);
+  return absences
+    .filter((a) => new Date(a.end_date).getTime() >= today)
+    .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
 }
 
-function SkillBarSkeleton() {
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-between">
-        <Skeleton className="h-3.5 w-24" />
-        <Skeleton className="h-3 w-20" />
-      </div>
-      <Skeleton className="h-1.5 w-full rounded-sm" />
-    </div>
-  );
+/* ─── Recommendations ────────────────────────────────────── */
+
+interface Recommendation {
+  icon: React.ElementType;
+  iconBg: string;
+  iconColor: string;
+  title: string;
+  description: string;
+  priority: "high" | "medium" | "low";
 }
 
-/* ─── Absences card ──────────────────────────────────────── */
+function buildRecommendations(score: number, silo: number, bus: number, unique: number): Recommendation[] {
+  const recs: Recommendation[] = [];
 
-function AbsencesCard({ userId }: { userId: string }) {
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-
-  const { page, setPage, perPage, setPerPage } = useTablePagination(5, [debouncedSearch]);
-
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => clearTimeout(t);
-  }, [search]);
-
-  const { data, isLoading, isError } = useGetAbsencesForUser(userId, {
-    page,
-    per_page: perPage,
-    search: debouncedSearch || undefined,
-  });
-
-  const { mutate: deleteAbsence, isPending: isDeleting } = useDeleteAbsence();
-
-  const absences = data?.data ?? [];
-  const total = data?.total ?? 0;
-  const lastPage = data?.last_page ?? 1;
-  const from = data?.from ?? 0;
-  const to = data?.to ?? 0;
-
-  function handleDelete(absence: AbsenceItem) {
-    setDeletingId(absence.id);
-    deleteAbsence(
-      { id: absence.id, userId },
-      { onSuccess: () => setDeletingId(null), onError: () => setDeletingId(null) },
-    );
+  if (silo > 0) {
+    recs.push({
+      icon: GraduationCap,
+      iconBg: "bg-amber-50 border-amber-100",
+      iconColor: "text-amber-600",
+      title: `Cross-train teammates on ${silo} siloed area${silo !== 1 ? "s" : ""}`,
+      description: "Identify candidates with adjacent skills and pair them with this employee for knowledge transfer.",
+      priority: silo >= 2 ? "high" : "medium",
+    });
   }
 
-  return (
-    <>
-      <ComposedCard
-        title="Absences"
-        action={
-          <>
-            {!isLoading && (
-              <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
-                {total}
-              </span>
-            )}
-            <div className="flex-1" />
-            <SearchBar value={search} onChange={setSearch} placeholder="Search…" size="sm" />
-            <Button
-              size="xs"
-              variant="outline"
-              className="gap-1.5 text-[10px]"
-              onClick={() => setSheetOpen(true)}
-            >
-              <Plus className="size-3" />
-              Add Absence
-            </Button>
-          </>
-        }
-        className="p-0 overflow-hidden"
-        headerClassName="px-6 pt-5 pb-4 border-b border-border/60"
-      >
-        <Table className="text-sm">
-          <TableHeader>
-            <TableRow className="border-b border-t border-border/60 bg-muted/30 hover:bg-muted/30">
-              <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                Type
-              </TableHead>
-              <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                Period
-              </TableHead>
-              <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                Duration
-              </TableHead>
-              <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                Status
-              </TableHead>
-              <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                Reason
-              </TableHead>
-              <TableHead className="w-12 px-5 py-3.5" />
-            </TableRow>
-          </TableHeader>
-          <TableBody className="[&_tr]:border-border/40">
-            {isLoading ? (
-              Array.from({ length: Math.min(perPage, 5) }).map((_, i) => (
-                <TableRow key={i} className="border-border/40">
-                  <TableCell className="px-5 py-4"><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
-                  <TableCell className="px-5 py-4"><Skeleton className="h-3.5 w-44" /></TableCell>
-                  <TableCell className="px-5 py-4"><Skeleton className="h-3.5 w-8" /></TableCell>
-                  <TableCell className="px-5 py-4"><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
-                  <TableCell className="px-5 py-4"><Skeleton className="h-3.5 w-32" /></TableCell>
-                  <TableCell className="px-5 py-4"><Skeleton className="h-7 w-7 rounded-lg" /></TableCell>
-                </TableRow>
-              ))
-            ) : isError ? (
-              <TableRow>
-                <TableCell colSpan={6} className="px-6 py-10 text-center text-sm text-muted-foreground">
-                  Failed to load absences. Check API connection.
-                </TableCell>
-              </TableRow>
-            ) : absences.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="px-6 py-10 text-center">
-                  <CalendarBlankIcon className="size-8 text-muted-foreground/30 mx-auto mb-2" />
-                  <p className="text-[13px] text-muted-foreground">
-                    {debouncedSearch ? "No absences match your search." : "No absences recorded."}
-                  </p>
-                </TableCell>
-              </TableRow>
-            ) : (
-              absences.map((absence) => (
-                <TableRow key={absence.id} className="hover:bg-muted/20 transition-colors border-border/40">
-                  <TableCell className="px-5 py-3.5">
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold",
-                        ABSENCE_TYPE_STYLES[absence.type],
-                      )}
-                    >
-                      {ABSENCE_TYPE_LABELS[absence.type]}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-5 py-3.5 text-[12px] text-foreground whitespace-nowrap">
-                    {fmtDate(absence.start_date)}
-                    <span className="text-muted-foreground/50 mx-1.5">→</span>
-                    {fmtDate(absence.end_date)}
-                  </TableCell>
-                  <TableCell className="px-5 py-3.5 text-[12px] font-medium text-muted-foreground tabular-nums">
-                    {absenceDuration(absence.start_date, absence.end_date)}
-                  </TableCell>
-                  <TableCell className="px-5 py-3.5">
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold",
-                        ABSENCE_STATUS_STYLES[absence.status],
-                      )}
-                    >
-                      {ABSENCE_STATUS_LABELS[absence.status]}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-5 py-3.5 text-[12px] text-muted-foreground max-w-[200px] truncate">
-                    {absence.reason ?? <span className="text-muted-foreground/40">—</span>}
-                  </TableCell>
-                  <TableCell className="px-5 py-3.5">
-                    <ComposedAlertDialog
-                      trigger={
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-muted-foreground/50 hover:text-rose-500 h-7 w-7 p-0 rounded-lg hover:bg-rose-50/50"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      }
-                      title="Delete absence?"
-                      description="This will permanently remove this absence record and cannot be undone."
-                      confirmLabel="Delete"
-                      pendingLabel="Deleting…"
-                      variant="destructive"
-                      isPending={isDeleting && deletingId === absence.id}
-                      onConfirm={() => handleDelete(absence)}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+  if (bus > 0) {
+    recs.push({
+      icon: Users,
+      iconBg: "bg-rose-50 border-rose-100",
+      iconColor: "text-rose-600",
+      title: `Mitigate bus-factor risk on ${bus} project${bus !== 1 ? "s" : ""}`,
+      description: "Assign a secondary owner to each affected project to ensure continuity if this employee is absent.",
+      priority: "high",
+    });
+  }
 
-        {!isLoading && !isError && total > 0 && (
-          <TablePagination
-            page={page}
-            lastPage={lastPage}
-            perPage={perPage}
-            total={total}
-            from={from}
-            to={to}
-            onPageChange={setPage}
-            onPerPageChange={setPerPage}
-          />
-        )}
-      </ComposedCard>
+  if (unique > 0) {
+    recs.push({
+      icon: BookOpen,
+      iconBg: "bg-violet-50 border-violet-100",
+      iconColor: "text-violet-600",
+      title: `Document ${unique} unique skill${unique !== 1 ? "s" : ""}`,
+      description: "Capture runbooks, decision logs, and onboarding notes so the knowledge survives the person.",
+      priority: unique >= 3 ? "high" : "medium",
+    });
+  }
 
-      <CreateAbsenceSheet open={sheetOpen} onOpenChange={setSheetOpen} userId={userId} />
-    </>
-  );
+  if (score >= 70 && recs.length > 0) {
+    recs.unshift({
+      icon: AlertTriangle,
+      iconBg: "bg-rose-50 border-rose-100",
+      iconColor: "text-rose-600",
+      title: "Schedule a knowledge-transfer review this quarter",
+      description: "Criticality score is high — convene a session with the team lead to plan redundancy.",
+      priority: "high",
+    });
+  }
+
+  if (recs.length === 0) {
+    recs.push({
+      icon: Lightbulb,
+      iconBg: "bg-emerald-50 border-emerald-100",
+      iconColor: "text-emerald-600",
+      title: "No structural risk detected",
+      description: "Knowledge is well distributed. Keep monitoring as the team and skill graph evolve.",
+      priority: "low",
+    });
+  }
+
+  return recs;
 }
 
 /* ─── Main component ─────────────────────────────────────── */
 
-export default function UserOverviewTab({ userId }: UserOverviewTabProps) {
-  const { data: projectsData, isLoading: projectsLoading } = useGetUserProjects(userId, { per_page: 5 });
-  const { data: skillsData, isLoading: skillsLoading } = useGetSkillsForUser(userId);
+export default function UserOverviewTab({ userId, onViewAbsences }: UserOverviewTabProps) {
+  const navigate = useNavigate();
+  const { data: stats, isLoading } = useGetUserStats(userId);
+  const { data: absencesData, isLoading: absencesLoading } = useGetAbsencesForUser(userId, { per_page: 100 });
 
-  const projects = projectsData?.data ?? [];
-  const topSkills = [...(skillsData?.data ?? [])].sort((a, b) => b.pivot.level - a.pivot.level).slice(0, 6);
+  if (isLoading || !stats) {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="space-y-4">
+          <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-5">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-20 rounded-xl" />
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-xl" />)}
+          </div>
+          <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-3">
+            <Skeleton className="h-5 w-36" />
+            {Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
+          </div>
+        </div>
+        <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-4">
+          <Skeleton className="h-5 w-36" />
+          <Skeleton className="h-20 rounded-xl" />
+          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12" />)}
+        </div>
+      </div>
+    );
+  }
+
+  const { criticality, bus_factor_in_org } = stats;
+  const crit = critLabel(criticality.score);
+  const contributions = computeContributions(criticality.silo_count, bus_factor_in_org.count, criticality.unique_skills);
+  const recommendations = buildRecommendations(
+    criticality.score,
+    criticality.silo_count,
+    bus_factor_in_org.count,
+    criticality.unique_skills,
+  );
+
+  const allAbsences = absencesData?.data ?? [];
+  const upcoming = upcomingAbsences(allAbsences);
+  const ytd = daysThisYear(allAbsences);
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ComposedCard title="Projects" headerClassName="mb-4">
-          <div className="space-y-2.5">
-            {projectsLoading ? (
-              Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-[52px] rounded-xl" />)
-            ) : projects.length === 0 ? (
-              <p className="text-[13px] text-muted-foreground text-center py-8">No projects assigned</p>
-            ) : (
-              projects.map((proj) => (
-                <div
-                  key={proj.id}
-                  className="flex items-center justify-between rounded-xl border border-border/60 p-3 hover:bg-muted/20 transition-colors"
-                >
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+      {/* ── Left column ──────────────────────────────────── */}
+      <div className="space-y-4">
+        {/* Risk Profile */}
+        <ComposedCard title="Risk Profile" headerClassName="mb-5">
+          <div className="space-y-4">
+            {/* Headline */}
+            <div className={cn("rounded-xl border px-5 py-4", crit.bg, crit.border)}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <ShieldAlert className={cn("size-4 shrink-0", crit.color)} />
                   <div>
-                    <p className="text-[12px] font-semibold text-foreground">{proj.name}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{proj.role}</p>
+                    <p className={cn("text-[13px] font-semibold", crit.color)}>{crit.label}</p>
+                    <p className="text-[11px] text-muted-foreground">Composite criticality score</p>
                   </div>
-                  <span
-                    className={cn(
-                      "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold",
-                      STATUS_STYLES[proj.status],
-                    )}
-                  >
-                    {STATUS_LABELS[proj.status]}
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className={cn("text-[32px] font-bold tabular-nums leading-none", crit.color)}>
+                    {criticality.score}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground/70 font-medium">/100</span>
+                </div>
+              </div>
+
+              {/* Stacked breakdown bar */}
+              <div className="mt-4">
+                <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted/50">
+                  {contributions.silo > 0 && (
+                    <div className="h-full bg-amber-500/80" style={{ width: `${contributions.silo}%` }} title={`Silos ${contributions.silo}%`} />
+                  )}
+                  {contributions.bus > 0 && (
+                    <div className="h-full bg-rose-500/80" style={{ width: `${contributions.bus}%` }} title={`Bus factor ${contributions.bus}%`} />
+                  )}
+                  {contributions.unique > 0 && (
+                    <div className="h-full bg-violet-500/80" style={{ width: `${contributions.unique}%` }} title={`Unique skills ${contributions.unique}%`} />
+                  )}
+                </div>
+                <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
+                  <span className="flex items-center gap-1.5">
+                    <span className="size-1.5 rounded-full bg-amber-500/80" />
+                    Silos <span className="tabular-nums text-foreground/70 font-semibold">{contributions.silo}%</span>
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="size-1.5 rounded-full bg-rose-500/80" />
+                    Bus factor <span className="tabular-nums text-foreground/70 font-semibold">{contributions.bus}%</span>
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="size-1.5 rounded-full bg-violet-500/80" />
+                    Unique <span className="tabular-nums text-foreground/70 font-semibold">{contributions.unique}%</span>
                   </span>
                 </div>
-              ))
-            )}
+              </div>
+            </div>
+
+            {/* Drivers */}
+            <div className="flex items-center gap-3 rounded-xl border border-border/60 px-4 py-3 bg-card">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 border border-amber-100">
+                <AlertTriangle className="size-3.5 text-amber-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-semibold text-foreground">
+                  {criticality.silo_count} silo area{criticality.silo_count !== 1 ? "s" : ""}
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  {criticality.silo_count === 0
+                    ? "Knowledge is well distributed"
+                    : "Skill categories with low redundancy"}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-xl border border-border/60 px-4 py-3 bg-card">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-violet-50 border border-violet-100">
+                <Layers className="size-3.5 text-violet-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-semibold text-foreground">
+                  {criticality.unique_skills} unique skill{criticality.unique_skills !== 1 ? "s" : ""}
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  {criticality.unique_skills === 0
+                    ? "No skill exclusively held by this employee"
+                    : "Skills no other team member holds"}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border/60 overflow-hidden">
+              <div className="flex items-center gap-3 px-4 py-3 bg-card border-b border-border/60">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-rose-50 border border-rose-100">
+                  <GitBranch className="size-3.5 text-rose-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[12px] font-semibold text-foreground">
+                    Bus factor for {bus_factor_in_org.count} project{bus_factor_in_org.count !== 1 ? "s" : ""}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {bus_factor_in_org.count === 0
+                      ? "Not a critical bottleneck anywhere"
+                      : "Removal would critically impact these projects"}
+                  </p>
+                </div>
+              </div>
+              {bus_factor_in_org.projects.length > 0 && (
+                <div className="divide-y divide-border/40 bg-muted/20">
+                  {bus_factor_in_org.projects.map((proj) => (
+                    <button
+                      key={proj.id}
+                      onClick={() => navigate(`/projects/${proj.id}`)}
+                      className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-muted/40 transition-colors group"
+                    >
+                      <span className="text-[12px] font-medium text-foreground group-hover:text-primary transition-colors">
+                        {proj.name}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground/50 group-hover:text-primary/60 transition-colors">
+                        View →
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </ComposedCard>
 
-        <ComposedCard title="Top Skills" headerClassName="mb-4">
-          <div className="space-y-3.5">
-            {skillsLoading ? (
-              Array.from({ length: 4 }).map((_, i) => <SkillBarSkeleton key={i} />)
-            ) : topSkills.length === 0 ? (
-              <p className="text-[13px] text-muted-foreground text-center py-8">No skills recorded</p>
-            ) : (
-              topSkills.map((skill) => <SkillBar key={skill.id} name={skill.name} level={skill.pivot.level} />)
-            )}
+        {/* Recommendations */}
+        <ComposedCard
+          title="Recommendations"
+          action={
+            <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
+              {recommendations.length}
+            </span>
+          }
+          headerClassName="mb-4"
+        >
+          <div className="space-y-2.5">
+            {recommendations.map((rec, i) => {
+              const Icon = rec.icon;
+              return (
+                <div key={i} className="flex gap-3 rounded-xl border border-border/60 px-4 py-3 bg-card">
+                  <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg border", rec.iconBg)}>
+                    <Icon className={cn("size-3.5", rec.iconColor)} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-[12px] font-semibold text-foreground leading-snug">{rec.title}</p>
+                      {rec.priority === "high" && (
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 ring-1 ring-rose-200/60 rounded px-1.5 py-0.5 shrink-0">
+                          High
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">{rec.description}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </ComposedCard>
       </div>
 
-      <AbsencesCard userId={userId} />
+      {/* ── Right column ─────────────────────────────────── */}
+      <ComposedCard
+        title="Absences"
+        action={
+          <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
+            {allAbsences.length}
+          </span>
+        }
+        headerClassName="mb-5"
+        className="flex flex-col"
+      >
+        <div className="flex flex-col justify-between h-full">
+          {/* Mini stats */}
+          <div className="grid grid-cols-2 gap-2.5 mb-4">
+            <div className="rounded-xl border border-border/60 px-3.5 py-3 bg-card">
+              <div className="flex items-center gap-2">
+                <SunHorizonIcon className="size-3.5 text-muted-foreground" />
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Days YTD</p>
+              </div>
+              {absencesLoading ? (
+                <Skeleton className="h-6 w-10 mt-1.5" />
+              ) : (
+                <p className="text-[20px] font-bold text-foreground leading-tight mt-1 tabular-nums">{ytd}</p>
+              )}
+            </div>
+            <div className="rounded-xl border border-border/60 px-3.5 py-3 bg-card">
+              <div className="flex items-center gap-2">
+                <ClockCountdownIcon className="size-3.5 text-muted-foreground" />
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Upcoming</p>
+              </div>
+              {absencesLoading ? (
+                <Skeleton className="h-6 w-10 mt-1.5" />
+              ) : (
+                <p className="text-[20px] font-bold text-foreground leading-tight mt-1 tabular-nums">{upcoming.length}</p>
+              )}
+            </div>
+          </div>
+
+          {/* List */}
+          <div className="flex-1 mb-4">
+            {absencesLoading ? (
+              <div className="space-y-3 py-1">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 p-1.5">
+                    <Skeleton className="size-8 rounded-lg shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <Skeleton className="h-3.5 w-28" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                    <Skeleton className="h-5 w-12 rounded-full" />
+                  </div>
+                ))}
+              </div>
+            ) : upcoming.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <CalendarBlankIcon className="size-8 text-muted-foreground/30 mb-2" />
+                <p className="text-[12px] text-muted-foreground">No upcoming absences</p>
+              </div>
+            ) : (
+              <div className="space-y-4 p-0.5">
+                {upcoming.slice(0, 4).map((a) => (
+                  <SecondaryCard
+                    key={a.id}
+                    before={
+                      <div className="flex size-8 items-center justify-center rounded-lg bg-muted/50 border border-border/40">
+                        <span className={cn("size-2 rounded-full", ABSENCE_TYPE_DOT[a.type])} />
+                      </div>
+                    }
+                    title={ABSENCE_TYPE_LABEL[a.type]}
+                    description={`${fmtShort(a.start_date)} → ${fmtShort(a.end_date)}`}
+                    action={
+                      <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
+                        {daysBetween(a.start_date, a.end_date)}d
+                      </span>
+                    }
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <SecondaryButton onClick={onViewAbsences}>View all absences →</SecondaryButton>
+        </div>
+      </ComposedCard>
     </div>
   );
 }
