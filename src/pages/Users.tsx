@@ -261,7 +261,7 @@ function UserList() {
               >
                 <TableCell className="px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <UserAvatar initials={getInitials(`${emp.firstname} ${emp.lastname}`)} variant={emp.status} size="lg" />
+                    <UserAvatar initials={getInitials(emp)} variant={emp.status} size="lg" />
                     <div>
                       <p className="font-semibold text-foreground text-[14px]">
                         <HighlightMatch text={`${emp.firstname} ${emp.lastname}`} searchTerm={search} />

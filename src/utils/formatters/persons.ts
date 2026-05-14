@@ -1,14 +1,9 @@
-export function getFullName(user: { firstname: string; lastname: string }): string {
-  return `${user.firstname} ${user.lastname}`.trim();
+export function getFullName(firstname: string, lastname: string): string {
+  return `${firstname} ${lastname}`.trim();
 }
 
-export function getInitials(fullName: string): string {
-  if (!fullName) return "?";
-  return fullName
-    .split(" ")
-    .map((p) => p[0])
-    .filter(Boolean)
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+export function getInitials(firstname: string, lastname: string): string {
+  const a = firstname?.[0] ?? "";
+  const b = lastname?.[0] ?? "";
+  return (a + b).toUpperCase() || "?";
 }

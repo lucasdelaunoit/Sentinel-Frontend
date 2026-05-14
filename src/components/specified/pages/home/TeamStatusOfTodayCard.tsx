@@ -4,7 +4,6 @@ import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import { useState } from "react";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart.tsx";
 import { RadialBarChart, RadialBar } from "recharts";
-import useGetUsers from "@/api/users/useGetUsers.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import useGetTeamToday from "@/api/users/useGetTeamToday.ts";
@@ -71,16 +70,6 @@ export default function TeamStatusOfTodayCard() {
 
   const { data, isLoading } = useGetTeamToday();
 
-  const isRemoteFilter = FILTER_IS_REMOTE[filter];
-  const { data: usersPage } = useGetUsers(
-    {
-      search,
-      filters: isRemoteFilter !== undefined ? [{ field: "is_remote", value: isRemoteFilter }] : [],
-      per_page: 100,
-    },
-    sheetOpen,
-  );
-
   const cardUsers = data?.employees ?? [];
   const capacityPct = data?.capacity_pct ?? 0;
 
@@ -106,7 +95,12 @@ export default function TeamStatusOfTodayCard() {
               {cardUsers.map((e) => (
                 <SecondaryCard
                   key={e.id}
-                  before={<UserAvatar initials={initials(`${e.firstname} ${e.lastname}`)} variant={toUserStatus(e.today_status)} />}
+                  before={
+                    <UserAvatar
+                      initials={initials(`${e.firstname} ${e.lastname}`)}
+                      variant={toUserStatus(e.today_status)}
+                    />
+                  }
                   title={`${e.firstname} ${e.lastname}`}
                   description={e.role}
                   action={<UserStatusBadge status={toUserStatus(e.today_status)} />}

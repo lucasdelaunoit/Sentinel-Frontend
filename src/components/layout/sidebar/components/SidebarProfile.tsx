@@ -2,21 +2,13 @@ import { NavLink } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 import { useAuth } from "@/context/AuthContext";
-
-function getInitials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("") || "?";
-}
+import { getFullName, getInitials } from "@/utils/formatters/persons";
 
 export default function SidebarProfile({ collapsed }: { collapsed: boolean }) {
   const { user } = useAuth();
-  const displayName = user ? `${user.firstname} ${user.lastname}` : "Guest";
+  const displayName = user ? getFullName(user) : "Guest";
   const subtitle = user?.email ?? "Not signed in";
-  const initials = user ? getInitials(`${user.firstname} ${user.lastname}`) : "·";
+  const initials = user ? getInitials(user) : "·";
 
   return (
     <NavLink

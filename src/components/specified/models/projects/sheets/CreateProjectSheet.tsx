@@ -2,24 +2,24 @@ import { useEffect, useState, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { FolderPlusIcon, XIcon, PlusIcon } from "@phosphor-icons/react";
+import { FolderPlusIcon, XIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import SearchBar from "@/components/common/inputs/SearchBar";
+import SelectorList from "@/components/common/inputs/SelectorList";
+import LevelPicker from "@/components/common/inputs/LevelPicker";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar";
+import UserSelectorRow from "@/components/specified/models/employees/items/UserSelectorRow";
+import SkillSelectorRow from "@/components/specified/models/skill/items/SkillSelectorRow";
 import useGetUsers from "@/api/users/useGetUsers";
 import useGetSkills from "@/api/skills/useGetSkills";
 import useCreateProject from "@/api/projects/useCreateProject";
-import { cn } from "@/lib/utils";
+import { getFullName, getInitials } from "@/utils/formatters/persons";
 
 const MAX_NAME = 80;
 const MAX_DESC = 5000;
-const LEVELS = [1, 2, 3, 4, 5] as const;
-
 interface SkillReqForm {
   skill_id: number;
   required_level: number;
@@ -71,10 +71,6 @@ const schema = yup.object({
     .default([]),
 });
 
-function initials(u: UserListItem) {
-  return `${u.firstname?.[0] ?? ""}${u.lastname?.[0] ?? ""}`.toUpperCase();
-}
-
 export default function CreateProjectSheet({ open, onOpenChange }: CreateProjectSheetProps) {
   const {
     control,
@@ -117,10 +113,7 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
   const [userSearch, setUserSearch] = useState("");
   const [skillSearch, setSkillSearch] = useState("");
 
-  const { data: usersData, isLoading: usersLoading } = useGetUsers(
-    { per_page: 50, search: userSearch || undefined },
-    open,
-  );
+  const { data: usersData, isLoading: usersLoading } = useGetUsers({ per_page: 50, search: userSearch || undefined });
   const { data: skillsData, isLoading: skillsLoading } = useGetSkills({
     per_page: 50,
     search: skillSearch || undefined,
@@ -129,10 +122,7 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
   const users = usersData?.data ?? [];
   const skills = skillsData?.data ?? [];
 
-  const selectedUsers = useMemo(
-    () => users.filter((u) => userIds.includes(Number(u.id))),
-    [users, userIds],
-  );
+  const selectedUsers = useMemo(() => users.filter((u) => userIds.includes(Number(u.id))), [users, userIds]);
 
   const selectedSkillsMap = useMemo(() => {
     const map = new Map<number, SkillReqForm>();
@@ -153,11 +143,10 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
         { shouldDirty: true, shouldValidate: true },
       );
     } else {
-      setValue(
-        "skill_requirements",
-        [...skillReqs, { skill_id: id, required_level: 3 }],
-        { shouldDirty: true, shouldValidate: true },
-      );
+      setValue("skill_requirements", [...skillReqs, { skill_id: id, required_level: 3 }], {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
     }
   }
 
@@ -294,84 +283,48 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
             <FieldLabel>Team members</FieldLabel>
             <span className="text-[11px] text-muted-foreground tabular-nums">{userIds.length} selected</span>
           </div>
-
-          {selectedUsers.length > 0 && (
-            <div className="flex flex-wrap gap-2 pb-3">
-              {selectedUsers.map((u) => (
-                <span
-                  key={u.id}
-                  className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary pl-1 pr-2.5 py-1 text-[12px] font-medium"
-                >
-                  <span className="size-6 rounded-full bg-primary/20 grid place-items-center text-[10px] font-bold">
-                    {initials(u)}
-                  </span>
-                  {u.firstname} {u.lastname}
-                  <button
-                    type="button"
-                    onClick={() => toggleUser(Number(u.id))}
-                    className="hover:text-foreground cursor-pointer"
-                  >
-                    <XIcon className="size-3.5" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-
-          <SearchBar
-            value={userSearch}
-            onChange={setUserSearch}
-            placeholder="Search employees..."
-            size="sm"
-            className="[&_input]:w-full"
-          />
-
-          <div className="mt-3 max-h-72 overflow-y-auto rounded-xl border border-border/60 bg-muted/20 divide-y divide-border/40">
-            {usersLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="w-full flex items-center gap-3 px-3.5 py-2.5">
-                  <Skeleton className="size-6 rounded-md shrink-0" />
-                  <UserAvatar.Skeleton size="base" />
-                  <Skeleton className="h-3.5 flex-1 max-w-[40%]" />
-                  <Skeleton className="h-3 w-20 shrink-0" />
-                </div>
-              ))
-            ) : users.length === 0 ? (
-              <div className="p-4 text-[12.5px] text-muted-foreground">No employees found.</div>
-            ) : (
-              users.map((u) => {
-                const id = Number(u.id);
-                const checked = userIds.includes(id);
-                return (
-                  <button
-                    key={u.id}
-                    type="button"
-                    onClick={() => toggleUser(id)}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-3.5 py-2.5 text-left cursor-pointer transition-colors",
-                      checked ? "bg-primary/5" : "hover:bg-muted/40",
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "size-6 rounded-md grid place-items-center transition-colors shrink-0",
-                        checked ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground",
-                      )}
-                    >
-                      <PlusIcon className="size-3.5" weight="bold" />
-                    </div>
-                    <UserAvatar initials={initials(u)} size="base" />
-                    <span className="flex-1 text-[13px] font-semibold text-foreground truncate">
-                      {u.firstname} {u.lastname}
-                    </span>
-                    {u.department?.name && (
-                      <span className="text-[11.5px] text-muted-foreground shrink-0">{u.department.name}</span>
-                    )}
-                  </button>
-                );
-              })
+          <SelectorList
+            items={users}
+            renderItem={(u) => (
+              <UserSelectorRow
+                key={u.id}
+                user={u}
+                selected={userIds.includes(Number(u.id))}
+                onToggle={() => toggleUser(Number(u.id))}
+                searchTerm={userSearch}
+              />
             )}
-          </div>
+            renderSkeleton={() => <UserSelectorRow.Skeleton />}
+            searchValue={userSearch}
+            onSearchChange={setUserSearch}
+            searchPlaceholder="Search employees..."
+            isLoading={usersLoading}
+            emptyMessage="No employees found."
+            selected={
+              selectedUsers.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedUsers.map((u) => (
+                    <span
+                      key={u.id}
+                      className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary pl-1 pr-2.5 py-1 text-[12px] font-medium"
+                    >
+                      <span className="size-6 rounded-full bg-primary/20 grid place-items-center text-[10px] font-bold">
+                        {getInitials(u.firstname, u.lastname)}
+                      </span>
+                      {getFullName(u.firstname, u.lastname)}
+                      <button
+                        type="button"
+                        onClick={() => toggleUser(Number(u.id))}
+                        className="hover:text-foreground cursor-pointer"
+                      >
+                        <XIcon className="size-3.5" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )
+            }
+          />
           <FieldDescription>Pick employees to assign to this project</FieldDescription>
         </Field>
 
@@ -381,107 +334,57 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
             <FieldLabel>Required skills</FieldLabel>
             <span className="text-[11px] text-muted-foreground tabular-nums">{skillReqs.length} added</span>
           </div>
-
-          {skillReqs.length > 0 && (
-            <div className="space-y-2 pb-3">
-              {skillReqs.map((req) => {
-                const skill = skills.find((s) => Number(s.id) === req.skill_id);
-                return (
-                  <div
-                    key={req.skill_id}
-                    className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold text-foreground truncate leading-tight">
-                        {skill?.name ?? `Skill #${req.skill_id}`}
-                      </p>
-                      {skill?.category?.name && (
-                        <p className="text-[11px] text-muted-foreground truncate mt-0.5">{skill.category.name}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {LEVELS.map((lvl) => {
-                        const active = req.required_level === lvl;
-                        return (
-                          <button
-                            key={lvl}
-                            type="button"
-                            onClick={() => setSkillLevel(req.skill_id, lvl)}
-                            className={cn(
-                              "size-7 rounded-md text-[12px] font-bold tabular-nums transition-colors cursor-pointer",
-                              active
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "bg-muted/60 text-muted-foreground hover:bg-muted",
-                            )}
-                          >
-                            {lvl}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => toggleSkill(req.skill_id)}
-                      className="size-7 grid place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
-                    >
-                      <XIcon className="size-4" />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          <SearchBar
-            value={skillSearch}
-            onChange={setSkillSearch}
-            placeholder="Search skills..."
-            size="sm"
-            className="[&_input]:w-full"
-          />
-
-          <div className="mt-3 max-h-64 overflow-y-auto rounded-xl border border-border/60 bg-muted/20 divide-y divide-border/40">
-            {skillsLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="w-full flex items-center gap-3 px-3.5 py-2.5">
-                  <Skeleton className="size-6 rounded-md shrink-0" />
-                  <Skeleton className="h-3.5 flex-1 max-w-[45%]" />
-                  <Skeleton className="h-3 w-20 shrink-0" />
-                </div>
-              ))
-            ) : skills.length === 0 ? (
-              <div className="p-4 text-[12.5px] text-muted-foreground">No skills found.</div>
-            ) : (
-              skills.map((s) => {
-                const id = Number(s.id);
-                const added = selectedSkillsMap.has(id);
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => toggleSkill(id)}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-3.5 py-2.5 text-left cursor-pointer transition-colors",
-                      added ? "bg-primary/5" : "hover:bg-muted/40",
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "size-6 rounded-md grid place-items-center transition-colors shrink-0",
-                        added ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground",
-                      )}
-                    >
-                      <PlusIcon className="size-3.5" weight="bold" />
-                    </div>
-                    <span className="flex-1 text-[13px] font-semibold text-foreground truncate">{s.name}</span>
-                    {s.category?.name && (
-                      <span className="text-[11.5px] text-muted-foreground shrink-0">{s.category.name}</span>
-                    )}
-                  </button>
-                );
-              })
+          <SelectorList
+            items={skills}
+            renderItem={(s) => (
+              <SkillSelectorRow
+                key={s.id}
+                skill={s}
+                selected={selectedSkillsMap.has(Number(s.id))}
+                onToggle={() => toggleSkill(Number(s.id))}
+                searchTerm={skillSearch}
+              />
             )}
-          </div>
+            renderSkeleton={() => <SkillSelectorRow.Skeleton />}
+            searchValue={skillSearch}
+            onSearchChange={setSkillSearch}
+            searchPlaceholder="Search skills..."
+            isLoading={skillsLoading}
+            emptyMessage="No skills found."
+            maxHeight="max-h-64"
+            selected={
+              skillReqs.length > 0 && (
+                <div className="space-y-2">
+                  {skillReqs.map((req) => {
+                    const skill = skills.find((s) => Number(s.id) === req.skill_id);
+                    return (
+                      <div
+                        key={req.skill_id}
+                        className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-semibold text-foreground truncate leading-tight">
+                            {skill?.name ?? `Skill #${req.skill_id}`}
+                          </p>
+                          {skill?.category?.name && (
+                            <p className="text-[11px] text-muted-foreground truncate mt-0.5">{skill.category.name}</p>
+                          )}
+                        </div>
+                        <LevelPicker value={req.required_level} onChange={(lvl) => setSkillLevel(req.skill_id, lvl)} />
+                        <button
+                          type="button"
+                          onClick={() => toggleSkill(req.skill_id)}
+                          className="size-7 grid place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
+                        >
+                          <XIcon className="size-4" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )
+            }
+          />
           <FieldDescription>Each requirement defines a target level (1 = beginner, 5 = expert)</FieldDescription>
         </Field>
       </div>
