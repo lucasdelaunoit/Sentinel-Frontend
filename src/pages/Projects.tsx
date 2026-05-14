@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Eye, X } from "lucide-react";
+import { Eye } from "lucide-react";
 import { PlusIcon } from "@phosphor-icons/react";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import ProjectsStatCardsSection from "@/components/specified/pages/projects/ProjectsStatCardsSection.tsx";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import useGetProjects from "@/api/projects/useGetProjects";
+import CreateProjectSheet from "@/components/specified/models/projects/sheets/CreateProjectSheet.tsx";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SortableTableHead } from "@/components/common/table/SortableTableHead";
@@ -76,66 +77,6 @@ function HealthBar({ value }: { value: number }) {
       <span className={cn("text-[12px] font-semibold tabular-nums w-8 text-right", healthTextColor(value))}>
         {value}
       </span>
-    </div>
-  );
-}
-
-/* ─── Project Modal ─────────────────────────────────────────── */
-
-function ProjectModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  if (!open) return null;
-
-  const fieldCls =
-    "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-end">
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 flex h-full w-[480px] flex-col bg-card shadow-2xl">
-        <div className="h-[3px] w-full shrink-0 bg-gradient-to-r from-primary via-primary to-transparent" />
-        <div className="flex items-start justify-between px-8 pt-7 pb-5">
-          <div>
-            <h2 className="text-[18px] font-bold text-foreground tracking-tight">New Project</h2>
-            <p className="mt-1 text-[13px] text-muted-foreground">Create a new project in your portfolio</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-5">
-          {[
-            { label: "Project Name", type: "text", placeholder: "e.g. API Modernization" },
-            { label: "Description", type: "text", placeholder: "Brief description of the project" },
-          ].map(({ label, ...props }) => (
-            <div key={label} className="space-y-1.5">
-              <label className="block text-[12px] font-medium text-foreground/70">{label}</label>
-              <input className={fieldCls} {...props} />
-            </div>
-          ))}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="block text-[12px] font-medium text-foreground/70">Start Date</label>
-              <input type="date" className={fieldCls} />
-            </div>
-            <div className="space-y-1.5">
-              <label className="block text-[12px] font-medium text-foreground/70">Deadline</label>
-              <input type="date" className={fieldCls} />
-            </div>
-          </div>
-        </div>
-        <div className="shrink-0 px-8 py-5 border-t border-border/60">
-          <Button
-            className="w-full justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-11 text-[13px] font-semibold shadow-sm shadow-primary/10 btn-press"
-            onClick={onClose}
-          >
-            <PlusIcon className="size-4" />
-            Create Project
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -384,25 +325,33 @@ function ProjectList() {
 
 export default function Projects() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [modalOpen, setModalOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("action") === "add") {
-      setModalOpen(true);
+      setSheetOpen(true);
       setSearchParams({}, { replace: true });
     }
   }, [searchParams, setSearchParams]);
 
   return (
     <>
-      <TopBar title="All Projects" />
+      <TopBar
+        title="All Projects"
+        actions={
+          <Button onClick={() => setSheetOpen(true)}>
+            <PlusIcon className="size-3.5" weight="bold" />
+            New Project
+          </Button>
+        }
+      />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         <ProjectsStatCardsSection />
 
         <ProjectList />
       </div>
 
-      <ProjectModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <CreateProjectSheet open={sheetOpen} onOpenChange={setSheetOpen} />
     </>
   );
 }
