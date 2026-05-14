@@ -121,6 +121,15 @@ export interface UsersStats {
   department_balance: DepartmentBalanceStat
 }
 
+/* ── Project stats (GET /projects/stats) ─────────────────── */
+
+export interface ProjectsStats {
+  total: number
+  avg_health: number
+  fragile: number
+  at_risk: number
+}
+
 /* ── Team status (GET /employees/today-status) ───────────── */
 
 export type TodayStatus = "Available" | "Has Leave" | "Remote"

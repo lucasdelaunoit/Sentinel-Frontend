@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Eye, X, Layers, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
+import { Eye, X } from "lucide-react";
 import { PlusIcon } from "@phosphor-icons/react";
-import StatCard from "@/components/common/cards/StatCard";
 import ComposedCard from "@/components/common/cards/ComposedCard";
+import ProjectsStatCardsSection from "@/components/specified/pages/projects/ProjectsStatCardsSection.tsx";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -393,20 +393,11 @@ export default function Projects() {
     }
   }, [searchParams, setSearchParams]);
 
-  const { data, isLoading: statsLoading } = useGetProjects({ per_page: 1 });
-  const total = data?.total;
-  const totalDisplay = total != null ? String(total).padStart(2, "0") : "—";
-
   return (
     <>
       <TopBar title="All Projects" />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
-        <div className="grid grid-cols-4 gap-4">
-          <StatCard title="Total Projects" value={totalDisplay} icon={Layers} isLoading={statsLoading} comment={null} />
-          <StatCard title="Active" value="—" icon={CheckCircle2} isLoading={statsLoading} comment={null} />
-          <StatCard title="At Risk" value="—" icon={AlertTriangle} isLoading={statsLoading} comment={null} />
-          <StatCard title="Avg. Progress" value="—" icon={Clock} isLoading={statsLoading} comment={null} />
-        </div>
+        <ProjectsStatCardsSection />
 
         <ProjectList />
       </div>
