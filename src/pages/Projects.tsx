@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import useGetProjects from "@/api/projects/useGetProjects";
-import type { ProjectListItem } from "@/types/dashboard";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SortableTableHead } from "@/components/common/table/SortableTableHead";
@@ -17,54 +16,21 @@ import { TablePagination } from "@/components/common/table/TablePagination";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useTablePagination } from "@/hooks/useTablePagination";
 import { HighlightMatch } from "@/utils/useHighlightableText";
+import ProjectStatusBadge from "@/components/specified/models/projects/badges/ProjectStatusBadge.tsx";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
-type ProjSortKey = "name" | "progress" | "risk_score" | "bus_factor" | "health" | "end_date";
+type ProjSortKey = "name" | "risk_score" | "bus_factor" | "health" | "deadline";
 
 /* ─── Helpers ───────────────────────────────────────────────── */
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {
+  planned: "Planned",
   active: "Active",
-  on_hold: "On Hold",
-  planning: "Planning",
+  paused: "Paused",
   completed: "Completed",
+  archived: "Archived",
 };
-
-const STATUS_STYLES: Record<ProjectStatus, string> = {
-  active: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400",
-  completed: "bg-blue-50 text-blue-700 ring-1 ring-blue-200/60 dark:bg-blue-500/10 dark:text-blue-400",
-  on_hold: "bg-amber-50 text-amber-700 ring-1 ring-amber-200/60 dark:bg-amber-500/10 dark:text-amber-400",
-  planning: "bg-violet-50 text-violet-700 ring-1 ring-violet-200/60 dark:bg-violet-500/10 dark:text-violet-400",
-};
-
-const PRIORITY_LABELS: Record<ProjectPriority, string> = {
-  critical: "Critical",
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-};
-
-const PRIORITY_DOT: Record<ProjectPriority, string> = {
-  critical: "bg-rose-500 shadow-sm",
-  high: "bg-orange-400 shadow-sm",
-  medium: "bg-amber-400 shadow-sm",
-  low: "bg-muted/60",
-};
-
-const AVATAR_COLORS = [
-  "bg-indigo-500",
-  "bg-blue-500",
-  "bg-amber-500",
-  "bg-emerald-500",
-  "bg-rose-500",
-  "bg-violet-500",
-  "bg-cyan-500",
-];
-
-function avatarColor(id: number) {
-  return AVATAR_COLORS[id % AVATAR_COLORS.length];
-}
 
 function fmtDate(date: string) {
   return new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
@@ -100,48 +66,7 @@ function busFactorColor(v: number) {
   return "text-emerald-500";
 }
 
-function progressBarColor(v: number) {
-  if (v === 100) return "bg-gradient-to-r from-blue-500 to-blue-600";
-  if (v >= 60) return "bg-gradient-to-r from-primary/80 to-primary";
-  if (v >= 35) return "bg-gradient-to-r from-amber-400 to-amber-500";
-  return "bg-muted";
-}
-
 /* ─── Sub-components ────────────────────────────────────────── */
-
-function StatusBadge({ value }: { value: ProjectStatus }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold",
-        STATUS_STYLES[value],
-      )}
-    >
-      {STATUS_LABELS[value]}
-    </span>
-  );
-}
-
-function PriorityDot({ value }: { value: ProjectPriority }) {
-  return (
-    <div className="flex items-center gap-1.5">
-      <div className={cn("size-1.5 rounded-full shrink-0", PRIORITY_DOT[value])} />
-      <span className="text-[12px] text-foreground">{PRIORITY_LABELS[value]}</span>
-    </div>
-  );
-}
-
-function ProgressBar({ value }: { value: number }) {
-  return (
-    <div className="flex items-center gap-2.5 min-w-[110px]">
-      <div className="h-1.5 flex-1 rounded-full bg-muted shadow-inner overflow-hidden">
-        <div className={cn("h-full rounded-full shadow-sm", progressBarColor(value))} style={{ width: `${value}%` }} />
-      </div>
-      <span className="text-[12px] font-medium tabular-nums text-foreground w-8 text-right">{value}%</span>
-    </div>
-  );
-}
-
 function HealthBar({ value }: { value: number }) {
   return (
     <div className="flex items-center gap-2.5 min-w-[100px]">
@@ -151,40 +76,6 @@ function HealthBar({ value }: { value: number }) {
       <span className={cn("text-[12px] font-semibold tabular-nums w-8 text-right", healthTextColor(value))}>
         {value}
       </span>
-    </div>
-  );
-}
-
-function AvatarGroup({ members, max = 4 }: { members: ProjectListItem["team"]; max?: number }) {
-  const visible = members.slice(0, max);
-  const extra = members.length - max;
-  return (
-    <div className="flex items-center">
-      {visible.map((m, i) => (
-        <div
-          key={m.id}
-          title={m.name}
-          className="ring-2 ring-card rounded-full"
-          style={{ marginLeft: i === 0 ? 0 : -8 }}
-        >
-          <div
-            className={cn(
-              "flex size-7 items-center justify-center rounded-full text-[10px] font-semibold text-white shrink-0 shadow-sm",
-              avatarColor(m.id),
-            )}
-          >
-            {m.initials}
-          </div>
-        </div>
-      ))}
-      {extra > 0 && (
-        <div
-          className="ring-2 ring-card flex size-7 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-muted-foreground"
-          style={{ marginLeft: -8 }}
-        >
-          +{extra}
-        </div>
-      )}
     </div>
   );
 }
@@ -224,35 +115,13 @@ function ProjectModal({ open, onClose }: { open: boolean; onClose: () => void })
               <input className={fieldCls} {...props} />
             </div>
           ))}
-          <div className="space-y-1.5">
-            <label className="block text-[12px] font-medium text-foreground/70">Department</label>
-            <select defaultValue="" className={cn(fieldCls, "appearance-none cursor-pointer")}>
-              <option value="" disabled>
-                Select a department
-              </option>
-              {["Engineering", "Data", "Design", "Security", "DevOps", "Management"].map((d) => (
-                <option key={d}>{d}</option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-[12px] font-medium text-foreground/70">Priority</label>
-            <select defaultValue="" className={cn(fieldCls, "appearance-none cursor-pointer")}>
-              <option value="" disabled>
-                Select priority
-              </option>
-              {["Critical", "High", "Medium", "Low"].map((p) => (
-                <option key={p}>{p}</option>
-              ))}
-            </select>
-          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="block text-[12px] font-medium text-foreground/70">Start Date</label>
               <input type="date" className={fieldCls} />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-[12px] font-medium text-foreground/70">Target End Date</label>
+              <label className="block text-[12px] font-medium text-foreground/70">Deadline</label>
               <input type="date" className={fieldCls} />
             </div>
           </div>
@@ -273,7 +142,7 @@ function ProjectModal({ open, onClose }: { open: boolean; onClose: () => void })
 
 /* ─── Project List ──────────────────────────────────────────── */
 
-const STATUS_FILTER_OPTIONS: (ProjectStatus | null)[] = [null, "active", "on_hold", "planning", "completed"];
+const STATUS_FILTER_OPTIONS: (ProjectStatus | null)[] = [null, "planned", "active", "paused", "completed", "archived"];
 
 function ProjectList() {
   const navigate = useNavigate();
@@ -339,16 +208,6 @@ function ProjectList() {
             <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Status
             </TableHead>
-            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Priority
-            </TableHead>
-            <SortableTableHead
-              label="Progress"
-              col="progress"
-              sortKey={sort.key}
-              sortDir={sort.dir}
-              onSort={toggleSort}
-            />
             <SortableTableHead
               label="Risk"
               col="risk_score"
@@ -364,10 +223,13 @@ function ProjectList() {
               onSort={toggleSort}
             />
             <SortableTableHead label="Health" col="health" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
-            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Team
-            </TableHead>
-            <SortableTableHead label="Due" col="end_date" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
+            <SortableTableHead
+              label="Deadline"
+              col="deadline"
+              sortKey={sort.key}
+              sortDir={sort.dir}
+              onSort={toggleSort}
+            />
             <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Actions
             </TableHead>
@@ -391,19 +253,10 @@ function ProjectList() {
                   <Skeleton className="h-5 w-16 rounded-full" />
                 </TableCell>
                 <TableCell className="px-5 py-4">
-                  <Skeleton className="h-3.5 w-16" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-3 w-28 rounded-full" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
                   <Skeleton className="h-4 w-8" />
                 </TableCell>
                 <TableCell className="px-5 py-4">
                   <Skeleton className="h-4 w-6" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-3 w-24 rounded-full" />
                 </TableCell>
                 <TableCell className="px-5 py-4">
                   <Skeleton className="h-7 w-20 rounded-full" />
@@ -418,19 +271,19 @@ function ProjectList() {
             ))
           ) : isError ? (
             <TableRow className="border-border/40">
-              <TableCell colSpan={10} className="px-6 py-12 text-center text-sm text-muted-foreground">
+              <TableCell colSpan={9} className="px-6 py-12 text-center text-sm text-muted-foreground">
                 Failed to load projects. Check API connection.
               </TableCell>
             </TableRow>
           ) : projects.length === 0 ? (
             <TableRow className="border-border/40">
-              <TableCell colSpan={10} className="px-6 py-12 text-center text-sm text-muted-foreground">
+              <TableCell colSpan={9} className="px-6 py-12 text-center text-sm text-muted-foreground">
                 No projects match your filters.
               </TableCell>
             </TableRow>
           ) : (
             projects.map((project) => {
-              const overdue = new Date(project.end_date) < new Date() && project.status !== "completed";
+              const overdue = new Date(project.deadline) < new Date() && project.status !== "completed";
               return (
                 <TableRow
                   key={project.id}
@@ -461,13 +314,7 @@ function ProjectList() {
                     </div>
                   </TableCell>
                   <TableCell className="px-5 py-4">
-                    <StatusBadge value={project.status} />
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <PriorityDot value={project.priority} />
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <ProgressBar value={project.progress} />
+                    <ProjectStatusBadge status={project.status} />
                   </TableCell>
                   <TableCell className="px-5 py-4">
                     <div className="flex items-center gap-1.5">
@@ -488,16 +335,13 @@ function ProjectList() {
                     <HealthBar value={project.health} />
                   </TableCell>
                   <TableCell className="px-5 py-4">
-                    <AvatarGroup members={project.team ?? []} />
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
                     <span
                       className={cn(
                         "text-[12px] font-medium whitespace-nowrap",
                         overdue ? "text-rose-500" : "text-foreground",
                       )}
                     >
-                      {fmtDate(project.end_date)}
+                      {fmtDate(project.deadline)}
                     </span>
                     {overdue && <p className="text-[10px] text-rose-400 mt-0.5 font-medium">Overdue</p>}
                   </TableCell>

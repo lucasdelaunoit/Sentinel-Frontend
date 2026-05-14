@@ -24,9 +24,10 @@ const SIZE_STYLES: Record<
     clearRight: "right-2",
   },
   md: {
-    input: "pl-9 pr-8 h-auto py-5 w-56",
+    input: "pl-9 pr-8 h-8 py-4.5 w-56",
     icon: "size-3.5",
     clear: "size-3.5",
+    iconLeft: "left-2.5",
     clearRight: "right-2.5",
   },
 };

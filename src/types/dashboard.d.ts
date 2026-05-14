@@ -182,11 +182,16 @@ export interface ProjectListItem {
   description: string
   status: ProjectStatus
   priority: ProjectPriority
-  progress: number
   risk_score: number
   bus_factor: number
   health: number
-  end_date: string
+  started_at: string
+  deadline: string
+  paused_at: string | null
+  completed_at: string | null
+  archived_at: string | null
+  deleted_at: string | null
+  users_count?: number
   team: ProjectMemberSnippet[]
   skills: ProjectSkillItem[]
 }
@@ -222,11 +227,10 @@ export interface UserProjectItem {
   status: ProjectStatus
   priority: ProjectPriority
   role: string
-  progress: number
   risk_score: number
   bus_factor: number
   health: number
-  end_date: string
+  deadline: string
 }
 
 /* ── User skills (GET /users/:id/skills) ─────────────────── */

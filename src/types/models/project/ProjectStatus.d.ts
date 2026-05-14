@@ -1,1 +1,1 @@
-type ProjectStatus = "active" | "on_hold" | "planning" | "completed";
+type ProjectStatus = "planned" | "active" | "paused" | "completed" | "archived";
