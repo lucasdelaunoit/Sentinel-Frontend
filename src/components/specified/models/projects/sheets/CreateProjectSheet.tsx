@@ -6,7 +6,7 @@ import { FolderPlusIcon, XIcon, PlusIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SearchBar from "@/components/common/inputs/SearchBar";
@@ -45,7 +45,11 @@ const schema = yup.object({
     .required("Name is required.")
     .min(2, "Name must be at least 2 characters.")
     .max(MAX_NAME, `Name must be ${MAX_NAME} characters or fewer.`),
-  description: yup.string().max(MAX_DESC, `Description must be ${MAX_DESC} characters or fewer.`).default(""),
+  description: yup
+    .string()
+    .required("Description is required.")
+    .min(2, "Description must be at least 2 characters.")
+    .max(MAX_DESC, `Description must be ${MAX_DESC} characters or fewer.`),
   started_at: yup.string().default(""),
   deadline: yup
     .string()
@@ -84,7 +88,7 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
     defaultValues: {
       name: "",
       description: "",
-      started_at: "",
+      started_at: new Date().toISOString().slice(0, 10),
       deadline: "",
       user_ids: [],
       skill_requirements: [],
@@ -97,7 +101,7 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
       reset({
         name: "",
         description: "",
-        started_at: "",
+        started_at: new Date().toISOString().slice(0, 10),
         deadline: "",
         user_ids: [],
         skill_requirements: [],
@@ -193,7 +197,7 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
       title="New Project"
       description="Create a project and assign team + required skills"
       icon={<FolderPlusIcon className="size-4 text-primary" />}
-      maxWidth="sm:max-w-[520px]"
+      maxWidth="sm:max-w-[560px]"
       footer={
         <>
           <Button variant="outline" onClick={handleClose} className="flex-1" disabled={isPending} size="lg">
@@ -210,7 +214,7 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
         </>
       }
     >
-      <div className="space-y-5">
+      <div className="space-y-6">
         {/* Name */}
         <Controller
           name="name"
@@ -243,7 +247,9 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
           control={control}
           render={({ field }) => (
             <Field>
-              <FieldLabel>Description</FieldLabel>
+              <FieldLabel>
+                Description <span className="text-destructive-foreground">*</span>
+              </FieldLabel>
               <Textarea
                 {...field}
                 rows={3}
@@ -284,19 +290,19 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
 
         {/* Team members */}
         <Field>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-1">
             <FieldLabel>Team members</FieldLabel>
             <span className="text-[11px] text-muted-foreground tabular-nums">{userIds.length} selected</span>
           </div>
 
           {selectedUsers.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 pt-1 pb-2">
+            <div className="flex flex-wrap gap-2 pb-3">
               {selectedUsers.map((u) => (
                 <span
                   key={u.id}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary pl-1 pr-2 py-0.5 text-[11px] font-medium"
+                  className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary pl-1 pr-2.5 py-1 text-[12px] font-medium"
                 >
-                  <span className="size-5 rounded-full bg-primary/20 grid place-items-center text-[9px] font-bold">
+                  <span className="size-6 rounded-full bg-primary/20 grid place-items-center text-[10px] font-bold">
                     {initials(u)}
                   </span>
                   {u.firstname} {u.lastname}
@@ -305,20 +311,33 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
                     onClick={() => toggleUser(Number(u.id))}
                     className="hover:text-foreground cursor-pointer"
                   >
-                    <XIcon className="size-3" />
+                    <XIcon className="size-3.5" />
                   </button>
                 </span>
               ))}
             </div>
           )}
 
-          <SearchBar value={userSearch} onChange={setUserSearch} placeholder="Search employees..." size="sm" />
+          <SearchBar
+            value={userSearch}
+            onChange={setUserSearch}
+            placeholder="Search employees..."
+            size="sm"
+            className="[&_input]:w-full"
+          />
 
-          <div className="mt-2 max-h-44 overflow-y-auto rounded-xl border border-border/60 bg-muted/20 divide-y divide-border/40">
+          <div className="mt-3 max-h-72 overflow-y-auto rounded-xl border border-border/60 bg-muted/20 divide-y divide-border/40">
             {usersLoading ? (
-              <div className="p-3 text-[12px] text-muted-foreground">Loading…</div>
+              Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="w-full flex items-center gap-3 px-3.5 py-2.5">
+                  <Skeleton className="size-6 rounded-md shrink-0" />
+                  <UserAvatar.Skeleton size="base" />
+                  <Skeleton className="h-3.5 flex-1 max-w-[40%]" />
+                  <Skeleton className="h-3 w-20 shrink-0" />
+                </div>
+              ))
             ) : users.length === 0 ? (
-              <div className="p-3 text-[12px] text-muted-foreground">No employees found.</div>
+              <div className="p-4 text-[12.5px] text-muted-foreground">No employees found.</div>
             ) : (
               users.map((u) => {
                 const id = Number(u.id);
@@ -329,20 +348,25 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
                     type="button"
                     onClick={() => toggleUser(id)}
                     className={cn(
-                      "w-full flex items-center gap-2.5 px-3 py-2 text-left cursor-pointer transition-colors",
+                      "w-full flex items-center gap-3 px-3.5 py-2.5 text-left cursor-pointer transition-colors",
                       checked ? "bg-primary/5" : "hover:bg-muted/40",
                     )}
                   >
-                    <Checkbox checked={checked} className="pointer-events-none" />
-                    <UserAvatar initials={initials(u)} size="base" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12.5px] font-semibold text-foreground truncate">
-                        {u.firstname} {u.lastname}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground truncate">
-                        {u.title} · {u.department?.name}
-                      </p>
+                    <div
+                      className={cn(
+                        "size-6 rounded-md grid place-items-center transition-colors shrink-0",
+                        checked ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground",
+                      )}
+                    >
+                      <PlusIcon className="size-3.5" weight="bold" />
                     </div>
+                    <UserAvatar initials={initials(u)} size="base" />
+                    <span className="flex-1 text-[13px] font-semibold text-foreground truncate">
+                      {u.firstname} {u.lastname}
+                    </span>
+                    {u.department?.name && (
+                      <span className="text-[11.5px] text-muted-foreground shrink-0">{u.department.name}</span>
+                    )}
                   </button>
                 );
               })
@@ -353,24 +377,29 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
 
         {/* Skill requirements */}
         <Field>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-1">
             <FieldLabel>Required skills</FieldLabel>
             <span className="text-[11px] text-muted-foreground tabular-nums">{skillReqs.length} added</span>
           </div>
 
           {skillReqs.length > 0 && (
-            <div className="space-y-1.5 pt-1 pb-2">
+            <div className="space-y-2 pb-3">
               {skillReqs.map((req) => {
                 const skill = skills.find((s) => Number(s.id) === req.skill_id);
                 return (
                   <div
                     key={req.skill_id}
-                    className="flex items-center gap-2 rounded-lg border border-border/60 bg-card px-2.5 py-1.5"
+                    className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5"
                   >
-                    <span className="flex-1 text-[12.5px] font-semibold text-foreground truncate">
-                      {skill?.name ?? `Skill #${req.skill_id}`}
-                    </span>
-                    <div className="flex items-center gap-0.5">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-semibold text-foreground truncate leading-tight">
+                        {skill?.name ?? `Skill #${req.skill_id}`}
+                      </p>
+                      {skill?.category?.name && (
+                        <p className="text-[11px] text-muted-foreground truncate mt-0.5">{skill.category.name}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
                       {LEVELS.map((lvl) => {
                         const active = req.required_level === lvl;
                         return (
@@ -379,7 +408,7 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
                             type="button"
                             onClick={() => setSkillLevel(req.skill_id, lvl)}
                             className={cn(
-                              "size-6 rounded-md text-[11px] font-bold tabular-nums transition-colors cursor-pointer",
+                              "size-7 rounded-md text-[12px] font-bold tabular-nums transition-colors cursor-pointer",
                               active
                                 ? "bg-primary text-primary-foreground shadow-sm"
                                 : "bg-muted/60 text-muted-foreground hover:bg-muted",
@@ -393,9 +422,9 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
                     <button
                       type="button"
                       onClick={() => toggleSkill(req.skill_id)}
-                      className="size-6 grid place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
+                      className="size-7 grid place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
                     >
-                      <XIcon className="size-3.5" />
+                      <XIcon className="size-4" />
                     </button>
                   </div>
                 );
@@ -403,13 +432,25 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
             </div>
           )}
 
-          <SearchBar value={skillSearch} onChange={setSkillSearch} placeholder="Search skills..." size="sm" />
+          <SearchBar
+            value={skillSearch}
+            onChange={setSkillSearch}
+            placeholder="Search skills..."
+            size="sm"
+            className="[&_input]:w-full"
+          />
 
-          <div className="mt-2 max-h-40 overflow-y-auto rounded-xl border border-border/60 bg-muted/20 divide-y divide-border/40">
+          <div className="mt-3 max-h-64 overflow-y-auto rounded-xl border border-border/60 bg-muted/20 divide-y divide-border/40">
             {skillsLoading ? (
-              <div className="p-3 text-[12px] text-muted-foreground">Loading…</div>
+              Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="w-full flex items-center gap-3 px-3.5 py-2.5">
+                  <Skeleton className="size-6 rounded-md shrink-0" />
+                  <Skeleton className="h-3.5 flex-1 max-w-[45%]" />
+                  <Skeleton className="h-3 w-20 shrink-0" />
+                </div>
+              ))
             ) : skills.length === 0 ? (
-              <div className="p-3 text-[12px] text-muted-foreground">No skills found.</div>
+              <div className="p-4 text-[12.5px] text-muted-foreground">No skills found.</div>
             ) : (
               skills.map((s) => {
                 const id = Number(s.id);
@@ -420,20 +461,22 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
                     type="button"
                     onClick={() => toggleSkill(id)}
                     className={cn(
-                      "w-full flex items-center gap-2.5 px-3 py-2 text-left cursor-pointer transition-colors",
+                      "w-full flex items-center gap-3 px-3.5 py-2.5 text-left cursor-pointer transition-colors",
                       added ? "bg-primary/5" : "hover:bg-muted/40",
                     )}
                   >
                     <div
                       className={cn(
-                        "size-5 rounded-md grid place-items-center transition-colors",
+                        "size-6 rounded-md grid place-items-center transition-colors shrink-0",
                         added ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground",
                       )}
                     >
-                      <PlusIcon className="size-3" weight="bold" />
+                      <PlusIcon className="size-3.5" weight="bold" />
                     </div>
-                    <span className="flex-1 text-[12.5px] font-semibold text-foreground truncate">{s.name}</span>
-                    <span className="text-[11px] text-muted-foreground">{s.category?.name}</span>
+                    <span className="flex-1 text-[13px] font-semibold text-foreground truncate">{s.name}</span>
+                    {s.category?.name && (
+                      <span className="text-[11.5px] text-muted-foreground shrink-0">{s.category.name}</span>
+                    )}
                   </button>
                 );
               })
