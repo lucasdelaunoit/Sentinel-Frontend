@@ -27,6 +27,8 @@ import { useTableSort } from "@/hooks/useTableSort";
 import { useTablePagination } from "@/hooks/useTablePagination";
 import { HighlightMatch } from "@/utils/useHighlightableText";
 import ProjectStatusBadge from "@/components/specified/models/projects/badges/ProjectStatusBadge.tsx";
+import HealthBar from "@/components/specified/models/projects/datas/HealthBar.tsx";
+import FilterPillGroup, { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,60 +51,26 @@ type ProjSortKey = "name" | "risk_score" | "bus_factor" | "health" | "deadline";
 
 /* ─── Helpers ───────────────────────────────────────────────── */
 
-const STATUS_LABELS: Record<ProjectStatus, string> = {
-  planned: "Planned",
-  active: "Active",
-  paused: "Paused",
-  completed: "Completed",
-  archived: "Archived",
-};
-
 function fmtDate(date: string) {
   return new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function healthColor(v: number) {
-  if (v >= 75) return "bg-gradient-to-r from-emerald-400 to-emerald-500";
-  if (v >= 55) return "bg-gradient-to-r from-amber-400 to-amber-500";
-  return "bg-gradient-to-r from-rose-400 to-rose-500";
-}
-
-function healthTextColor(v: number) {
-  if (v >= 75) return "text-emerald-600";
-  if (v >= 55) return "text-amber-500";
-  return "text-rose-500";
-}
-
 function riskColor(v: number) {
-  if (v >= 20) return "text-rose-500";
+  if (v >= 20) return "text-danger";
   if (v >= 12) return "text-amber-500";
-  return "text-emerald-500";
+  return "text-success";
 }
 
 function riskDotColor(v: number) {
-  if (v >= 20) return "bg-rose-500";
+  if (v >= 20) return "bg-danger";
   if (v >= 12) return "bg-amber-400";
-  return "bg-emerald-500";
+  return "bg-success";
 }
 
 function busFactorColor(v: number) {
-  if (v <= 1) return "text-rose-500";
+  if (v <= 1) return "text-danger";
   if (v <= 2) return "text-amber-500";
-  return "text-emerald-500";
-}
-
-/* ─── Sub-components ────────────────────────────────────────── */
-function HealthBar({ value }: { value: number }) {
-  return (
-    <div className="flex items-center gap-2.5 min-w-[100px]">
-      <div className="h-1.5 flex-1 rounded-full bg-muted shadow-inner overflow-hidden">
-        <div className={cn("h-full rounded-full shadow-sm", healthColor(value))} style={{ width: `${value}%` }} />
-      </div>
-      <span className={cn("text-[12px] font-semibold tabular-nums w-8 text-right", healthTextColor(value))}>
-        {value}
-      </span>
-    </div>
-  );
+  return "text-success";
 }
 
 /* ─── Row Actions ───────────────────────────────────────────── */
@@ -130,7 +98,8 @@ function ProjectActionsCell({ project }: { project: ProjectListItem }) {
   const state = deriveState(project);
   const args = { id: project.id, name: project.name };
 
-  const confirmPending = confirm === "complete" ? complete.isPending : confirm === "archive" ? archive.isPending : false;
+  const confirmPending =
+    confirm === "complete" ? complete.isPending : confirm === "archive" ? archive.isPending : false;
 
   const handleConfirm = () => {
     if (confirm === "complete") {
@@ -205,9 +174,7 @@ function ProjectActionsCell({ project }: { project: ProjectListItem }) {
       <ComposedAlertDialog
         open={confirm !== null}
         onOpenChange={(open) => !open && setConfirm(null)}
-        title={
-          confirm === "archive" ? `Archive "${project.name}"?` : `Mark "${project.name}" as completed?`
-        }
+        title={confirm === "archive" ? `Archive "${project.name}"?` : `Mark "${project.name}" as completed?`}
         description={
           confirm === "archive"
             ? "The project will be hidden from active views. You can unarchive it later."
@@ -225,7 +192,14 @@ function ProjectActionsCell({ project }: { project: ProjectListItem }) {
 
 /* ─── Project List ──────────────────────────────────────────── */
 
-const STATUS_FILTER_OPTIONS: (ProjectStatus | null)[] = [null, "planned", "active", "paused", "completed", "archived"];
+const STATUS_FILTER_OPTIONS: FilterPillOption<ProjectStatus | null>[] = [
+  { value: null, label: "All" },
+  { value: "planned", label: "Planned" },
+  { value: "active", label: "Active" },
+  { value: "paused", label: "Paused" },
+  { value: "completed", label: "Completed" },
+  { value: "archived", label: "Archived" },
+];
 
 function ProjectList() {
   const navigate = useNavigate();
@@ -257,22 +231,7 @@ function ProjectList() {
         </span>
       )}
       <div className="flex-1" />
-      <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-1">
-        {STATUS_FILTER_OPTIONS.map((val) => (
-          <button
-            key={String(val)}
-            onClick={() => setStatusFilter(val)}
-            className={cn(
-              "px-3 py-1 rounded-lg text-[11px] font-medium transition-all duration-150 cursor-pointer",
-              statusFilter === val
-                ? "bg-card shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {val === null ? "All" : STATUS_LABELS[val]}
-          </button>
-        ))}
-      </div>
+      <FilterPillGroup options={STATUS_FILTER_OPTIONS} value={statusFilter} onChange={setStatusFilter} />
       <SearchBar value={search} onChange={setSearch} placeholder="Search projects..." />
     </>
   );
@@ -342,7 +301,7 @@ function ProjectList() {
                   <Skeleton className="h-4 w-6" />
                 </TableCell>
                 <TableCell className="px-5 py-4">
-                  <Skeleton className="h-7 w-20 rounded-full" />
+                  <HealthBar.Skeleton />
                 </TableCell>
                 <TableCell className="px-5 py-4">
                   <Skeleton className="h-3.5 w-20" />
@@ -472,7 +431,7 @@ export default function Projects() {
       <TopBar
         title="All Projects"
         actions={
-          <Button onClick={() => setSheetOpen(true)}>
+          <Button onClick={() => setSheetOpen(true)} size="lg">
             <PlusIcon className="size-3.5" weight="bold" />
             New Project
           </Button>

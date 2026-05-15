@@ -6,7 +6,16 @@ import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
-import { PlusIcon } from "@phosphor-icons/react";
+import { PlusIcon, DotsThreeVerticalIcon, CalendarPlusIcon, TrashIcon } from "@phosphor-icons/react";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog";
 import useGetUsers from "@/api/users/useGetUsers";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +27,8 @@ import { useTablePagination } from "@/hooks/useTablePagination";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
 import UserStatusBadge from "@/components/specified/models/employees/badges/UserStatusBadge.tsx";
 import UsersStatCardsSection from "@/components/specified/pages/employees/UsersStatCardsSection.tsx";
+import FilterPillGroup, { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
+import type { UserListItem } from "@/types/dashboard";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
@@ -133,7 +144,77 @@ function UserModal({ open, onClose, user }: UserModalProps) {
   );
 }
 
+/* ─── Row Actions ───────────────────────────────────────────── */
+
+function UserActionsCell({ user }: { user: UserListItem }) {
+  const navigate = useNavigate();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const fullName = `${user.firstname} ${user.lastname}`;
+
+  const handleCreateAbsence = () => {
+    toast.info(`TODO: create absence for "${fullName}"`);
+  };
+
+  const handleDelete = () => {
+    toast.info(`TODO: delete "${fullName}"`);
+    setConfirmDelete(false);
+  };
+
+  return (
+    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+      <Button
+        size="sm"
+        className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
+        onClick={() => navigate(`/users/${user.id}`)}
+      >
+        <Eye className="size-3.5" /> View
+      </Button>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 data-[state=open]:bg-muted data-[state=open]:text-foreground"
+            aria-label="Employee actions"
+          >
+            <DotsThreeVerticalIcon className="size-4" weight="bold" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" sideOffset={4} className="min-w-[170px]">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem onSelect={handleCreateAbsence}>
+            <CalendarPlusIcon weight="bold" />
+            Create absence
+          </DropdownMenuItem>
+          <DropdownMenuItem variant="destructive" onSelect={() => setConfirmDelete(true)}>
+            <TrashIcon weight="bold" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ComposedAlertDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title={`Delete "${fullName}"?`}
+        description="This action cannot be undone. The employee and related data will be permanently removed."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={handleDelete}
+      />
+    </div>
+  );
+}
+
 /* ─── Employee List ─────────────────────────────────────────── */
+
+const USER_STATUS_FILTER_OPTIONS: FilterPillOption<UserStatus | null>[] = [
+  { value: null, label: "All" },
+  { value: "available", label: "Available" },
+  { value: "away", label: "Away" },
+];
 
 function UserList() {
   const navigate = useNavigate();
@@ -165,22 +246,11 @@ function UserList() {
         </span>
       )}
       <div className="flex-1" />
-      <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/30 p-1">
-        {([null, "available", "away"] as (UserStatus | null)[]).map((val) => (
-          <button
-            key={String(val)}
-            onClick={() => setStatusFilter(val)}
-            className={cn(
-              "px-3 py-1 rounded-lg text-[11px] font-medium transition-all duration-150 cursor-pointer",
-              statusFilter === val
-                ? "bg-card shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {val === null ? "All" : val === "available" ? "Available" : "Away"}
-          </button>
-        ))}
-      </div>
+      <FilterPillGroup
+        options={USER_STATUS_FILTER_OPTIONS}
+        value={statusFilter}
+        onChange={setStatusFilter}
+      />
       <SearchBar value={search} onChange={setSearch} placeholder="Search employees..." />
     </>
   );
@@ -309,16 +379,7 @@ function UserList() {
                   </div>
                 </TableCell>
                 <TableCell className="px-5 py-4">
-                  <Button
-                    size="sm"
-                    className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/users/${emp.id}`);
-                    }}
-                  >
-                    <Eye className="size-3.5" /> View
-                  </Button>
+                  <UserActionsCell user={emp} />
                 </TableCell>
               </TableRow>
             ))
