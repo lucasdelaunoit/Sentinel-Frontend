@@ -1,7 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Eye } from "lucide-react";
-import { PlusIcon } from "@phosphor-icons/react";
+import {
+  PlusIcon,
+  DotsThreeVerticalIcon,
+  ArchiveIcon,
+  ArchiveBoxIcon,
+  PauseIcon,
+  PlayIcon,
+  CheckCircleIcon,
+  ArrowUUpLeftIcon,
+} from "@phosphor-icons/react";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import ProjectsStatCardsSection from "@/components/specified/pages/projects/ProjectsStatCardsSection.tsx";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
@@ -18,6 +27,21 @@ import { useTableSort } from "@/hooks/useTableSort";
 import { useTablePagination } from "@/hooks/useTablePagination";
 import { HighlightMatch } from "@/utils/useHighlightableText";
 import ProjectStatusBadge from "@/components/specified/models/projects/badges/ProjectStatusBadge.tsx";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog";
+import type { ProjectListItem } from "@/types/dashboard";
+import usePauseProject from "@/api/projects/usePauseProject";
+import useResumeProject from "@/api/projects/useResumeProject";
+import useCompleteProject from "@/api/projects/useCompleteProject";
+import useReopenProject from "@/api/projects/useReopenProject";
+import useArchiveProject from "@/api/projects/useArchiveProject";
+import useUnarchiveProject from "@/api/projects/useUnarchiveProject";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
@@ -77,6 +101,124 @@ function HealthBar({ value }: { value: number }) {
       <span className={cn("text-[12px] font-semibold tabular-nums w-8 text-right", healthTextColor(value))}>
         {value}
       </span>
+    </div>
+  );
+}
+
+/* ─── Row Actions ───────────────────────────────────────────── */
+
+type ConfirmKind = "complete" | "archive";
+
+function deriveState(project: ProjectListItem): ProjectStatus {
+  if (project.archived_at) return "archived";
+  if (project.completed_at) return "completed";
+  if (project.paused_at) return "paused";
+  return project.status;
+}
+
+function ProjectActionsCell({ project }: { project: ProjectListItem }) {
+  const navigate = useNavigate();
+  const [confirm, setConfirm] = useState<ConfirmKind | null>(null);
+
+  const pause = usePauseProject();
+  const resume = useResumeProject();
+  const complete = useCompleteProject();
+  const reopen = useReopenProject();
+  const archive = useArchiveProject();
+  const unarchive = useUnarchiveProject();
+
+  const state = deriveState(project);
+  const args = { id: project.id, name: project.name };
+
+  const confirmPending = confirm === "complete" ? complete.isPending : confirm === "archive" ? archive.isPending : false;
+
+  const handleConfirm = () => {
+    if (confirm === "complete") {
+      complete.mutate(args, { onSuccess: () => setConfirm(null) });
+    } else if (confirm === "archive") {
+      archive.mutate(args, { onSuccess: () => setConfirm(null) });
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+      <Button
+        size="sm"
+        className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
+        onClick={() => navigate(`/projects/${project.id}`)}
+      >
+        <Eye className="size-3.5" /> View
+      </Button>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 data-[state=open]:bg-muted data-[state=open]:text-foreground"
+            aria-label="Project actions"
+          >
+            <DotsThreeVerticalIcon className="size-4" weight="bold" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" sideOffset={4} className="min-w-[170px]">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          {state === "archived" && (
+            <DropdownMenuItem onSelect={() => unarchive.mutate(args)}>
+              <ArchiveBoxIcon weight="bold" />
+              Unarchive
+            </DropdownMenuItem>
+          )}
+          {(state === "active" || state === "planned") && (
+            <DropdownMenuItem onSelect={() => pause.mutate(args)}>
+              <PauseIcon weight="bold" />
+              Pause
+            </DropdownMenuItem>
+          )}
+          {state === "paused" && (
+            <DropdownMenuItem onSelect={() => resume.mutate(args)}>
+              <PlayIcon weight="bold" />
+              Resume
+            </DropdownMenuItem>
+          )}
+          {state === "completed" && (
+            <DropdownMenuItem onSelect={() => reopen.mutate(args)}>
+              <ArrowUUpLeftIcon weight="bold" />
+              Reopen
+            </DropdownMenuItem>
+          )}
+          {state !== "archived" && state !== "completed" && (
+            <DropdownMenuItem onSelect={() => setConfirm("complete")}>
+              <CheckCircleIcon weight="bold" />
+              Complete
+            </DropdownMenuItem>
+          )}
+          {state !== "archived" && (
+            <DropdownMenuItem onSelect={() => setConfirm("archive")}>
+              <ArchiveIcon weight="bold" />
+              Archive
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ComposedAlertDialog
+        open={confirm !== null}
+        onOpenChange={(open) => !open && setConfirm(null)}
+        title={
+          confirm === "archive" ? `Archive "${project.name}"?` : `Mark "${project.name}" as completed?`
+        }
+        description={
+          confirm === "archive"
+            ? "The project will be hidden from active views. You can unarchive it later."
+            : "Completing locks the project as done. You can reopen it later if needed."
+        }
+        confirmLabel={confirm === "archive" ? "Archive" : "Complete"}
+        pendingLabel={confirm === "archive" ? "Archiving..." : "Completing..."}
+        variant={confirm === "archive" ? "destructive" : "default"}
+        isPending={confirmPending}
+        onConfirm={handleConfirm}
+      />
     </div>
   );
 }
@@ -287,16 +429,7 @@ function ProjectList() {
                     {overdue && <p className="text-[10px] text-rose-400 mt-0.5 font-medium">Overdue</p>}
                   </TableCell>
                   <TableCell className="px-5 py-4">
-                    <Button
-                      size="sm"
-                      className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/projects/${project.id}`);
-                      }}
-                    >
-                      <Eye className="size-3.5" /> View
-                    </Button>
+                    <ProjectActionsCell project={project} />
                   </TableCell>
                 </TableRow>
               );
