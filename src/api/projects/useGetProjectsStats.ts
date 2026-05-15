@@ -6,9 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 /* -------- /Custom hooks/ -------- */
 import usePrivateApi from "@/api/privateApi.ts";
 
-/* -------- /Types/ -------- */
-import type { ProjectsStats } from "@/types/dashboard";
-
 /* ------------------- (Hook) ------------------ */
 
 /**

@@ -8,6 +8,7 @@ import { PROJECTS, type ProjectData } from "@/data/projects";
 import { USER_DETAILS, type UserDetail } from "@/data/users";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import useGetProject from "@/api/projects/useGetProject";
+import useGetProjectStats from "@/api/projects/useGetProjectStats";
 import ProjectProfileCard from "@/components/specified/pages/project/ProjectProfileCard.tsx";
 import ProjectStatsSection from "@/components/specified/pages/project/ProjectStatsSection.tsx";
 
@@ -27,23 +28,12 @@ function skillMatch(required: string, empSkillName: string) {
   );
 }
 
-function computeCoverage(
-  project: ProjectData,
-  members: UserDetail[],
-): SkillCoverage[] {
+function computeCoverage(project: ProjectData, members: UserDetail[]): SkillCoverage[] {
   return project.skills.map((skill) => {
-    const holders = members.filter((m) =>
-      m.skills.some((s) => skillMatch(skill, s.name)),
-    );
+    const holders = members.filter((m) => m.skills.some((s) => skillMatch(skill, s.name)));
     const activeHolders = holders.filter((m) => m.todayStatus !== "Has Leave");
     const maxLevel = holders.length
-      ? Math.max(
-          ...holders.flatMap((m) =>
-            m.skills
-              .filter((s) => skillMatch(skill, s.name))
-              .map((s) => s.level),
-          ),
-        )
+      ? Math.max(...holders.flatMap((m) => m.skills.filter((s) => skillMatch(skill, s.name)).map((s) => s.level)))
       : 0;
     return { skill, holders, activeHolders, maxLevel };
   });
@@ -59,11 +49,7 @@ interface RiskAlert {
   detail: string;
 }
 
-function generateAlerts(
-  project: ProjectData,
-  members: UserDetail[],
-  coverage: SkillCoverage[],
-): RiskAlert[] {
+function generateAlerts(project: ProjectData, members: UserDetail[], coverage: SkillCoverage[]): RiskAlert[] {
   const alerts: RiskAlert[] = [];
 
   if (project.busFactor <= 1) {
@@ -81,8 +67,7 @@ function generateAlerts(
       severity: "warning",
       category: "Bus Factor",
       title: "Bus Factor is low (2)",
-      detail:
-        "Two absences could put the project at serious risk. Consider cross-training.",
+      detail: "Two absences could put the project at serious risk. Consider cross-training.",
     });
   }
 
@@ -90,9 +75,7 @@ function generateAlerts(
     .filter((m) => m.todayStatus === "Has Leave")
     .forEach((member) => {
       const nowUncovered = coverage.filter(
-        (c) =>
-          c.holders.some((h) => h.id === member.id) &&
-          c.activeHolders.length === 0,
+        (c) => c.holders.some((h) => h.id === member.id) && c.activeHolders.length === 0,
       );
       const nowSilo = coverage.filter(
         (c) =>
@@ -134,8 +117,7 @@ function generateAlerts(
         severity: "critical",
         category: "Uncovered Skill",
         title: `"${c.skill}" is not covered by any team member`,
-        detail:
-          "This required skill has no owner on the team. Assign someone or recruit.",
+        detail: "This required skill has no owner on the team. Assign someone or recruit.",
       });
     });
 
@@ -145,8 +127,7 @@ function generateAlerts(
       severity: "critical",
       category: "Project Health",
       title: `Project health is critical (${project.health}/100)`,
-      detail:
-        "Multiple risk factors are combining. Immediate manager intervention recommended.",
+      detail: "Multiple risk factors are combining. Immediate manager intervention recommended.",
     });
   } else if (project.health < 65) {
     alerts.push({
@@ -154,15 +135,11 @@ function generateAlerts(
       severity: "warning",
       category: "Project Health",
       title: `Project health is degraded (${project.health}/100)`,
-      detail:
-        "Risk factors are accumulating. Monitor closely and address knowledge silos.",
+      detail: "Risk factors are accumulating. Monitor closely and address knowledge silos.",
     });
   }
 
-  if (
-    new Date(project.endDate) < new Date() &&
-    project.status !== "Completed"
-  ) {
+  if (new Date(project.endDate) < new Date() && project.status !== "Completed") {
     alerts.push({
       id: "overdue",
       severity: "critical",
@@ -181,10 +158,7 @@ interface AbsenceImpact {
   level: "critical" | "warning" | "safe";
 }
 
-function absenceImpact(
-  member: UserDetail,
-  coverage: SkillCoverage[],
-): AbsenceImpact {
+function absenceImpact(member: UserDetail, coverage: SkillCoverage[]): AbsenceImpact {
   const uncovered: string[] = [];
   const weakened: string[] = [];
   for (const c of coverage) {
@@ -193,21 +167,13 @@ function absenceImpact(
     if (remaining.length === 0) uncovered.push(c.skill);
     else if (remaining.length === 1) weakened.push(c.skill);
   }
-  const level =
-    uncovered.length > 0
-      ? "critical"
-      : weakened.length > 0
-        ? "warning"
-        : "safe";
+  const level = uncovered.length > 0 ? "critical" : weakened.length > 0 ? "warning" : "safe";
   return { uncovered, weakened, level };
 }
 
 /* ─── Helpers / small components ─────────────────────────── */
 
-const ALERT_STYLE: Record<
-  AlertSeverity,
-  { border: string; bg: string; icon: string; label: string }
-> = {
+const ALERT_STYLE: Record<AlertSeverity, { border: string; bg: string; icon: string; label: string }> = {
   critical: {
     border: "border-l-rose-500",
     bg: "bg-gradient-to-r from-rose-50/80 to-rose-50/40",
@@ -231,13 +197,7 @@ const ALERT_STYLE: Record<
 function AlertCard({ alert }: { alert: RiskAlert }) {
   const s = ALERT_STYLE[alert.severity];
   return (
-    <div
-      className={cn(
-        "rounded-xl border border-border/60 border-l-4 p-4 shadow-sm",
-        s.border,
-        s.bg,
-      )}
-    >
+    <div className={cn("rounded-xl border border-border/60 border-l-4 p-4 shadow-sm", s.border, s.bg)}>
       <div className="flex items-start gap-3">
         <AlertTriangle className={cn("size-4 mt-0.5 shrink-0", s.icon)} />
         <div className="flex-1 min-w-0">
@@ -250,48 +210,16 @@ function AlertCard({ alert }: { alert: RiskAlert }) {
             >
               {alert.category}
             </span>
-            <p className="text-[13px] font-semibold text-foreground">
-              {alert.title}
-            </p>
+            <p className="text-[13px] font-semibold text-foreground">{alert.title}</p>
           </div>
-          <p className="mt-1.5 text-[12px] text-muted-foreground leading-relaxed">
-            {alert.detail}
-          </p>
+          <p className="mt-1.5 text-[12px] text-muted-foreground leading-relaxed">{alert.detail}</p>
         </div>
       </div>
     </div>
   );
 }
 
-function InfoChip({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-xl border border-border/60 bg-muted/10 px-3 py-2.5">
-      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-        {icon}
-        {label}
-      </div>
-      <p className="text-[13px] font-medium text-foreground truncate">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function MemberAvatar({
-  emp,
-  size = "md",
-}: {
-  emp: UserDetail;
-  size?: "sm" | "md";
-}) {
+function MemberAvatar({ emp, size = "md" }: { emp: UserDetail; size?: "sm" | "md" }) {
   return (
     <div
       title={emp.name}
@@ -332,9 +260,7 @@ function ImpactPill({ impact }: { impact: AbsenceImpact }) {
   return (
     <div className="flex items-center gap-1.5">
       <div className="size-1.5 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shrink-0 shadow-sm" />
-      <span className="text-[11px] text-emerald-600 font-medium">
-        No impact
-      </span>
+      <span className="text-[11px] text-emerald-600 font-medium">No impact</span>
     </div>
   );
 }
@@ -364,9 +290,7 @@ function RiskOverviewTab({
         <div className="rounded-2xl bg-card border border-border/60 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
             <div className="flex items-center gap-3">
-              <h3 className="font-semibold text-foreground text-sm">
-                Risk Alerts
-              </h3>
+              <h3 className="font-semibold text-foreground text-sm">Risk Alerts</h3>
               {criticalAlerts.length > 0 && (
                 <span className="inline-flex items-center rounded-full bg-gradient-to-br from-rose-500 to-rose-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
                   {criticalAlerts.length} critical
@@ -399,9 +323,7 @@ function RiskOverviewTab({
         {onLeave.length > 0 && (
           <div className="rounded-2xl bg-card border border-border/60 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-border/60">
-              <h3 className="font-semibold text-foreground text-sm">
-                Current Absence Impact
-              </h3>
+              <h3 className="font-semibold text-foreground text-sm">Current Absence Impact</h3>
               <p className="text-[11px] text-muted-foreground mt-0.5">
                 Skills affected by team members who are currently on leave
               </p>
@@ -411,21 +333,14 @@ function RiskOverviewTab({
                 const impact = absenceImpact(member, coverage);
                 const affected = [...impact.uncovered, ...impact.weakened];
                 return (
-                  <div
-                    key={member.id}
-                    className="flex items-start gap-4 px-6 py-4 hover:bg-muted/20 transition-colors"
-                  >
+                  <div key={member.id} className="flex items-start gap-4 px-6 py-4 hover:bg-muted/20 transition-colors">
                     <MemberAvatar emp={member} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-semibold text-foreground text-[13px]">
-                          {member.name}
-                        </p>
+                        <p className="font-semibold text-foreground text-[13px]">{member.name}</p>
                         <span className="inline-flex items-center rounded-full bg-gradient-to-br from-rose-500 to-rose-600 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
                           On Leave
-                          {member.onLeaveUntil
-                            ? ` until ${member.onLeaveUntil}`
-                            : ""}
+                          {member.onLeaveUntil ? ` until ${member.onLeaveUntil}` : ""}
                         </span>
                       </div>
                       {affected.length > 0 ? (
@@ -448,9 +363,7 @@ function RiskOverviewTab({
                           ))}
                         </div>
                       ) : (
-                        <p className="text-[11px] text-emerald-600 mt-1 font-medium">
-                          All skills remain covered
-                        </p>
+                        <p className="text-[11px] text-emerald-600 mt-1 font-medium">All skills remain covered</p>
                       )}
                     </div>
                     <ImpactPill impact={impact} />
@@ -465,39 +378,25 @@ function RiskOverviewTab({
       <div className="col-span-2 space-y-4">
         <div className="rounded-2xl bg-card border border-border/60 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-border/60">
-            <h3 className="font-semibold text-foreground text-sm">
-              Skill Coverage
-            </h3>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Active holders per required skill
-            </p>
+            <h3 className="font-semibold text-foreground text-sm">Skill Coverage</h3>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Active holders per required skill</p>
           </div>
           <div className="p-5 space-y-4">
             {coverage.map((c) => {
               const status =
-                c.activeHolders.length === 0
-                  ? "uncovered"
-                  : c.activeHolders.length === 1
-                    ? "silo"
-                    : "covered";
+                c.activeHolders.length === 0 ? "uncovered" : c.activeHolders.length === 1 ? "silo" : "covered";
               const barColor =
                 status === "uncovered"
                   ? "bg-gradient-to-r from-rose-400 to-rose-500"
                   : status === "silo"
                     ? "bg-gradient-to-r from-amber-400 to-amber-500"
                     : "bg-gradient-to-r from-emerald-400 to-emerald-500";
-              const pct = Math.min(
-                100,
-                (c.activeHolders.length / Math.max(project.team.length, 1)) *
-                  100,
-              );
+              const pct = Math.min(100, (c.activeHolders.length / Math.max(project.team.length, 1)) * 100);
 
               return (
                 <div key={c.skill}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[13px] font-medium text-foreground">
-                      {c.skill}
-                    </span>
+                    <span className="text-[13px] font-medium text-foreground">{c.skill}</span>
                     <div className="flex items-center gap-2">
                       {status === "uncovered" && (
                         <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wide bg-rose-50 px-1.5 py-0.5 rounded">
@@ -515,10 +414,7 @@ function RiskOverviewTab({
                     </div>
                   </div>
                   <div className="h-1.5 w-full rounded-full bg-muted shadow-inner overflow-hidden">
-                    <div
-                      className={cn("h-full rounded-full shadow-sm", barColor)}
-                      style={{ width: `${pct}%` }}
-                    />
+                    <div className={cn("h-full rounded-full shadow-sm", barColor)} style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               );
@@ -528,12 +424,9 @@ function RiskOverviewTab({
 
         <div className="rounded-2xl bg-gradient-to-br from-foreground to-foreground/90 p-5 space-y-3 shadow-lg">
           <div>
-            <p className="text-[14px] font-bold text-background">
-              Run a Leave Simulation
-            </p>
+            <p className="text-[14px] font-bold text-background">Run a Leave Simulation</p>
             <p className="text-[12px] text-background/60 mt-0.5 leading-relaxed">
-              See how a planned or unplanned absence would affect risk coverage
-              on this project.
+              See how a planned or unplanned absence would affect risk coverage on this project.
             </p>
           </div>
           <Button
@@ -551,19 +444,11 @@ function RiskOverviewTab({
 
 /* ─── Tab: Team ───────────────────────────────────────────── */
 
-function TeamTab({
-  members,
-  coverage,
-}: {
-  members: UserDetail[];
-  coverage: SkillCoverage[];
-}) {
+function TeamTab({ members, coverage }: { members: UserDetail[]; coverage: SkillCoverage[] }) {
   return (
     <div className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
       <div className="px-6 py-4 border-b border-border/60">
-        <h3 className="font-semibold text-foreground text-sm">
-          Team Risk Analysis
-        </h3>
+        <h3 className="font-semibold text-foreground text-sm">Team Risk Analysis</h3>
         <p className="text-[11px] text-muted-foreground mt-0.5">
           Shows the risk exposure if each team member were to become unavailable
         </p>
@@ -571,14 +456,7 @@ function TeamTab({
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border/60 bg-muted/30">
-            {[
-              "Member",
-              "Role",
-              "Criticality",
-              "Skills Contributed",
-              "Status",
-              "If Absent — Impact",
-            ].map((col) => (
+            {["Member", "Role", "Criticality", "Skills Contributed", "Status", "If Absent — Impact"].map((col) => (
               <th
                 key={col}
                 className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70"
@@ -591,37 +469,26 @@ function TeamTab({
         <tbody className="divide-y divide-border/40">
           {members.map((member) => {
             const impact = absenceImpact(member, coverage);
-            const contributed = coverage.filter((c) =>
-              c.holders.some((h) => h.id === member.id),
-            );
+            const contributed = coverage.filter((c) => c.holders.some((h) => h.id === member.id));
             const isOnLeave = member.todayStatus === "Has Leave";
 
             return (
               <tr
                 key={member.id}
-                className={cn(
-                  "hover:bg-muted/20 transition-colors",
-                  impact.level === "critical" && "bg-rose-50/30",
-                )}
+                className={cn("hover:bg-muted/20 transition-colors", impact.level === "critical" && "bg-rose-50/30")}
               >
                 <td className="px-5 py-4">
                   <div className="flex items-center gap-3">
                     <MemberAvatar emp={member} />
                     <div>
-                      <p className="font-semibold text-foreground text-[14px]">
-                        {member.name}
-                      </p>
-                      <p className="text-[12px] text-muted-foreground">
-                        {member.email}
-                      </p>
+                      <p className="font-semibold text-foreground text-[14px]">{member.name}</p>
+                      <p className="text-[12px] text-muted-foreground">{member.email}</p>
                     </div>
                   </div>
                 </td>
                 <td className="px-5 py-4">
                   <p className="text-[13px] text-foreground">{member.role}</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {member.department}
-                  </p>
+                  <p className="text-[11px] text-muted-foreground">{member.department}</p>
                 </td>
                 <td className="px-5 py-4">
                   <span
@@ -640,9 +507,7 @@ function TeamTab({
                 <td className="px-5 py-4">
                   <div className="flex flex-wrap gap-1">
                     {contributed.length === 0 ? (
-                      <span className="text-[11px] text-muted-foreground italic">
-                        None matched
-                      </span>
+                      <span className="text-[11px] text-muted-foreground italic">None matched</span>
                     ) : (
                       contributed.map((c) => (
                         <span
@@ -678,16 +543,12 @@ function TeamTab({
                   {impact.level === "critical" ? (
                     <div className="space-y-0.5">
                       <ImpactPill impact={impact} />
-                      <p className="text-[10px] text-rose-500 font-medium pl-3.5">
-                        {impact.uncovered.join(", ")}
-                      </p>
+                      <p className="text-[10px] text-rose-500 font-medium pl-3.5">{impact.uncovered.join(", ")}</p>
                     </div>
                   ) : impact.level === "warning" ? (
                     <div className="space-y-0.5">
                       <ImpactPill impact={impact} />
-                      <p className="text-[10px] text-amber-500 font-medium pl-3.5">
-                        {impact.weakened.join(", ")}
-                      </p>
+                      <p className="text-[10px] text-amber-500 font-medium pl-3.5">{impact.weakened.join(", ")}</p>
                     </div>
                   ) : (
                     <ImpactPill impact={impact} />
@@ -704,14 +565,7 @@ function TeamTab({
 
 /* ─── Tab: Knowledge ─────────────────────────────────────── */
 
-const RADAR_AXES = [
-  "FRONTEND",
-  "BACKEND",
-  "DEVOPS",
-  "DATABASE",
-  "SECURITY",
-  "TESTING",
-] as const;
+const RADAR_AXES = ["FRONTEND", "BACKEND", "DEVOPS", "DATABASE", "SECURITY", "TESTING"] as const;
 
 function radarPoint(cx: number, cy: number, r: number, i: number) {
   const angle = ((-90 + i * 60) * Math.PI) / 180;
@@ -719,20 +573,12 @@ function radarPoint(cx: number, cy: number, r: number, i: number) {
 }
 function radarPath(values: number[], cx: number, cy: number, maxR: number) {
   const pts = values.map((v, i) => radarPoint(cx, cy, v * maxR, i));
-  return (
-    pts
-      .map(
-        (p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`,
-      )
-      .join(" ") + "Z"
-  );
+  return pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ") + "Z";
 }
 function hexPath(cx: number, cy: number, r: number) {
   return (
     Array.from({ length: 6 }, (_, i) => radarPoint(cx, cy, r, i))
-      .map(
-        (p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`,
-      )
+      .map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`)
       .join(" ") + "Z"
   );
 }
@@ -743,48 +589,21 @@ function CoverageRadar({ members }: { members: UserDetail[] }) {
   const maxR = 95;
   const labelR = maxR * 1.3;
   const scores = RADAR_AXES.map((cat) => {
-    const skills = members.flatMap((m) =>
-      m.skills.filter((s) => s.category === cat),
-    );
+    const skills = members.flatMap((m) => m.skills.filter((s) => s.category === cat));
     if (skills.length === 0) return 0.15;
-    return Math.min(
-      1,
-      skills.reduce((s, sk) => s + sk.level, 0) / (skills.length * 5),
-    );
+    return Math.min(1, skills.reduce((s, sk) => s + sk.level, 0) / (skills.length * 5));
   });
   const gridLevels = [0.2, 0.4, 0.6, 0.8, 1.0];
   return (
     <svg width="280" height="280" viewBox="0 0 280 280" className="mx-auto">
       {gridLevels.map((r) => (
-        <path
-          key={r}
-          d={hexPath(cx, cy, r * maxR)}
-          fill="none"
-          stroke="#E5E7EB"
-          strokeWidth="1"
-        />
+        <path key={r} d={hexPath(cx, cy, r * maxR)} fill="none" stroke="#E5E7EB" strokeWidth="1" />
       ))}
       {RADAR_AXES.map((_, i) => {
         const p = radarPoint(cx, cy, maxR, i);
-        return (
-          <line
-            key={i}
-            x1={cx}
-            y1={cy}
-            x2={p.x}
-            y2={p.y}
-            stroke="#E5E7EB"
-            strokeWidth="1"
-          />
-        );
+        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="#E5E7EB" strokeWidth="1" />;
       })}
-      <path
-        d={radarPath(scores, cx, cy, maxR)}
-        fill="#DBEAFE"
-        fillOpacity="0.6"
-        stroke="#60A5FA"
-        strokeWidth="1.5"
-      />
+      <path d={radarPath(scores, cx, cy, maxR)} fill="#DBEAFE" fillOpacity="0.6" stroke="#60A5FA" strokeWidth="1.5" />
       {RADAR_AXES.map((label, i) => {
         const p = radarPoint(cx, cy, labelR, i);
         return (
@@ -820,9 +639,7 @@ function KnowledgeTab({
     <div className="grid grid-cols-5 gap-4">
       <div className="col-span-3 rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
         <div className="px-6 py-4 border-b border-border/60">
-          <h3 className="font-semibold text-foreground text-sm">
-            Required Skills Coverage
-          </h3>
+          <h3 className="font-semibold text-foreground text-sm">Required Skills Coverage</h3>
           <p className="text-[11px] text-muted-foreground mt-0.5">
             Coverage counts exclude team members currently on leave
           </p>
@@ -830,13 +647,7 @@ function KnowledgeTab({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border/60 bg-muted/30">
-              {[
-                "Skill",
-                "Status",
-                "Active Holders",
-                "Owners",
-                "Best Level",
-              ].map((col) => (
+              {["Skill", "Status", "Active Holders", "Owners", "Best Level"].map((col) => (
                 <th
                   key={col}
                   className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70"
@@ -849,21 +660,10 @@ function KnowledgeTab({
           <tbody className="divide-y divide-border/40">
             {coverage.map((c) => {
               const status =
-                c.activeHolders.length === 0
-                  ? "uncovered"
-                  : c.activeHolders.length === 1
-                    ? "silo"
-                    : "covered";
+                c.activeHolders.length === 0 ? "uncovered" : c.activeHolders.length === 1 ? "silo" : "covered";
 
               const levelLabel =
-                [
-                  "",
-                  "Beginner",
-                  "Elementary",
-                  "Intermediate",
-                  "Advanced",
-                  "Expert",
-                ][c.maxLevel] || "—";
+                ["", "Beginner", "Elementary", "Intermediate", "Advanced", "Expert"][c.maxLevel] || "—";
 
               return (
                 <tr
@@ -875,9 +675,7 @@ function KnowledgeTab({
                   )}
                 >
                   <td className="px-5 py-3.5">
-                    <p className="font-semibold text-foreground text-[14px]">
-                      {c.skill}
-                    </p>
+                    <p className="font-semibold text-foreground text-[14px]">{c.skill}</p>
                   </td>
                   <td className="px-5 py-3.5">
                     <span
@@ -890,11 +688,7 @@ function KnowledgeTab({
                             : "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white",
                       )}
                     >
-                      {status === "uncovered"
-                        ? "Uncovered"
-                        : status === "silo"
-                          ? "Knowledge Silo"
-                          : "Covered"}
+                      {status === "uncovered" ? "Uncovered" : status === "silo" ? "Knowledge Silo" : "Covered"}
                     </span>
                   </td>
                   <td className="px-5 py-3.5">
@@ -922,9 +716,7 @@ function KnowledgeTab({
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1">
                       {c.holders.length === 0 ? (
-                        <span className="text-[11px] text-rose-500 italic">
-                          None
-                        </span>
+                        <span className="text-[11px] text-rose-500 italic">None</span>
                       ) : (
                         c.holders.map((h) => (
                           <div
@@ -946,11 +738,7 @@ function KnowledgeTab({
                     <span
                       className={cn(
                         "text-[12px] font-medium",
-                        c.maxLevel >= 4
-                          ? "text-emerald-600"
-                          : c.maxLevel >= 3
-                            ? "text-amber-600"
-                            : "text-rose-500",
+                        c.maxLevel >= 4 ? "text-emerald-600" : c.maxLevel >= 3 ? "text-amber-600" : "text-rose-500",
                       )}
                     >
                       {c.maxLevel > 0 ? `${c.maxLevel}/5 — ${levelLabel}` : "—"}
@@ -965,19 +753,13 @@ function KnowledgeTab({
 
       <div className="col-span-2 space-y-4">
         <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm">
-          <h3 className="font-semibold text-foreground text-sm mb-1">
-            Team Competency Radar
-          </h3>
-          <p className="text-[11px] text-muted-foreground mb-4">
-            Average skill level per category across the team
-          </p>
+          <h3 className="font-semibold text-foreground text-sm mb-1">Team Competency Radar</h3>
+          <p className="text-[11px] text-muted-foreground mb-4">Average skill level per category across the team</p>
           <CoverageRadar members={members} />
         </div>
 
         <div className="rounded-2xl bg-card border border-border/60 p-5 space-y-3 shadow-sm">
-          <h3 className="font-semibold text-foreground text-sm">
-            Coverage Summary
-          </h3>
+          <h3 className="font-semibold text-foreground text-sm">Coverage Summary</h3>
           {[
             {
               label: "Fully covered (2+ holders)",
@@ -986,32 +768,21 @@ function KnowledgeTab({
             },
             {
               label: "Knowledge silos (1 holder)",
-              count: coverage.filter((c) => c.activeHolders.length === 1)
-                .length,
+              count: coverage.filter((c) => c.activeHolders.length === 1).length,
               color: "bg-gradient-to-br from-amber-400 to-amber-500",
             },
             {
               label: "Uncovered (0 holders)",
-              count: coverage.filter((c) => c.activeHolders.length === 0)
-                .length,
+              count: coverage.filter((c) => c.activeHolders.length === 0).length,
               color: "bg-gradient-to-br from-rose-400 to-rose-500",
             },
           ].map(({ label, count, color }) => (
             <div key={label} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div
-                  className={cn(
-                    "size-2 rounded-full shrink-0 shadow-sm",
-                    color,
-                  )}
-                />
-                <span className="text-[12px] text-muted-foreground">
-                  {label}
-                </span>
+                <div className={cn("size-2 rounded-full shrink-0 shadow-sm", color)} />
+                <span className="text-[12px] text-muted-foreground">{label}</span>
               </div>
-              <span className="text-[14px] font-bold text-foreground tabular-nums">
-                {count}
-              </span>
+              <span className="text-[14px] font-bold text-foreground tabular-nums">{count}</span>
             </div>
           ))}
         </div>
@@ -1031,6 +802,7 @@ export default function ProjectDetail() {
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
 
   const { data: apiProject, isLoading, isError } = useGetProject(id);
+  const { data: stats, isLoading: isLoadingStats } = useGetProjectStats(id);
 
   // Mock fallback for tabs (risk/team/knowledge) — to be migrated later
   const project = PROJECTS.find((p) => p.id === id) ?? PROJECTS[0];
@@ -1047,29 +819,18 @@ export default function ProjectDetail() {
   }, [apiProject?.id]);
 
   const members = useMemo(
-    () =>
-      (project?.team
-        .map((m) => USER_DETAILS[m.id])
-        .filter(Boolean) as UserDetail[]) ?? [],
+    () => (project?.team.map((m) => USER_DETAILS[m.id]).filter(Boolean) as UserDetail[]) ?? [],
     [project],
   );
 
-  const coverage = useMemo(
-    () => (project ? computeCoverage(project, members) : []),
-    [project, members],
-  );
+  const coverage = useMemo(() => (project ? computeCoverage(project, members) : []), [project, members]);
 
   const alerts = useMemo(
     () => (project ? generateAlerts(project, members, coverage) : []),
     [project, members, coverage],
   );
 
-  const onLeaveCount = members.filter(
-    (m) => m.todayStatus === "Has Leave",
-  ).length;
-  const criticalAlertCount = alerts.filter(
-    (a) => a.severity === "critical",
-  ).length;
+  const criticalAlertCount = alerts.filter((a) => a.severity === "critical").length;
 
   const tabs: { key: DetailTab; label: string }[] = [
     { key: "overview", label: "Risk Overview" },
@@ -1100,11 +861,7 @@ export default function ProjectDetail() {
         )}
 
         {/* ── Stats ────────────────────────────────────────────── */}
-        {isLoading || !apiProject ? (
-          <ProjectStatsSection.Skeleton />
-        ) : (
-          <ProjectStatsSection project={apiProject} />
-        )}
+        {isLoadingStats || !stats ? <ProjectStatsSection.Skeleton /> : <ProjectStatsSection stats={stats} />}
 
         {criticalAlertCount > 0 && (
           <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-rose-50/80 to-rose-50/40 border border-rose-200/50 px-4 py-3 shadow-sm">
@@ -1112,10 +869,7 @@ export default function ProjectDetail() {
             <p className="text-[13px] font-semibold text-rose-700">
               {criticalAlertCount} critical risk
               {criticalAlertCount !== 1 ? "s" : ""} detected on this project —
-              <button
-                onClick={() => setActiveTab("overview")}
-                className="underline underline-offset-2 ml-1"
-              >
+              <button onClick={() => setActiveTab("overview")} className="underline underline-offset-2 ml-1">
                 view risk overview
               </button>
             </p>
@@ -1153,18 +907,9 @@ export default function ProjectDetail() {
             onSimulate={() => navigate("/users?tab=calendar")}
           />
         )}
-        {activeTab === "team" && (
-          <TeamTab members={members} coverage={coverage} />
-        )}
-        {activeTab === "knowledge" && (
-          <KnowledgeTab
-            project={project}
-            members={members}
-            coverage={coverage}
-          />
-        )}
+        {activeTab === "team" && <TeamTab members={members} coverage={coverage} />}
+        {activeTab === "knowledge" && <KnowledgeTab project={project} members={members} coverage={coverage} />}
       </div>
-
     </>
   );
 }
