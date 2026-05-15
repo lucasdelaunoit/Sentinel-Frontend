@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 import { useAuth } from "@/context/AuthContext";
-import { getFullName, getInitials } from "@/utils/formatters/persons";
+import { getInitials } from "@/utils/formatters/persons";
 
 export default function SidebarProfile({ collapsed }: { collapsed: boolean }) {
   const { user } = useAuth();

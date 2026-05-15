@@ -5,10 +5,10 @@ interface ProjectStatusBadgeProps {
 }
 
 const STATUS_VARIANTS: Record<ProjectStatus, { style: string; text: string }> = {
-  planned: { style: "bg-violet-500/15 text-violet-600 ring-1 ring-violet-500/20", text: "Planned" },
+  planned: { style: "bg-planned", text: "Planned" },
   active: { style: "bg-primary", text: "Active" },
-  paused: { style: "bg-warning-foreground text-warning", text: "Paused" },
-  completed: { style: "bg-info-foreground text-info ", text: "Completed" },
+  paused: { style: "bg-warning", text: "Paused" },
+  completed: { style: "bg-info ", text: "Completed" },
   archived: { style: "bg-muted text-muted-foreground", text: "Archived" },
 };
 

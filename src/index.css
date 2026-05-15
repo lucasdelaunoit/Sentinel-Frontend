@@ -59,13 +59,6 @@
     --color-input: var(--input);
     --color-ring: var(--ring);
 
-    /* Charts */
-    --color-chart-1: var(--chart-1);
-    --color-chart-2: var(--chart-2);
-    --color-chart-3: var(--chart-3);
-    --color-chart-4: var(--chart-4);
-    --color-chart-5: var(--chart-5);
-
     /* Sidebar */
     --color-sidebar: var(--sidebar);
     --color-sidebar-foreground: var(--sidebar-foreground);
@@ -75,6 +68,7 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
 
     /* Status — Success */
     --color-success: var(--success);
@@ -91,6 +85,10 @@
     /* Status — Info */
     --color-info: var(--info);
     --color-info-foreground: var(--info-foreground);
+
+    /* Status — Planned */
+    --color-planned: var(--planned);
+    --color-planned-foreground: var(--planned-foreground);
 
     /* Status — Neutral */
     --color-neutral: var(--neutral);
@@ -137,13 +135,6 @@
     --input: #fafaf9;
     --ring: #097155;
 
-    /* --- Charts --- */
-    --chart-1: #097155;
-    --chart-2: #16a34a;
-    --chart-3: #ca8a04;
-    --chart-4: #dc2626;
-    --chart-5: #7c3aed;
-
     /* --- Sidebar (dark) --- */
     --sidebar: #1c1917;
     --sidebar-foreground: rgba(255, 255, 255, 0.5);
@@ -155,50 +146,25 @@
     --sidebar-ring: #097155;
 
     /* --- Status colors --- */
-    --success: #f0fdf4;
-    --success-foreground: #097155;
+    --success: #097155;
+    --success-foreground: #f0fdf4;
 
-    --danger: #fef2f2;
-    --danger-foreground: #dc2626;
+    --danger: #dc2626;
+    --danger-foreground: #fef2f2;
 
-    --warning: #fefce8;
-    --warning-foreground: #ca8a04;
+    --warning: #D97706;
+    --warning-foreground: #FEF3C7;
 
-    --info: #f8ffff;
-    --info-foreground: #0253a8;
+    --info: #2563EB;
+    --info-foreground: #DBEAFE;
+
+    --planned: #7C3AED;
+    --planned-foreground: #EDE9FE;
 
     --neutral: #6b7280;
     --neutral-foreground: #ffffff;
     --neutral-bg: #f3f4f6;
     --neutral-border: #e5e7eb;
-
-    /* --- Named palettes --- */
-    --orange: #ea580c;
-    --orange-bg: #fff7ed;
-    --orange-border: #fed7aa;
-
-    --purple: #7c3aed;
-    --purple-bg: #faf5ff;
-    --purple-border: #e9d5ff;
-
-    /* --- Skill matrix levels --- */
-    --skill-l1-bg: #e7e5e4;
-    --skill-l1-text: #78716c;
-    --skill-l2-bg: #fde68a;
-    --skill-l2-text: #92400e;
-    --skill-l3-bg: #fbbf24;
-    --skill-l3-text: #78350f;
-    --skill-l4-bg: #f59e0b;
-    --skill-l4-text: #ffffff;
-    --skill-l5-bg: #16a34a;
-    --skill-l5-text: #ffffff;
-
-    /* --- Risk heatmap --- */
-    --risk-very-low: #d4edda;
-    --risk-low: #d1e7dd;
-    --risk-medium: #fff3cd;
-    --risk-high: #f8d7da;
-    --risk-critical: #f5c6cb;
 
     /* --- Shadows --- */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);

@@ -5,8 +5,8 @@ interface UserStatusBadgeProps {
 }
 
 const STATUS_VARIANTS: Record<UserStatus, { style: string; text: string }> = {
-  available: { style: "bg-success-foreground", text: "Available" },
-  away: { style: "bg-danger-foreground", text: "Away" },
+  available: { style: "bg-success", text: "Available" },
+  away: { style: "bg-danger", text: "Away" },
 };
 
 const DEFAULT_STATUS = { style: "bg-gray-200", text: "Unknown" };

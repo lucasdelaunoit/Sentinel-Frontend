@@ -12,8 +12,8 @@ interface StatusAvatarProps {
 }
 
 const STATUS_VARIANTS: Record<UserStatus, string> = {
-  available: "bg-success-foreground",
-  away: "bg-danger-foreground",
+  available: "bg-success",
+  away: "bg-danger",
 };
 
 const SIZE_VARIANTS: Record<UserAvatarSizes, string> = {
