@@ -10,7 +10,6 @@ import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SelectorList from "@/components/common/inputs/SelectorList";
 import LevelPicker from "@/components/common/inputs/LevelPicker";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar";
 import UserSelectorRow from "@/components/specified/models/employees/items/UserSelectorRow";
 import SkillSelectorRow from "@/components/specified/models/skill/items/SkillSelectorRow";
 import useGetUsers from "@/api/users/useGetUsers";

@@ -10,7 +10,6 @@ import { PlusIcon } from "@phosphor-icons/react";
 import useGetUsers from "@/api/users/useGetUsers";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getInitials } from "@/utils/formatters/persons.ts";
 import { HighlightMatch } from "@/utils/useHighlightableText";
 import { SortableTableHead } from "@/components/common/table/SortableTableHead";
 import { TablePagination } from "@/components/common/table/TablePagination";
@@ -71,7 +70,12 @@ function UserModal({ open, onClose, user }: UserModalProps) {
         </div>
         <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-5">
           {[
-            { label: "Full Name", type: "text", placeholder: "e.g. John Doe", defaultValue: user ? `${user.firstname} ${user.lastname}` : undefined },
+            {
+              label: "Full Name",
+              type: "text",
+              placeholder: "e.g. John Doe",
+              defaultValue: user ? `${user.firstname} ${user.lastname}` : undefined,
+            },
             {
               label: "Email Address",
               type: "email",
@@ -261,7 +265,7 @@ function UserList() {
               >
                 <TableCell className="px-5 py-4">
                   <div className="flex items-center gap-3">
-                    <UserAvatar initials={getInitials(emp)} variant={emp.status} size="lg" />
+                    <UserAvatar firstname={emp.firstname} lastname={emp.lastname} variant={emp.status} size="lg" />
                     <div>
                       <p className="font-semibold text-foreground text-[14px]">
                         <HighlightMatch text={`${emp.firstname} ${emp.lastname}`} searchTerm={search} />

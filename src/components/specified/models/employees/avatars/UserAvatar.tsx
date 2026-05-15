@@ -1,10 +1,12 @@
 import { cn } from "@/lib/utils.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { getInitials } from "@/utils/formatters/persons.ts";
 
 export type UserAvatarSizes = Extract<Sizes, "base" | "lg" | "xl" | "2xl">;
 
 interface StatusAvatarProps {
-  initials: string;
+  firstname: string;
+  lastname: string;
   variant?: UserStatus;
   size?: UserAvatarSizes;
 }
@@ -21,7 +23,7 @@ const SIZE_VARIANTS: Record<UserAvatarSizes, string> = {
   "2xl": "size-20 text-xl font-bold",
 };
 
-export default function UserAvatar({ initials, variant = "available", size = "base" }: StatusAvatarProps) {
+export default function UserAvatar({ firstname, lastname, variant = "available", size = "base" }: StatusAvatarProps) {
   return (
     <div
       className={cn(
@@ -30,7 +32,7 @@ export default function UserAvatar({ initials, variant = "available", size = "ba
         STATUS_VARIANTS[variant],
       )}
     >
-      {initials}
+      {getInitials(firstname, lastname)}
     </div>
   );
 }

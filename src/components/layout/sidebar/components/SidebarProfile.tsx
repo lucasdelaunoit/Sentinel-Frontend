@@ -6,14 +6,12 @@ import { getFullName, getInitials } from "@/utils/formatters/persons";
 
 export default function SidebarProfile({ collapsed }: { collapsed: boolean }) {
   const { user } = useAuth();
-  const displayName = user ? getFullName(user) : "Guest";
   const subtitle = user?.email ?? "Not signed in";
-  const initials = user ? getInitials(user) : "·";
 
   return (
     <NavLink
       to="/profile"
-      title={collapsed ? `${displayName} · ${subtitle}` : undefined}
+      title={collapsed ? `${`${user?.firstname} ${user?.lastname}`} · ${subtitle}` : undefined}
       className={({ isActive }) =>
         cn(
           "group flex w-full items-center gap-2 rounded-xl outline-none transition-colors",
@@ -23,7 +21,7 @@ export default function SidebarProfile({ collapsed }: { collapsed: boolean }) {
     >
       <div className="flex shrink-0 items-center justify-center w-11 h-11">
         <div className="flex size-10 items-center justify-center rounded-xl bg-secondary-foreground text-xs font-bold text-primary-foreground shadow-lg shadow-sidebar-primary/20">
-          {initials}
+          {user ? getInitials(user.firstname, user.lastname) : "?"}
         </div>
       </div>
       <div
@@ -33,7 +31,7 @@ export default function SidebarProfile({ collapsed }: { collapsed: boolean }) {
           collapsed ? "pointer-events-none -translate-x-1 opacity-0" : "translate-x-0 opacity-100 delay-100",
         )}
       >
-        <p className="truncate text-[13px] font-semibold leading-tight text-sidebar-accent-foreground">{displayName}</p>
+        <p className="truncate text-[13px] font-semibold leading-tight text-sidebar-accent-foreground">{`${user?.firstname} ${user?.lastname}`}</p>
         <p className="mt-0.5 truncate text-[11px] text-sidebar-foreground/40">{subtitle}</p>
       </div>
       {!collapsed && (

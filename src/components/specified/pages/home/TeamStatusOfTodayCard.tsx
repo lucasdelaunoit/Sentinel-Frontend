@@ -12,15 +12,6 @@ import UserStatusBadge from "@/components/specified/models/employees/badges/User
 
 type SheetFilter = "all" | "available" | "remote";
 
-function initials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
-
 function CapacityDonut({ percent }: { percent: number }) {
   const color = percent >= 80 ? "#097155" : percent >= 60 ? "#f59e0b" : "#ef4444";
   const data = [{ value: percent, fill: color }];
@@ -39,12 +30,6 @@ function CapacityDonut({ percent }: { percent: number }) {
 function toUserStatus(todayStatus: string): UserStatus {
   return todayStatus === "Has Leave" ? "away" : "available";
 }
-
-const FILTER_IS_REMOTE: Record<SheetFilter, boolean | undefined> = {
-  all: undefined,
-  available: false,
-  remote: true,
-};
 
 function TeamStatusSkeleton() {
   return (
@@ -96,10 +81,7 @@ export default function TeamStatusOfTodayCard() {
                 <SecondaryCard
                   key={e.id}
                   before={
-                    <UserAvatar
-                      initials={initials(`${e.firstname} ${e.lastname}`)}
-                      variant={toUserStatus(e.today_status)}
-                    />
+                    <UserAvatar firstname={e.firstname} lastname={e.lastname} variant={toUserStatus(e.today_status)} />
                   }
                   title={`${e.firstname} ${e.lastname}`}
                   description={e.role}
@@ -109,7 +91,7 @@ export default function TeamStatusOfTodayCard() {
             </div>
           )}
         </div>
-        <SecondaryButton label="View full team →" onClick={() => setSheetOpen(true)} />
+        <SecondaryButton onClick={() => setSheetOpen(true)}>View full team →</SecondaryButton>
       </div>
     </ComposedCard>
   );

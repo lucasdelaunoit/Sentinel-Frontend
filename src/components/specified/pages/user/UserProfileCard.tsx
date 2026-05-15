@@ -16,7 +16,7 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
     <Card className="p-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-4">
-          <UserAvatar initials={getInitials(user)} size="2xl" variant={user.status} />
+          <UserAvatar firstname={user.firstname} lastname={user.lastname} size="2xl" variant={user.status} />
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-xl font-bold tracking-tight text-foreground">{`${user.firstname} ${user.lastname}`}</h2>
