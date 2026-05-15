@@ -44,16 +44,13 @@ import useCompleteProject from "@/api/projects/useCompleteProject";
 import useReopenProject from "@/api/projects/useReopenProject";
 import useArchiveProject from "@/api/projects/useArchiveProject";
 import useUnarchiveProject from "@/api/projects/useUnarchiveProject";
+import { formatDate } from "@/utils/formatters/date.ts";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
 type ProjSortKey = "name" | "risk_score" | "bus_factor" | "health" | "deadline";
 
 /* ─── Helpers ───────────────────────────────────────────────── */
-
-function fmtDate(date: string) {
-  return new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-}
 
 function riskColor(v: number) {
   if (v >= 20) return "text-danger";
@@ -380,12 +377,12 @@ function ProjectList() {
                     <span
                       className={cn(
                         "text-[12px] font-medium whitespace-nowrap",
-                        overdue ? "text-rose-500" : "text-foreground",
+                        overdue ? "text-danger" : "text-foreground",
                       )}
                     >
-                      {fmtDate(project.deadline)}
+                      {project.deadline ? formatDate(project.deadline) : "-"}
                     </span>
-                    {overdue && <p className="text-[10px] text-rose-400 mt-0.5 font-medium">Overdue</p>}
+                    {overdue && <p className="text-[10px] text-danger mt-0.5 font-medium">Overdue</p>}
                   </TableCell>
                   <TableCell className="px-5 py-4">
                     <ProjectActionsCell project={project} />
@@ -439,7 +436,6 @@ export default function Projects() {
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         <ProjectsStatCardsSection />
-
         <ProjectList />
       </div>
 

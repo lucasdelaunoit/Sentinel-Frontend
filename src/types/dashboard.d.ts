@@ -205,6 +205,44 @@ export interface ProjectListItem {
   skills: ProjectSkillItem[]
 }
 
+/* ── Project detail (GET /projects/:id) ──────────────────── */
+
+export interface ProjectDetailUser {
+  id: number
+  firstname: string
+  lastname: string
+  email: string
+  title: string
+  is_remote: boolean
+  status: UserStatus
+  department: { id: number; name: string }
+}
+
+export interface ProjectSkillRequirementItem {
+  id: number
+  name: string
+  pivot?: { project_id: number; skill_id: number; required_level: number }
+}
+
+export interface ProjectDetailResponse {
+  id: number
+  name: string
+  description: string
+  status: ProjectStatus
+  risk_score: number
+  bus_factor: number
+  health: number
+  started_at: string
+  deadline: string
+  paused_at: string | null
+  completed_at: string | null
+  archived_at: string | null
+  users_count?: number
+  users?: ProjectDetailUser[]
+  skill_requirements?: ProjectSkillRequirementItem[]
+  created_at: string
+}
+
 /* ── User detail (GET /users/:id) ────────────────────────── */
 
 export interface UserDetailResponse {

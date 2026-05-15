@@ -1,23 +1,15 @@
 import { useState, useMemo, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { usePage } from "@/context/PageContext";
-import {
-  AlertTriangle,
-  ShieldAlert,
-  Brain,
-  Users,
-  PlayCircle,
-  Building2,
-  CalendarDays,
-  Target,
-  Activity,
-} from "lucide-react";
+import { AlertTriangle, PlayCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { PROJECTS, type ProjectData } from "@/data/projects";
 import { USER_DETAILS, type UserDetail } from "@/data/users";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
-import StatCard from "@/components/common/cards/StatCard";
+import useGetProject from "@/api/projects/useGetProject";
+import ProjectProfileCard from "@/components/specified/pages/project/ProjectProfileCard.tsx";
+import ProjectStatsSection from "@/components/specified/pages/project/ProjectStatsSection.tsx";
 
 /* ─── Risk computation ────────────────────────────────────── */
 
@@ -1038,18 +1030,21 @@ export default function ProjectDetail() {
   const { setTitle, setBreadcrumb } = usePage();
   const [activeTab, setActiveTab] = useState<DetailTab>("overview");
 
+  const { data: apiProject, isLoading, isError } = useGetProject(id);
+
+  // Mock fallback for tabs (risk/team/knowledge) — to be migrated later
   const project = PROJECTS.find((p) => p.id === id) ?? PROJECTS[0];
 
   useEffect(() => {
-    if (project) {
-      setTitle(project.name);
+    if (apiProject) {
+      setTitle(apiProject.name);
       setBreadcrumb("Portfolio");
     }
     return () => {
       setTitle("");
       setBreadcrumb("");
     };
-  }, [project?.id]);
+  }, [apiProject?.id]);
 
   const members = useMemo(
     () =>
@@ -1082,192 +1077,34 @@ export default function ProjectDetail() {
     { key: "knowledge", label: "Knowledge" },
   ];
 
-  const riskColor =
-    project.riskScore >= 20
-      ? "text-rose-500"
-      : project.riskScore >= 12
-        ? "text-amber-500"
-        : "text-emerald-600";
-  const busColor =
-    project.busFactor <= 1
-      ? "text-rose-500"
-      : project.busFactor <= 2
-        ? "text-amber-500"
-        : "text-emerald-600";
-  const healthColor =
-    project.health >= 75
-      ? "text-emerald-600"
-      : project.health >= 55
-        ? "text-amber-500"
-        : "text-rose-500";
-
-  const statusColor =
-    project.status === "Active"
-      ? "bg-emerald-100 text-emerald-700 border-emerald-200/50"
-      : project.status === "On Hold"
-        ? "bg-amber-100 text-amber-700 border-amber-200/50"
-        : project.status === "Completed"
-          ? "bg-blue-100 text-blue-700 border-blue-200/50"
-          : "bg-muted text-muted-foreground border-border";
-
-  const priorityColor =
-    project.priority === "Critical"
-      ? "bg-rose-100 text-rose-700 border-rose-200/50"
-      : project.priority === "High"
-        ? "bg-amber-100 text-amber-700 border-amber-200/50"
-        : project.priority === "Medium"
-          ? "bg-blue-100 text-blue-700 border-blue-200/50"
-          : "bg-muted text-muted-foreground border-border";
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <p className="text-[16px] font-semibold text-foreground">Project not found</p>
+        <Link to="/projects" className="text-[13px] text-primary hover:underline underline-offset-4">
+          Back to projects
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <>
-      <TopBar title={project.name} />
+      <TopBar title={isLoading ? "Loading…" : (apiProject?.name ?? "Project")} />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
-        {/* ── Hero card ─────────────────────────────────────────── */}
-        <section className="rounded-2xl bg-card border border-border/60 shadow-sm p-6">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div className="flex items-start gap-4">
-              <div className="flex size-20 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-xl font-bold text-white shadow-md">
-                {project.id.slice(-2)}
-              </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-xl font-bold tracking-tight text-foreground">
-                    {project.name}
-                  </h2>
-                  <span
-                    className={cn(
-                      "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold",
-                      statusColor,
-                    )}
-                  >
-                    {project.status}
-                  </span>
-                  <span
-                    className={cn(
-                      "inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-semibold",
-                      priorityColor,
-                    )}
-                  >
-                    {project.priority}
-                  </span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1 max-w-2xl">
-                  {project.description}
-                </p>
-              </div>
-            </div>
-            <Button
-              className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-              onClick={() => navigate("/users?tab=calendar")}
-            >
-              <PlayCircle className="size-4" />
-              Simulate Leave
-            </Button>
-          </div>
+        {/* ── Hero ─────────────────────────────────────────────── */}
+        {isLoading || !apiProject ? (
+          <ProjectProfileCard.Skeleton />
+        ) : (
+          <ProjectProfileCard project={apiProject} onSimulate={() => navigate("/users?tab=calendar")} />
+        )}
 
-          <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
-            <InfoChip
-              icon={<Building2 className="size-3.5" />}
-              label="Department"
-              value={project.department}
-            />
-            <InfoChip
-              icon={<CalendarDays className="size-3.5" />}
-              label="Start Date"
-              value={new Date(project.startDate).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })}
-            />
-            <InfoChip
-              icon={<Target className="size-3.5" />}
-              label="End Date"
-              value={new Date(project.endDate).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })}
-            />
-            <InfoChip
-              icon={<Activity className="size-3.5" />}
-              label="Progress"
-              value={`${project.progress}%`}
-            />
-          </div>
-        </section>
-
-        {/* ── Stats ─────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard
-            title="Risk Score"
-            icon={ShieldAlert}
-            isLoading={false}
-            value={
-              <span className={riskColor}>{project.riskScore}/100</span>
-            }
-            comment={
-              <span className="text-[12px] text-muted-foreground">
-                {project.riskScore >= 20
-                  ? "High risk"
-                  : project.riskScore >= 12
-                    ? "Moderate"
-                    : "Low risk"}
-              </span>
-            }
-          />
-          <StatCard
-            title="Bus Factor"
-            icon={AlertTriangle}
-            isLoading={false}
-            value={<span className={busColor}>{project.busFactor}</span>}
-            comment={
-              <span className="text-[12px] text-muted-foreground">
-                {project.busFactor <= 1
-                  ? "Critical — 1 person"
-                  : project.busFactor <= 2
-                    ? "Low — 2 people"
-                    : "Acceptable"}
-              </span>
-            }
-          />
-          <StatCard
-            title="Health Score"
-            icon={Brain}
-            isLoading={false}
-            value={
-              <span className={healthColor}>{project.health}/100</span>
-            }
-            comment={
-              <span className="text-[12px] text-muted-foreground">
-                {project.health >= 75
-                  ? "Healthy"
-                  : project.health >= 55
-                    ? "Degraded"
-                    : "Critical"}
-              </span>
-            }
-          />
-          <StatCard
-            title="Team"
-            icon={Users}
-            isLoading={false}
-            value={members.length}
-            comment={
-              <span
-                className={cn(
-                  "text-[12px]",
-                  onLeaveCount > 0 ? "text-amber-500" : "text-muted-foreground",
-                )}
-              >
-                {onLeaveCount > 0
-                  ? `${onLeaveCount} on leave`
-                  : "All available"}
-              </span>
-            }
-          />
-        </div>
+        {/* ── Stats ────────────────────────────────────────────── */}
+        {isLoading || !apiProject ? (
+          <ProjectStatsSection.Skeleton />
+        ) : (
+          <ProjectStatsSection project={apiProject} />
+        )}
 
         {criticalAlertCount > 0 && (
           <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-rose-50/80 to-rose-50/40 border border-rose-200/50 px-4 py-3 shadow-sm">
