@@ -1,9 +1,13 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import SharedStatCard from "@/components/common/cards/StatCard";
+import ComposedCard from "@/components/common/cards/ComposedCard";
+import SelectInput from "@/components/common/inputs/SelectInput";
 import {
   Plus,
   Trash2,
@@ -18,22 +22,19 @@ import {
   Layers,
   Zap,
   AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
-import { useCalendarSettings, type CompanyHoliday } from "@/hooks/useCalendarSettings";
 import SkillsTab from "@/components/specified/pages/settings/SkillsTab.tsx";
 import { ActivityIcon, BookOpenIcon, CalendarIcon, ShieldIcon, SlidersIcon } from "@phosphor-icons/react";
+import useGetOrganizationSettings from "@/api/organization/useGetOrganizationSettings";
+import useUpdateOrganizationSettings from "@/api/organization/useUpdateOrganizationSettings";
+import useGetCalendarSummary from "@/api/calendar/useGetCalendarSummary";
+import useUpdateCalendarSettings from "@/api/calendar/useUpdateCalendarSettings";
+import useDeleteCompanyHoliday from "@/api/company-holidays/useDeleteCompanyHoliday";
+import CreateCompanyHolidaySheet from "@/components/specified/models/companyHoliday/sheets/CreateCompanyHolidaySheet";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-interface OrganizationSettings {
-  name: string;
-  industry: string;
-  size: string;
-  location: string;
-  methodology: "agile" | "scrum" | "kanban" | "hybrid" | "waterfall";
-  teamStructure: "cross-functional" | "specialized" | "matrix";
-  riskTolerance: "conservative" | "balanced" | "aggressive";
-}
 
 type RuleType = "min_staff" | "min_skill" | "bus_factor" | "coverage";
 
@@ -55,15 +56,22 @@ interface AnalyticsConfig {
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
-const DEFAULT_ORG: OrganizationSettings = {
-  name: "QITE",
-  industry: "Technology",
-  size: "11-50",
-  location: "Belgium",
-  methodology: "agile",
-  teamStructure: "cross-functional",
-  riskTolerance: "balanced",
-};
+const METHODOLOGY_OPTIONS: { value: Methodology; label: string }[] = [
+  { value: "agile", label: "Agile" },
+  { value: "waterfall", label: "Waterfall" },
+  { value: "kanban", label: "Kanban" },
+  { value: "scrumban", label: "Scrumban" },
+];
+
+const TEAM_STRUCTURE_OPTIONS: { value: TeamStructure; label: string }[] = [
+  { value: "cross-functional", label: "Cross-functional" },
+  { value: "functional", label: "Functional" },
+  { value: "matrix", label: "Matrix" },
+  { value: "squad", label: "Squad" },
+];
+
+const SIZE_OPTIONS: CompanySize[] = ["1-10", "11-50", "51-200", "201-500", "500+"];
+const INDUSTRY_OPTIONS = ["Technology", "Finance", "Healthcare", "Retail", "Manufacturing"];
 
 const DEFAULT_RULES: Rule[] = [
   {
@@ -279,29 +287,45 @@ function Badge({
   );
 }
 
-const inputCls =
-  "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
-
 // ─── Organization Tab ─────────────────────────────────────────────────────────
 
-function OrganizationTab({
-  settings,
-  onSave,
-}: {
-  settings: OrganizationSettings;
-  onSave: (s: OrganizationSettings) => void;
-}) {
-  const [form, setForm] = useState(settings);
-  const [saved, setSaved] = useState(false);
+type OrgFormFields = Required<UpdateOrganizationSettingsRequest>;
 
-  function handleSave() {
-    onSave(form);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+function OrganizationTab() {
+  const { data, isLoading } = useGetOrganizationSettings();
+  const update = useUpdateOrganizationSettings();
+  const [form, setForm] = useState<OrgFormFields | null>(null);
+
+  useEffect(() => {
+    if (data) {
+      setForm({
+        name: data.name,
+        industry: data.industry,
+        size: data.size,
+        location: data.location,
+        methodology: data.methodology,
+        team_structure: data.team_structure,
+        risk_tolerance: data.risk_tolerance,
+      });
+    }
+  }, [data]);
+
+  if (isLoading || !form) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SharedStatCard key={i} title="" value={null} comment={null} icon={Building2} isLoading />
+          ))}
+        </div>
+      </div>
+    );
   }
 
+  const saved = update.isSuccess && !update.isPending;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="grid grid-cols-4 gap-4">
         <SharedStatCard title="Organization" value={form.name} comment={null} icon={Building2} isLoading={false} />
         <SharedStatCard title="Industry" value={form.industry} comment={null} icon={Briefcase} isLoading={false} />
@@ -309,115 +333,86 @@ function OrganizationTab({
         <SharedStatCard title="Location" value={form.location} comment={null} icon={MapPin} isLoading={false} />
       </div>
 
-      <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm">
-        <h3 className="text-[14px] font-semibold text-foreground mb-4">Organization Details</h3>
+      <ComposedCard title="Organization Details" headerClassName="mb-5">
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Organization Name
-            </label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className={inputCls}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Industry</label>
-            <select
-              value={form.industry}
-              onChange={(e) => setForm({ ...form, industry: e.target.value })}
-              className={cn(inputCls, "cursor-pointer")}
-            >
-              {["Technology", "Finance", "Healthcare", "Retail", "Manufacturing"].map((i) => (
+          <Field>
+            <FieldLabel>Organization Name</FieldLabel>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          </Field>
+          <Field>
+            <FieldLabel>Industry</FieldLabel>
+            <SelectInput value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })}>
+              {INDUSTRY_OPTIONS.map((i) => (
                 <option key={i}>{i}</option>
               ))}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Company Size
-            </label>
-            <select
-              value={form.size}
-              onChange={(e) => setForm({ ...form, size: e.target.value })}
-              className={cn(inputCls, "cursor-pointer")}
-            >
-              {["1-10", "11-50", "51-200", "201-500", "500+"].map((s) => (
+            </SelectInput>
+          </Field>
+          <Field>
+            <FieldLabel>Company Size</FieldLabel>
+            <SelectInput value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value as CompanySize })}>
+              {SIZE_OPTIONS.map((s) => (
                 <option key={s}>{s}</option>
               ))}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">Location</label>
-            <input
-              type="text"
-              value={form.location}
-              onChange={(e) => setForm({ ...form, location: e.target.value })}
-              className={inputCls}
-            />
-          </div>
+            </SelectInput>
+          </Field>
+          <Field>
+            <FieldLabel>Location</FieldLabel>
+            <Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+          </Field>
         </div>
-      </div>
+      </ComposedCard>
 
-      <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-6">
-        <div>
-          <h3 className="text-[14px] font-semibold text-foreground">Operational Profile</h3>
-          <p className="text-[12px] text-muted-foreground mt-0.5">
-            Influences risk thresholds, simulation assumptions, and recommended policies.
+      <ComposedCard
+        title="Operational Profile"
+        headerClassName="mb-2"
+        action={
+          <p className="flex text-sm items-center">
+            <AlertTriangle /> Influences risk thresholds, simulation assumptions, and recommended policies.
           </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-5">
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Engineering Methodology
-            </label>
-            <select
+        }
+      >
+        <div className="grid grid-cols-2 gap-4">
+          <Field>
+            <FieldLabel>Engineering Methodology</FieldLabel>
+            <SelectInput
               value={form.methodology}
-              onChange={(e) => setForm({ ...form, methodology: e.target.value as OrganizationSettings["methodology"] })}
-              className={cn(inputCls, "cursor-pointer")}
+              onChange={(e) => setForm({ ...form, methodology: e.target.value as Methodology })}
             >
-              <option value="agile">Agile</option>
-              <option value="scrum">Scrum</option>
-              <option value="kanban">Kanban</option>
-              <option value="hybrid">Hybrid</option>
-              <option value="waterfall">Waterfall</option>
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Team Structure
-            </label>
-            <select
-              value={form.teamStructure}
-              onChange={(e) =>
-                setForm({ ...form, teamStructure: e.target.value as OrganizationSettings["teamStructure"] })
-              }
-              className={cn(inputCls, "cursor-pointer")}
+              {METHODOLOGY_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </SelectInput>
+          </Field>
+          <Field>
+            <FieldLabel>Team Structure</FieldLabel>
+            <SelectInput
+              value={form.team_structure}
+              onChange={(e) => setForm({ ...form, team_structure: e.target.value as TeamStructure })}
             >
-              <option value="cross-functional">Cross-functional</option>
-              <option value="specialized">Specialized</option>
-              <option value="matrix">Matrix</option>
-            </select>
-          </div>
+              {TEAM_STRUCTURE_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </SelectInput>
+          </Field>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-            Risk Tolerance
-          </label>
+        <Field className="mt-5">
+          <FieldLabel>Risk Tolerance</FieldLabel>
           <div className="grid grid-cols-3 gap-3">
             {(["conservative", "balanced", "aggressive"] as const).map((opt) => {
               const cfg = RISK_TOLERANCE_CONFIG[opt];
-              const active = form.riskTolerance === opt;
+              const active = form.risk_tolerance === opt;
               return (
                 <button
                   key={opt}
-                  onClick={() => setForm({ ...form, riskTolerance: opt })}
+                  type="button"
+                  onClick={() => setForm({ ...form, risk_tolerance: opt })}
                   className={cn(
-                    "rounded-xl border-2 p-4 text-left transition-all duration-200",
+                    "rounded-xl border-2 p-4 text-left transition-all duration-200 cursor-pointer",
                     active
                       ? `${cfg.bg} ${cfg.border} ring-2 ${cfg.ring} ring-offset-1`
                       : "border-border/40 bg-muted/20 hover:bg-muted/40 hover:border-border",
@@ -444,21 +439,15 @@ function OrganizationTab({
               );
             })}
           </div>
-        </div>
+        </Field>
 
-        <Button
-          onClick={handleSave}
-          className={cn(
-            "gap-2 rounded-xl h-9 px-5 font-medium transition-all duration-200 shadow-sm",
-            saved
-              ? "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white"
-              : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/10",
-          )}
-        >
-          {saved && <Check className="size-4" />}
-          {saved ? "Saved" : "Save Changes"}
-        </Button>
-      </div>
+        <div className="flex justify-end mt-6">
+          <Button onClick={() => update.mutate(form)} disabled={update.isPending} className="gap-2" size="lg">
+            {saved && <Check className="size-4" />}
+            {update.isPending ? "Saving…" : saved ? "Saved" : "Save Changes"}
+          </Button>
+        </div>
+      </ComposedCard>
     </div>
   );
 }
@@ -680,142 +669,118 @@ function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => voi
 
 // ─── Calendar Tab ─────────────────────────────────────────────────────────────
 
-const APRIL_FIRST_DOW = 3;
-const DAYS_IN_APRIL = 30;
-const STANDARD_APRIL_WORKING_DAYS = 22;
-const ALL_DAYS_OF_WEEK = [
-  { dow: 1, label: "Mon" },
-  { dow: 2, label: "Tue" },
-  { dow: 3, label: "Wed" },
-  { dow: 4, label: "Thu" },
-  { dow: 5, label: "Fri" },
-  { dow: 6, label: "Sat" },
-  { dow: 0, label: "Sun" },
-];
+// ISO weekday index: 0 = Mon, 6 = Sun. Matches backend working_days + preview.weekday.
+const DOW_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const SHORT_DOW = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
-function getDayOfWeekForDay(day: number): number {
-  return (APRIL_FIRST_DOW + day - 1) % 7;
+function formatMonthYear(year: number, month: number): string {
+  return new Date(year, month - 1, 1).toLocaleString("en-US", { month: "long", year: "numeric" });
+}
+
+function todayIsoDate(): string {
+  const d = new Date();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
 }
 
 function CalendarTab() {
-  const { settings, update } = useCalendarSettings();
-  const [newHoliday, setNewHoliday] = useState<{ day: string; label: string }>({ day: "", label: "" });
-  const [showAddHoliday, setShowAddHoliday] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const now = useMemo(() => new Date(), []);
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth() + 1);
 
-  function toggleWorkingDay(dow: number) {
-    const next = settings.workingDays.includes(dow)
-      ? settings.workingDays.filter((d) => d !== dow)
-      : [...settings.workingDays, dow].sort();
-    update({ ...settings, workingDays: next });
-    flash();
+  const { data: summary, isLoading } = useGetCalendarSummary(year, month);
+  const updateSettings = useUpdateCalendarSettings();
+  const deleteHoliday = useDeleteCompanyHoliday();
+
+  const [holidaySheetOpen, setHolidaySheetOpen] = useState(false);
+
+  function shiftMonth(delta: number) {
+    let m = month + delta;
+    let y = year;
+    if (m < 1) {
+      m = 12;
+      y -= 1;
+    } else if (m > 12) {
+      m = 1;
+      y += 1;
+    }
+    setYear(y);
+    setMonth(m);
   }
 
-  function addHoliday() {
-    const day = parseInt(newHoliday.day, 10);
-    if (!day || day < 1 || day > DAYS_IN_APRIL || !newHoliday.label.trim()) return;
-    const holiday: CompanyHoliday = { id: `h${Date.now()}`, day, label: newHoliday.label.trim() };
-    update({ ...settings, holidays: [...settings.holidays, holiday].sort((a, b) => a.day - b.day) });
-    setNewHoliday({ day: "", label: "" });
-    setShowAddHoliday(false);
-    flash();
+  function toggleWorkingDay(isoIndex: number) {
+    if (!summary) return;
+    const next = summary.working_days.map((bit, i) => (i === isoIndex ? (bit ? 0 : 1) : bit));
+    updateSettings.mutate({ working_days: next });
   }
 
-  function removeHoliday(id: string) {
-    update({ ...settings, holidays: settings.holidays.filter((h) => h.id !== id) });
-    flash();
+  if (isLoading || !summary) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <SharedStatCard key={i} title="" value={null} comment={null} icon={CalendarDays} isLoading />
+          ))}
+        </div>
+      </div>
+    );
   }
 
-  function flash() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1800);
-  }
+  const monthLabel = formatMonthYear(summary.year, summary.month);
+  const today = todayIsoDate();
 
-  const workingDayCount = ALL_DAYS_OF_WEEK.filter((d) => settings.workingDays.includes(d.dow)).length;
-  const holidayDays = new Set(settings.holidays.map((h) => h.day));
+  const capacityDiff = summary.working_days_in_month - summary.standard_days_month;
+  const capacityPct = Math.round((Math.abs(capacityDiff) / summary.standard_days_month) * 100);
 
-  const workingDaysInApril = Array.from({ length: DAYS_IN_APRIL }, (_, i) => i + 1).filter(
-    (d) => settings.workingDays.includes(getDayOfWeekForDay(d)) && !holidayDays.has(d),
-  ).length;
-
-  const capacityDiff = workingDaysInApril - STANDARD_APRIL_WORKING_DAYS;
-  const capacityPct = Math.round((Math.abs(capacityDiff) / STANDARD_APRIL_WORKING_DAYS) * 100);
-
-  const weeks: (number | null)[][] = [];
-  const monFirstOffset = (APRIL_FIRST_DOW - 1 + 7) % 7;
-  let firstWeek: (number | null)[] = Array(monFirstOffset).fill(null);
-  for (let d = 1; d <= DAYS_IN_APRIL; d++) firstWeek.push(d);
-  for (let i = 0; i < firstWeek.length; i += 7) {
-    const week = firstWeek.slice(i, i + 7);
-    while (week.length < 7) week.push(null);
-    weeks.push(week);
-  }
+  // Build 6×7 grid: pad leading nulls so column index matches ISO weekday of day 1.
+  const firstWeekday = summary.preview[0]?.weekday ?? 0;
+  const cells: (CalendarPreviewDay | null)[] = Array(firstWeekday).fill(null);
+  summary.preview.forEach((d) => cells.push(d));
+  while (cells.length % 7 !== 0) cells.push(null);
+  const weeks: (CalendarPreviewDay | null)[][] = [];
+  for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-4">
-        <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm">
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Working Days / Week</p>
-          <p className="text-[28px] font-bold text-foreground mt-1">{workingDayCount}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">days per week</p>
-        </div>
-        <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm">
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Company Holidays</p>
-          <p className="text-[28px] font-bold text-foreground mt-1">{settings.holidays.length}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">in April 2026</p>
-        </div>
-        <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm">
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Working Days — April</p>
-          <p className="text-[28px] font-bold text-foreground mt-1">{workingDaysInApril}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">available working days</p>
-        </div>
+        <SharedStatCard
+          title="Working Days / Week"
+          value={summary.working_days_per_week}
+          comment={<p className="text-[11px] text-muted-foreground mt-0.5">days per week</p>}
+          icon={CalendarDays}
+          isLoading={false}
+        />
+        <SharedStatCard
+          title="Company Holidays"
+          value={summary.company_holidays.length}
+          comment={<p className="text-[11px] text-muted-foreground mt-0.5">in {monthLabel}</p>}
+          icon={CalendarDays}
+          isLoading={false}
+        />
+        <SharedStatCard
+          title={`Working Days — ${monthLabel.split(" ")[0]}`}
+          value={summary.working_days_in_month}
+          comment={<p className="text-[11px] text-muted-foreground mt-0.5">available working days</p>}
+          icon={CalendarDays}
+          isLoading={false}
+        />
       </div>
 
-      {/* Capacity insight */}
-      <div className="rounded-xl bg-muted/30 border border-border/40 px-4 py-3 flex items-center gap-2.5">
-        <AlertTriangle className="size-3.5 text-muted-foreground/50 shrink-0" />
-        <p className="text-[12px] text-muted-foreground leading-relaxed">
-          <span className="font-medium text-foreground">{workingDayCount}-day</span> working week
-          {settings.holidays.length > 0 && (
-            <>
-              {" "}
-              ·{" "}
-              <span className="font-medium text-foreground">
-                {settings.holidays.length} holiday{settings.holidays.length !== 1 ? "s" : ""}
-              </span>
-            </>
-          )}
-          {" · "}
-          <span className="font-semibold text-foreground">{workingDaysInApril} working days in April 2026</span>
-          {" — "}
-          <span
-            className={cn(
-              "font-semibold",
-              capacityDiff < 0 ? "text-amber-600" : capacityDiff === 0 ? "text-muted-foreground" : "text-emerald-600",
-            )}
-          >
-            {capacityDiff === 0
-              ? "standard capacity"
-              : `${capacityPct}% ${capacityDiff < 0 ? "below" : "above"} standard`}
-          </span>
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-6">
-        <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-4">
-          <div>
-            <h3 className="text-[14px] font-semibold text-foreground">Working Week</h3>
-            <p className="text-[12px] text-muted-foreground mt-0.5">Select which days are regular working days</p>
-          </div>
+      <div className="grid grid-cols-2 gap-4">
+        <ComposedCard title="Working Week" headerClassName="mb-2">
+          <FieldDescription className="mb-4">Select which days are regular working days.</FieldDescription>
           <div className="flex gap-2 flex-wrap">
-            {ALL_DAYS_OF_WEEK.map(({ dow, label }) => {
-              const active = settings.workingDays.includes(dow);
+            {DOW_LABELS.map((label, i) => {
+              const active = summary.working_days[i] === 1;
               return (
                 <button
-                  key={dow}
-                  onClick={() => toggleWorkingDay(dow)}
+                  key={label}
+                  type="button"
+                  onClick={() => toggleWorkingDay(i)}
+                  disabled={updateSettings.isPending}
                   className={cn(
-                    "size-11 rounded-xl text-[13px] font-semibold border-2 transition-all duration-150",
+                    "size-11 rounded-xl text-[13px] font-semibold border-2 transition-all duration-150 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed",
                     active
                       ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/20"
                       : "bg-muted/40 text-muted-foreground border-transparent hover:border-border/60 hover:bg-muted",
@@ -826,163 +791,136 @@ function CalendarTab() {
               );
             })}
           </div>
-          <p className="text-[11px] text-muted-foreground">
-            {workingDayCount} working day{workingDayCount !== 1 ? "s" : ""} per week
+          <p className="text-[11px] text-muted-foreground mt-3">
+            {summary.working_days_per_week} working day{summary.working_days_per_week !== 1 ? "s" : ""} per week
           </p>
-        </div>
+        </ComposedCard>
 
-        <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-3">
-          <div>
-            <h3 className="text-[14px] font-semibold text-foreground">April 2026 Preview</h3>
-            <p className="text-[12px] text-muted-foreground mt-0.5">Non-working days are dimmed</p>
+        <ComposedCard
+          title={`${monthLabel} Preview`}
+          action={
+            <div className="flex items-center gap-1">
+              <Button onClick={() => shiftMonth(-1)} size="sm" variant="ghost" className="size-7 p-0">
+                <ChevronLeft className="size-4" />
+              </Button>
+              <Button onClick={() => shiftMonth(1)} size="sm" variant="ghost" className="size-7 p-0">
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          }
+          headerClassName="mb-2"
+        >
+          <FieldDescription className="mb-3">Non-working days are dimmed.</FieldDescription>
+          <div className="grid grid-cols-7 mb-1">
+            {SHORT_DOW.map((d) => (
+              <div key={d} className="text-center text-[10px] font-semibold text-muted-foreground/50 pb-1">
+                {d}
+              </div>
+            ))}
           </div>
-          <div>
-            <div className="grid grid-cols-7 mb-1">
-              {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
-                <div key={d} className="text-center text-[10px] font-semibold text-muted-foreground/50 pb-1">
-                  {d}
-                </div>
-              ))}
+          <div className="space-y-1">
+            {weeks.map((week, wi) => (
+              <div key={wi} className="grid grid-cols-7 gap-0.5">
+                {week.map((cell, di) => {
+                  if (!cell) return <div key={di} />;
+                  const isToday = cell.date === today;
+                  return (
+                    <div
+                      key={di}
+                      className={cn(
+                        "h-7 flex items-center justify-center rounded-lg text-[11px] font-medium",
+                        isToday && "ring-2 ring-primary",
+                        cell.status === "holiday"
+                          ? "bg-amber-100 text-amber-600 line-through"
+                          : cell.status === "working"
+                            ? "bg-muted/40 text-foreground"
+                            : "text-muted-foreground/30",
+                      )}
+                    >
+                      {cell.day}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/40">
+            <div className="flex items-center gap-1.5">
+              <div className="size-2.5 rounded-sm bg-muted/40" />
+              <span className="text-[10px] text-muted-foreground">Working</span>
             </div>
-            <div className="space-y-1">
-              {weeks.map((week, wi) => (
-                <div key={wi} className="grid grid-cols-7 gap-0.5">
-                  {week.map((day, di) => {
-                    if (!day) return <div key={di} />;
-                    const dow = getDayOfWeekForDay(day);
-                    const isWorking = settings.workingDays.includes(dow);
-                    const isHoliday = holidayDays.has(day);
-                    const isToday = day === 23;
-                    return (
-                      <div
-                        key={di}
-                        className={cn(
-                          "h-7 flex items-center justify-center rounded-lg text-[11px] font-medium",
-                          isToday && "ring-2 ring-primary",
-                          isHoliday
-                            ? "bg-amber-100 text-amber-600 line-through"
-                            : isWorking
-                              ? "bg-muted/40 text-foreground"
-                              : "text-muted-foreground/30",
-                        )}
-                      >
-                        {day}
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+            <div className="flex items-center gap-1.5">
+              <div className="size-2.5 rounded-sm bg-amber-100" />
+              <span className="text-[10px] text-muted-foreground">Holiday</span>
             </div>
-            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/40">
-              <div className="flex items-center gap-1.5">
-                <div className="size-2.5 rounded-sm bg-muted/40" />
-                <span className="text-[10px] text-muted-foreground">Working</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="size-2.5 rounded-sm bg-amber-100" />
-                <span className="text-[10px] text-muted-foreground">Holiday</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="size-2.5 rounded-sm border border-muted-foreground/20" />
-                <span className="text-[10px] text-muted-foreground">Off</span>
-              </div>
+            <div className="flex items-center gap-1.5">
+              <div className="size-2.5 rounded-sm border border-muted-foreground/20" />
+              <span className="text-[10px] text-muted-foreground">Off</span>
             </div>
           </div>
-        </div>
+        </ComposedCard>
       </div>
 
-      <div className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b border-border/60 flex items-center justify-between">
-          <div>
-            <h3 className="text-[14px] font-semibold text-foreground">Company Holidays — April 2026</h3>
-            <p className="text-[12px] text-muted-foreground mt-0.5">
-              These days are blocked in the Leave Calendar and excluded from working-day counts
-            </p>
-          </div>
-          <Button
-            onClick={() => setShowAddHoliday((v) => !v)}
-            className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10"
-          >
-            <Plus className="size-4" />
-            Add Holiday
-          </Button>
-        </div>
-
-        {showAddHoliday && (
-          <div className="px-6 py-4 border-b border-border/60 bg-muted/20">
-            <div className="flex items-center gap-3">
-              <div className="space-y-1 w-28">
-                <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Day (1–30)
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={30}
-                  placeholder="21"
-                  value={newHoliday.day}
-                  onChange={(e) => setNewHoliday({ ...newHoliday, day: e.target.value })}
-                  className="w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                />
-              </div>
-              <div className="space-y-1 flex-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Holiday Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Easter Monday"
-                  value={newHoliday.label}
-                  onChange={(e) => setNewHoliday({ ...newHoliday, label: e.target.value })}
-                  onKeyDown={(e) => e.key === "Enter" && addHoliday()}
-                  className="w-full rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                />
-              </div>
-              <div className="flex gap-2 pt-5">
-                <Button
-                  onClick={addHoliday}
-                  className="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white rounded-xl h-9 px-4 shadow-sm"
-                >
-                  Add
-                </Button>
-                <Button onClick={() => setShowAddHoliday(false)} variant="outline" className="rounded-xl h-9 px-3">
-                  <X className="size-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {settings.holidays.length === 0 ? (
-          <div className="px-6 py-10 text-center">
+      <ComposedCard
+        title={`Company Holidays — ${monthLabel}`}
+        action={
+          <>
+            <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
+              {summary.company_holidays.length}
+            </span>
+            <div className="flex-1" />
+            <Button onClick={() => setHolidaySheetOpen(true)} className="gap-1.5">
+              <Plus className="size-3.5" />
+              Add Holiday
+            </Button>
+          </>
+        }
+        headerClassName="mb-4"
+      >
+        <FieldDescription className="mb-4">
+          Blocked in the Leave Calendar and excluded from working-day counts.
+        </FieldDescription>
+        {summary.company_holidays.length === 0 ? (
+          <div className="py-10 text-center">
             <CalendarDays className="size-8 text-muted-foreground/30 mx-auto mb-2" />
             <p className="text-[13px] text-muted-foreground">No holidays configured</p>
-            <p className="text-[11px] text-muted-foreground/60 mt-0.5">Add company-specific days off for April 2026</p>
+            <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+              Add company-specific days off for {monthLabel}
+            </p>
           </div>
         ) : (
-          <div className="divide-y divide-border/40">
-            {settings.holidays.map((h) => {
-              const dow = getDayOfWeekForDay(h.day);
-              const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+          <div className="divide-y divide-border/40 border border-border/40 rounded-xl overflow-hidden">
+            {summary.company_holidays.map((h) => {
+              const d = new Date(h.date);
+              const dayNum = d.getDate();
+              const dateLabel = h.recurring
+                ? `${d.toLocaleString("en-US", { month: "long", day: "numeric" })} (yearly)`
+                : d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+              const weekdayLabel = d.toLocaleDateString("en-US", { weekday: "short" });
               return (
-                <div key={h.id} className="flex items-center gap-4 px-6 py-3.5 hover:bg-muted/20 transition-colors">
+                <div key={h.id} className="flex items-center gap-4 px-4 py-3 hover:bg-muted/20 transition-colors">
                   <div className="flex size-10 items-center justify-center rounded-xl bg-amber-100 border border-amber-200 shrink-0">
-                    <span className="text-[13px] font-bold text-amber-700">{h.day}</span>
+                    <span className="text-[13px] font-bold text-amber-700">{dayNum}</span>
                   </div>
                   <div className="flex-1">
-                    <p className="text-[13px] font-semibold text-foreground">{h.label}</p>
+                    <p className="text-[13px] font-semibold text-foreground">{h.name}</p>
                     <p className="text-[11px] text-muted-foreground">
-                      April {h.day}, 2026 · {dayNames[dow]}
+                      {dateLabel} · {weekdayLabel}
                     </p>
                   </div>
+                  {h.recurring && (
+                    <span className="text-[10px] font-medium bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full">
+                      Recurring
+                    </span>
+                  )}
                   <span className="text-[10px] font-medium bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
                     Day off
                   </span>
                   <Button
-                    onClick={() => removeHoliday(h.id)}
+                    onClick={() => deleteHoliday.mutate(h.id)}
                     size="sm"
                     variant="ghost"
-                    className="text-muted-foreground/50 hover:text-rose-500 h-7 w-7 p-0 rounded-lg hover:bg-rose-50/50"
+                    className="text-muted-foreground/50 hover:text-rose-500 h-7 w-7 p-0"
                   >
                     <Trash2 className="size-3.5" />
                   </Button>
@@ -991,14 +929,9 @@ function CalendarTab() {
             })}
           </div>
         )}
+      </ComposedCard>
 
-        {saved && (
-          <div className="px-6 py-2.5 bg-emerald-50 border-t border-emerald-100 flex items-center gap-2">
-            <Check className="size-3.5 text-emerald-600" />
-            <span className="text-[12px] font-medium text-emerald-700">Changes saved automatically</span>
-          </div>
-        )}
-      </div>
+      <CreateCompanyHolidaySheet open={holidaySheetOpen} onOpenChange={setHolidaySheetOpen} />
     </div>
   );
 }
@@ -1274,7 +1207,6 @@ function AnalyticsTab({ config, onSave }: { config: AnalyticsConfig; onSave: (c:
 // ─── Settings Page ────────────────────────────────────────────────────────────
 
 export default function Settings() {
-  const [orgSettings, setOrgSettings] = useState(DEFAULT_ORG);
   const [rules, setRules] = useState(DEFAULT_RULES);
   const [analytics, setAnalytics] = useState(DEFAULT_ANALYTICS);
 
@@ -1301,7 +1233,7 @@ export default function Settings() {
           </TabsList>
 
           <TabsContent value="organization" className="mt-5">
-            <OrganizationTab settings={orgSettings} onSave={setOrgSettings} />
+            <OrganizationTab />
           </TabsContent>
           <TabsContent value="skills" className="mt-5">
             <SkillsTab />

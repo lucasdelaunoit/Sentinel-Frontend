@@ -2,12 +2,11 @@ import { useState } from "react";
 
 export interface CompanyHoliday {
   id: string;
-  day: number;   // day of month (1-30 for April 2026)
+  day: number;
   label: string;
 }
 
 export interface CalendarSettings {
-  // Which JS day-of-week values are working days (0=Sun, 1=Mon, ..., 6=Sat)
   workingDays: number[];
   holidays: CompanyHoliday[];
 }
@@ -15,10 +14,8 @@ export interface CalendarSettings {
 const STORAGE_KEY = "sentinel_calendar_settings";
 
 const DEFAULT_SETTINGS: CalendarSettings = {
-  workingDays: [1, 2, 3, 4, 5], // Mon–Fri
-  holidays: [
-    { id: "h1", day: 21, label: "Easter Monday" },
-  ],
+  workingDays: [1, 2, 3, 4, 5],
+  holidays: [{ id: "h1", day: 21, label: "Easter Monday" }],
 };
 
 function load(): CalendarSettings {
