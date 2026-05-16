@@ -1,0 +1,139 @@
+import type { BlockDisplayRange, Half, SimBlock } from "@/types/planning";
+
+export const DAY_COL_WIDTH = 44;
+export const ROW_HEIGHT = 56;
+export const NAME_COL_WIDTH = 192;
+export const CAPACITY_ROW_HEIGHT = 36;
+
+export const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+export const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
+export function getDaysInMonth(year: number, month: number): number {
+  return new Date(year, month, 0).getDate();
+}
+
+export function getFirstDayOfWeek(year: number, month: number): number {
+  return new Date(year, month - 1, 1).getDay();
+}
+
+export function makeDateStr(year: number, month: number, day: number): string {
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+export function parseDateStr(dateStr: string): { year: number; month: number; day: number } | null {
+  const m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return null;
+  return { year: parseInt(m[1], 10), month: parseInt(m[2], 10), day: parseInt(m[3], 10) };
+}
+
+export function getDayOfWeekForDay(day: number, firstDayOfWeek: number): number {
+  return (firstDayOfWeek + day - 1) % 7;
+}
+
+export function getDayLabel(day: number, firstDayOfWeek: number): string {
+  return DAY_NAMES[getDayOfWeekForDay(day, firstDayOfWeek)].slice(0, 2);
+}
+
+export function toHalves(day: number, half: Half): number {
+  return (day - 1) * 2 + half;
+}
+
+export function fromHalves(h: number, daysInMonth: number): { day: number; half: Half } {
+  const c = Math.max(0, Math.min(daysInMonth * 2 - 1, h));
+  return { day: Math.floor(c / 2) + 1, half: (c % 2) as Half };
+}
+
+export function toX(day: number, half: Half = 0): number {
+  return (day - 1) * DAY_COL_WIDTH + half * (DAY_COL_WIDTH / 2);
+}
+
+export function formatHalfDate(dateStr: string, half: Half): string {
+  const parsed = parseDateStr(dateStr);
+  if (!parsed) return `${dateStr} ${half === 0 ? "AM" : "PM"}`;
+  const monthAbbr = MONTH_NAMES[parsed.month - 1].slice(0, 3);
+  return `${monthAbbr} ${parsed.day} ${half === 0 ? "AM" : "PM"}`;
+}
+
+export function blockDurationLabel(b: SimBlock): string {
+  const days =
+    Math.round(
+      (new Date(b.endDate + "T12:00:00").getTime() - new Date(b.startDate + "T12:00:00").getTime()) / 86400000,
+    ) + 1;
+  const halves = days * 2 - b.startHalf - (1 - b.endHalf);
+  if (halves === 1) return "½ day";
+  if (halves === 2) return "1 day";
+  return `${halves / 2} days`;
+}
+
+export function getBlockDisplayRange(
+  block: SimBlock,
+  viewYear: number,
+  viewMonth: number,
+): BlockDisplayRange | null {
+  const daysInMonth = getDaysInMonth(viewYear, viewMonth);
+  const viewStart = makeDateStr(viewYear, viewMonth, 1);
+  const viewEnd = makeDateStr(viewYear, viewMonth, daysInMonth);
+
+  if (block.endDate < viewStart || block.startDate > viewEnd) return null;
+
+  const clippedStart = block.startDate < viewStart;
+  const clippedEnd = block.endDate > viewEnd;
+
+  let startDay: number;
+  let startHalf: Half;
+  if (clippedStart) {
+    startDay = 1;
+    startHalf = 0;
+  } else {
+    const parsed = parseDateStr(block.startDate);
+    startDay = parsed ? parsed.day : 1;
+    startHalf = block.startHalf;
+  }
+
+  let endDay: number;
+  let endHalf: Half;
+  if (clippedEnd) {
+    endDay = daysInMonth;
+    endHalf = 1;
+  } else {
+    const parsed = parseDateStr(block.endDate);
+    endDay = parsed ? parsed.day : daysInMonth;
+    endHalf = block.endHalf;
+  }
+
+  return { startDay, endDay, startHalf, endHalf, clippedStart, clippedEnd };
+}
+
+export interface DrawRange {
+  startDay: number;
+  startHalf: Half;
+  endDay: number;
+  endHalf: Half;
+}
+
+export function drawDisplayRange(draw: {
+  anchorDay: number;
+  anchorHalf: Half;
+  currentDay: number;
+  currentHalf: Half;
+}): DrawRange {
+  const anchorH = toHalves(draw.anchorDay, draw.anchorHalf);
+  const currH = toHalves(draw.currentDay, draw.currentHalf);
+  if (anchorH <= currH) {
+    return { startDay: draw.anchorDay, startHalf: draw.anchorHalf, endDay: draw.currentDay, endHalf: draw.currentHalf };
+  }
+  return { startDay: draw.currentDay, startHalf: draw.currentHalf, endDay: draw.anchorDay, endHalf: draw.anchorHalf };
+}

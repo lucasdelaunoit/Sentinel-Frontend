@@ -318,7 +318,9 @@ export interface AbsenceItem {
   user_id: number;
   type: AbsenceType;
   start_date: string;
+  start_half: 0 | 1;
   end_date: string;
+  end_half: 0 | 1;
   status: AbsenceStatus;
   reason?: string | null;
   created_at: string;

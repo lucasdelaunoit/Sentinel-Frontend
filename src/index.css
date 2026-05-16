@@ -166,6 +166,14 @@
     --neutral-bg: #f3f4f6;
     --neutral-border: #e5e7eb;
 
+    /* --- Planning simulation block palette (multi-block visual differentiation) --- */
+    --planning-sim-1-bg: #fef3c7;     --planning-sim-1-border: #f59e0b;     --planning-sim-1-fg: #92400e;
+    --planning-sim-2-bg: #ede9fe;     --planning-sim-2-border: #7c3aed;     --planning-sim-2-fg: #5b21b6;
+    --planning-sim-3-bg: #ccfbf1;     --planning-sim-3-border: #14b8a6;     --planning-sim-3-fg: #115e59;
+    --planning-sim-4-bg: #ffedd5;     --planning-sim-4-border: #f97316;     --planning-sim-4-fg: #9a3412;
+    --planning-sim-5-bg: #fce7f3;     --planning-sim-5-border: #ec4899;     --planning-sim-5-fg: #9d174d;
+    --planning-sim-6-bg: #e0f2fe;     --planning-sim-6-border: #0ea5e9;     --planning-sim-6-fg: #075985;
+
     /* --- Shadows --- */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
