@@ -18,14 +18,7 @@ import useGetPlanning from "@/api/planning/useGetPlanning";
 import useSimulatePlanning from "@/api/planning/useSimulatePlanning";
 import useApplyPlanningSimulation from "@/api/planning/useApplyPlanningSimulation";
 import type { Half, PlanningMode, SimBlock } from "@/types/planning";
-import {
-  MONTH_NAMES,
-  getDayOfWeekForDay,
-  getDaysInMonth,
-  getFirstDayOfWeek,
-} from "@/utils/planning/calendar";
-import { isOnRealLeave } from "@/utils/planning/leaves";
-import PlanningStatsSection from "@/components/specified/pages/planning/PlanningStatsSection";
+import { MONTH_NAMES } from "@/utils/planning/calendar";
 import PlanningGantt from "@/components/specified/pages/planning/PlanningGantt";
 import PlanningContextPanel from "@/components/specified/pages/planning/PlanningContextPanel";
 import AddAbsenceSheet from "@/components/specified/pages/planning/sheets/AddAbsenceSheet";
@@ -45,18 +38,9 @@ export default function Planning() {
   const colorCounterRef = useRef(0);
   const applyMutation = useApplyPlanningSimulation();
 
-  const { settings } = useCalendarSettings();
   const month = `${viewYear}-${String(viewMonth).padStart(2, "0")}`;
   const planningQuery = useGetPlanning(month);
   const users = useMemo(() => planningQuery.data?.users ?? [], [planningQuery.data]);
-
-  const daysInViewMonth = getDaysInMonth(viewYear, viewMonth);
-  const firstDayOfWeek = getFirstDayOfWeek(viewYear, viewMonth);
-
-  function isClosedDay(day: number): boolean {
-    const dow = getDayOfWeekForDay(day, firstDayOfWeek);
-    return !settings.workingDays.includes(dow) || settings.holidays.some((h) => h.day === day);
-  }
 
   function navigateMonth(delta: number) {
     let m = viewMonth + delta;
@@ -131,28 +115,6 @@ export default function Planning() {
 
   const allBlocksValid = simBlocks.every((b) => b.endDate >= b.startDate);
   const simulation = useSimulatePlanning(simAbsences, allBlocksValid);
-
-  const todayInView = today.getFullYear() === viewYear && today.getMonth() + 1 === viewMonth;
-  const todayDay = todayInView ? today.getDate() : null;
-
-  const totalEmps = users.length;
-  const availableToday =
-    todayDay !== null ? users.filter((u) => !isOnRealLeave(u, todayDay, viewYear, viewMonth)).length : null;
-  const onLeaveToday = availableToday !== null ? totalEmps - availableToday : null;
-
-  const workingDaysLeft = useMemo(() => {
-    const allDays = Array.from({ length: daysInViewMonth }, (_, i) => i + 1);
-    if (todayDay !== null) {
-      return allDays.filter((d) => d > todayDay && !isClosedDay(d)).length;
-    }
-    return allDays.filter((d) => !isClosedDay(d)).length;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [daysInViewMonth, todayDay, firstDayOfWeek, settings.workingDays, settings.holidays]);
-
-  const atRiskProjects =
-    mode === "simulate" && simBlocks.length > 0
-      ? simulation.data.projects.filter((p) => p.level !== "safe").length
-      : null;
 
   const selectedBlock = simBlocks.find((b) => b.id === selectedBlockId);
   const selectedUser = selectedBlock ? users.find((u) => u.id === selectedBlock.userId) : undefined;
@@ -230,14 +192,6 @@ export default function Planning() {
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
-        <PlanningStatsSection
-          availableToday={availableToday}
-          onLeaveToday={onLeaveToday}
-          workingDaysLeft={workingDaysLeft}
-          atRiskProjects={atRiskProjects}
-          isLoading={planningQuery.isLoading}
-        />
-
         <PlanningGantt
           mode={mode}
           users={users}
