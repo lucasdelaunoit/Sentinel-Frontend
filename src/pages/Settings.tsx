@@ -15,10 +15,8 @@ import {
   Check,
   CalendarDays,
   Building2,
-  Briefcase,
   Users,
   MapPin,
-  Activity,
   Layers,
   Zap,
   AlertTriangle,
@@ -26,7 +24,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import SkillsTab from "@/components/specified/pages/settings/SkillsTab.tsx";
-import { ActivityIcon, BookOpenIcon, CalendarIcon, ShieldIcon, SlidersIcon } from "@phosphor-icons/react";
+import { BookOpenIcon, CalendarIcon, ShieldIcon, SlidersIcon } from "@phosphor-icons/react";
 import useGetOrganizationSettings from "@/api/organization/useGetOrganizationSettings";
 import useUpdateOrganizationSettings from "@/api/organization/useUpdateOrganizationSettings";
 import useGetCalendarSummary from "@/api/calendar/useGetCalendarSummary";
@@ -47,13 +45,6 @@ interface Rule {
   severity: "critical" | "warning" | "info";
 }
 
-interface AnalyticsConfig {
-  busFactorThreshold: number;
-  coverageSensitivity: "conservative" | "balanced" | "aggressive";
-  riskWeights: { busFactor: number; skillCoverage: number; teamAvailability: number };
-  alertThresholds: { riskScore: number; coverageMin: number; busFactorMax: number };
-}
-
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
 const METHODOLOGY_OPTIONS: { value: Methodology; label: string }[] = [
@@ -71,7 +62,6 @@ const TEAM_STRUCTURE_OPTIONS: { value: TeamStructure; label: string }[] = [
 ];
 
 const SIZE_OPTIONS: CompanySize[] = ["1-10", "11-50", "51-200", "201-500", "500+"];
-const INDUSTRY_OPTIONS = ["Technology", "Finance", "Healthcare", "Retail", "Manufacturing"];
 
 const DEFAULT_RULES: Rule[] = [
   {
@@ -123,13 +113,6 @@ const DEFAULT_RULES: Rule[] = [
     severity: "critical",
   },
 ];
-
-const DEFAULT_ANALYTICS: AnalyticsConfig = {
-  busFactorThreshold: 2,
-  coverageSensitivity: "balanced",
-  riskWeights: { busFactor: 40, skillCoverage: 40, teamAvailability: 20 },
-  alertThresholds: { riskScore: 70, coverageMin: 60, busFactorMax: 2 },
-};
 
 // ─── Style maps ───────────────────────────────────────────────────────────────
 
@@ -230,36 +213,6 @@ const RULE_GROUPS = [
   },
 ];
 
-const SENSITIVITY_CONFIG = {
-  conservative: {
-    label: "Conservative",
-    description: "Fewer alerts, higher thresholds",
-    color: "text-blue-700",
-    bg: "bg-blue-50",
-    border: "border-blue-200",
-    activeBg: "bg-blue-600",
-    ring: "ring-blue-300",
-  },
-  balanced: {
-    label: "Balanced",
-    description: "Standard sensitivity",
-    color: "text-amber-700",
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    activeBg: "bg-amber-500",
-    ring: "ring-amber-300",
-  },
-  aggressive: {
-    label: "Aggressive",
-    description: "More alerts, lower thresholds",
-    color: "text-rose-700",
-    bg: "bg-rose-50",
-    border: "border-rose-200",
-    activeBg: "bg-rose-600",
-    ring: "ring-rose-300",
-  },
-} as const;
-
 // ─── Shared small components ───────────────────────────────────────────────────
 
 function Badge({
@@ -289,7 +242,7 @@ function Badge({
 
 // ─── Organization Tab ─────────────────────────────────────────────────────────
 
-type OrgFormFields = Required<UpdateOrganizationSettingsRequest>;
+type OrgFormFields = Omit<Required<UpdateOrganizationSettingsRequest>, "industry">;
 
 function OrganizationTab() {
   const { data, isLoading } = useGetOrganizationSettings();
@@ -300,7 +253,6 @@ function OrganizationTab() {
     if (data) {
       setForm({
         name: data.name,
-        industry: data.industry,
         size: data.size,
         location: data.location,
         methodology: data.methodology,
@@ -313,8 +265,8 @@ function OrganizationTab() {
   if (isLoading || !form) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
+        <div className="grid grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
             <SharedStatCard key={i} title="" value={null} comment={null} icon={Building2} isLoading />
           ))}
         </div>
@@ -326,9 +278,8 @@ function OrganizationTab() {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <SharedStatCard title="Organization" value={form.name} comment={null} icon={Building2} isLoading={false} />
-        <SharedStatCard title="Industry" value={form.industry} comment={null} icon={Briefcase} isLoading={false} />
         <SharedStatCard title="Size" value={form.size} comment={null} icon={Users} isLoading={false} />
         <SharedStatCard title="Location" value={form.location} comment={null} icon={MapPin} isLoading={false} />
       </div>
@@ -338,14 +289,6 @@ function OrganizationTab() {
           <Field>
             <FieldLabel>Organization Name</FieldLabel>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          </Field>
-          <Field>
-            <FieldLabel>Industry</FieldLabel>
-            <SelectInput value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })}>
-              {INDUSTRY_OPTIONS.map((i) => (
-                <option key={i}>{i}</option>
-              ))}
-            </SelectInput>
           </Field>
           <Field>
             <FieldLabel>Company Size</FieldLabel>
@@ -936,279 +879,10 @@ function CalendarTab() {
   );
 }
 
-// ─── Analytics Tab ────────────────────────────────────────────────────────────
-
-function AnalyticsTab({ config, onSave }: { config: AnalyticsConfig; onSave: (c: AnalyticsConfig) => void }) {
-  const [form, setForm] = useState(config);
-  const [saved, setSaved] = useState(false);
-
-  function handleSave() {
-    onSave(form);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }
-
-  const weightsTotal = form.riskWeights.busFactor + form.riskWeights.skillCoverage + form.riskWeights.teamAvailability;
-  const weightsValid = weightsTotal === 100;
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-3 gap-4">
-        <SharedStatCard
-          title="Bus Factor Alert"
-          value={`≤ ${form.alertThresholds.busFactorMax}`}
-          comment="Trigger when bus factor reaches this"
-          icon={AlertTriangle}
-          isLoading={false}
-        />
-        <SharedStatCard
-          title="Coverage Alert"
-          value={`< ${form.alertThresholds.coverageMin}%`}
-          comment="Trigger when coverage drops below"
-          icon={Layers}
-          isLoading={false}
-        />
-        <SharedStatCard
-          title="Risk Score Alert"
-          value={`≥ ${form.alertThresholds.riskScore}`}
-          comment="Trigger when risk score exceeds"
-          icon={Activity}
-          isLoading={false}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-6">
-        {/* Risk Calculation Model */}
-        <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-5">
-          <div>
-            <h3 className="text-[14px] font-semibold text-foreground">Risk Calculation Model</h3>
-            <p className="text-[12px] text-muted-foreground mt-0.5">
-              Controls how Sentinel evaluates and scores organizational risk.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Coverage Sensitivity
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {(["conservative", "balanced", "aggressive"] as const).map((opt) => {
-                const cfg = SENSITIVITY_CONFIG[opt];
-                const active = form.coverageSensitivity === opt;
-                return (
-                  <button
-                    key={opt}
-                    onClick={() => setForm({ ...form, coverageSensitivity: opt })}
-                    className={cn(
-                      "rounded-xl border-2 p-3 text-left transition-all duration-200",
-                      active
-                        ? `${cfg.bg} ${cfg.border} ring-2 ${cfg.ring} ring-offset-1`
-                        : "border-border/40 bg-muted/20 hover:bg-muted/40",
-                    )}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={cn("text-[11px] font-semibold", active ? cfg.color : "text-foreground")}>
-                        {cfg.label}
-                      </span>
-                      <div
-                        className={cn(
-                          "size-3.5 rounded-full border-2 flex items-center justify-center transition-all",
-                          active ? `${cfg.activeBg} border-transparent` : "border-muted-foreground/30",
-                        )}
-                      >
-                        {active && <Check className="size-2 text-white" />}
-                      </div>
-                    </div>
-                    <p className={cn("text-[10px]", active ? cfg.color : "text-muted-foreground")}>{cfg.description}</p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Bus Factor Alert Threshold
-            </label>
-            <div className="flex items-center gap-3">
-              <input
-                type="number"
-                min={1}
-                max={5}
-                value={form.busFactorThreshold}
-                onChange={(e) => setForm({ ...form, busFactorThreshold: parseInt(e.target.value) || 1 })}
-                className="w-20 rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-center font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-              />
-              <p className="text-[12px] text-muted-foreground">Alert when bus factor ≤ this value</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Score Weights */}
-        <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-[14px] font-semibold text-foreground">Risk Score Weights</h3>
-              <p className="text-[12px] text-muted-foreground mt-0.5">
-                How each factor contributes to overall risk score.
-              </p>
-            </div>
-            <span
-              className={cn(
-                "text-[11px] font-semibold px-2.5 py-1 rounded-full border",
-                weightsValid
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-rose-50 text-rose-700 border-rose-200",
-              )}
-            >
-              {weightsTotal}/100
-            </span>
-          </div>
-
-          {[
-            {
-              key: "busFactor" as const,
-              label: "Bus Factor",
-              color: "bg-rose-500",
-              description: "Dependency concentration weight",
-            },
-            {
-              key: "skillCoverage" as const,
-              label: "Skill Coverage",
-              color: "bg-violet-500",
-              description: "Skill redundancy weight",
-            },
-            {
-              key: "teamAvailability" as const,
-              label: "Team Availability",
-              color: "bg-blue-500",
-              description: "Capacity availability weight",
-            },
-          ].map(({ key, label, color, description }) => (
-            <div key={key} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[12px] font-medium text-foreground">{label}</p>
-                  <p className="text-[10px] text-muted-foreground">{description}</p>
-                </div>
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  value={form.riskWeights[key]}
-                  onChange={(e) =>
-                    setForm({ ...form, riskWeights: { ...form.riskWeights, [key]: parseInt(e.target.value) || 0 } })
-                  }
-                  className="w-16 rounded-xl border border-border/60 bg-background px-2 py-1.5 text-[12px] text-center font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                />
-              </div>
-              <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
-                <div
-                  className={cn("h-full rounded-full transition-all", color)}
-                  style={{ width: `${Math.min(form.riskWeights[key], 100)}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Alert Thresholds */}
-      <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-4">
-        <div>
-          <h3 className="text-[14px] font-semibold text-foreground">Alert Thresholds</h3>
-          <p className="text-[12px] text-muted-foreground mt-0.5">
-            Values that trigger risk alerts across the platform.
-          </p>
-        </div>
-        <div className="grid grid-cols-3 gap-5">
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Risk Score Alert (≥)
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={0}
-                max={100}
-                value={form.alertThresholds.riskScore}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    alertThresholds: { ...form.alertThresholds, riskScore: parseInt(e.target.value) || 0 },
-                  })
-                }
-                className="w-20 rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-center font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-              />
-              <span className="text-[12px] text-muted-foreground">/ 100</span>
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Coverage Alert (&lt;)
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={0}
-                max={100}
-                value={form.alertThresholds.coverageMin}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    alertThresholds: { ...form.alertThresholds, coverageMin: parseInt(e.target.value) || 0 },
-                  })
-                }
-                className="w-20 rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-center font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-              />
-              <span className="text-[12px] text-muted-foreground">%</span>
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wide">
-              Bus Factor Alert (≤)
-            </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={1}
-                max={10}
-                value={form.alertThresholds.busFactorMax}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    alertThresholds: { ...form.alertThresholds, busFactorMax: parseInt(e.target.value) || 1 },
-                  })
-                }
-                className="w-20 rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-center font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-              />
-              <span className="text-[12px] text-muted-foreground">persons</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <Button
-        onClick={handleSave}
-        className={cn(
-          "gap-2 rounded-xl h-9 px-5 font-medium transition-all duration-200 shadow-sm",
-          saved
-            ? "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white"
-            : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/10",
-        )}
-      >
-        {saved && <Check className="size-4" />}
-        {saved ? "Saved" : "Save Changes"}
-      </Button>
-    </div>
-  );
-}
-
 // ─── Settings Page ────────────────────────────────────────────────────────────
 
 export default function Settings() {
   const [rules, setRules] = useState(DEFAULT_RULES);
-  const [analytics, setAnalytics] = useState(DEFAULT_ANALYTICS);
 
   return (
     <>
@@ -1222,7 +896,6 @@ export default function Settings() {
                 { value: "skills", label: "Skills", icon: BookOpenIcon },
                 { value: "rules", label: "Rules", icon: SlidersIcon },
                 { value: "calendar", label: "Calendar", icon: CalendarIcon },
-                { value: "analytics", label: "Analytics", icon: ActivityIcon },
               ] as const
             ).map(({ value, label, icon: Icon }) => (
               <TabsTrigger key={value} value={value}>
@@ -1244,11 +917,9 @@ export default function Settings() {
           <TabsContent value="calendar" className="mt-5">
             <CalendarTab />
           </TabsContent>
-          <TabsContent value="analytics" className="mt-5">
-            <AnalyticsTab config={analytics} onSave={setAnalytics} />
-          </TabsContent>
         </Tabs>
       </div>
     </>
   );
 }
+
