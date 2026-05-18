@@ -1,4 +1,5 @@
 import ComposedCard from "@/components/common/cards/ComposedCard";
+import StackedBar from "@/components/common/bars/StackedBar";
 import { Field, FieldDescription, FieldLabel, FieldTitle } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -56,19 +57,16 @@ export default function HealthWeightSettingsTab({ form, setForm, saveAction }: O
       </RadioGroup>
 
       <div className="rounded-xl bg-muted/30 border border-border/40 p-4">
-        <div className="h-3 w-full rounded-full overflow-hidden flex bg-muted/40 mb-2">
-          <div
-            className="h-full bg-gradient-to-r from-rose-500 to-rose-400"
-            style={{ width: `${form.health_risk_weight}%` }}
-          />
-          <div
-            className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500"
-            style={{ width: `${progressWeight}%` }}
-          />
-        </div>
+        <StackedBar
+          className="mb-2"
+          parts={[
+            { color: "bg-danger/80", value: form.health_risk_weight, label: "Risk" },
+            { color: "bg-success/80", value: progressWeight, label: "Progress" },
+          ]}
+        />
         <div className="flex justify-between text-[11px] tabular-nums">
-          <span className="text-rose-600 font-semibold">Risk weight: {form.health_risk_weight}%</span>
-          <span className="text-emerald-600 font-semibold">Progress weight: {progressWeight}%</span>
+          <span className="text-danger font-semibold">Risk weight: {form.health_risk_weight}%</span>
+          <span className="text-success font-semibold">Progress weight: {progressWeight}%</span>
         </div>
       </div>
     </ComposedCard>

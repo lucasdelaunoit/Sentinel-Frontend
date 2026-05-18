@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import ComposedCard from "@/components/common/cards/ComposedCard";
+import StackedBar from "@/components/common/bars/StackedBar";
 import { FieldDescription } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { OrgSettingsTabProps } from "./types";
@@ -131,35 +132,6 @@ function ConcernSlider({
   );
 }
 
-function StackedWeightBar({ parts }: { parts: { color: string; value: number; label: string }[] }) {
-  const total = parts.reduce((s, p) => s + p.value, 0);
-  if (total === 0) {
-    return (
-      <div className="h-3 w-full rounded-full bg-muted/40 flex items-center justify-center">
-        <span className="text-[10px] text-muted-foreground">
-          All concerns set to zero — set at least one above zero
-        </span>
-      </div>
-    );
-  }
-  return (
-    <div className="h-3 w-full rounded-full overflow-hidden flex bg-muted/40">
-      {parts.map((p, i) => {
-        const w = (p.value / total) * 100;
-        if (w === 0) return null;
-        return (
-          <div
-            key={i}
-            className={cn("h-full", p.color)}
-            style={{ width: `${w}%` }}
-            title={`${p.label}: ${Math.round(w)}%`}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
 export default function RiskWeightsSettingsTab({ form, setForm, saveAction }: OrgSettingsTabProps) {
   const totalRiskWeights =
     form.risk_weight_bus_factor +
@@ -221,7 +193,8 @@ export default function RiskWeightsSettingsTab({ form, setForm, saveAction }: Or
 
       <div className="rounded-xl bg-muted/30 border border-border/40 p-3 mb-4">
         <p className="text-[11px] font-medium text-muted-foreground mb-2">How weights distribute</p>
-        <StackedWeightBar
+        <StackedBar
+          emptyMessage="All concerns set to zero — set at least one above zero"
           parts={RISK_WEIGHTS.map((w) => ({
             color: w.barColor,
             value: form[w.formField],
