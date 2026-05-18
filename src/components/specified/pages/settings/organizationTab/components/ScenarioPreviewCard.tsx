@@ -41,10 +41,10 @@ function computeMetrics(team: Member[], project: Project, form: OrgFormFields, e
   const total = project.requiredSkills.length || 1;
 
   const totalW =
-    form.risk_weight_bus_factor +
-    form.risk_weight_uncovered_skills +
-    form.risk_weight_silos +
-    form.risk_weight_absence_impact;
+    form.fragility_weight_bus_factor +
+    form.fragility_weight_uncovered_skills +
+    form.fragility_weight_silos +
+    form.fragility_weight_absence_impact;
 
   const busRisk =
     busFactor === 0
@@ -59,16 +59,16 @@ function computeMetrics(team: Member[], project: Project, form: OrgFormFields, e
   const riskNormalized =
     totalW === 0
       ? 0
-      : (busRisk * form.risk_weight_bus_factor +
-          uncoveredRisk * form.risk_weight_uncovered_skills +
-          siloRisk * form.risk_weight_silos +
-          absenceRisk * form.risk_weight_absence_impact) /
+      : (busRisk * form.fragility_weight_bus_factor +
+          uncoveredRisk * form.fragility_weight_uncovered_skills +
+          siloRisk * form.fragility_weight_silos +
+          absenceRisk * form.fragility_weight_absence_impact) /
         totalW;
 
   const riskScore = Math.round(riskNormalized * 100);
   const progressScore = project.progress;
   const healthScore = Math.round(
-    ((100 - riskScore) * form.health_risk_weight + progressScore * (100 - form.health_risk_weight)) / 100,
+    ((100 - riskScore) * form.trajectory_fragility_weight + progressScore * (100 - form.trajectory_fragility_weight)) / 100,
   );
 
   return {

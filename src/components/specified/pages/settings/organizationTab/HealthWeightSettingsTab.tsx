@@ -16,7 +16,7 @@ const TRAJECTORY_STEPS: { value: number; label: string; description: string }[] 
 ];
 
 export default function HealthWeightSettingsTab({ form, setForm, saveAction }: OrgSettingsTabProps) {
-  const progressWeight = 100 - form.health_risk_weight;
+  const progressWeight = 100 - form.trajectory_fragility_weight;
 
   return (
     <ComposedCard
@@ -38,8 +38,8 @@ export default function HealthWeightSettingsTab({ form, setForm, saveAction }: O
       footer={saveAction}
     >
       <RadioGroup
-        value={String(form.health_risk_weight)}
-        onValueChange={(v) => setForm({ ...form, health_risk_weight: Number(v) })}
+        value={String(form.trajectory_fragility_weight)}
+        onValueChange={(v) => setForm({ ...form, trajectory_fragility_weight: Number(v) })}
         className="grid-cols-5 mb-4"
       >
         {TRAJECTORY_STEPS.map((s) => (
@@ -61,12 +61,12 @@ export default function HealthWeightSettingsTab({ form, setForm, saveAction }: O
         <StackedBar
           className="mb-2"
           parts={[
-            { color: "bg-danger/80", value: form.health_risk_weight, label: "Fragility" },
+            { color: "bg-danger/80", value: form.trajectory_fragility_weight, label: "Fragility" },
             { color: "bg-success/80", value: progressWeight, label: "Progress" },
           ]}
         />
         <div className="flex justify-between text-[11px] tabular-nums">
-          <span className="text-danger font-semibold">Fragility weight: {form.health_risk_weight}%</span>
+          <span className="text-danger font-semibold">Fragility weight: {form.trajectory_fragility_weight}%</span>
           <span className="text-success font-semibold">Progress weight: {progressWeight}%</span>
         </div>
       </div>

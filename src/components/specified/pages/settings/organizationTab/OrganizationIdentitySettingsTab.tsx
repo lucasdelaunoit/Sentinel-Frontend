@@ -38,8 +38,8 @@ export default function OrganizationIdentitySettingsTab({ form, setForm, saveAct
         <FieldLabel>Fragility Tolerance</FieldLabel>
         <FieldDescription>Global multiplier applied to fragility sensitivity.</FieldDescription>
         <RadioGroup
-          value={form.risk_tolerance}
-          onValueChange={(v) => setForm({ ...form, risk_tolerance: v as OrgFormFields["risk_tolerance"] })}
+          value={form.fragility_tolerance}
+          onValueChange={(v) => setForm({ ...form, fragility_tolerance: v as OrgFormFields["fragility_tolerance"] })}
           className="grid-cols-3 mt-2"
         >
           {RISK_TOLERANCE_OPTIONS.map((opt) => (

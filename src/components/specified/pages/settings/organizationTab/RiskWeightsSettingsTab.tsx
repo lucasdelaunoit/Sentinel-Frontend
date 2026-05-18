@@ -13,10 +13,10 @@ type RiskWeightKey = "bus" | "uncovered" | "silos" | "absence";
 const RISK_WEIGHTS: {
   key: RiskWeightKey;
   formField:
-    | "risk_weight_bus_factor"
-    | "risk_weight_uncovered_skills"
-    | "risk_weight_silos"
-    | "risk_weight_absence_impact";
+    | "fragility_weight_bus_factor"
+    | "fragility_weight_uncovered_skills"
+    | "fragility_weight_silos"
+    | "fragility_weight_absence_impact";
   title: string;
   question: string;
   barColor: string;
@@ -24,7 +24,7 @@ const RISK_WEIGHTS: {
 }[] = [
   {
     key: "bus",
-    formField: "risk_weight_bus_factor",
+    formField: "fragility_weight_bus_factor",
     title: "Losing key people",
     question: "How much should it weigh when a project depends on too few people?",
     barColor: "bg-danger/80",
@@ -32,7 +32,7 @@ const RISK_WEIGHTS: {
   },
   {
     key: "uncovered",
-    formField: "risk_weight_uncovered_skills",
+    formField: "fragility_weight_uncovered_skills",
     title: "Missing required skills",
     question: "How much should we worry when a project is missing skills it needs?",
     barColor: "bg-warning/80",
@@ -40,7 +40,7 @@ const RISK_WEIGHTS: {
   },
   {
     key: "silos",
-    formField: "risk_weight_silos",
+    formField: "fragility_weight_silos",
     title: "Knowledge silos",
     question: "How much should we worry when only one person knows a skill?",
     barColor: "bg-planned/80",
@@ -48,7 +48,7 @@ const RISK_WEIGHTS: {
   },
   {
     key: "absence",
-    formField: "risk_weight_absence_impact",
+    formField: "fragility_weight_absence_impact",
     title: "Upcoming absences",
     question: "How much should we worry about planned leaves coming up?",
     barColor: "bg-info/80",
@@ -65,10 +65,10 @@ const RISK_PRESETS: { key: string; label: string; values: Record<RiskWeightKey, 
 
 export default function RiskWeightsSettingsTab({ form, setForm, saveAction }: OrgSettingsTabProps) {
   const totalRiskWeights =
-    form.risk_weight_bus_factor +
-    form.risk_weight_uncovered_skills +
-    form.risk_weight_silos +
-    form.risk_weight_absence_impact;
+    form.fragility_weight_bus_factor +
+    form.fragility_weight_uncovered_skills +
+    form.fragility_weight_silos +
+    form.fragility_weight_absence_impact;
 
   return (
     <ComposedCard
@@ -93,10 +93,10 @@ export default function RiskWeightsSettingsTab({ form, setForm, saveAction }: Or
         <span className="text-[11px] font-medium text-muted-foreground self-center mr-1">Quick start:</span>
         {RISK_PRESETS.map((p) => {
           const active =
-            form.risk_weight_bus_factor === p.values.bus &&
-            form.risk_weight_uncovered_skills === p.values.uncovered &&
-            form.risk_weight_silos === p.values.silos &&
-            form.risk_weight_absence_impact === p.values.absence;
+            form.fragility_weight_bus_factor === p.values.bus &&
+            form.fragility_weight_uncovered_skills === p.values.uncovered &&
+            form.fragility_weight_silos === p.values.silos &&
+            form.fragility_weight_absence_impact === p.values.absence;
           return (
             <button
               key={p.key}
@@ -104,10 +104,10 @@ export default function RiskWeightsSettingsTab({ form, setForm, saveAction }: Or
               onClick={() =>
                 setForm({
                   ...form,
-                  risk_weight_bus_factor: p.values.bus,
-                  risk_weight_uncovered_skills: p.values.uncovered,
-                  risk_weight_silos: p.values.silos,
-                  risk_weight_absence_impact: p.values.absence,
+                  fragility_weight_bus_factor: p.values.bus,
+                  fragility_weight_uncovered_skills: p.values.uncovered,
+                  fragility_weight_silos: p.values.silos,
+                  fragility_weight_absence_impact: p.values.absence,
                 })
               }
               className={cn(

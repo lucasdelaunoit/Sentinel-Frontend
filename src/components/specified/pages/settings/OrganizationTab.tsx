@@ -12,12 +12,12 @@ import type { OrgFormFields } from "./organizationTab/types";
 type SectionKey = "identity" | "riskWeights" | "rules" | "health";
 
 const SECTION_FIELDS: Record<SectionKey, (keyof OrgFormFields)[]> = {
-  identity: ["name", "risk_tolerance"],
+  identity: ["name", "fragility_tolerance"],
   riskWeights: [
-    "risk_weight_bus_factor",
-    "risk_weight_uncovered_skills",
-    "risk_weight_silos",
-    "risk_weight_absence_impact",
+    "fragility_weight_bus_factor",
+    "fragility_weight_uncovered_skills",
+    "fragility_weight_silos",
+    "fragility_weight_absence_impact",
   ],
   rules: [
     "silo_threshold",
@@ -26,7 +26,7 @@ const SECTION_FIELDS: Record<SectionKey, (keyof OrgFormFields)[]> = {
     "absence_horizon_days",
     "rule_violation_penalty",
   ],
-  health: ["health_risk_weight"],
+  health: ["trajectory_fragility_weight"],
 };
 
 const SAVED_FLASH_MS = 2000;
@@ -34,14 +34,14 @@ const SAVED_FLASH_MS = 2000;
 function formFromData(data: NonNullable<ReturnType<typeof useGetOrganizationSettings>["data"]>): OrgFormFields {
   return {
     name: data.name,
-    risk_tolerance: data.risk_tolerance,
-    risk_weight_bus_factor: data.risk_weight_bus_factor,
-    risk_weight_uncovered_skills: data.risk_weight_uncovered_skills,
-    risk_weight_silos: data.risk_weight_silos,
-    risk_weight_absence_impact: data.risk_weight_absence_impact,
+    fragility_tolerance: data.fragility_tolerance,
+    fragility_weight_bus_factor: data.fragility_weight_bus_factor,
+    fragility_weight_uncovered_skills: data.fragility_weight_uncovered_skills,
+    fragility_weight_silos: data.fragility_weight_silos,
+    fragility_weight_absence_impact: data.fragility_weight_absence_impact,
     silo_threshold: data.silo_threshold,
     kci_min_level: data.kci_min_level,
-    health_risk_weight: data.health_risk_weight,
+    trajectory_fragility_weight: data.trajectory_fragility_weight,
     absence_horizon_days: data.absence_horizon_days,
     critical_bus_factor_threshold: data.critical_bus_factor_threshold,
     rule_violation_penalty: data.rule_violation_penalty,

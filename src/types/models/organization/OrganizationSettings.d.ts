@@ -1,18 +1,18 @@
-type RiskTolerance = "conservative" | "balanced" | "aggressive";
+type FragilityTolerance = "conservative" | "balanced" | "aggressive";
 
 interface OrganizationSettings {
   id: number;
   name: string;
-  risk_tolerance: RiskTolerance;
+  fragility_tolerance: FragilityTolerance;
 
   // Metrics config — drives RiskCalculationService + HealthService.
-  risk_weight_bus_factor: number;
-  risk_weight_uncovered_skills: number;
-  risk_weight_silos: number;
-  risk_weight_absence_impact: number;
+  fragility_weight_bus_factor: number;
+  fragility_weight_uncovered_skills: number;
+  fragility_weight_silos: number;
+  fragility_weight_absence_impact: number;
   silo_threshold: number;
   kci_min_level: number;
-  health_risk_weight: number;
+  trajectory_fragility_weight: number;
   absence_horizon_days: number;
   critical_bus_factor_threshold: number;
   rule_violation_penalty: number;
