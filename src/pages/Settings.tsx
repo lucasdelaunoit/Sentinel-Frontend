@@ -7,18 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import SharedStatCard from "@/components/common/cards/StatCard";
 import ComposedCard from "@/components/common/cards/ComposedCard";
-import {
-  Plus,
-  Trash2,
-  X,
-  Check,
-  CalendarDays,
-  Building2,
-  Layers,
-  Zap,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Plus, Trash2, X, Check, CalendarDays, Building2, Layers, Zap, ChevronLeft, ChevronRight } from "lucide-react";
 import SkillsTab from "@/components/specified/pages/settings/SkillsTab.tsx";
 import { BookOpenIcon, CalendarIcon, ShieldIcon, SlidersIcon } from "@phosphor-icons/react";
 import useGetOrganizationSettings from "@/api/organization/useGetOrganizationSettings";
@@ -124,13 +113,7 @@ const RULE_GROUPS = [
 
 // ─── Shared small components ───────────────────────────────────────────────────
 
-function Badge({
-  children,
-  variant,
-}: {
-  children: React.ReactNode;
-  variant: "info" | "neutral";
-}) {
+function Badge({ children, variant }: { children: React.ReactNode; variant: "info" | "neutral" }) {
   const styles = {
     info: "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm",
     neutral: "bg-muted/60 text-muted-foreground",
@@ -225,8 +208,8 @@ const CONCERN_STEPS: { value: number; label: string; short: string }[] = [
 ];
 
 function nearestStep(value: number): number {
-  return CONCERN_STEPS.reduce((best, s) =>
-    Math.abs(s.value - value) < Math.abs(best - value) ? s.value : best,
+  return CONCERN_STEPS.reduce(
+    (best, s) => (Math.abs(s.value - value) < Math.abs(best - value) ? s.value : best),
     CONCERN_STEPS[0].value,
   );
 }
@@ -289,16 +272,14 @@ function ConcernSlider({
   );
 }
 
-function StackedWeightBar({
-  parts,
-}: {
-  parts: { color: string; value: number; label: string }[];
-}) {
+function StackedWeightBar({ parts }: { parts: { color: string; value: number; label: string }[] }) {
   const total = parts.reduce((s, p) => s + p.value, 0);
   if (total === 0) {
     return (
       <div className="h-3 w-full rounded-full bg-muted/40 flex items-center justify-center">
-        <span className="text-[10px] text-muted-foreground">All concerns set to zero — set at least one above zero</span>
+        <span className="text-[10px] text-muted-foreground">
+          All concerns set to zero — set at least one above zero
+        </span>
       </div>
     );
   }
@@ -308,7 +289,12 @@ function StackedWeightBar({
         const w = (p.value / total) * 100;
         if (w === 0) return null;
         return (
-          <div key={i} className={cn("h-full", p.color)} style={{ width: `${w}%` }} title={`${p.label}: ${Math.round(w)}%`} />
+          <div
+            key={i}
+            className={cn("h-full", p.color)}
+            style={{ width: `${w}%` }}
+            title={`${p.label}: ${Math.round(w)}%`}
+          />
         );
       })}
     </div>
@@ -335,10 +321,7 @@ function InlineNumber({
       max={max}
       value={value}
       onChange={(e) => onChange(Number(e.target.value))}
-      className={cn(
-        "inline-flex h-8 px-2 text-center text-[13px] font-semibold tabular-nums align-baseline",
-        width,
-      )}
+      className={cn("inline-flex h-8 px-2 text-center text-[13px] font-semibold tabular-nums align-baseline", width)}
     />
   );
 }
@@ -463,13 +446,10 @@ function OrganizationTab() {
         </Field>
       </ComposedCard>
 
-      <ComposedCard
-        title="What should hurt a project's risk score the most?"
-        headerClassName="mb-2"
-      >
+      <ComposedCard title="What should hurt a project's risk score the most?" headerClassName="mb-2">
         <FieldDescription className="mb-3">
-          Drag each slider based on how worried you are about that concern. The bar below shows how
-          they balance out — only their relative size matters.
+          Drag each slider based on how worried you are about that concern. The bar below shows how they balance out —
+          only their relative size matters.
         </FieldDescription>
 
         <div className="flex flex-wrap gap-2 mb-4">
@@ -551,7 +531,11 @@ function OrganizationTab() {
           Read each line as a sentence. The numbers in white boxes are editable.
         </FieldDescription>
         <div className="space-y-3">
-          <SentenceRow icon="👤" iconColor="bg-violet-100 text-violet-700" example="Example: a skill known by 1 person is flagged as a silo.">
+          <SentenceRow
+            icon="👤"
+            iconColor="bg-violet-100 text-violet-700"
+            example="Example: a skill known by 1 person is flagged as a silo."
+          >
             A skill becomes a <strong>silo</strong> when only{" "}
             <InlineNumber
               value={form.silo_threshold}
@@ -562,7 +546,11 @@ function OrganizationTab() {
             or fewer people on the team know it.
           </SentenceRow>
 
-          <SentenceRow icon="⭐" iconColor="bg-amber-100 text-amber-700" example="Example: someone with React at level 2 doesn't count as covering React.">
+          <SentenceRow
+            icon="⭐"
+            iconColor="bg-amber-100 text-amber-700"
+            example="Example: someone with React at level 2 doesn't count as covering React."
+          >
             A team member only counts as <strong>covering</strong> a skill once they reach level{" "}
             <InlineNumber
               value={form.kci_min_level}
@@ -573,7 +561,11 @@ function OrganizationTab() {
             (out of 5).
           </SentenceRow>
 
-          <SentenceRow icon="🚨" iconColor="bg-rose-100 text-rose-700" example="Example: if losing 2 people would break a project, flag it as critical.">
+          <SentenceRow
+            icon="🚨"
+            iconColor="bg-rose-100 text-rose-700"
+            example="Example: if losing 2 people would break a project, flag it as critical."
+          >
             Flag a project as <strong>critical</strong> when its bus factor drops to{" "}
             <InlineNumber
               value={form.critical_bus_factor_threshold}
@@ -584,7 +576,11 @@ function OrganizationTab() {
             or below.
           </SentenceRow>
 
-          <SentenceRow icon="📅" iconColor="bg-blue-100 text-blue-700" example="Example: only leaves happening in the next two weeks affect the risk score.">
+          <SentenceRow
+            icon="📅"
+            iconColor="bg-blue-100 text-blue-700"
+            example="Example: only leaves happening in the next two weeks affect the risk score."
+          >
             When scoring upcoming risks, look{" "}
             <InlineNumber
               value={form.absence_horizon_days}
@@ -598,13 +594,10 @@ function OrganizationTab() {
         </div>
       </ComposedCard>
 
-      <ComposedCard
-        title="How should we judge overall project health?"
-        headerClassName="mb-2"
-      >
+      <ComposedCard title="How should we judge overall project health?" headerClassName="mb-2">
         <FieldDescription className="mb-4">
-          A project's health combines two things: how risky it is, and how far along it is.
-          Pick which one should matter more.
+          A project's health combines two things: how risky it is, and how far along it is. Pick which one should matter
+          more.
         </FieldDescription>
 
         <div className="grid grid-cols-5 gap-2 mb-4">
@@ -622,7 +615,9 @@ function OrganizationTab() {
                     : "border-border/40 bg-muted/20 hover:bg-muted/40",
                 )}
               >
-                <p className={cn("text-[12px] font-semibold leading-tight", active ? "text-primary" : "text-foreground")}>
+                <p
+                  className={cn("text-[12px] font-semibold leading-tight", active ? "text-primary" : "text-foreground")}
+                >
                   {s.label}
                 </p>
                 <p className="text-[10px] text-muted-foreground mt-1 leading-snug">{s.description}</p>
@@ -913,6 +908,14 @@ function CalendarTab() {
   const monthLabel = formatMonthYear(summary.year, summary.month);
   const today = todayIsoDate();
 
+  // Backend returns ALL holidays — filter to the previewed month here.
+  // Recurring holidays match on month only; non-recurring match on year + month.
+  const holidaysInMonth = summary.company_holidays.filter((h) => {
+    const d = new Date(h.date);
+    const sameMonth = d.getMonth() + 1 === summary.month;
+    return h.recurring ? sameMonth : sameMonth && d.getFullYear() === summary.year;
+  });
+
   // Build 6×7 grid: pad leading nulls so column index matches ISO weekday of day 1.
   const firstWeekday = summary.preview[0]?.weekday ?? 0;
   const cells: (CalendarPreviewDay | null)[] = Array(firstWeekday).fill(null);
@@ -923,59 +926,7 @@ function CalendarTab() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-3 gap-4">
-        <SharedStatCard
-          title="Working Days / Week"
-          value={summary.working_days_per_week}
-          comment={<p className="text-[11px] text-muted-foreground mt-0.5">days per week</p>}
-          icon={CalendarDays}
-          isLoading={false}
-        />
-        <SharedStatCard
-          title="Company Holidays"
-          value={summary.company_holidays.length}
-          comment={<p className="text-[11px] text-muted-foreground mt-0.5">in {monthLabel}</p>}
-          icon={CalendarDays}
-          isLoading={false}
-        />
-        <SharedStatCard
-          title={`Working Days — ${monthLabel.split(" ")[0]}`}
-          value={summary.working_days_in_month}
-          comment={<p className="text-[11px] text-muted-foreground mt-0.5">available working days</p>}
-          icon={CalendarDays}
-          isLoading={false}
-        />
-      </div>
-
       <div className="grid grid-cols-2 gap-4">
-        <ComposedCard title="Working Week" headerClassName="mb-2">
-          <FieldDescription className="mb-4">Select which days are regular working days.</FieldDescription>
-          <div className="flex gap-2 flex-wrap">
-            {DOW_LABELS.map((label, i) => {
-              const active = summary.working_days[i] === 1;
-              return (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => toggleWorkingDay(i)}
-                  disabled={updateSettings.isPending}
-                  className={cn(
-                    "size-11 rounded-xl text-[13px] font-semibold border-2 transition-all duration-150 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed",
-                    active
-                      ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/20"
-                      : "bg-muted/40 text-muted-foreground border-transparent hover:border-border/60 hover:bg-muted",
-                  )}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-          <p className="text-[11px] text-muted-foreground mt-3">
-            {summary.working_days_per_week} working day{summary.working_days_per_week !== 1 ? "s" : ""} per week
-          </p>
-        </ComposedCard>
-
         <ComposedCard
           title={`${monthLabel} Preview`}
           action={
@@ -1039,76 +990,103 @@ function CalendarTab() {
             </div>
           </div>
         </ComposedCard>
+        <ComposedCard
+          title={`Company Holidays — ${monthLabel}`}
+          action={
+            <>
+              <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
+                {holidaysInMonth.length}
+              </span>
+              <div className="flex-1" />
+              <Button onClick={() => setHolidaySheetOpen(true)} className="gap-1.5">
+                <Plus className="size-3.5" />
+                Add Holiday
+              </Button>
+            </>
+          }
+          headerClassName="mb-4"
+        >
+          <FieldDescription className="mb-4">
+            Blocked in the Leave Calendar and excluded from working-day counts.
+          </FieldDescription>
+          {holidaysInMonth.length === 0 ? (
+            <div className="py-10 text-center">
+              <CalendarDays className="size-8 text-muted-foreground/30 mx-auto mb-2" />
+              <p className="text-[13px] text-muted-foreground">No holidays in {monthLabel}</p>
+              <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+                Add company-specific days off for {monthLabel}
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-border/40 border border-border/40 rounded-xl overflow-hidden">
+              {holidaysInMonth.map((h) => {
+                const d = new Date(h.date);
+                const dayNum = d.getDate();
+                const dateLabel = h.recurring
+                  ? `${d.toLocaleString("en-US", { month: "long", day: "numeric" })} (yearly)`
+                  : d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+                const weekdayLabel = d.toLocaleDateString("en-US", { weekday: "short" });
+                return (
+                  <div key={h.id} className="flex items-center gap-4 px-4 py-3 hover:bg-muted/20 transition-colors">
+                    <div className="flex size-10 items-center justify-center rounded-xl bg-amber-100 border border-amber-200 shrink-0">
+                      <span className="text-[13px] font-bold text-amber-700">{dayNum}</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[13px] font-semibold text-foreground">{h.name}</p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {dateLabel} · {weekdayLabel}
+                      </p>
+                    </div>
+                    {h.recurring && (
+                      <span className="text-[10px] font-medium bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full">
+                        Recurring
+                      </span>
+                    )}
+                    <span className="text-[10px] font-medium bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
+                      Day off
+                    </span>
+                    <Button
+                      onClick={() => deleteHoliday.mutate(h.id)}
+                      size="sm"
+                      variant="ghost"
+                      className="text-muted-foreground/50 hover:text-rose-500 h-7 w-7 p-0"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </ComposedCard>
       </div>
 
-      <ComposedCard
-        title={`Company Holidays — ${monthLabel}`}
-        action={
-          <>
-            <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
-              {summary.company_holidays.length}
-            </span>
-            <div className="flex-1" />
-            <Button onClick={() => setHolidaySheetOpen(true)} className="gap-1.5">
-              <Plus className="size-3.5" />
-              Add Holiday
-            </Button>
-          </>
-        }
-        headerClassName="mb-4"
-      >
-        <FieldDescription className="mb-4">
-          Blocked in the Leave Calendar and excluded from working-day counts.
-        </FieldDescription>
-        {summary.company_holidays.length === 0 ? (
-          <div className="py-10 text-center">
-            <CalendarDays className="size-8 text-muted-foreground/30 mx-auto mb-2" />
-            <p className="text-[13px] text-muted-foreground">No holidays configured</p>
-            <p className="text-[11px] text-muted-foreground/60 mt-0.5">
-              Add company-specific days off for {monthLabel}
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-border/40 border border-border/40 rounded-xl overflow-hidden">
-            {summary.company_holidays.map((h) => {
-              const d = new Date(h.date);
-              const dayNum = d.getDate();
-              const dateLabel = h.recurring
-                ? `${d.toLocaleString("en-US", { month: "long", day: "numeric" })} (yearly)`
-                : d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-              const weekdayLabel = d.toLocaleDateString("en-US", { weekday: "short" });
-              return (
-                <div key={h.id} className="flex items-center gap-4 px-4 py-3 hover:bg-muted/20 transition-colors">
-                  <div className="flex size-10 items-center justify-center rounded-xl bg-amber-100 border border-amber-200 shrink-0">
-                    <span className="text-[13px] font-bold text-amber-700">{dayNum}</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-[13px] font-semibold text-foreground">{h.name}</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {dateLabel} · {weekdayLabel}
-                    </p>
-                  </div>
-                  {h.recurring && (
-                    <span className="text-[10px] font-medium bg-blue-100 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full">
-                      Recurring
-                    </span>
-                  )}
-                  <span className="text-[10px] font-medium bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full">
-                    Day off
-                  </span>
-                  <Button
-                    onClick={() => deleteHoliday.mutate(h.id)}
-                    size="sm"
-                    variant="ghost"
-                    className="text-muted-foreground/50 hover:text-rose-500 h-7 w-7 p-0"
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
-        )}
+      <ComposedCard title="Working Week" headerClassName="mb-2">
+        <FieldDescription className="mb-4">Select which days are regular working days.</FieldDescription>
+        <div className="flex gap-2 flex-wrap">
+          {DOW_LABELS.map((label, i) => {
+            const active = summary.working_days[i] === 1;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => toggleWorkingDay(i)}
+                disabled={updateSettings.isPending}
+                className={cn(
+                  "size-11 rounded-xl text-[13px] font-semibold border-2 transition-all duration-150 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed",
+                  active
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/20"
+                    : "bg-muted/40 text-muted-foreground border-transparent hover:border-border/60 hover:bg-muted",
+                )}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-3">
+          {summary.working_days_per_week} working day{summary.working_days_per_week !== 1 ? "s" : ""} per week
+        </p>
       </ComposedCard>
 
       <CreateCompanyHolidaySheet open={holidaySheetOpen} onOpenChange={setHolidaySheetOpen} />
