@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
+import { Field, FieldLabel, FieldTitle, FieldDescription } from "@/components/ui/field";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import SelectInput from "@/components/common/inputs/SelectInput";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import { Plus, Trash2, Check, AlertTriangle, Pencil, Building2, FolderKanban, UsersRound, Layers, Zap } from "lucide-react";
@@ -282,30 +283,35 @@ function ScopePicker({
     <>
       <Field>
         <FieldLabel>Scope</FieldLabel>
-        <div className="grid grid-cols-3 gap-2">
+        <RadioGroup
+          value={state.scope_type}
+          onValueChange={(v) => {
+            const s = v as RuleScopeType;
+            setState({ ...state, scope_type: s, scope_id: s === "organization" ? null : state.scope_id });
+          }}
+          className="grid-cols-3"
+        >
           {(["organization", "project", "department"] as RuleScopeType[]).map((s) => {
             const cfg = SCOPE_META[s];
-            const active = state.scope_type === s;
             const Icon = cfg.icon;
             return (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setState({ ...state, scope_type: s, scope_id: s === "organization" ? null : state.scope_id })}
-                className={cn(
-                  "rounded-xl border-2 p-3 text-left transition-all cursor-pointer",
-                  active ? "bg-primary/5 border-primary" : "border-border/40 bg-muted/20 hover:bg-muted/40",
-                )}
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <Icon className="size-4" />
-                  <span className="text-[12px] font-semibold">{cfg.label}</span>
-                </div>
-                <p className="text-[10px] text-muted-foreground">{cfg.description}</p>
-              </button>
+              <FieldLabel key={s} htmlFor={`scope-${s}`} className="cursor-pointer">
+                <Field className="relative">
+                  <div className="flex items-center gap-2 pr-6">
+                    <Icon className="size-4 text-muted-foreground group-has-data-checked/field-label:text-primary" />
+                    <FieldTitle>{cfg.label}</FieldTitle>
+                  </div>
+                  <FieldDescription>{cfg.description}</FieldDescription>
+                  <RadioGroupItem
+                    value={s}
+                    id={`scope-${s}`}
+                    className="absolute top-2.5 right-2.5 w-4!"
+                  />
+                </Field>
+              </FieldLabel>
             );
           })}
-        </div>
+        </RadioGroup>
       </Field>
 
       {state.scope_type === "project" && (
