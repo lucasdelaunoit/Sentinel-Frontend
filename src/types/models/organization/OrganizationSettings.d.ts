@@ -16,4 +16,5 @@ interface OrganizationSettings {
   health_risk_weight: number;
   absence_horizon_days: number;
   critical_bus_factor_threshold: number;
+  rule_violation_penalty: number;
 }

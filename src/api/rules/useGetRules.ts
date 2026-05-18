@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import usePrivateApi from "@/api/privateApi";
 
-export default function useGetCompanyHolidays() {
+export default function useGetRules() {
   const privateApi = usePrivateApi();
 
-  return useQuery<CompanyHoliday[]>({
-    queryKey: ["company-holidays"],
+  return useQuery<Rule[]>({
+    queryKey: ["rules"],
     queryFn: async () => {
-      const { data } = await privateApi.get<CompanyHoliday[] | { data: CompanyHoliday[] }>("/api/company-holidays");
+      const { data } = await privateApi.get<Rule[] | { data: Rule[] }>("/api/rules");
       return Array.isArray(data) ? data : (data?.data ?? []);
     },
     staleTime: 1000 * 60 * 5,

@@ -7,51 +7,19 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import SharedStatCard from "@/components/common/cards/StatCard";
 import ComposedCard from "@/components/common/cards/ComposedCard";
-import { Plus, Trash2, X, Check, CalendarDays, Building2, Layers, Zap, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Trash2, Check, CalendarDays, Building2, ChevronLeft, ChevronRight } from "lucide-react";
 import SkillsTab from "@/components/specified/pages/settings/SkillsTab.tsx";
+import RulesTab from "@/components/specified/pages/settings/RulesTab.tsx";
 import { BookOpenIcon, CalendarIcon, ShieldIcon, SlidersIcon } from "@phosphor-icons/react";
 import useGetOrganizationSettings from "@/api/organization/useGetOrganizationSettings";
 import useUpdateOrganizationSettings from "@/api/organization/useUpdateOrganizationSettings";
 import useGetCalendarSummary from "@/api/calendar/useGetCalendarSummary";
 import useUpdateCalendarSettings from "@/api/calendar/useUpdateCalendarSettings";
+import useGetCompanyHolidays from "@/api/company-holidays/useGetCompanyHolidays";
 import useDeleteCompanyHoliday from "@/api/company-holidays/useDeleteCompanyHoliday";
 import CreateCompanyHolidaySheet from "@/components/specified/models/companyHoliday/sheets/CreateCompanyHolidaySheet";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type RuleType = "bus_factor" | "min_skill";
-
-interface Rule {
-  id: string;
-  name: string;
-  type: RuleType;
-  enabled: boolean;
-  params: Record<string, string | number>;
-}
-
 // ─── Defaults ─────────────────────────────────────────────────────────────────
-
-const DEFAULT_RULES: Rule[] = [
-  {
-    id: "r1",
-    name: "Bus Factor Risk",
-    type: "bus_factor",
-    enabled: true,
-    params: { maxBusFactor: 2 },
-  },
-  {
-    id: "r2",
-    name: "Minimum React Experts",
-    type: "min_skill",
-    enabled: true,
-    params: { skill: "React", minLevel: 4, minCount: 3 },
-  },
-];
-
-const RULE_TYPE_LABELS: Record<RuleType, string> = {
-  bus_factor: "Bus Factor",
-  min_skill: "Min Skill",
-};
 
 const RISK_TOLERANCE_CONFIG = {
   conservative: {
@@ -85,50 +53,6 @@ const RISK_TOLERANCE_CONFIG = {
     ring: "ring-rose-300",
   },
 } as const;
-
-const RULE_GROUPS = [
-  {
-    key: "capability",
-    label: "Capability Constraints",
-    description: "Skill coverage and expertise requirements",
-    Icon: Layers,
-    types: ["min_skill"] as RuleType[],
-    headerBg: "bg-violet-50/60",
-    headerBorder: "border-violet-100",
-    iconColor: "text-violet-600",
-    textColor: "text-violet-700",
-  },
-  {
-    key: "resilience",
-    label: "Resilience Constraints",
-    description: "Dependency limits and concentration thresholds",
-    Icon: Zap,
-    types: ["bus_factor"] as RuleType[],
-    headerBg: "bg-rose-50/60",
-    headerBorder: "border-rose-100",
-    iconColor: "text-rose-600",
-    textColor: "text-rose-700",
-  },
-];
-
-// ─── Shared small components ───────────────────────────────────────────────────
-
-function Badge({ children, variant }: { children: React.ReactNode; variant: "info" | "neutral" }) {
-  const styles = {
-    info: "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm",
-    neutral: "bg-muted/60 text-muted-foreground",
-  };
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold shadow-sm",
-        styles[variant],
-      )}
-    >
-      {children}
-    </span>
-  );
-}
 
 // ─── Organization Tab ─────────────────────────────────────────────────────────
 
@@ -371,6 +295,7 @@ function OrganizationTab() {
         health_risk_weight: data.health_risk_weight,
         absence_horizon_days: data.absence_horizon_days,
         critical_bus_factor_threshold: data.critical_bus_factor_threshold,
+        rule_violation_penalty: data.rule_violation_penalty,
       });
     }
   }, [data]);
@@ -591,6 +516,21 @@ function OrganizationTab() {
             />{" "}
             days into the future.
           </SentenceRow>
+
+          <SentenceRow
+            icon="⚠️"
+            iconColor="bg-orange-100 text-orange-700"
+            example="Example: each broken rule on a day cuts that day's health score by 15 points."
+          >
+            Each rule violation on a given day cuts that day's health score by{" "}
+            <InlineNumber
+              value={form.rule_violation_penalty}
+              onChange={(v) => setForm({ ...form, rule_violation_penalty: v })}
+              min={0}
+              max={100}
+            />{" "}
+            points (clamped to 0).
+          </SentenceRow>
         </div>
       </ComposedCard>
 
@@ -654,196 +594,6 @@ function OrganizationTab() {
   );
 }
 
-// ─── Rules Tab ────────────────────────────────────────────────────────────────
-
-function formatRuleParams(rule: Rule): string {
-  switch (rule.type) {
-    case "bus_factor":
-      return `Max: ${rule.params.maxBusFactor}`;
-    case "min_skill":
-      return `${rule.params.minCount}x ${rule.params.skill} (lv.${rule.params.minLevel}+)`;
-    default:
-      return "";
-  }
-}
-
-function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => void }) {
-  const [list, setList] = useState(rules);
-  const [showAdd, setShowAdd] = useState(false);
-  const [newRule, setNewRule] = useState<Partial<Rule>>({
-    name: "",
-    type: "bus_factor",
-    enabled: true,
-    params: { maxBusFactor: 2 },
-  });
-
-  function toggleRule(id: string) {
-    const updated = list.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r));
-    setList(updated);
-    onSave(updated);
-  }
-
-  function handleDelete(id: string) {
-    const updated = list.filter((r) => r.id !== id);
-    setList(updated);
-    onSave(updated);
-  }
-
-  function handleAdd() {
-    if (!newRule.name) return;
-    const rule: Rule = {
-      id: `r${Date.now()}`,
-      name: newRule.name,
-      type: newRule.type as RuleType,
-      enabled: true,
-      params: newRule.params || {},
-    };
-    const updated = [...list, rule];
-    setList(updated);
-    onSave(updated);
-    setNewRule({ name: "", type: "bus_factor", enabled: true, params: { maxBusFactor: 2 } });
-    setShowAdd(false);
-  }
-
-  const activeRules = list.filter((r) => r.enabled);
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div>
-            <p className="text-[12px] font-medium text-muted-foreground">Organizational Resilience Policies</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{activeRules.length} active</p>
-          </div>
-          <div className="flex gap-2">
-            <Badge variant="neutral">{list.length} rules</Badge>
-          </div>
-        </div>
-        <Button
-          onClick={() => setShowAdd(true)}
-          className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-9 px-4 text-[13px] font-medium shadow-sm shadow-primary/10 btn-press"
-        >
-          <Plus className="size-4" />
-          Add Rule
-        </Button>
-      </div>
-
-      {showAdd && (
-        <div className="rounded-2xl bg-card border border-border/60 p-4 shadow-sm">
-          <div className="grid grid-cols-3 gap-3">
-            <input
-              type="text"
-              placeholder="Rule name"
-              value={newRule.name}
-              onChange={(e) => setNewRule({ ...newRule, name: e.target.value })}
-              className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-            />
-            <select
-              value={newRule.type}
-              onChange={(e) => setNewRule({ ...newRule, type: e.target.value as RuleType })}
-              className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
-            >
-              <option value="bus_factor">Bus Factor</option>
-              <option value="min_skill">Min Skill</option>
-            </select>
-            <div className="flex gap-2">
-              <Button
-                onClick={handleAdd}
-                className="bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-600 text-white rounded-xl h-10 px-4 shadow-sm"
-              >
-                Add
-              </Button>
-              <Button
-                onClick={() => setShowAdd(false)}
-                variant="outline"
-                className="rounded-xl h-10 px-3 hover:bg-muted/50"
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-5">
-        {RULE_GROUPS.map(({ key, label, description, Icon, types, headerBg, headerBorder, iconColor, textColor }) => {
-          const groupRules = list.filter((r) => types.includes(r.type));
-          return (
-            <div key={key} className="rounded-2xl border border-border/60 overflow-hidden shadow-sm">
-              <div className={cn("px-5 py-3.5 border-b flex items-center gap-3", headerBg, headerBorder)}>
-                <Icon className={cn("size-4 shrink-0", iconColor)} />
-                <div className="flex-1 min-w-0">
-                  <p className={cn("text-[13px] font-semibold", textColor)}>{label}</p>
-                  <p className="text-[11px] text-muted-foreground">{description}</p>
-                </div>
-                <span className="text-[11px] font-medium text-muted-foreground shrink-0">
-                  {groupRules.filter((r) => r.enabled).length}/{groupRules.length} active
-                </span>
-              </div>
-              {groupRules.length === 0 ? (
-                <div className="px-5 py-5 text-center text-[12px] text-muted-foreground">
-                  No rules defined — add one above.
-                </div>
-              ) : (
-                <div className="p-4 grid grid-cols-2 gap-3">
-                  {groupRules.map((rule) => (
-                    <div
-                      key={rule.id}
-                      className={cn(
-                        "rounded-xl border p-3.5 transition-all duration-200",
-                        rule.enabled
-                          ? "bg-card border-border/60 hover:shadow-sm hover:border-border"
-                          : "bg-muted/20 border-border/30 opacity-60",
-                      )}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-2.5">
-                          <button
-                            onClick={() => toggleRule(rule.id)}
-                            className={cn(
-                              "mt-0.5 size-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0 shadow-sm",
-                              rule.enabled
-                                ? "bg-gradient-to-br from-blue-500 to-blue-600 border-transparent"
-                                : "border-muted-foreground/30 bg-transparent",
-                            )}
-                          >
-                            {rule.enabled && <Check className="size-2.5 text-white" />}
-                          </button>
-                          <div>
-                            <p
-                              className={cn(
-                                "text-[12px] font-semibold",
-                                rule.enabled ? "text-foreground" : "text-muted-foreground",
-                              )}
-                            >
-                              {rule.name}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <Badge variant="info">{RULE_TYPE_LABELS[rule.type]}</Badge>
-                              <span className="text-[10px] text-muted-foreground">{formatRuleParams(rule)}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <Button
-                          onClick={() => handleDelete(rule.id)}
-                          size="sm"
-                          variant="ghost"
-                          className="text-muted-foreground/50 hover:text-rose-500 h-6 w-6 p-0 rounded-lg hover:bg-rose-50/50"
-                        >
-                          <Trash2 className="size-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 // ─── Calendar Tab ─────────────────────────────────────────────────────────────
 
@@ -868,6 +618,7 @@ function CalendarTab() {
   const [month, setMonth] = useState(now.getMonth() + 1);
 
   const { data: summary, isLoading } = useGetCalendarSummary(year, month);
+  const { data: allHolidays } = useGetCompanyHolidays();
   const updateSettings = useUpdateCalendarSettings();
   const deleteHoliday = useDeleteCompanyHoliday();
 
@@ -896,11 +647,11 @@ function CalendarTab() {
   if (isLoading || !summary) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <SharedStatCard key={i} title="" value={null} comment={null} icon={CalendarDays} isLoading />
-          ))}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="rounded-2xl border border-border/60 bg-card h-72 animate-pulse" />
+          <div className="rounded-2xl border border-border/60 bg-card h-72 animate-pulse" />
         </div>
+        <div className="rounded-2xl border border-border/60 bg-card h-32 animate-pulse" />
       </div>
     );
   }
@@ -908,13 +659,9 @@ function CalendarTab() {
   const monthLabel = formatMonthYear(summary.year, summary.month);
   const today = todayIsoDate();
 
-  // Backend returns ALL holidays — filter to the previewed month here.
-  // Recurring holidays match on month only; non-recurring match on year + month.
-  const holidaysInMonth = summary.company_holidays.filter((h) => {
-    const d = new Date(h.date);
-    const sameMonth = d.getMonth() + 1 === summary.month;
-    return h.recurring ? sameMonth : sameMonth && d.getFullYear() === summary.year;
-  });
+  // summary.company_holidays = month-scoped subset, used for preview math only.
+  // allHolidays = full list, shown in the holiday list card below.
+  const holidays = allHolidays ?? [];
 
   // Build 6×7 grid: pad leading nulls so column index matches ISO weekday of day 1.
   const firstWeekday = summary.preview[0]?.weekday ?? 0;
@@ -991,11 +738,11 @@ function CalendarTab() {
           </div>
         </ComposedCard>
         <ComposedCard
-          title={`Company Holidays — ${monthLabel}`}
+          title="Company Holidays"
           action={
             <>
               <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
-                {holidaysInMonth.length}
+                {holidays.length}
               </span>
               <div className="flex-1" />
               <Button onClick={() => setHolidaySheetOpen(true)} className="gap-1.5">
@@ -1007,19 +754,17 @@ function CalendarTab() {
           headerClassName="mb-4"
         >
           <FieldDescription className="mb-4">
-            Blocked in the Leave Calendar and excluded from working-day counts.
+            All company-wide days off. Blocked in the Leave Calendar and excluded from working-day counts.
           </FieldDescription>
-          {holidaysInMonth.length === 0 ? (
+          {holidays.length === 0 ? (
             <div className="py-10 text-center">
               <CalendarDays className="size-8 text-muted-foreground/30 mx-auto mb-2" />
-              <p className="text-[13px] text-muted-foreground">No holidays in {monthLabel}</p>
-              <p className="text-[11px] text-muted-foreground/60 mt-0.5">
-                Add company-specific days off for {monthLabel}
-              </p>
+              <p className="text-[13px] text-muted-foreground">No holidays configured</p>
+              <p className="text-[11px] text-muted-foreground/60 mt-0.5">Add a company-specific day off to get started.</p>
             </div>
           ) : (
             <div className="divide-y divide-border/40 border border-border/40 rounded-xl overflow-hidden">
-              {holidaysInMonth.map((h) => {
+              {holidays.map((h) => {
                 const d = new Date(h.date);
                 const dayNum = d.getDate();
                 const dateLabel = h.recurring
@@ -1097,8 +842,6 @@ function CalendarTab() {
 // ─── Settings Page ────────────────────────────────────────────────────────────
 
 export default function Settings() {
-  const [rules, setRules] = useState(DEFAULT_RULES);
-
   return (
     <>
       <TopBar title="Settings" />
@@ -1127,7 +870,7 @@ export default function Settings() {
             <SkillsTab />
           </TabsContent>
           <TabsContent value="rules" className="mt-5">
-            <RulesTab rules={rules} onSave={setRules} />
+            <RulesTab />
           </TabsContent>
           <TabsContent value="calendar" className="mt-5">
             <CalendarTab />

@@ -1,0 +1,1 @@
+type UpdateRuleRequest = Partial<CreateRuleRequest>;

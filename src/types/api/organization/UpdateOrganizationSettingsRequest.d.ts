@@ -12,5 +12,6 @@ type UpdateOrganizationSettingsRequest = Partial<
     | "health_risk_weight"
     | "absence_horizon_days"
     | "critical_bus_factor_threshold"
+    | "rule_violation_penalty"
   >
 >;
