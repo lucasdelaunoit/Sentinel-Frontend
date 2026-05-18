@@ -53,7 +53,7 @@ export default function SkillsTab() {
         {/* Left — Categories */}
         <ComposedCard
           title="Categories"
-          className="w-60 shrink-0"
+          className="w-64 shrink-0"
           action={
             <div className="ml-auto flex items-center gap-2">
               <span

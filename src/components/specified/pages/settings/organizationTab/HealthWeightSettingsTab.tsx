@@ -3,6 +3,8 @@ import { Field, FieldDescription, FieldLabel, FieldTitle } from "@/components/ui
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { OrgSettingsTabProps } from "./types";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip.tsx";
+import { QuestionIcon } from "@phosphor-icons/react";
 
 const HEALTH_STEPS: { value: number; label: string; description: string }[] = [
   { value: 10, label: "Delivery only", description: "Progress drives the score — risk barely affects it" },
@@ -12,16 +14,27 @@ const HEALTH_STEPS: { value: number; label: string; description: string }[] = [
   { value: 90, label: "Stability only", description: "Risk drives the score — progress barely affects it" },
 ];
 
-export default function HealthWeightSettingsTab({ form, setForm }: OrgSettingsTabProps) {
+export default function HealthWeightSettingsTab({ form, setForm, saveAction }: OrgSettingsTabProps) {
   const progressWeight = 100 - form.health_risk_weight;
 
   return (
-    <ComposedCard title="How should we judge overall project health?" headerClassName="mb-2">
-      <FieldDescription className="mb-4">
-        A project's health combines two things: how risky it is, and how far along it is. Pick which one should matter
-        more.
-      </FieldDescription>
-
+    <ComposedCard
+      title={
+        <div className="flex items-center gap-2">
+          <span>How should we judge overall project health?</span>
+          <Tooltip>
+            <TooltipTrigger>
+              <QuestionIcon />
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              A project's health combines two things: how risky it is, and how far along it is. Pick which one should
+              matter more.
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      }
+      footer={saveAction}
+    >
       <RadioGroup
         value={String(form.health_risk_weight)}
         onValueChange={(v) => setForm({ ...form, health_risk_weight: Number(v) })}

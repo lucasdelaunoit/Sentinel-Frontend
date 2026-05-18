@@ -26,9 +26,9 @@ const RISK_TOLERANCE_OPTIONS = [
   },
 ] as const;
 
-export default function OrganizationIdentitySettingsTab({ form, setForm }: OrgSettingsTabProps) {
+export default function OrganizationIdentitySettingsTab({ form, setForm, saveAction }: OrgSettingsTabProps) {
   return (
-    <ComposedCard title="Identity">
+    <ComposedCard title="Identity" footer={saveAction}>
       <Field>
         <FieldLabel>Organization Name</FieldLabel>
         <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />

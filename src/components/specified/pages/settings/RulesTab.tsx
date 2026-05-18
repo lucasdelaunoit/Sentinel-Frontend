@@ -2,11 +2,31 @@ import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Field, FieldLabel, FieldTitle, FieldDescription } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import SelectInput from "@/components/common/inputs/SelectInput";
+import SearchBar from "@/components/common/inputs/SearchBar";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import { Plus, Trash2, Check, AlertTriangle, Pencil, Building2, FolderKanban, UsersRound, Layers, Zap } from "lucide-react";
+import ComposedCard from "@/components/common/cards/ComposedCard";
+import SecondaryCard from "@/components/common/cards/SecondaryCard";
+import { SecondaryButton } from "@/components/common/buttons/SecondaryButton";
+import Feedback from "@/components/common/feedbacks/Feedback";
+import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog";
+import {
+  Plus,
+  Trash2,
+  Check,
+  AlertTriangle,
+  Pencil,
+  Building2,
+  FolderKanban,
+  UsersRound,
+  Layers,
+  Zap,
+  Shield,
+} from "lucide-react";
 import useGetRules from "@/api/rules/useGetRules";
 import useCreateRule from "@/api/rules/useCreateRule";
 import useUpdateRule from "@/api/rules/useUpdateRule";
@@ -17,33 +37,28 @@ import useGetProjects from "@/api/projects/useGetProjects";
 
 // ─── Static metadata ──────────────────────────────────────────────────────────
 
-const RULE_TYPE_META: Record<
-  RuleType,
-  { label: string; description: string; group: "capability" | "resilience"; icon: typeof Layers }
-> = {
+type RuleGroup = "capability" | "resilience";
+
+const RULE_TYPE_META: Record<RuleType, { label: string; description: string; group: RuleGroup }> = {
   bus_factor: {
     label: "Bus Factor",
     description: "Flag projects too dependent on a small number of people",
     group: "resilience",
-    icon: Zap,
   },
   min_skill: {
     label: "Minimum Skill Coverage",
     description: "Require N people at level L+ for a given skill",
     group: "capability",
-    icon: Layers,
   },
   min_coverage: {
     label: "Skill Coverage Ratio",
     description: "Require a minimum % of team members to cover a skill",
     group: "capability",
-    icon: Layers,
   },
   role_redundancy: {
     label: "Role Redundancy",
     description: "Require a minimum number of people in a given role",
     group: "resilience",
-    icon: Zap,
   },
 };
 
@@ -53,28 +68,22 @@ const SCOPE_META: Record<RuleScopeType, { label: string; icon: typeof Building2;
   department: { label: "Department", icon: UsersRound, description: "Applies to one department" },
 };
 
-const GROUP_META = {
+const GROUP_META: Record<RuleGroup, { label: string; description: string; icon: typeof Layers }> = {
   capability: {
-    label: "Capability Constraints",
+    label: "Capability",
     description: "Skill coverage and expertise requirements",
-    headerBg: "bg-violet-50/60",
-    headerBorder: "border-violet-100",
-    iconColor: "text-violet-600",
-    textColor: "text-violet-700",
-    Icon: Layers,
+    icon: Layers,
   },
   resilience: {
-    label: "Resilience Constraints",
+    label: "Resilience",
     description: "Dependency limits and concentration thresholds",
-    headerBg: "bg-rose-50/60",
-    headerBorder: "border-rose-100",
-    iconColor: "text-rose-600",
-    textColor: "text-rose-700",
-    Icon: Zap,
+    icon: Zap,
   },
-} as const;
+};
 
-// ─── Defaults per type ────────────────────────────────────────────────────────
+type FilterKey = "ALL" | RuleGroup;
+
+// ─── Defaults / formatting ────────────────────────────────────────────────────
 
 function defaultParams(type: RuleType): AnyRuleParams {
   switch (type) {
@@ -110,7 +119,7 @@ function formatParams(rule: Rule): string {
   }
 }
 
-// ─── Rule editor sheet ────────────────────────────────────────────────────────
+// ─── Editor state ─────────────────────────────────────────────────────────────
 
 interface RuleEditorState {
   name: string;
@@ -142,6 +151,8 @@ function fromRule(rule: Rule): RuleEditorState {
     enabled: rule.enabled,
   };
 }
+
+// ─── Params editor ────────────────────────────────────────────────────────────
 
 function ParamsEditor({
   state,
@@ -238,7 +249,9 @@ function ParamsEditor({
               value={p.min_pct}
               onChange={(e) => setState({ ...state, params: { ...p, min_pct: Number(e.target.value) } })}
             />
-            <FieldDescription>Share of team members who must hold the skill at the configured KCI level.</FieldDescription>
+            <FieldDescription>
+              Share of team members who must hold the skill at the configured KCI level.
+            </FieldDescription>
           </Field>
         </>
       );
@@ -269,6 +282,8 @@ function ParamsEditor({
     }
   }
 }
+
+// ─── Scope picker ─────────────────────────────────────────────────────────────
 
 function ScopePicker({
   state,
@@ -302,11 +317,7 @@ function ScopePicker({
                     <FieldTitle>{cfg.label}</FieldTitle>
                   </div>
                   <FieldDescription>{cfg.description}</FieldDescription>
-                  <RadioGroupItem
-                    value={s}
-                    id={`scope-${s}`}
-                    className="absolute top-2.5 right-2.5 w-4!"
-                  />
+                  <RadioGroupItem value={s} id={`scope-${s}`} className="absolute top-2.5 right-2.5 w-4!" />
                 </Field>
               </FieldLabel>
             );
@@ -319,9 +330,7 @@ function ScopePicker({
           <FieldLabel>Target project</FieldLabel>
           <SelectInput
             value={state.scope_id === null ? "" : String(state.scope_id)}
-            onChange={(e) =>
-              setState({ ...state, scope_id: e.target.value === "" ? null : Number(e.target.value) })
-            }
+            onChange={(e) => setState({ ...state, scope_id: e.target.value === "" ? null : Number(e.target.value) })}
           >
             <option value="">— Select a project —</option>
             {projects.map((p) => (
@@ -339,9 +348,7 @@ function ScopePicker({
           <Input
             type="number"
             value={state.scope_id ?? ""}
-            onChange={(e) =>
-              setState({ ...state, scope_id: e.target.value === "" ? null : Number(e.target.value) })
-            }
+            onChange={(e) => setState({ ...state, scope_id: e.target.value === "" ? null : Number(e.target.value) })}
             placeholder="Department ID"
           />
           <FieldDescription>Department picker is not yet available — enter the ID directly for now.</FieldDescription>
@@ -350,6 +357,8 @@ function ScopePicker({
     </>
   );
 }
+
+// ─── Editor sheet ─────────────────────────────────────────────────────────────
 
 function RuleEditorSheet({
   open,
@@ -380,9 +389,7 @@ function RuleEditorSheet({
     setState({ ...state, type, params: defaultParams(type) });
   }
 
-  const canSubmit =
-    state.name.trim().length > 0 &&
-    (state.scope_type === "organization" || state.scope_id !== null);
+  const canSubmit = state.name.trim().length > 0 && (state.scope_type === "organization" || state.scope_id !== null);
 
   return (
     <ComposedSheet
@@ -451,77 +458,112 @@ function RuleCard({
   onToggle,
   onEdit,
   onDelete,
+  isDeleting,
 }: {
   rule: Rule;
   violationCount: number;
   onToggle: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  isDeleting: boolean;
 }) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const meta = RULE_TYPE_META[rule.type];
   const scope = SCOPE_META[rule.scope_type];
   const ScopeIcon = scope.icon;
 
   return (
-    <div
-      className={cn(
-        "rounded-xl border p-3.5 transition-all duration-200",
-        rule.enabled ? "bg-card border-border/60 hover:shadow-sm hover:border-border" : "bg-muted/20 border-border/30 opacity-60",
-      )}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-2.5 flex-1 min-w-0">
-          <button
-            onClick={onToggle}
-            className={cn(
-              "mt-0.5 size-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0 shadow-sm cursor-pointer",
-              rule.enabled ? "bg-gradient-to-br from-blue-500 to-blue-600 border-transparent" : "border-muted-foreground/30 bg-transparent",
-            )}
-          >
-            {rule.enabled && <Check className="size-2.5 text-white" />}
-          </button>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <p className={cn("text-[13px] font-semibold truncate", rule.enabled ? "text-foreground" : "text-muted-foreground")}>
-                {rule.name}
-              </p>
-              {violationCount > 0 && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 text-rose-700 border border-rose-200 px-2 py-0.5 text-[10px] font-semibold">
-                  <AlertTriangle className="size-3" />
-                  {violationCount}
-                </span>
-              )}
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">{formatParams(rule)}</p>
-            <div className="flex items-center gap-2 mt-1.5">
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                {meta.label}
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                <ScopeIcon className="size-3" />
-                {scope.label}
-                {rule.scope_id !== null && ` #${rule.scope_id}`}
-              </span>
-            </div>
+    <SecondaryCard
+      className={cn("bg-tertiary p-3", !rule.enabled && "opacity-60")}
+      before={
+        <button
+          onClick={onToggle}
+          aria-label={rule.enabled ? "Disable rule" : "Enable rule"}
+          className={cn(
+            "size-5 rounded-full border flex items-center justify-center transition-colors cursor-pointer shrink-0",
+            rule.enabled
+              ? "bg-primary border-primary text-primary-foreground"
+              : "border-muted-foreground/40 bg-transparent hover:border-muted-foreground",
+          )}
+        >
+          {rule.enabled && <Check className="size-3" strokeWidth={3} />}
+        </button>
+      }
+      title={
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="font-semibold truncate">{rule.name}</span>
+          {violationCount > 0 && (
+            <Badge variant="destructive" className="shrink-0">
+              <AlertTriangle />
+              {violationCount}
+            </Badge>
+          )}
+        </div>
+      }
+      description={
+        <div className="flex flex-col gap-1.5 mt-1">
+          <span className="text-[11px] text-muted-foreground">{formatParams(rule)}</span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge variant="outline" className="text-muted-foreground">
+              {meta.label}
+            </Badge>
+            <Badge variant="outline" className="text-muted-foreground">
+              <ScopeIcon />
+              {scope.label}
+              {rule.scope_id !== null && ` #${rule.scope_id}`}
+            </Badge>
           </div>
         </div>
-        <div className="flex gap-1 shrink-0">
-          <Button onClick={onEdit} size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-lg">
-            <Pencil className="size-3.5" />
+      }
+      action={
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={onEdit} className="hover:bg-card">
+            <Pencil />
           </Button>
-          <Button
-            onClick={onDelete}
-            size="sm"
-            variant="ghost"
-            className="text-muted-foreground/50 hover:text-rose-500 h-7 w-7 p-0 rounded-lg hover:bg-rose-50/50"
-          >
-            <Trash2 className="size-3.5" />
-          </Button>
+          <ComposedAlertDialog
+            open={confirmOpen}
+            onOpenChange={setConfirmOpen}
+            trigger={
+              <Button variant="destructive" size="icon" disabled={isDeleting}>
+                <Trash2 />
+              </Button>
+            }
+            title={`Delete rule "${rule.name}"?`}
+            description="This will permanently delete the rule and its violation history."
+            confirmLabel="Delete"
+            pendingLabel="Deleting…"
+            isPending={isDeleting}
+            variant="destructive"
+            onConfirm={() => {
+              onDelete();
+              setConfirmOpen(false);
+            }}
+          />
         </div>
+      }
+    />
+  );
+}
+
+RuleCard.Skeleton = function RuleCardSkeleton() {
+  return (
+    <div className="rounded-xl bg-tertiary p-3 flex items-center gap-3">
+      <Skeleton className="size-5 rounded-full shrink-0" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-3.5 w-32 rounded-md" />
+        <Skeleton className="h-3 w-40 rounded-md" />
+        <div className="flex gap-1.5">
+          <Skeleton className="h-4 w-16 rounded-full" />
+          <Skeleton className="h-4 w-20 rounded-full" />
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Skeleton className="size-8 rounded-md shrink-0" />
+        <Skeleton className="size-8 rounded-md shrink-0" />
       </div>
     </div>
   );
-}
+};
 
 // ─── Main tab ─────────────────────────────────────────────────────────────────
 
@@ -534,6 +576,8 @@ export default function RulesTab() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Rule | null>(null);
+  const [filter, setFilter] = useState<FilterKey>("ALL");
+  const [search, setSearch] = useState("");
 
   const violationCountByRule = useMemo(() => {
     const map = new Map<number, number>();
@@ -542,14 +586,33 @@ export default function RulesTab() {
   }, [violations]);
 
   const list = rules ?? [];
-  const activeRules = list.filter((r) => r.enabled);
   const totalViolations = violations?.length ?? 0;
 
-  const grouped = useMemo(() => {
-    const out: Record<"capability" | "resilience", Rule[]> = { capability: [], resilience: [] };
-    list.forEach((r) => out[RULE_TYPE_META[r.type].group].push(r));
+  const countsByGroup = useMemo(() => {
+    const out: Record<RuleGroup, { total: number; active: number }> = {
+      capability: { total: 0, active: 0 },
+      resilience: { total: 0, active: 0 },
+    };
+    list.forEach((r) => {
+      const g = RULE_TYPE_META[r.type].group;
+      out[g].total++;
+      if (r.enabled) out[g].active++;
+    });
     return out;
   }, [list]);
+
+  const filteredRules = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return list.filter((r) => {
+      if (filter !== "ALL" && RULE_TYPE_META[r.type].group !== filter) return false;
+      if (q && !r.name.toLowerCase().includes(q) && !RULE_TYPE_META[r.type].label.toLowerCase().includes(q))
+        return false;
+      return true;
+    });
+  }, [list, filter, search]);
+
+  const activeRules = list.filter((r) => r.enabled);
+  const scopeTitle = filter === "ALL" ? "All rules" : GROUP_META[filter].label;
 
   function handleCreate(s: RuleEditorState) {
     createRule.mutate(
@@ -587,73 +650,126 @@ export default function RulesTab() {
     updateRule.mutate({ id: rule.id, payload: { enabled: !rule.enabled } });
   }
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="h-16 rounded-2xl bg-muted/30 animate-pulse" />
-        <div className="h-32 rounded-2xl bg-muted/30 animate-pulse" />
-        <div className="h-32 rounded-2xl bg-muted/30 animate-pulse" />
-      </div>
-    );
-  }
+  const isEmpty = !isLoading && list.length === 0;
+  const noMatches = !isLoading && list.length > 0 && filteredRules.length === 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div>
-            <p className="text-[12px] font-medium text-muted-foreground">Organizational Resilience Policies</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              {activeRules.length}/{list.length} active · {totalViolations} open violation{totalViolations !== 1 ? "s" : ""}
-            </p>
-          </div>
-        </div>
-        <Button onClick={() => setCreateOpen(true)} className="gap-2 h-9 px-4">
-          <Plus className="size-4" />
-          Add Rule
-        </Button>
-      </div>
-
-      <div className="space-y-5">
-        {(["capability", "resilience"] as const).map((groupKey) => {
-          const groupRules = grouped[groupKey];
-          const g = GROUP_META[groupKey];
-          const Icon = g.Icon;
-          return (
-            <div key={groupKey} className="rounded-2xl border border-border/60 overflow-hidden shadow-sm">
-              <div className={cn("px-5 py-3.5 border-b flex items-center gap-3", g.headerBg, g.headerBorder)}>
-                <Icon className={cn("size-4 shrink-0", g.iconColor)} />
-                <div className="flex-1 min-w-0">
-                  <p className={cn("text-[13px] font-semibold", g.textColor)}>{g.label}</p>
-                  <p className="text-[11px] text-muted-foreground">{g.description}</p>
-                </div>
-                <span className="text-[11px] font-medium text-muted-foreground shrink-0">
-                  {groupRules.filter((r) => r.enabled).length}/{groupRules.length} active
-                </span>
-              </div>
-              {groupRules.length === 0 ? (
-                <div className="px-5 py-5 text-center text-[12px] text-muted-foreground">
-                  No rules in this group — add one above.
-                </div>
-              ) : (
-                <div className="p-4 grid grid-cols-2 gap-3">
-                  {groupRules.map((rule) => (
-                    <RuleCard
-                      key={rule.id}
-                      rule={rule}
-                      violationCount={violationCountByRule.get(rule.id) ?? 0}
-                      onToggle={() => toggleEnabled(rule)}
-                      onEdit={() => setEditTarget(rule)}
-                      onDelete={() => {
-                        if (window.confirm(`Delete rule "${rule.name}"?`)) deleteRule.mutate(rule.id);
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
+    <>
+      <div className="flex gap-4 items-start">
+        {/* Left — Filter rail */}
+        <ComposedCard title="Groups" className="w-64 shrink-0">
+          <div className="flex flex-col mb-2" style={{ minHeight: "440px" }}>
+            <FilterItem
+              label="All rules"
+              icon={Shield}
+              active={filter === "ALL"}
+              onSelect={() => setFilter("ALL")}
+              count={list.length}
+              activeCount={activeRules.length}
+            />
+            <div className="h-px bg-border/60 my-2" />
+            <div className="flex-1 space-y-1">
+              {(["capability", "resilience"] as const).map((g) => (
+                <FilterItem
+                  key={g}
+                  label={GROUP_META[g].label}
+                  description={GROUP_META[g].description}
+                  icon={GROUP_META[g].icon}
+                  active={filter === g}
+                  onSelect={() => setFilter(g)}
+                  count={countsByGroup[g].total}
+                  activeCount={countsByGroup[g].active}
+                />
+              ))}
             </div>
-          );
-        })}
+          </div>
+          <SecondaryButton onClick={() => setCreateOpen(true)}>
+            <Plus className="size-3 mb-0.5" />
+            Add new rule
+          </SecondaryButton>
+        </ComposedCard>
+
+        {/* Right — Rules grid */}
+        <ComposedCard
+          title={scopeTitle}
+          className="flex-1 h-auto"
+          action={
+            isEmpty ? null : (
+              <div className="flex items-center gap-2">
+                <SearchBar value={search} onChange={setSearch} size="sm" />
+                <Button onClick={() => setCreateOpen(true)}>
+                  <Plus className="size-3.5" />
+                  Add Rule
+                </Button>
+              </div>
+            )
+          }
+        >
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+              <span>
+                <span className="font-semibold text-foreground">{activeRules.length}</span>/{list.length} active
+              </span>
+              <span className="size-1 rounded-full bg-muted-foreground/40" />
+              <span className={cn(totalViolations > 0 && "text-destructive font-medium")}>
+                {totalViolations} open violation{totalViolations !== 1 ? "s" : ""}
+              </span>
+            </div>
+
+            {isLoading ? (
+              <div className="grid grid-cols-2 gap-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <RuleCard.Skeleton key={i} />
+                ))}
+              </div>
+            ) : isEmpty ? (
+              <Feedback
+                variant="warning"
+                title="No rules yet"
+                description="Define your first resilience policy to start tracking organizational risk."
+                className="h-96"
+                action={
+                  <Button onClick={() => setCreateOpen(true)}>
+                    <Plus className="size-3.5" />
+                    Add your first rule
+                  </Button>
+                }
+              />
+            ) : noMatches ? (
+              <Feedback
+                variant="warning"
+                title="No matching rules"
+                description="Try a different search term or group filter."
+                className="h-96"
+                action={
+                  <Button
+                    variant="link"
+                    onClick={() => {
+                      setSearch("");
+                      setFilter("ALL");
+                    }}
+                  >
+                    Clear filters
+                  </Button>
+                }
+              />
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {filteredRules.map((rule) => (
+                  <RuleCard
+                    key={rule.id}
+                    rule={rule}
+                    violationCount={violationCountByRule.get(rule.id) ?? 0}
+                    onToggle={() => toggleEnabled(rule)}
+                    onEdit={() => setEditTarget(rule)}
+                    onDelete={() => deleteRule.mutate(rule.id)}
+                    isDeleting={deleteRule.isPending && deleteRule.variables === rule.id}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </ComposedCard>
       </div>
 
       <RuleEditorSheet
@@ -673,6 +789,50 @@ export default function RulesTab() {
         isPending={updateRule.isPending}
         title="Edit Rule"
       />
-    </div>
+    </>
+  );
+}
+
+// ─── Filter item (left rail) ──────────────────────────────────────────────────
+
+function FilterItem({
+  label,
+  description,
+  icon: Icon,
+  active,
+  onSelect,
+  count,
+  activeCount,
+}: {
+  label: string;
+  description?: string;
+  icon: typeof Layers;
+  active: boolean;
+  onSelect: () => void;
+  count: number;
+  activeCount: number;
+}) {
+  return (
+    <button
+      onClick={onSelect}
+      className={cn(
+        "w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors cursor-pointer",
+        active ? "bg-primary/10 text-primary" : "hover:bg-tertiary text-foreground",
+      )}
+    >
+      <Icon className={cn("size-4 shrink-0", active ? "text-primary" : "text-muted-foreground")} />
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-semibold truncate">{label}</p>
+        {description && <p className="text-[10.5px] text-muted-foreground truncate font-normal">{description}</p>}
+      </div>
+      <span
+        className={cn(
+          "text-[11px] tabular-nums font-medium shrink-0",
+          active ? "text-primary" : "text-muted-foreground/60",
+        )}
+      >
+        {activeCount}/{count}
+      </span>
+    </button>
   );
 }

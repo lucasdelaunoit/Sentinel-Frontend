@@ -25,32 +25,32 @@ const RISK_WEIGHTS: {
     formField: "risk_weight_bus_factor",
     title: "Losing key people",
     question: "How much should we worry about projects that depend on too few people?",
-    barColor: "bg-rose-500",
-    dot: "bg-rose-500",
+    barColor: "bg-danger/80",
+    dot: "bg-danger/80",
   },
   {
     key: "uncovered",
     formField: "risk_weight_uncovered_skills",
     title: "Missing required skills",
     question: "How much should we worry when a project is missing skills it needs?",
-    barColor: "bg-amber-500",
-    dot: "bg-amber-500",
+    barColor: "bg-warning/80",
+    dot: "bg-warning/80",
   },
   {
     key: "silos",
     formField: "risk_weight_silos",
     title: "Knowledge silos",
     question: "How much should we worry when only one person knows a skill?",
-    barColor: "bg-violet-500",
-    dot: "bg-violet-500",
+    barColor: "bg-planned/80",
+    dot: "bg-planned/80",
   },
   {
     key: "absence",
     formField: "risk_weight_absence_impact",
     title: "Upcoming absences",
     question: "How much should we worry about planned leaves coming up?",
-    barColor: "bg-blue-500",
-    dot: "bg-blue-500",
+    barColor: "bg-info/80",
+    dot: "bg-info/80",
   },
 ];
 
@@ -94,8 +94,8 @@ function ConcernSlider({
   const pct = total === 0 ? 0 : Math.round((value / total) * 100);
   const current = nearestStep(value);
   return (
-    <div className="rounded-xl border border-border/60 bg-card p-4">
-      <div className="flex items-start gap-2.5 mb-3">
+    <div className="rounded-xl border border-border p-4">
+      <div className="flex items-start gap-2.5 mb-4">
         <span className={cn("mt-1.5 size-2 rounded-full shrink-0", dot)} />
         <div className="flex-1">
           <p className="text-[13px] font-semibold text-foreground">{title}</p>
@@ -127,9 +127,6 @@ function ConcernSlider({
           );
         })}
       </div>
-      <p className="text-[10px] text-muted-foreground/80 mt-2 italic">
-        {CONCERN_STEPS.find((s) => s.value === current)?.short}
-      </p>
     </div>
   );
 }
@@ -163,7 +160,7 @@ function StackedWeightBar({ parts }: { parts: { color: string; value: number; la
   );
 }
 
-export default function RiskWeightsSettingsTab({ form, setForm }: OrgSettingsTabProps) {
+export default function RiskWeightsSettingsTab({ form, setForm, saveAction }: OrgSettingsTabProps) {
   const totalRiskWeights =
     form.risk_weight_bus_factor +
     form.risk_weight_uncovered_skills +
@@ -186,6 +183,7 @@ export default function RiskWeightsSettingsTab({ form, setForm }: OrgSettingsTab
           </Tooltip>
         </div>
       }
+      footer={saveAction}
     >
       <div className="flex flex-wrap gap-2 mb-4">
         <span className="text-[11px] font-medium text-muted-foreground self-center mr-1">Quick start:</span>

@@ -7,7 +7,7 @@ export default function useUpdateOrganizationSettings() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (payload: UpdateOrganizationSettingsRequest) =>
       privateApi.put<OrganizationSettings>("/api/organization/settings", payload),
     onSuccess: () => {
@@ -18,4 +18,12 @@ export default function useUpdateOrganizationSettings() {
       toast.error(extractApiErrorMessage(error, "Failed to save organization settings."));
     },
   });
+
+  return {
+    updateOrganizationSettings: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

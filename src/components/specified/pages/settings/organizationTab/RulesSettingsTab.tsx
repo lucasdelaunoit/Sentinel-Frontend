@@ -4,6 +4,8 @@ import { FieldDescription } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { OrgSettingsTabProps } from "./types";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip.tsx";
+import { QuestionIcon } from "@phosphor-icons/react";
 
 function InlineNumber({
   value,
@@ -56,12 +58,24 @@ function SentenceRow({
   );
 }
 
-export default function RulesSettingsTab({ form, setForm }: OrgSettingsTabProps) {
+export default function RulesSettingsTab({ form, setForm, saveAction }: OrgSettingsTabProps) {
   return (
-    <ComposedCard title="Rules in plain English" headerClassName="mb-5">
-      <FieldDescription className="mb-4">
-        Read each line as a sentence. The numbers in white boxes are editable.
-      </FieldDescription>
+    <ComposedCard
+      title={
+        <div className="flex items-center gap-2">
+          <span>Basis rules in plain English?</span>
+          <Tooltip>
+            <TooltipTrigger>
+              <QuestionIcon />
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Read each line as a sentence. The numbers in white boxes are editable.
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      }
+      footer={saveAction}
+    >
       <div className="space-y-3">
         <SentenceRow
           icon="👤"
