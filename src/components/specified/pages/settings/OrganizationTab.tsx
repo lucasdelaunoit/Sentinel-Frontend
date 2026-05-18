@@ -6,6 +6,7 @@ import RiskWeightsSettingsTab from "./organizationTab/RiskWeightsSettingsTab";
 import RulesSettingsTab from "./organizationTab/RulesSettingsTab";
 import HealthWeightSettingsTab from "./organizationTab/HealthWeightSettingsTab";
 import SectionSaveButton from "./organizationTab/SectionSaveButton";
+import ScenarioPreviewCard from "./organizationTab/components/ScenarioPreviewCard";
 import type { OrgFormFields } from "./organizationTab/types";
 
 type SectionKey = "identity" | "riskWeights" | "rules" | "health";
@@ -127,6 +128,7 @@ export default function OrganizationTab() {
 
   return (
     <div className="space-y-5">
+      <ScenarioPreviewCard form={form} />
       <OrganizationIdentitySettingsTab form={form} setForm={setForm} saveAction={buildAction("identity")} />
       <RiskWeightsSettingsTab form={form} setForm={setForm} saveAction={buildAction("riskWeights")} />
       <RulesSettingsTab form={form} setForm={setForm} saveAction={buildAction("rules")} />
