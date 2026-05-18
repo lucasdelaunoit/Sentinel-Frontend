@@ -286,3 +286,40 @@
 .pulse-indicator {
     animation: pulse-subtle 2s ease-in-out infinite;
 }
+
+/* Metric value change flash — bold pop + slide */
+@keyframes valueFlash {
+    0% {
+        opacity: 0;
+        transform: translateY(8px) scale(0.8);
+    }
+    45% {
+        opacity: 1;
+        transform: translateY(0) scale(1.25);
+    }
+    70% {
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.value-flash {
+    animation: valueFlash 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: left center;
+}
+
+@keyframes valueFlashBg {
+    0% {
+        background-color: color-mix(in srgb, var(--color-success) 25%, transparent);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+.value-flash-bg {
+    animation: valueFlashBg 0.7s ease-out;
+}

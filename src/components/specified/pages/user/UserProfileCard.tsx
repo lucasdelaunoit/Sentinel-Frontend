@@ -1,6 +1,5 @@
 import { Card } from "@/components/ui/card.tsx";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
-import { getInitials } from "@/utils/formatters/persons.ts";
 import { Button } from "@/components/ui/button.tsx";
 import { Mail, Phone, User as UserIcon, CalendarDays, PenSquare } from "lucide-react";
 import UserStatusBadge from "@/components/specified/models/employees/badges/UserStatusBadge.tsx";

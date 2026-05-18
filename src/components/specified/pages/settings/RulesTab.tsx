@@ -27,6 +27,7 @@ import {
   Zap,
   Shield,
 } from "lucide-react";
+import DefaultRulesContainer from "./rulesTab/DefaultRulesContainer";
 import useGetRules from "@/api/rules/useGetRules";
 import useCreateRule from "@/api/rules/useCreateRule";
 import useUpdateRule from "@/api/rules/useUpdateRule";
@@ -612,7 +613,7 @@ export default function RulesTab() {
   }, [list, filter, search]);
 
   const activeRules = list.filter((r) => r.enabled);
-  const scopeTitle = filter === "ALL" ? "All rules" : GROUP_META[filter].label;
+  const scopeTitle = filter === "ALL" ? "Custom extra rules" : GROUP_META[filter].label;
 
   function handleCreate(s: RuleEditorState) {
     createRule.mutate(
@@ -654,7 +655,8 @@ export default function RulesTab() {
   const noMatches = !isLoading && list.length > 0 && filteredRules.length === 0;
 
   return (
-    <>
+    <div className="space-y-5">
+      <DefaultRulesContainer />
       <div className="flex gap-4 items-start">
         {/* Left — Filter rail */}
         <ComposedCard title="Groups" className="w-64 shrink-0">
@@ -789,7 +791,7 @@ export default function RulesTab() {
         isPending={updateRule.isPending}
         title="Edit Rule"
       />
-    </>
+    </div>
   );
 }
 

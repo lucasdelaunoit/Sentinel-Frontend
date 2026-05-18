@@ -3,13 +3,12 @@ import useGetOrganizationSettings from "@/api/organization/useGetOrganizationSet
 import useUpdateOrganizationSettings from "@/api/organization/useUpdateOrganizationSettings";
 import OrganizationIdentitySettingsTab from "./organizationTab/OrganizationIdentitySettingsTab";
 import RiskWeightsSettingsTab from "./organizationTab/RiskWeightsSettingsTab";
-import RulesSettingsTab from "./organizationTab/RulesSettingsTab";
 import HealthWeightSettingsTab from "./organizationTab/HealthWeightSettingsTab";
 import SectionSaveButton from "./organizationTab/SectionSaveButton";
-import ScenarioPreviewCard from "./organizationTab/components/ScenarioPreviewCard";
+import ScenarioPreviewCard from "./organizationTab/scenarioCard/ScenarioPreviewCard.tsx";
 import type { OrgFormFields } from "./organizationTab/types";
 
-type SectionKey = "identity" | "riskWeights" | "rules" | "health";
+type SectionKey = "identity" | "riskWeights" | "health";
 
 const SECTION_FIELDS: Record<SectionKey, (keyof OrgFormFields)[]> = {
   identity: ["name", "fragility_tolerance"],
@@ -19,36 +18,12 @@ const SECTION_FIELDS: Record<SectionKey, (keyof OrgFormFields)[]> = {
     "fragility_weight_silos",
     "fragility_weight_absence_impact",
   ],
-  rules: [
-    "silo_threshold",
-    "kci_min_level",
-    "critical_bus_factor_threshold",
-    "absence_horizon_days",
-    "rule_violation_penalty",
-  ],
   health: ["trajectory_fragility_weight"],
 };
 
 const SAVED_FLASH_MS = 2000;
 
-function formFromData(data: NonNullable<ReturnType<typeof useGetOrganizationSettings>["data"]>): OrgFormFields {
-  return {
-    name: data.name,
-    fragility_tolerance: data.fragility_tolerance,
-    fragility_weight_bus_factor: data.fragility_weight_bus_factor,
-    fragility_weight_uncovered_skills: data.fragility_weight_uncovered_skills,
-    fragility_weight_silos: data.fragility_weight_silos,
-    fragility_weight_absence_impact: data.fragility_weight_absence_impact,
-    silo_threshold: data.silo_threshold,
-    kci_min_level: data.kci_min_level,
-    trajectory_fragility_weight: data.trajectory_fragility_weight,
-    absence_horizon_days: data.absence_horizon_days,
-    critical_bus_factor_threshold: data.critical_bus_factor_threshold,
-    rule_violation_penalty: data.rule_violation_penalty,
-  };
-}
-
-export default function OrganizationTab() {
+export default function OrganizationTab({ previewVisible = false }: { previewVisible?: boolean }) {
   const { data, isLoading } = useGetOrganizationSettings();
   const { updateOrganizationSettings } = useUpdateOrganizationSettings();
   const [form, setForm] = useState<OrgFormFields | null>(null);
@@ -59,9 +34,8 @@ export default function OrganizationTab() {
 
   useEffect(() => {
     if (data) {
-      const snapshot = formFromData(data);
-      setForm(snapshot);
-      setOriginal(snapshot);
+      setForm(data);
+      setOriginal(data);
     }
   }, [data]);
 
@@ -72,7 +46,7 @@ export default function OrganizationTab() {
   }, []);
 
   const dirtyBySection = useMemo(() => {
-    const out: Record<SectionKey, boolean> = { identity: false, riskWeights: false, rules: false, health: false };
+    const out: Record<SectionKey, boolean> = { identity: false, riskWeights: false, health: false };
     if (!form || !original) return out;
     (Object.keys(SECTION_FIELDS) as SectionKey[]).forEach((key) => {
       out[key] = SECTION_FIELDS[key].some((f) => form[f] !== original[f]);
@@ -80,16 +54,7 @@ export default function OrganizationTab() {
     return out;
   }, [form, original]);
 
-  if (isLoading || !form) {
-    return (
-      <div className="space-y-5">
-        <OrganizationIdentitySettingsTab.Skeleton />
-        <RiskWeightsSettingsTab.Skeleton />
-        <RulesSettingsTab.Skeleton />
-        <HealthWeightSettingsTab.Skeleton />
-      </div>
-    );
-  }
+  if (isLoading || !form) return <OrganizationTab.Skeleton />;
 
   async function saveSection(section: SectionKey) {
     if (!form || !original) return;
@@ -126,13 +91,32 @@ export default function OrganizationTab() {
     );
   }
 
-  return (
+  const sections = (
     <div className="space-y-5">
-      <ScenarioPreviewCard form={form} />
       <OrganizationIdentitySettingsTab form={form} setForm={setForm} saveAction={buildAction("identity")} />
       <RiskWeightsSettingsTab form={form} setForm={setForm} saveAction={buildAction("riskWeights")} />
-      <RulesSettingsTab form={form} setForm={setForm} saveAction={buildAction("rules")} />
       <HealthWeightSettingsTab form={form} setForm={setForm} saveAction={buildAction("health")} />
     </div>
   );
+
+  if (!previewVisible) return sections;
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
+      <div className="min-w-0">{sections}</div>
+      <div className="lg:sticky lg:top-0">
+        <ScenarioPreviewCard form={form} flash />
+      </div>
+    </div>
+  );
 }
+
+OrganizationTab.Skeleton = function OrganizationTabSkeleton() {
+  return (
+    <div className="space-y-5">
+      <OrganizationIdentitySettingsTab.Skeleton />
+      <RiskWeightsSettingsTab.Skeleton />
+      <HealthWeightSettingsTab.Skeleton />
+    </div>
+  );
+};
