@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect } from "react";
+import { useMemo, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useTabParam } from "@/hooks/useTabParam";
 import { usePage } from "@/context/PageContext";
 import { AlertTriangle, PlayCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -793,13 +794,14 @@ function KnowledgeTab({
 
 /* ─── Project Detail Page ─────────────────────────────────── */
 
-type DetailTab = "overview" | "team" | "knowledge";
+const PROJECT_TABS = ["overview", "team", "knowledge"] as const;
+type DetailTab = (typeof PROJECT_TABS)[number];
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { setTitle, setBreadcrumb } = usePage();
-  const [activeTab, setActiveTab] = useState<DetailTab>("overview");
+  const [activeTab, setActiveTab] = useTabParam<DetailTab>("overview", PROJECT_TABS);
 
   const { data: apiProject, isLoading, isError } = useGetProject(id);
   const { data: stats, isLoading: isLoadingStats } = useGetProjectStats(id);

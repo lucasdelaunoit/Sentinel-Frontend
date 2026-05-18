@@ -5,13 +5,17 @@ import RulesTab from "@/components/specified/pages/settings/RulesTab.tsx";
 import { BookOpenIcon, CalendarIcon, ShieldIcon, SlidersIcon } from "@phosphor-icons/react";
 import CalendarTab from "@/components/specified/pages/settings/CalendarTab.tsx";
 import OrganizationTab from "@/components/specified/pages/settings/OrganizationTab.tsx";
+import { useTabParam } from "@/hooks/useTabParam";
+
+const SETTINGS_TABS = ["organization", "skills", "rules", "calendar"] as const;
 
 export default function Settings() {
+  const [activeTab, setActiveTab] = useTabParam("organization", SETTINGS_TABS);
   return (
     <>
       <TopBar title="Settings" />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
-        <Tabs defaultValue="organization">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             {(
               [

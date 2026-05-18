@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useTabParam } from "@/hooks/useTabParam";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { usePage } from "@/context/PageContext";
 import { Plus, Eye } from "lucide-react";
@@ -481,10 +482,12 @@ function SkillsTab({ userId }: { userId: string }) {
 
 /* ─── Main Page ───────────────────────────────────────────── */
 
+const USER_TABS = ["overview", "projects", "skills", "absences"] as const;
+
 export default function UserDetail() {
   const { id } = useParams<{ id: string }>();
   const { setTitle, setBreadcrumb } = usePage();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useTabParam("overview", USER_TABS);
 
   const { data: user, isLoading, isError } = useGetUser(id);
   const { data: stats, isLoading: isLoadingStats } = useGetUserStats(id);
