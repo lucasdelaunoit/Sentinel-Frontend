@@ -4,7 +4,6 @@ interface OrganizationSettings {
   id: number;
   name: string;
   risk_tolerance: RiskTolerance;
-  working_days: number[];
 
   // Metrics config — drives RiskCalculationService + HealthService.
   risk_weight_bus_factor: number;

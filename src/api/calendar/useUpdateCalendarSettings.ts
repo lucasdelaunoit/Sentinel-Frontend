@@ -10,8 +10,7 @@ export default function useUpdateCalendarSettings() {
   return useMutation({
     mutationFn: (payload: UpdateCalendarSettingsRequest) => privateApi.patch("/api/settings/working-days", payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["calendar-summary"] });
-      queryClient.invalidateQueries({ queryKey: ["organization-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["working-days"] });
     },
     onError: (error) => {
       toast.error(extractApiErrorMessage(error, "Failed to save calendar settings."));

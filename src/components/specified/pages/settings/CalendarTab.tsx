@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { FieldDescription } from "@/components/ui/field";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import { Plus, Trash2, CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
-import useGetCalendarSummary from "@/api/calendar/useGetCalendarSummary";
 import useUpdateCalendarSettings from "@/api/calendar/useUpdateCalendarSettings";
+import useGetWorkingDays from "@/api/organization/useGetWorkingDays";
 import useGetCompanyHolidays from "@/api/company-holidays/useGetCompanyHolidays";
 import useDeleteCompanyHoliday from "@/api/company-holidays/useDeleteCompanyHoliday";
 import CreateCompanyHolidaySheet from "@/components/specified/models/companyHoliday/sheets/CreateCompanyHolidaySheet";
@@ -30,12 +30,51 @@ export default function CalendarTab() {
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
 
-  const { data: summary, isLoading } = useGetCalendarSummary(year, month);
-  const { data: allHolidays } = useGetCompanyHolidays();
+  const { data: workdays, isLoading: workdaysLoading } = useGetWorkingDays();
+  const { data: allHolidays, isLoading: holidaysLoading } = useGetCompanyHolidays();
   const updateSettings = useUpdateCalendarSettings();
   const deleteHoliday = useDeleteCompanyHoliday();
 
   const [holidaySheetOpen, setHolidaySheetOpen] = useState(false);
+
+  const workingDays = workdays?.working_days;
+  const holidaysAll = allHolidays ?? [];
+
+  const preview = useMemo<CalendarPreviewDay[]>(() => {
+    if (!workingDays) return [];
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const mm = String(month).padStart(2, "0");
+    // Map month/day → holiday for fast lookup. Recurring matches any year.
+    const holidayByMd = new Map<string, CompanyHoliday>();
+    const holidayByDate = new Map<string, CompanyHoliday>();
+    holidaysAll.forEach((h) => {
+      const d = new Date(h.date);
+      const key = `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      if (h.recurring) holidayByMd.set(key, h);
+      else holidayByDate.set(h.date, h);
+    });
+    const out: CalendarPreviewDay[] = [];
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const dd = String(day).padStart(2, "0");
+      const date = `${year}-${mm}-${dd}`;
+      const js = new Date(year, month - 1, day).getDay(); // 0=Sun..6=Sat
+      const weekday = (js + 6) % 7; // 0=Mon..6=Sun
+      const md = `${mm}-${dd}`;
+      const isHoliday = holidayByDate.has(date) || holidayByMd.has(md);
+      const status: CalendarDayStatus = isHoliday
+        ? "holiday"
+        : workingDays[weekday] === 1
+          ? "working"
+          : "off";
+      out.push({ date, day, weekday, status });
+    }
+    return out;
+  }, [workingDays, holidaysAll, year, month]);
+
+  const workingDaysPerWeek = useMemo(
+    () => (workingDays ? workingDays.reduce((a, b) => a + b, 0) : 0),
+    [workingDays],
+  );
 
   function shiftMonth(delta: number) {
     let m = month + delta;
@@ -52,12 +91,12 @@ export default function CalendarTab() {
   }
 
   function toggleWorkingDay(isoIndex: number) {
-    if (!summary) return;
-    const next = summary.working_days.map((bit, i) => (i === isoIndex ? (bit ? 0 : 1) : bit));
+    if (!workingDays) return;
+    const next = workingDays.map((bit, i) => (i === isoIndex ? (bit ? 0 : 1) : bit));
     updateSettings.mutate({ working_days: next });
   }
 
-  if (isLoading || !summary) {
+  if (workdaysLoading || holidaysLoading || !workingDays) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
@@ -69,17 +108,15 @@ export default function CalendarTab() {
     );
   }
 
-  const monthLabel = formatMonthYear(summary.year, summary.month);
+  const monthLabel = formatMonthYear(year, month);
   const today = todayIsoDate();
 
-  // summary.company_holidays = month-scoped subset, used for preview math only.
-  // allHolidays = full list, shown in the holiday list card below.
-  const holidays = allHolidays ?? [];
+  const holidays = holidaysAll;
 
   // Build 6×7 grid: pad leading nulls so column index matches ISO weekday of day 1.
-  const firstWeekday = summary.preview[0]?.weekday ?? 0;
+  const firstWeekday = preview[0]?.weekday ?? 0;
   const cells: (CalendarPreviewDay | null)[] = Array(firstWeekday).fill(null);
-  summary.preview.forEach((d) => cells.push(d));
+  preview.forEach((d) => cells.push(d));
   while (cells.length % 7 !== 0) cells.push(null);
   const weeks: (CalendarPreviewDay | null)[][] = [];
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
@@ -225,7 +262,7 @@ export default function CalendarTab() {
         <FieldDescription className="mb-4">Select which days are regular working days.</FieldDescription>
         <div className="flex gap-2 flex-wrap">
           {DOW_LABELS.map((label, i) => {
-            const active = summary.working_days[i] === 1;
+            const active = workingDays[i] === 1;
             return (
               <button
                 key={label}
@@ -245,7 +282,7 @@ export default function CalendarTab() {
           })}
         </div>
         <p className="text-[11px] text-muted-foreground mt-3">
-          {summary.working_days_per_week} working day{summary.working_days_per_week !== 1 ? "s" : ""} per week
+          {workingDaysPerWeek} working day{workingDaysPerWeek !== 1 ? "s" : ""} per week
         </p>
       </ComposedCard>
 
