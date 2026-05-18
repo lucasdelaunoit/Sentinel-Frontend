@@ -3,7 +3,7 @@ import { Card, CardContent, CardTitle } from "@/components/ui/card.tsx";
 import { cn } from "@/lib/utils.ts";
 
 interface ComposedCardProps {
-  title: string;
+  title: string | ReactNode;
   action?: ReactNode;
   children: ReactNode;
   className?: string;
