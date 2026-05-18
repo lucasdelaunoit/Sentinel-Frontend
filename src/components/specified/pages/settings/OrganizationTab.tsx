@@ -91,12 +91,19 @@ export default function OrganizationTab() {
   }
 
   async function saveSection(section: SectionKey) {
-    if (!form) return;
+    if (!form || !original) return;
+    const payload: Partial<OrgFormFields> = {};
+    SECTION_FIELDS[section].forEach((f) => {
+      if (form[f] !== original[f]) {
+        (payload as Record<string, unknown>)[f] = form[f];
+      }
+    });
+    if (Object.keys(payload).length === 0) return;
     setJustSavedSection(null);
     setSavingSection(section);
     try {
-      await updateOrganizationSettings(form);
-      setOriginal(form);
+      await updateOrganizationSettings(payload);
+      setOriginal({ ...original, ...payload });
       setJustSavedSection(section);
       if (flashTimer.current) clearTimeout(flashTimer.current);
       flashTimer.current = setTimeout(() => setJustSavedSection(null), SAVED_FLASH_MS);

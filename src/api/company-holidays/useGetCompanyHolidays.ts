@@ -7,7 +7,7 @@ export default function useGetCompanyHolidays() {
   return useQuery<CompanyHoliday[]>({
     queryKey: ["company-holidays"],
     queryFn: async () => {
-      const { data } = await privateApi.get<CompanyHoliday[] | { data: CompanyHoliday[] }>("/api/company-holidays");
+      const { data } = await privateApi.get<CompanyHoliday[] | { data: CompanyHoliday[] }>("/api/settings/holidays");
       return Array.isArray(data) ? data : (data?.data ?? []);
     },
     staleTime: 1000 * 60 * 5,

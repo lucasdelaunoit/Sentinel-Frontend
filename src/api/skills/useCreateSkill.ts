@@ -9,7 +9,7 @@ export default function useCreateSkill() {
 
   return useMutation({
     mutationFn: ({ name, skill_category_id }: CreateSkillRequest) =>
-      privateApi.post("/api/skills", { name, skill_category_id }),
+      privateApi.post("/api/settings/skills", { name, skill_category_id }),
     onSuccess: (_, { name }) => {
       queryClient.invalidateQueries({ queryKey: ["skills"] });
       queryClient.invalidateQueries({ queryKey: ["skill-categories"] });

@@ -13,7 +13,7 @@ export default function useUpdateCompanyHoliday() {
 
   return useMutation({
     mutationFn: ({ id, ...payload }: UpdateCompanyHolidayArgs) =>
-      privateApi.put<CompanyHoliday>(`/api/company-holidays/${id}`, payload),
+      privateApi.patch<CompanyHoliday>(`/api/settings/holidays/${id}`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["company-holidays"] });
       queryClient.invalidateQueries({ queryKey: ["calendar-summary"] });

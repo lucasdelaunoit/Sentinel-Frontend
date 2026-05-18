@@ -10,7 +10,7 @@ export default function useGetSkills(params: LaravelQueryParams = {}) {
   return useQuery<LaravelPaginatedResponse<Skill>>({
     queryKey: ["skills", queryString],
     queryFn: async () => {
-      const { data } = await privateApi.get<LaravelPaginatedResponse<Skill>>(`/api/skills${queryString}`);
+      const { data } = await privateApi.get<LaravelPaginatedResponse<Skill>>(`/api/settings/skills${queryString}`);
       return data;
     },
     staleTime: 1000 * 60 * 5,

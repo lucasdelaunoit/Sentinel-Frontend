@@ -7,7 +7,7 @@ export default function useGetRules() {
   return useQuery<Rule[]>({
     queryKey: ["rules"],
     queryFn: async () => {
-      const { data } = await privateApi.get<Rule[] | { data: Rule[] }>("/api/rules");
+      const { data } = await privateApi.get<Rule[] | { data: Rule[] }>("/api/settings/rules");
       return Array.isArray(data) ? data : (data?.data ?? []);
     },
     staleTime: 1000 * 60 * 5,

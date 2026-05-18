@@ -9,7 +9,7 @@ export default function useUpdateOrganizationSettings() {
 
   const mutation = useMutation({
     mutationFn: (payload: UpdateOrganizationSettingsRequest) =>
-      privateApi.put<OrganizationSettings>("/api/organization/settings", payload),
+      privateApi.patch<OrganizationSettings>("/api/settings/general", payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["organization-settings"] });
       toast.success("Organization settings saved.");

@@ -7,7 +7,7 @@ export default function useGetCalendarSummary(year: number, month: number) {
   return useQuery<CalendarSummary>({
     queryKey: ["calendar-summary", year, month],
     queryFn: async () => {
-      const { data } = await privateApi.get<CalendarSummary>(`/api/calendar/summary?year=${year}&month=${month}`);
+      const { data } = await privateApi.get<CalendarSummary>(`/api/settings/calendar?year=${year}&month=${month}`);
       return data;
     },
     staleTime: 1000 * 60,

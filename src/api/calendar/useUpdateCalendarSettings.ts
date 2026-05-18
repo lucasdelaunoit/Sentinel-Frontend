@@ -8,7 +8,7 @@ export default function useUpdateCalendarSettings() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: UpdateCalendarSettingsRequest) => privateApi.put("/api/calendar/settings", payload),
+    mutationFn: (payload: UpdateCalendarSettingsRequest) => privateApi.patch("/api/settings/working-days", payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["calendar-summary"] });
       queryClient.invalidateQueries({ queryKey: ["organization-settings"] });

@@ -9,7 +9,7 @@ export default function useUpdateSkill() {
 
   return useMutation({
     mutationFn: ({ id, name, skill_category_id }: UpdateSkillRequest) =>
-      privateApi.put(`/api/skills/${id}`, { name, skill_category_id }),
+      privateApi.patch(`/api/settings/skills/${id}`, { name, skill_category_id }),
     onSuccess: (_, { name }) => {
       queryClient.invalidateQueries({ queryKey: ["skills"] });
       queryClient.invalidateQueries({ queryKey: ["skill-categories"] });

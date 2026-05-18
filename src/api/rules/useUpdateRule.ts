@@ -13,7 +13,7 @@ export default function useUpdateRule() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, payload }: UpdateRuleArgs) => privateApi.put<Rule>(`/api/rules/${id}`, payload),
+    mutationFn: ({ id, payload }: UpdateRuleArgs) => privateApi.patch<Rule>(`/api/settings/rules/${id}`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rules"] });
       queryClient.invalidateQueries({ queryKey: ["rule-violations"] });

@@ -12,7 +12,7 @@ export default function useCreateSkillCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ name }: CreateSkillCategoryPayload) => privateApi.post("/api/skill-categories", { name }),
+    mutationFn: ({ name }: CreateSkillCategoryPayload) => privateApi.post("/api/settings/skill-categories", { name }),
     onSuccess: (_, { name }) => {
       queryClient.invalidateQueries({ queryKey: ["skill-categories"] });
       toast.success(`Category "${name}" created.`);

@@ -8,7 +8,7 @@ export default function useDeleteRule() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => privateApi.delete(`/api/rules/${id}`),
+    mutationFn: (id: number) => privateApi.delete(`/api/settings/rules/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rules"] });
       queryClient.invalidateQueries({ queryKey: ["rule-violations"] });

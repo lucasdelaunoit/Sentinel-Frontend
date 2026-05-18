@@ -8,7 +8,7 @@ export default function useCreateRule() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateRuleRequest) => privateApi.post<Rule>("/api/rules", payload),
+    mutationFn: (payload: CreateRuleRequest) => privateApi.post<Rule>("/api/settings/rules", payload),
     onSuccess: (_, { name }) => {
       queryClient.invalidateQueries({ queryKey: ["rules"] });
       queryClient.invalidateQueries({ queryKey: ["rule-violations"] });

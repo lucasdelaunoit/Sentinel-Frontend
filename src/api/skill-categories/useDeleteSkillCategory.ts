@@ -8,7 +8,7 @@ export default function useDeleteSkillCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => privateApi.delete(`/api/skill-categories/${id}`),
+    mutationFn: (id: number) => privateApi.delete(`/api/settings/skill-categories/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["skill-categories"] });
       queryClient.invalidateQueries({ queryKey: ["skills"] });

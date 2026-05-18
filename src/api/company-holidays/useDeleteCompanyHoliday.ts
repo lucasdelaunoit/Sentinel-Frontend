@@ -8,7 +8,7 @@ export default function useDeleteCompanyHoliday() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => privateApi.delete(`/api/company-holidays/${id}`),
+    mutationFn: (id: number) => privateApi.delete(`/api/settings/holidays/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["company-holidays"] });
       queryClient.invalidateQueries({ queryKey: ["calendar-summary"] });

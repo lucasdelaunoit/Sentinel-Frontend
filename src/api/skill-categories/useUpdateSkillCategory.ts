@@ -13,7 +13,7 @@ export default function useUpdateSkillCategory() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, name }: UpdateSkillCategoryPayload) => privateApi.put(`/api/skill-categories/${id}`, { name }),
+    mutationFn: ({ id, name }: UpdateSkillCategoryPayload) => privateApi.patch(`/api/settings/skill-categories/${id}`, { name }),
     onSuccess: (_, { name }) => {
       queryClient.invalidateQueries({ queryKey: ["skill-categories"] });
       toast.success(`Category renamed to "${name}".`);
