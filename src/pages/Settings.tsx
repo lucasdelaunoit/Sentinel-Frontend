@@ -7,7 +7,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import SharedStatCard from "@/components/common/cards/StatCard";
 import ComposedCard from "@/components/common/cards/ComposedCard";
-import SelectInput from "@/components/common/inputs/SelectInput";
 import {
   Plus,
   Trash2,
@@ -15,11 +14,8 @@ import {
   Check,
   CalendarDays,
   Building2,
-  Users,
-  MapPin,
   Layers,
   Zap,
-  AlertTriangle,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -34,7 +30,7 @@ import CreateCompanyHolidaySheet from "@/components/specified/models/companyHoli
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type RuleType = "min_staff" | "min_skill" | "bus_factor" | "coverage";
+type RuleType = "bus_factor" | "min_skill";
 
 interface Rule {
   id: string;
@@ -42,106 +38,30 @@ interface Rule {
   type: RuleType;
   enabled: boolean;
   params: Record<string, string | number>;
-  severity: "critical" | "warning" | "info";
 }
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
-const METHODOLOGY_OPTIONS: { value: Methodology; label: string }[] = [
-  { value: "agile", label: "Agile" },
-  { value: "waterfall", label: "Waterfall" },
-  { value: "kanban", label: "Kanban" },
-  { value: "scrumban", label: "Scrumban" },
-];
-
-const TEAM_STRUCTURE_OPTIONS: { value: TeamStructure; label: string }[] = [
-  { value: "cross-functional", label: "Cross-functional" },
-  { value: "functional", label: "Functional" },
-  { value: "matrix", label: "Matrix" },
-  { value: "squad", label: "Squad" },
-];
-
-const SIZE_OPTIONS: CompanySize[] = ["1-10", "11-50", "51-200", "201-500", "500+"];
-
 const DEFAULT_RULES: Rule[] = [
   {
     id: "r1",
-    name: "Minimum Frontend Developers",
-    type: "min_staff",
-    enabled: true,
-    params: { department: "Engineering", role: "Frontend Developer", minCount: 3 },
-    severity: "critical",
-  },
-  {
-    id: "r2",
-    name: "Minimum Project Managers",
-    type: "min_staff",
-    enabled: true,
-    params: { role: "Project Manager", minCount: 2 },
-    severity: "critical",
-  },
-  {
-    id: "r3",
-    name: "Minimum React Experts",
-    type: "min_skill",
-    enabled: true,
-    params: { skill: "React", minLevel: 4, minCount: 3 },
-    severity: "warning",
-  },
-  {
-    id: "r4",
     name: "Bus Factor Risk",
     type: "bus_factor",
     enabled: true,
     params: { maxBusFactor: 2 },
-    severity: "critical",
   },
   {
-    id: "r5",
-    name: "Backend Coverage",
-    type: "coverage",
-    enabled: false,
-    params: { category: "BACKEND", minCoverage: 2 },
-    severity: "warning",
-  },
-  {
-    id: "r6",
-    name: "Security Coverage",
-    type: "coverage",
+    id: "r2",
+    name: "Minimum React Experts",
+    type: "min_skill",
     enabled: true,
-    params: { category: "SECURITY", minCoverage: 2 },
-    severity: "critical",
+    params: { skill: "React", minLevel: 4, minCount: 3 },
   },
 ];
 
-// ─── Style maps ───────────────────────────────────────────────────────────────
-
 const RULE_TYPE_LABELS: Record<RuleType, string> = {
-  min_staff: "Min Staff",
-  min_skill: "Min Skill",
   bus_factor: "Bus Factor",
-  coverage: "Coverage",
-};
-
-const SEVERITY_STYLES = {
-  critical: {
-    bg: "bg-gradient-to-br from-rose-500 to-rose-600",
-    text: "text-rose-700",
-    bgLight: "bg-rose-50",
-    border: "border-rose-200",
-  },
-  warning: {
-    bg: "bg-gradient-to-br from-amber-500 to-amber-600",
-    text: "text-amber-700",
-    bgLight: "bg-amber-50",
-    border: "border-amber-200",
-  },
-  info: {
-    bg: "bg-gradient-to-br from-blue-500 to-blue-600",
-    text: "text-blue-700",
-    bgLight: "bg-blue-50",
-    border: "border-blue-200",
-  },
+  min_skill: "Min Skill",
 };
 
 const RISK_TOLERANCE_CONFIG = {
@@ -179,22 +99,11 @@ const RISK_TOLERANCE_CONFIG = {
 
 const RULE_GROUPS = [
   {
-    key: "staffing",
-    label: "Staffing Constraints",
-    description: "Minimum staff counts and role quotas",
-    Icon: Users,
-    types: ["min_staff"] as RuleType[],
-    headerBg: "bg-blue-50/60",
-    headerBorder: "border-blue-100",
-    iconColor: "text-blue-600",
-    textColor: "text-blue-700",
-  },
-  {
     key: "capability",
     label: "Capability Constraints",
     description: "Skill coverage and expertise requirements",
     Icon: Layers,
-    types: ["min_skill", "coverage"] as RuleType[],
+    types: ["min_skill"] as RuleType[],
     headerBg: "bg-violet-50/60",
     headerBorder: "border-violet-100",
     iconColor: "text-violet-600",
@@ -220,11 +129,9 @@ function Badge({
   variant,
 }: {
   children: React.ReactNode;
-  variant: "critical" | "warning" | "info" | "neutral";
+  variant: "info" | "neutral";
 }) {
   const styles = {
-    critical: "bg-gradient-to-br from-rose-500 to-rose-600 text-white shadow-sm",
-    warning: "bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-sm",
     info: "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm",
     neutral: "bg-muted/60 text-muted-foreground",
   };
@@ -242,7 +149,225 @@ function Badge({
 
 // ─── Organization Tab ─────────────────────────────────────────────────────────
 
-type OrgFormFields = Omit<Required<UpdateOrganizationSettingsRequest>, "industry">;
+type OrgFormFields = Required<UpdateOrganizationSettingsRequest>;
+
+// ─── Risk weight model ────────────────────────────────────────────────────────
+
+type RiskWeightKey = "bus" | "uncovered" | "silos" | "absence";
+
+const RISK_WEIGHTS: {
+  key: RiskWeightKey;
+  formField:
+    | "risk_weight_bus_factor"
+    | "risk_weight_uncovered_skills"
+    | "risk_weight_silos"
+    | "risk_weight_absence_impact";
+  title: string;
+  question: string;
+  barColor: string;
+  dot: string;
+}[] = [
+  {
+    key: "bus",
+    formField: "risk_weight_bus_factor",
+    title: "Losing key people",
+    question: "How much should we worry about projects that depend on too few people?",
+    barColor: "bg-rose-500",
+    dot: "bg-rose-500",
+  },
+  {
+    key: "uncovered",
+    formField: "risk_weight_uncovered_skills",
+    title: "Missing required skills",
+    question: "How much should we worry when a project is missing skills it needs?",
+    barColor: "bg-amber-500",
+    dot: "bg-amber-500",
+  },
+  {
+    key: "silos",
+    formField: "risk_weight_silos",
+    title: "Knowledge silos",
+    question: "How much should we worry when only one person knows a skill?",
+    barColor: "bg-violet-500",
+    dot: "bg-violet-500",
+  },
+  {
+    key: "absence",
+    formField: "risk_weight_absence_impact",
+    title: "Upcoming absences",
+    question: "How much should we worry about planned leaves coming up?",
+    barColor: "bg-blue-500",
+    dot: "bg-blue-500",
+  },
+];
+
+const RISK_PRESETS: { key: string; label: string; values: Record<RiskWeightKey, number> }[] = [
+  { key: "balanced", label: "Balanced", values: { bus: 50, uncovered: 50, silos: 50, absence: 50 } },
+  { key: "people", label: "People-loss focused", values: { bus: 100, uncovered: 25, silos: 75, absence: 25 } },
+  { key: "skills", label: "Skill-gap focused", values: { bus: 25, uncovered: 100, silos: 50, absence: 25 } },
+  { key: "delivery", label: "Delivery focused", values: { bus: 25, uncovered: 50, silos: 25, absence: 75 } },
+];
+
+const HEALTH_STEPS: { value: number; label: string; description: string }[] = [
+  { value: 10, label: "Delivery only", description: "Progress drives the score — risk barely affects it" },
+  { value: 30, label: "Delivery first", description: "Progress weighs heavier than risk" },
+  { value: 50, label: "Balanced", description: "Risk and progress matter equally" },
+  { value: 70, label: "Stability first", description: "Risk weighs heavier than progress" },
+  { value: 90, label: "Stability only", description: "Risk drives the score — progress barely affects it" },
+];
+
+const CONCERN_STEPS: { value: number; label: string; short: string }[] = [
+  { value: 0, label: "Ignore", short: "Don't factor this in" },
+  { value: 25, label: "Minor", short: "Mention, low priority" },
+  { value: 50, label: "Moderate", short: "Standard concern" },
+  { value: 75, label: "Major", short: "Push the score noticeably" },
+  { value: 100, label: "Critical", short: "Dominant concern" },
+];
+
+function nearestStep(value: number): number {
+  return CONCERN_STEPS.reduce((best, s) =>
+    Math.abs(s.value - value) < Math.abs(best - value) ? s.value : best,
+    CONCERN_STEPS[0].value,
+  );
+}
+
+function ConcernSlider({
+  title,
+  question,
+  value,
+  total,
+  dot,
+  onChange,
+}: {
+  title: string;
+  question: string;
+  value: number;
+  total: number;
+  dot: string;
+  onChange: (v: number) => void;
+}) {
+  const pct = total === 0 ? 0 : Math.round((value / total) * 100);
+  const current = nearestStep(value);
+  return (
+    <div className="rounded-xl border border-border/60 bg-card p-4">
+      <div className="flex items-start gap-2.5 mb-3">
+        <span className={cn("mt-1.5 size-2 rounded-full shrink-0", dot)} />
+        <div className="flex-1">
+          <p className="text-[13px] font-semibold text-foreground">{title}</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">{question}</p>
+        </div>
+        <div className="text-right shrink-0">
+          <div className="text-[13px] font-semibold text-foreground tabular-nums">{pct}%</div>
+          <div className="text-[10px] text-muted-foreground">of total</div>
+        </div>
+      </div>
+      <div className="grid grid-cols-5 gap-1">
+        {CONCERN_STEPS.map((s) => {
+          const active = current === s.value;
+          return (
+            <button
+              key={s.value}
+              type="button"
+              onClick={() => onChange(s.value)}
+              className={cn(
+                "rounded-lg border px-1 py-1.5 text-center transition-all cursor-pointer",
+                active
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-muted/20 border-border/60 text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+              )}
+              title={s.short}
+            >
+              <div className="text-[11px] font-semibold leading-tight">{s.label}</div>
+            </button>
+          );
+        })}
+      </div>
+      <p className="text-[10px] text-muted-foreground/80 mt-2 italic">
+        {CONCERN_STEPS.find((s) => s.value === current)?.short}
+      </p>
+    </div>
+  );
+}
+
+function StackedWeightBar({
+  parts,
+}: {
+  parts: { color: string; value: number; label: string }[];
+}) {
+  const total = parts.reduce((s, p) => s + p.value, 0);
+  if (total === 0) {
+    return (
+      <div className="h-3 w-full rounded-full bg-muted/40 flex items-center justify-center">
+        <span className="text-[10px] text-muted-foreground">All concerns set to zero — set at least one above zero</span>
+      </div>
+    );
+  }
+  return (
+    <div className="h-3 w-full rounded-full overflow-hidden flex bg-muted/40">
+      {parts.map((p, i) => {
+        const w = (p.value / total) * 100;
+        if (w === 0) return null;
+        return (
+          <div key={i} className={cn("h-full", p.color)} style={{ width: `${w}%` }} title={`${p.label}: ${Math.round(w)}%`} />
+        );
+      })}
+    </div>
+  );
+}
+
+function InlineNumber({
+  value,
+  onChange,
+  min,
+  max,
+  width = "w-14",
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  min: number;
+  max: number;
+  width?: string;
+}) {
+  return (
+    <Input
+      type="number"
+      min={min}
+      max={max}
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      className={cn(
+        "inline-flex h-8 px-2 text-center text-[13px] font-semibold tabular-nums align-baseline",
+        width,
+      )}
+    />
+  );
+}
+
+function SentenceRow({
+  icon,
+  iconColor,
+  children,
+  example,
+}: {
+  icon: string;
+  iconColor: string;
+  children: React.ReactNode;
+  example: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-xl border border-border/60 bg-card px-4 py-3">
+      <div className={cn("flex size-7 items-center justify-center rounded-lg text-[13px] shrink-0", iconColor)}>
+        {icon}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[13px] text-foreground leading-relaxed flex flex-wrap items-center gap-x-1 gap-y-1.5">
+          {children}
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-1.5 italic">{example}</p>
+      </div>
+    </div>
+  );
+}
 
 function OrganizationTab() {
   const { data, isLoading } = useGetOrganizationSettings();
@@ -253,11 +378,16 @@ function OrganizationTab() {
     if (data) {
       setForm({
         name: data.name,
-        size: data.size,
-        location: data.location,
-        methodology: data.methodology,
-        team_structure: data.team_structure,
         risk_tolerance: data.risk_tolerance,
+        risk_weight_bus_factor: data.risk_weight_bus_factor,
+        risk_weight_uncovered_skills: data.risk_weight_uncovered_skills,
+        risk_weight_silos: data.risk_weight_silos,
+        risk_weight_absence_impact: data.risk_weight_absence_impact,
+        silo_threshold: data.silo_threshold,
+        kci_min_level: data.kci_min_level,
+        health_risk_weight: data.health_risk_weight,
+        absence_horizon_days: data.absence_horizon_days,
+        critical_bus_factor_threshold: data.critical_bus_factor_threshold,
       });
     }
   }, [data]);
@@ -275,77 +405,25 @@ function OrganizationTab() {
   }
 
   const saved = update.isSuccess && !update.isPending;
+  const totalRiskWeights =
+    form.risk_weight_bus_factor +
+    form.risk_weight_uncovered_skills +
+    form.risk_weight_silos +
+    form.risk_weight_absence_impact;
+  const progressWeight = 100 - form.health_risk_weight;
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-3 gap-4">
-        <SharedStatCard title="Organization" value={form.name} comment={null} icon={Building2} isLoading={false} />
-        <SharedStatCard title="Size" value={form.size} comment={null} icon={Users} isLoading={false} />
-        <SharedStatCard title="Location" value={form.location} comment={null} icon={MapPin} isLoading={false} />
-      </div>
-
-      <ComposedCard title="Organization Details" headerClassName="mb-5">
-        <div className="grid grid-cols-2 gap-4">
-          <Field>
-            <FieldLabel>Organization Name</FieldLabel>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          </Field>
-          <Field>
-            <FieldLabel>Company Size</FieldLabel>
-            <SelectInput value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value as CompanySize })}>
-              {SIZE_OPTIONS.map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </SelectInput>
-          </Field>
-          <Field>
-            <FieldLabel>Location</FieldLabel>
-            <Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-          </Field>
-        </div>
-      </ComposedCard>
-
-      <ComposedCard
-        title="Operational Profile"
-        headerClassName="mb-2"
-        action={
-          <p className="flex text-sm items-center">
-            <AlertTriangle /> Influences risk thresholds, simulation assumptions, and recommended policies.
-          </p>
-        }
-      >
-        <div className="grid grid-cols-2 gap-4">
-          <Field>
-            <FieldLabel>Engineering Methodology</FieldLabel>
-            <SelectInput
-              value={form.methodology}
-              onChange={(e) => setForm({ ...form, methodology: e.target.value as Methodology })}
-            >
-              {METHODOLOGY_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </SelectInput>
-          </Field>
-          <Field>
-            <FieldLabel>Team Structure</FieldLabel>
-            <SelectInput
-              value={form.team_structure}
-              onChange={(e) => setForm({ ...form, team_structure: e.target.value as TeamStructure })}
-            >
-              {TEAM_STRUCTURE_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </SelectInput>
-          </Field>
-        </div>
+      <ComposedCard title="Identity" headerClassName="mb-5">
+        <Field>
+          <FieldLabel>Organization Name</FieldLabel>
+          <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        </Field>
 
         <Field className="mt-5">
           <FieldLabel>Risk Tolerance</FieldLabel>
-          <div className="grid grid-cols-3 gap-3">
+          <FieldDescription>Global multiplier applied to risk-score sensitivity.</FieldDescription>
+          <div className="grid grid-cols-3 gap-3 mt-2">
             {(["conservative", "balanced", "aggressive"] as const).map((opt) => {
               const cfg = RISK_TOLERANCE_CONFIG[opt];
               const active = form.risk_tolerance === opt;
@@ -383,6 +461,192 @@ function OrganizationTab() {
             })}
           </div>
         </Field>
+      </ComposedCard>
+
+      <ComposedCard
+        title="What should hurt a project's risk score the most?"
+        headerClassName="mb-2"
+      >
+        <FieldDescription className="mb-3">
+          Drag each slider based on how worried you are about that concern. The bar below shows how
+          they balance out — only their relative size matters.
+        </FieldDescription>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          <span className="text-[11px] font-medium text-muted-foreground self-center mr-1">Quick start:</span>
+          {RISK_PRESETS.map((p) => {
+            const active =
+              form.risk_weight_bus_factor === p.values.bus &&
+              form.risk_weight_uncovered_skills === p.values.uncovered &&
+              form.risk_weight_silos === p.values.silos &&
+              form.risk_weight_absence_impact === p.values.absence;
+            return (
+              <button
+                key={p.key}
+                type="button"
+                onClick={() =>
+                  setForm({
+                    ...form,
+                    risk_weight_bus_factor: p.values.bus,
+                    risk_weight_uncovered_skills: p.values.uncovered,
+                    risk_weight_silos: p.values.silos,
+                    risk_weight_absence_impact: p.values.absence,
+                  })
+                }
+                className={cn(
+                  "rounded-full px-3 py-1 text-[11px] font-medium border transition-all cursor-pointer",
+                  active
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted/30 text-muted-foreground border-border/60 hover:bg-muted/60",
+                )}
+              >
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="rounded-xl bg-muted/30 border border-border/40 p-3 mb-4">
+          <p className="text-[11px] font-medium text-muted-foreground mb-2">How weights distribute</p>
+          <StackedWeightBar
+            parts={RISK_WEIGHTS.map((w) => ({
+              color: w.barColor,
+              value: form[w.formField],
+              label: w.title,
+            }))}
+          />
+          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2.5">
+            {RISK_WEIGHTS.map((w) => {
+              const v = form[w.formField];
+              const pct = totalRiskWeights === 0 ? 0 : Math.round((v / totalRiskWeights) * 100);
+              return (
+                <div key={w.key} className="flex items-center gap-1.5">
+                  <span className={cn("size-2 rounded-full", w.dot)} />
+                  <span className="text-[10px] text-muted-foreground">
+                    {w.title} <span className="font-semibold text-foreground tabular-nums">{pct}%</span>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {RISK_WEIGHTS.map((w) => (
+            <ConcernSlider
+              key={w.key}
+              title={w.title}
+              question={w.question}
+              value={form[w.formField]}
+              total={totalRiskWeights}
+              dot={w.dot}
+              onChange={(v) => setForm({ ...form, [w.formField]: v })}
+            />
+          ))}
+        </div>
+      </ComposedCard>
+
+      <ComposedCard title="Rules in plain English" headerClassName="mb-5">
+        <FieldDescription className="mb-4">
+          Read each line as a sentence. The numbers in white boxes are editable.
+        </FieldDescription>
+        <div className="space-y-3">
+          <SentenceRow icon="👤" iconColor="bg-violet-100 text-violet-700" example="Example: a skill known by 1 person is flagged as a silo.">
+            A skill becomes a <strong>silo</strong> when only{" "}
+            <InlineNumber
+              value={form.silo_threshold}
+              onChange={(v) => setForm({ ...form, silo_threshold: v })}
+              min={1}
+              max={5}
+            />{" "}
+            or fewer people on the team know it.
+          </SentenceRow>
+
+          <SentenceRow icon="⭐" iconColor="bg-amber-100 text-amber-700" example="Example: someone with React at level 2 doesn't count as covering React.">
+            A team member only counts as <strong>covering</strong> a skill once they reach level{" "}
+            <InlineNumber
+              value={form.kci_min_level}
+              onChange={(v) => setForm({ ...form, kci_min_level: v })}
+              min={1}
+              max={5}
+            />{" "}
+            (out of 5).
+          </SentenceRow>
+
+          <SentenceRow icon="🚨" iconColor="bg-rose-100 text-rose-700" example="Example: if losing 2 people would break a project, flag it as critical.">
+            Flag a project as <strong>critical</strong> when its bus factor drops to{" "}
+            <InlineNumber
+              value={form.critical_bus_factor_threshold}
+              onChange={(v) => setForm({ ...form, critical_bus_factor_threshold: v })}
+              min={1}
+              max={10}
+            />{" "}
+            or below.
+          </SentenceRow>
+
+          <SentenceRow icon="📅" iconColor="bg-blue-100 text-blue-700" example="Example: only leaves happening in the next two weeks affect the risk score.">
+            When scoring upcoming risks, look{" "}
+            <InlineNumber
+              value={form.absence_horizon_days}
+              onChange={(v) => setForm({ ...form, absence_horizon_days: v })}
+              min={1}
+              max={90}
+              width="w-16"
+            />{" "}
+            days into the future.
+          </SentenceRow>
+        </div>
+      </ComposedCard>
+
+      <ComposedCard
+        title="How should we judge overall project health?"
+        headerClassName="mb-2"
+      >
+        <FieldDescription className="mb-4">
+          A project's health combines two things: how risky it is, and how far along it is.
+          Pick which one should matter more.
+        </FieldDescription>
+
+        <div className="grid grid-cols-5 gap-2 mb-4">
+          {HEALTH_STEPS.map((s) => {
+            const active = form.health_risk_weight === s.value;
+            return (
+              <button
+                key={s.value}
+                type="button"
+                onClick={() => setForm({ ...form, health_risk_weight: s.value })}
+                className={cn(
+                  "rounded-xl border-2 p-3 text-left transition-all cursor-pointer",
+                  active
+                    ? "bg-primary/5 border-primary ring-2 ring-primary/20"
+                    : "border-border/40 bg-muted/20 hover:bg-muted/40",
+                )}
+              >
+                <p className={cn("text-[12px] font-semibold leading-tight", active ? "text-primary" : "text-foreground")}>
+                  {s.label}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-1 leading-snug">{s.description}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="rounded-xl bg-muted/30 border border-border/40 p-4">
+          <div className="h-3 w-full rounded-full overflow-hidden flex bg-muted/40 mb-2">
+            <div
+              className="h-full bg-gradient-to-r from-rose-500 to-rose-400"
+              style={{ width: `${form.health_risk_weight}%` }}
+            />
+            <div
+              className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500"
+              style={{ width: `${progressWeight}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-[11px] tabular-nums">
+            <span className="text-rose-600 font-semibold">Risk weight: {form.health_risk_weight}%</span>
+            <span className="text-emerald-600 font-semibold">Progress weight: {progressWeight}%</span>
+          </div>
+        </div>
 
         <div className="flex justify-end mt-6">
           <Button onClick={() => update.mutate(form)} disabled={update.isPending} className="gap-2" size="lg">
@@ -399,14 +663,10 @@ function OrganizationTab() {
 
 function formatRuleParams(rule: Rule): string {
   switch (rule.type) {
-    case "min_staff":
-      return `Min ${rule.params.minCount} ${rule.params.role || rule.params.department}`;
-    case "min_skill":
-      return `${rule.params.minCount}x ${rule.params.skill} (lv.${rule.params.minLevel}+)`;
     case "bus_factor":
       return `Max: ${rule.params.maxBusFactor}`;
-    case "coverage":
-      return `${rule.params.minCoverage}x ${rule.params.category}`;
+    case "min_skill":
+      return `${rule.params.minCount}x ${rule.params.skill} (lv.${rule.params.minLevel}+)`;
     default:
       return "";
   }
@@ -417,10 +677,9 @@ function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => voi
   const [showAdd, setShowAdd] = useState(false);
   const [newRule, setNewRule] = useState<Partial<Rule>>({
     name: "",
-    type: "min_staff",
+    type: "bus_factor",
     enabled: true,
-    severity: "warning",
-    params: { minCount: 1 },
+    params: { maxBusFactor: 2 },
   });
 
   function toggleRule(id: string) {
@@ -442,18 +701,16 @@ function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => voi
       name: newRule.name,
       type: newRule.type as RuleType,
       enabled: true,
-      severity: newRule.severity as Rule["severity"],
       params: newRule.params || {},
     };
     const updated = [...list, rule];
     setList(updated);
     onSave(updated);
-    setNewRule({ name: "", type: "min_staff", enabled: true, severity: "warning", params: { minCount: 1 } });
+    setNewRule({ name: "", type: "bus_factor", enabled: true, params: { maxBusFactor: 2 } });
     setShowAdd(false);
   }
 
   const activeRules = list.filter((r) => r.enabled);
-  const criticalRules = list.filter((r) => r.enabled && r.severity === "critical");
 
   return (
     <div className="space-y-6">
@@ -461,13 +718,10 @@ function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => voi
         <div className="flex items-center gap-4">
           <div>
             <p className="text-[12px] font-medium text-muted-foreground">Organizational Resilience Policies</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              {activeRules.length} active · {criticalRules.length} critical
-            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{activeRules.length} active</p>
           </div>
           <div className="flex gap-2">
             <Badge variant="neutral">{list.length} rules</Badge>
-            <Badge variant="critical">{criticalRules.length} critical</Badge>
           </div>
         </div>
         <Button
@@ -481,7 +735,7 @@ function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => voi
 
       {showAdd && (
         <div className="rounded-2xl bg-card border border-border/60 p-4 shadow-sm">
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <input
               type="text"
               placeholder="Rule name"
@@ -494,19 +748,8 @@ function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => voi
               onChange={(e) => setNewRule({ ...newRule, type: e.target.value as RuleType })}
               className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
             >
-              <option value="min_staff">Min Staff</option>
-              <option value="min_skill">Min Skill</option>
               <option value="bus_factor">Bus Factor</option>
-              <option value="coverage">Coverage</option>
-            </select>
-            <select
-              value={newRule.severity}
-              onChange={(e) => setNewRule({ ...newRule, severity: e.target.value as Rule["severity"] })}
-              className="rounded-xl border border-border/60 bg-background px-3 py-2 text-[13px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all cursor-pointer"
-            >
-              <option value="critical">Critical</option>
-              <option value="warning">Warning</option>
-              <option value="info">Info</option>
+              <option value="min_skill">Min Skill</option>
             </select>
             <div className="flex gap-2">
               <Button
@@ -548,58 +791,55 @@ function RulesTab({ rules, onSave }: { rules: Rule[]; onSave: (r: Rule[]) => voi
                 </div>
               ) : (
                 <div className="p-4 grid grid-cols-2 gap-3">
-                  {groupRules.map((rule) => {
-                    const s = SEVERITY_STYLES[rule.severity];
-                    return (
-                      <div
-                        key={rule.id}
-                        className={cn(
-                          "rounded-xl border p-3.5 transition-all duration-200",
-                          rule.enabled
-                            ? "bg-card border-border/60 hover:shadow-sm hover:border-border"
-                            : "bg-muted/20 border-border/30 opacity-60",
-                        )}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start gap-2.5">
-                            <button
-                              onClick={() => toggleRule(rule.id)}
+                  {groupRules.map((rule) => (
+                    <div
+                      key={rule.id}
+                      className={cn(
+                        "rounded-xl border p-3.5 transition-all duration-200",
+                        rule.enabled
+                          ? "bg-card border-border/60 hover:shadow-sm hover:border-border"
+                          : "bg-muted/20 border-border/30 opacity-60",
+                      )}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-2.5">
+                          <button
+                            onClick={() => toggleRule(rule.id)}
+                            className={cn(
+                              "mt-0.5 size-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0 shadow-sm",
+                              rule.enabled
+                                ? "bg-gradient-to-br from-blue-500 to-blue-600 border-transparent"
+                                : "border-muted-foreground/30 bg-transparent",
+                            )}
+                          >
+                            {rule.enabled && <Check className="size-2.5 text-white" />}
+                          </button>
+                          <div>
+                            <p
                               className={cn(
-                                "mt-0.5 size-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0 shadow-sm",
-                                rule.enabled
-                                  ? `${s.bg} border-transparent`
-                                  : "border-muted-foreground/30 bg-transparent",
+                                "text-[12px] font-semibold",
+                                rule.enabled ? "text-foreground" : "text-muted-foreground",
                               )}
                             >
-                              {rule.enabled && <Check className="size-2.5 text-white" />}
-                            </button>
-                            <div>
-                              <p
-                                className={cn(
-                                  "text-[12px] font-semibold",
-                                  rule.enabled ? "text-foreground" : "text-muted-foreground",
-                                )}
-                              >
-                                {rule.name}
-                              </p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <Badge variant={rule.severity}>{RULE_TYPE_LABELS[rule.type]}</Badge>
-                                <span className="text-[10px] text-muted-foreground">{formatRuleParams(rule)}</span>
-                              </div>
+                              {rule.name}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="info">{RULE_TYPE_LABELS[rule.type]}</Badge>
+                              <span className="text-[10px] text-muted-foreground">{formatRuleParams(rule)}</span>
                             </div>
                           </div>
-                          <Button
-                            onClick={() => handleDelete(rule.id)}
-                            size="sm"
-                            variant="ghost"
-                            className="text-muted-foreground/50 hover:text-rose-500 h-6 w-6 p-0 rounded-lg hover:bg-rose-50/50"
-                          >
-                            <Trash2 className="size-3" />
-                          </Button>
                         </div>
+                        <Button
+                          onClick={() => handleDelete(rule.id)}
+                          size="sm"
+                          variant="ghost"
+                          className="text-muted-foreground/50 hover:text-rose-500 h-6 w-6 p-0 rounded-lg hover:bg-rose-50/50"
+                        >
+                          <Trash2 className="size-3" />
+                        </Button>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -672,9 +912,6 @@ function CalendarTab() {
 
   const monthLabel = formatMonthYear(summary.year, summary.month);
   const today = todayIsoDate();
-
-  const capacityDiff = summary.working_days_in_month - summary.standard_days_month;
-  const capacityPct = Math.round((Math.abs(capacityDiff) / summary.standard_days_month) * 100);
 
   // Build 6×7 grid: pad leading nulls so column index matches ISO weekday of day 1.
   const firstWeekday = summary.preview[0]?.weekday ?? 0;
@@ -922,4 +1159,3 @@ export default function Settings() {
     </>
   );
 }
-

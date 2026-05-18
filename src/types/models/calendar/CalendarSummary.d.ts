@@ -12,7 +12,6 @@ interface CalendarSummary {
   month: number;
   working_days: number[];
   working_days_per_week: number;
-  standard_days_month: number;
   working_days_in_month: number;
   company_holidays: CompanyHoliday[];
   preview: CalendarPreviewDay[];
