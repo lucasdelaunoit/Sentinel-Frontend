@@ -2,24 +2,11 @@ import { ShieldAlert, AlertTriangle, Brain, Users, ArrowRightIcon } from "lucide
 import StatCard from "@/components/common/cards/StatCard";
 import { cn } from "@/lib/utils";
 import type { ProjectStats } from "@/types/dashboard";
-
-/* ─── Helpers ─────────────────────────────────────────────── */
-
-function riskColor(v: number) {
-  if (v >= 70) return "text-danger";
-  if (v >= 40) return "text-amber-500";
-  return "text-success";
-}
-
-function riskLabel(v: number) {
-  if (v >= 70) return "High risk";
-  if (v >= 40) return "Moderate";
-  return "Low risk";
-}
+import { getFragilityTier, getTrajectoryTier, TONE_TEXT } from "@/lib/scoring";
 
 function busColor(v: number) {
   if (v <= 1) return "text-danger";
-  if (v <= 2) return "text-amber-500";
+  if (v <= 2) return "text-warning";
   return "text-success";
 }
 
@@ -29,35 +16,28 @@ function busLabel(v: number) {
   return "Acceptable";
 }
 
-function healthColor(v: number) {
-  if (v >= 75) return "text-success";
-  if (v >= 55) return "text-amber-500";
-  return "text-danger";
-}
-
-function healthLabel(v: number) {
-  if (v >= 75) return "Healthy";
-  if (v >= 55) return "Degraded";
-  return "Critical";
-}
-
-/* ─── Component ───────────────────────────────────────────── */
-
 interface ProjectStatsSectionProps {
   stats: ProjectStats;
 }
 
 export default function ProjectStatsSection({ stats }: ProjectStatsSectionProps) {
   const { risk_score, bus_factor, health_score, team } = stats;
+  const fragility = getFragilityTier(risk_score);
+  const trajectory = getTrajectoryTier(health_score);
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <StatCard
-        title="Risk Score"
+        title="Fragility"
         icon={ShieldAlert}
         isLoading={false}
-        value={<span className={riskColor(risk_score)}>{risk_score}/100</span>}
-        comment={<span className="text-[12px] text-muted-foreground">{riskLabel(risk_score)}</span>}
+        value={
+          <span className={TONE_TEXT[fragility.tone]}>
+            {fragility.label}
+            <span className="text-[14px] opacity-60 ml-1.5 tabular-nums">{risk_score}</span>
+          </span>
+        }
+        comment={<span className="text-[12px] text-muted-foreground">Structural fragility right now</span>}
       />
       <StatCard
         title="Bus Factor"
@@ -67,11 +47,16 @@ export default function ProjectStatsSection({ stats }: ProjectStatsSectionProps)
         comment={<span className="text-[12px] text-muted-foreground">{busLabel(bus_factor)}</span>}
       />
       <StatCard
-        title="Health Score"
+        title="Trajectory"
         icon={Brain}
         isLoading={false}
-        value={<span className={healthColor(health_score)}>{health_score}/100</span>}
-        comment={<span className="text-[12px] text-muted-foreground">{healthLabel(health_score)}</span>}
+        value={
+          <span className={TONE_TEXT[trajectory.tone]}>
+            {trajectory.label}
+            <span className="text-[14px] opacity-60 ml-1.5 tabular-nums">{health_score}</span>
+          </span>
+        }
+        comment={<span className="text-[12px] text-muted-foreground">Fragility + progress combined</span>}
       />
       <StatCard
         title="Team"
@@ -79,7 +64,7 @@ export default function ProjectStatsSection({ stats }: ProjectStatsSectionProps)
         isLoading={false}
         value={team.total}
         comment={
-          <div className="flex items-center gap-1 text-sm text-secondary-foreground font-semibold">
+          <div className={cn("flex items-center gap-1 text-sm text-secondary-foreground font-semibold")}>
             <ArrowRightIcon size={13} />
             {team.away > 0 ? `${team.away} away` : "All available"}
           </div>

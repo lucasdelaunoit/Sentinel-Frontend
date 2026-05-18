@@ -39,7 +39,7 @@ export default function CriticalProjectsCard() {
       <div className="flex items-center justify-between">
         <CardTitle>Critical Projects</CardTitle>
         <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-          {atRiskCount} at risk
+          {atRiskCount} fragile
         </span>
       </div>
 
@@ -59,7 +59,7 @@ export default function CriticalProjectsCard() {
                 title={p.name}
                 description={
                   <span className={cn("text-[11px] font-medium")}>
-                    Bus factor: {p.busFactor} · Risk: {p.riskScore}
+                    Bus factor: {p.busFactor} · Fragility: {p.riskScore}
                   </span>
                 }
                 action={

@@ -25,7 +25,7 @@ export default function HomeStatCardsSection() {
     <>
       <div className="grid grid-cols-4 gap-4">
         <StatCard
-          title="Projects at Risk"
+          title="Fragile Projects"
           value={stats ? String(stats.projects_at_risk.value) : "—"}
           icon={WarningIcon}
           onClick={() => setModalOpen("risk")}

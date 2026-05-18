@@ -52,21 +52,19 @@ type ProjSortKey = "name" | "risk_score" | "bus_factor" | "health" | "deadline";
 
 /* ─── Helpers ───────────────────────────────────────────────── */
 
-function riskColor(v: number) {
-  if (v >= 20) return "text-danger";
-  if (v >= 12) return "text-amber-500";
-  return "text-success";
+import { getFragilityTier, TONE_TEXT, TONE_BG } from "@/lib/scoring";
+
+function fragilityColor(v: number) {
+  return TONE_TEXT[getFragilityTier(v).tone];
 }
 
-function riskDotColor(v: number) {
-  if (v >= 20) return "bg-danger";
-  if (v >= 12) return "bg-amber-400";
-  return "bg-success";
+function fragilityDotColor(v: number) {
+  return TONE_BG[getFragilityTier(v).tone];
 }
 
 function busFactorColor(v: number) {
   if (v <= 1) return "text-danger";
-  if (v <= 2) return "text-amber-500";
+  if (v <= 2) return "text-warning";
   return "text-success";
 }
 
@@ -248,7 +246,7 @@ function ProjectList() {
               Status
             </TableHead>
             <SortableTableHead
-              label="Risk"
+              label="Fragility"
               col="risk_score"
               sortKey={sort.key}
               sortDir={sort.dir}
@@ -261,7 +259,7 @@ function ProjectList() {
               sortDir={sort.dir}
               onSort={toggleSort}
             />
-            <SortableTableHead label="Health" col="health" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
+            <SortableTableHead label="Trajectory" col="health" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
             <SortableTableHead
               label="Deadline"
               col="deadline"
@@ -358,10 +356,11 @@ function ProjectList() {
                   <TableCell className="px-5 py-4">
                     <div className="flex items-center gap-1.5">
                       <div
-                        className={cn("size-1.5 rounded-full shrink-0 shadow-sm", riskDotColor(project.risk_score))}
+                        className={cn("size-1.5 rounded-full shrink-0 shadow-sm", fragilityDotColor(project.risk_score))}
                       />
-                      <span className={cn("text-[14px] font-bold tabular-nums", riskColor(project.risk_score))}>
-                        {project.risk_score}
+                      <span className={cn("text-[13px] font-semibold whitespace-nowrap", fragilityColor(project.risk_score))}>
+                        {getFragilityTier(project.risk_score).label}
+                        <span className="ml-1 tabular-nums opacity-70">{project.risk_score}</span>
                       </span>
                     </div>
                   </TableCell>

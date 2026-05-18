@@ -145,8 +145,8 @@ export default function ScenarioPreviewCard({ form }: { form: OrgFormFields }) {
         <MetricBlock label="Bus factor" before={before.busFactor} after={after.busFactor} invertColors />
         <MetricBlock label="Uncovered skills" before={before.uncovered} after={after.uncovered} />
         <MetricBlock label="Silos" before={before.silos} after={after.silos} />
-        <MetricBlock label="Risk score" before={before.riskScore} after={after.riskScore} suffix="%" />
-        <MetricBlock label="Health score" before={before.healthScore} after={after.healthScore} invertColors suffix="%" />
+        <MetricBlock label="Fragility" before={before.riskScore} after={after.riskScore} suffix="%" />
+        <MetricBlock label="Trajectory" before={before.healthScore} after={after.healthScore} invertColors suffix="%" />
       </div>
 
       {after.critical && !before.critical && (

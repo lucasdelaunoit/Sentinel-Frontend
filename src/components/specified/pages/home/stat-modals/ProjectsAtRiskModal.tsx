@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils"
 import StatDetailModal from "@/components/common/StatDetailModal"
 import { Skeleton } from "@/components/ui/skeleton"
 import useGetProjectsAtRiskDetail from "@/hooks/useGetProjectsAtRiskDetail"
+import { getFragilityTier, getTrajectoryTier, TONE_TEXT, TONE_BG } from "@/lib/scoring"
 
 interface Props {
   onClose: () => void
@@ -14,7 +15,7 @@ export default function ProjectsAtRiskModal({ onClose }: Props) {
   const { data, isLoading } = useGetProjectsAtRiskDetail()
 
   return (
-    <StatDetailModal title="Projects at Risk" onClose={onClose}>
+    <StatDetailModal title="Fragile Projects" onClose={onClose}>
       {isLoading ? (
         <ProjectsAtRiskSkeleton />
       ) : !data ? (
@@ -45,26 +46,30 @@ export default function ProjectsAtRiskModal({ onClose }: Props) {
 
             <div className="grid grid-cols-3 gap-3 text-xs">
               <div>
-                <p className="text-muted-foreground mb-0.5">Risk Score</p>
-                <p className="font-semibold text-rose-500">{p.risk_score}</p>
+                <p className="text-muted-foreground mb-0.5">Fragility</p>
+                <p className={cn("font-semibold", TONE_TEXT[getFragilityTier(p.risk_score).tone])}>
+                  {getFragilityTier(p.risk_score).label}
+                  <span className="ml-1 tabular-nums opacity-70">{p.risk_score}</span>
+                </p>
               </div>
               <div>
                 <p className="text-muted-foreground mb-0.5">Bus Factor</p>
-                <p className={cn("font-semibold", p.bus_factor === 1 ? "text-rose-500" : "text-amber-500")}>
+                <p className={cn("font-semibold", p.bus_factor === 1 ? "text-danger" : "text-warning")}>
                   {p.bus_factor}
                 </p>
               </div>
               <div>
-                <p className="text-muted-foreground mb-0.5">Health</p>
-                <p className={cn("font-semibold", p.health < 50 ? "text-rose-500" : "text-amber-500")}>
-                  {p.health}%
+                <p className="text-muted-foreground mb-0.5">Trajectory</p>
+                <p className={cn("font-semibold", TONE_TEXT[getTrajectoryTier(p.health).tone])}>
+                  {getTrajectoryTier(p.health).label}
+                  <span className="ml-1 tabular-nums opacity-70">{p.health}</span>
                 </p>
               </div>
             </div>
 
             <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
               <div
-                className={cn("h-full rounded-full transition-all", p.health < 50 ? "bg-rose-500" : "bg-amber-400")}
+                className={cn("h-full rounded-full transition-all", TONE_BG[getTrajectoryTier(p.health).tone])}
                 style={{ width: `${p.health}%` }}
               />
             </div>

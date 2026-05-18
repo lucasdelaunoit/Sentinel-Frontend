@@ -126,16 +126,16 @@ function generateAlerts(project: ProjectData, members: UserDetail[], coverage: S
     alerts.push({
       id: "health",
       severity: "critical",
-      category: "Project Health",
-      title: `Project health is critical (${project.health}/100)`,
+      category: "Project Trajectory",
+      title: `Project trajectory is critical (${project.health}/100)`,
       detail: "Multiple risk factors are combining. Immediate manager intervention recommended.",
     });
   } else if (project.health < 65) {
     alerts.push({
       id: "health-warn",
       severity: "warning",
-      category: "Project Health",
-      title: `Project health is degraded (${project.health}/100)`,
+      category: "Project Trajectory",
+      title: `Project trajectory is degraded (${project.health}/100)`,
       detail: "Risk factors are accumulating. Monitor closely and address knowledge silos.",
     });
   }
@@ -291,7 +291,7 @@ function RiskOverviewTab({
         <div className="rounded-2xl bg-card border border-border/60 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
             <div className="flex items-center gap-3">
-              <h3 className="font-semibold text-foreground text-sm">Risk Alerts</h3>
+              <h3 className="font-semibold text-foreground text-sm">Fragility Alerts</h3>
               {criticalAlerts.length > 0 && (
                 <span className="inline-flex items-center rounded-full bg-gradient-to-br from-rose-500 to-rose-600 px-2.5 py-0.5 text-[10px] font-bold text-white shadow-sm">
                   {criticalAlerts.length} critical
@@ -309,7 +309,7 @@ function RiskOverviewTab({
               <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-emerald-50/80 to-emerald-50/40 border border-emerald-100/50 p-4">
                 <div className="size-2.5 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-500 shrink-0 shadow-sm" />
                 <p className="text-[13px] font-medium text-emerald-700">
-                  No active risk alerts — project is in good shape.
+                  No active fragility alerts — project is in good shape.
                 </p>
               </div>
             ) : (
@@ -427,7 +427,7 @@ function RiskOverviewTab({
           <div>
             <p className="text-[14px] font-bold text-background">Run a Leave Simulation</p>
             <p className="text-[12px] text-background/60 mt-0.5 leading-relaxed">
-              See how a planned or unplanned absence would affect risk coverage on this project.
+              See how a planned or unplanned absence would affect fragility coverage on this project.
             </p>
           </div>
           <Button
@@ -449,9 +449,9 @@ function TeamTab({ members, coverage }: { members: UserDetail[]; coverage: Skill
   return (
     <div className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
       <div className="px-6 py-4 border-b border-border/60">
-        <h3 className="font-semibold text-foreground text-sm">Team Risk Analysis</h3>
+        <h3 className="font-semibold text-foreground text-sm">Team Fragility Analysis</h3>
         <p className="text-[11px] text-muted-foreground mt-0.5">
-          Shows the risk exposure if each team member were to become unavailable
+          Shows the fragility exposure if each team member were to become unavailable
         </p>
       </div>
       <table className="w-full text-sm">
@@ -835,7 +835,7 @@ export default function ProjectDetail() {
   const criticalAlertCount = alerts.filter((a) => a.severity === "critical").length;
 
   const tabs: { key: DetailTab; label: string }[] = [
-    { key: "overview", label: "Risk Overview" },
+    { key: "overview", label: "Fragility Overview" },
     { key: "team", label: "Team" },
     { key: "knowledge", label: "Knowledge" },
   ];
@@ -869,10 +869,10 @@ export default function ProjectDetail() {
           <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-rose-50/80 to-rose-50/40 border border-rose-200/50 px-4 py-3 shadow-sm">
             <AlertTriangle className="size-4 text-rose-500 shrink-0" />
             <p className="text-[13px] font-semibold text-rose-700">
-              {criticalAlertCount} critical risk
+              {criticalAlertCount} critical fragility issue
               {criticalAlertCount !== 1 ? "s" : ""} detected on this project —
               <button onClick={() => setActiveTab("overview")} className="underline underline-offset-2 ml-1">
-                view risk overview
+                view fragility overview
               </button>
             </p>
           </div>

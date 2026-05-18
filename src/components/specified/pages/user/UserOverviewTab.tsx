@@ -18,9 +18,9 @@ interface UserOverviewTabProps {
 /* ─── Helpers ────────────────────────────────────────────── */
 
 function critLabel(score: number): { label: string; color: string; bg: string; border: string; ring: string } {
-  if (score >= 70) return { label: "High Risk", color: "text-rose-700", bg: "bg-rose-50", border: "border-rose-200", ring: "ring-rose-200/60" };
-  if (score >= 40) return { label: "Medium Risk", color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200", ring: "ring-amber-200/60" };
-  return { label: "Low Risk", color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200", ring: "ring-emerald-200/60" };
+  if (score >= 70) return { label: "High Criticality", color: "text-rose-700", bg: "bg-rose-50", border: "border-rose-200", ring: "ring-rose-200/60" };
+  if (score >= 40) return { label: "Medium Criticality", color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200", ring: "ring-amber-200/60" };
+  return { label: "Low Criticality", color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200", ring: "ring-emerald-200/60" };
 }
 
 const DRIVER_WEIGHTS = { silo: 3, bus: 2.5, unique: 1 } as const;
@@ -199,7 +199,7 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
       {/* ── Left column ──────────────────────────────────── */}
       <div className="space-y-4">
         {/* Risk Profile */}
-        <ComposedCard title="Risk Profile" headerClassName="mb-5">
+        <ComposedCard title="Criticality Profile" headerClassName="mb-5">
           <div className="space-y-4">
             {/* Headline */}
             <div className={cn("rounded-xl border px-5 py-4", crit.bg, crit.border)}>

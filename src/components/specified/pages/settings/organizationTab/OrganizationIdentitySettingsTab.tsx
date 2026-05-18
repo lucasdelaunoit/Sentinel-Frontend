@@ -35,8 +35,8 @@ export default function OrganizationIdentitySettingsTab({ form, setForm, saveAct
       </Field>
 
       <Field className="mt-5">
-        <FieldLabel>Risk Tolerance</FieldLabel>
-        <FieldDescription>Global multiplier applied to risk-score sensitivity.</FieldDescription>
+        <FieldLabel>Fragility Tolerance</FieldLabel>
+        <FieldDescription>Global multiplier applied to fragility sensitivity.</FieldDescription>
         <RadioGroup
           value={form.risk_tolerance}
           onValueChange={(v) => setForm({ ...form, risk_tolerance: v as OrgFormFields["risk_tolerance"] })}
@@ -72,8 +72,8 @@ OrganizationIdentitySettingsTab.Skeleton = function OrganizationIdentitySettings
       </Field>
 
       <Field className="mt-5">
-        <FieldLabel>Risk Tolerance</FieldLabel>
-        <FieldDescription>Global multiplier applied to risk-score sensitivity.</FieldDescription>
+        <FieldLabel>Fragility Tolerance</FieldLabel>
+        <FieldDescription>Global multiplier applied to fragility sensitivity.</FieldDescription>
         <div className="grid grid-cols-3 gap-2 mt-2">
           {RISK_TOLERANCE_OPTIONS.map((opt) => (
             <Skeleton key={opt.value} className="h-20 w-full" />

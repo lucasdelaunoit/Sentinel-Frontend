@@ -254,7 +254,7 @@ function ProjectsTab({ userId }: { userId: string }) {
               onSort={toggleSort}
             />
             <SortableTableHead
-              label="Risk"
+              label="Fragility"
               col="risk_score"
               sortKey={sort.key}
               sortDir={sort.dir}

@@ -50,19 +50,19 @@ function AvatarGroup({ members, extra }: { members: Array<{ initials: string; co
 
 /* ─── Bars ────────────────────────────────────────────────── */
 
+import { getTrajectoryTier, TONE_BG, TONE_TEXT } from "@/lib/scoring";
+
 function HealthBar({ value }: { value: number }) {
-  const color =
-    value >= 70
-      ? "bg-gradient-to-r from-emerald-400 to-emerald-500"
-      : value >= 55
-        ? "bg-gradient-to-r from-amber-400 to-amber-500"
-        : "bg-gradient-to-r from-rose-400 to-rose-500";
+  const tier = getTrajectoryTier(value);
   return (
     <div className="flex items-center gap-2">
       <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted shadow-inner">
-        <div className={cn("h-full rounded-full shadow-sm", color)} style={{ width: `${value}%` }} />
+        <div className={cn("h-full rounded-full shadow-sm", TONE_BG[tier.tone])} style={{ width: `${value}%` }} />
       </div>
-      <span className="text-sm font-medium text-foreground">{value}</span>
+      <span className={cn("text-[11px] font-semibold whitespace-nowrap", TONE_TEXT[tier.tone])}>
+        {tier.label}
+        <span className="ml-1 tabular-nums opacity-70">{value}</span>
+      </span>
     </div>
   );
 }
@@ -342,10 +342,10 @@ export default function Dashboard() {
 
           {/* Risk Distribution + Upcoming Absences */}
           <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm flex flex-col gap-5">
-            {/* Risk Distribution */}
+            {/* Fragility Distribution */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-foreground text-sm">Risk Distribution</h3>
+                <h3 className="font-semibold text-foreground text-sm">Fragility Distribution</h3>
                 <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
                   {PROJECTS.length} projects
                 </span>
@@ -367,7 +367,7 @@ export default function Dashboard() {
                 ))}
               </div>
               <p className="mt-3 text-[10px] text-muted-foreground">
-                Avg risk score:{" "}
+                Avg fragility:{" "}
                 <span className="font-semibold text-foreground">
                   {Math.round(PROJECTS.reduce((s, p) => s + p.riskScore, 0) / PROJECTS.length)}
                 </span>
@@ -471,7 +471,7 @@ export default function Dashboard() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border/60 bg-muted/20">
-                {["ID", "Project Name", "Status", "Progress", "Risk", "Bus Factor", "Health", "Team", ""].map((h) => (
+                {["ID", "Project Name", "Status", "Progress", "Fragility", "Bus Factor", "Trajectory", "Team", ""].map((h) => (
                   <th
                     key={h}
                     className="px-6 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70"

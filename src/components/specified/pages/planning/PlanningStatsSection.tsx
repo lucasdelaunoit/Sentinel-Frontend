@@ -44,7 +44,7 @@ export default function PlanningStatsSection({
         comment={null}
       />
       <StatCard
-        title="Projects at Risk"
+        title="Fragile Projects"
         value={atRiskProjects === null ? "—" : pad(atRiskProjects)}
         icon={ShieldAlert}
         isLoading={isLoading}

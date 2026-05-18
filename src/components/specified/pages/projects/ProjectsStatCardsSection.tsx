@@ -4,10 +4,10 @@ import useGetProjectsStats from "@/api/projects/useGetProjectsStats.ts";
 import { FoldersIcon, HeartbeatIcon, ShieldWarningIcon, WarningIcon } from "@phosphor-icons/react";
 import { ArrowRightIcon } from "lucide-react";
 
-function avgHealthColor(value: number) {
-  if (value >= 70) return "text-emerald-600";
-  if (value >= 40) return "text-amber-500";
-  return "text-destructive-foreground";
+import { getTrajectoryTier, TONE_TEXT } from "@/lib/scoring";
+
+function avgTrajectoryColor(value: number) {
+  return TONE_TEXT[getTrajectoryTier(value).tone];
 }
 
 export default function ProjectsStatCardsSection() {
@@ -28,24 +28,24 @@ export default function ProjectsStatCardsSection() {
         }
       />
       <StatCard
-        title="Avg Health"
-        value={stats ? `${stats.avg_health}%` : "—"}
+        title="Avg Trajectory"
+        value={stats ? `${stats.avg_health}` : "—"}
         icon={HeartbeatIcon}
         isLoading={isLoading}
         comment={
           <div
             className={cn(
               "flex items-center gap-1 text-sm font-semibold",
-              stats ? avgHealthColor(stats.avg_health) : "text-secondary-foreground",
+              stats ? avgTrajectoryColor(stats.avg_health) : "text-secondary-foreground",
             )}
           >
             <ArrowRightIcon size={13} />
-            Across all projects
+            Avg across all projects
           </div>
         }
       />
       <StatCard
-        title="Fragile"
+        title="Critical"
         value={stats ? String(stats.fragile).padStart(2, "0") : "—"}
         icon={ShieldWarningIcon}
         isLoading={isLoading}
@@ -57,12 +57,12 @@ export default function ProjectsStatCardsSection() {
             )}
           >
             <ArrowRightIcon size={13} />
-            Score ≥ 70
+            Fragility ≥ 70
           </div>
         }
       />
       <StatCard
-        title="At Risk"
+        title="Stretched"
         value={stats ? String(stats.at_risk).padStart(2, "0") : "—"}
         icon={WarningIcon}
         isLoading={isLoading}
@@ -74,7 +74,7 @@ export default function ProjectsStatCardsSection() {
             )}
           >
             <ArrowRightIcon size={13} />
-            Score 40–69
+            Fragility 40–69
           </div>
         }
       />

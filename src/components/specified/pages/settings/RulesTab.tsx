@@ -396,7 +396,7 @@ function RuleEditorSheet({
       open={open}
       onOpenChange={onOpenChange}
       title={title}
-      description="Rules trigger health-score penalties when violated on a given day."
+      description="Rules trigger trajectory penalties when violated on a given day."
       maxWidth="sm:max-w-[440px]"
       footer={
         <>
@@ -726,7 +726,7 @@ export default function RulesTab() {
               <Feedback
                 variant="warning"
                 title="No rules yet"
-                description="Define your first resilience policy to start tracking organizational risk."
+                description="Define your first resilience policy to start tracking organizational fragility."
                 className="h-96"
                 action={
                   <Button onClick={() => setCreateOpen(true)}>

@@ -26,7 +26,7 @@ const RISK_WEIGHTS: {
     key: "bus",
     formField: "risk_weight_bus_factor",
     title: "Losing key people",
-    question: "How much should we worry about projects that depend on too few people?",
+    question: "How much should it weigh when a project depends on too few people?",
     barColor: "bg-danger/80",
     dot: "bg-danger/80",
   },
@@ -74,13 +74,13 @@ export default function RiskWeightsSettingsTab({ form, setForm, saveAction }: Or
     <ComposedCard
       title={
         <div className="flex items-center gap-2">
-          <span>What should hurt a project's risk score the most?</span>
+          <span>What makes a project fragile?</span>
           <Tooltip>
             <TooltipTrigger>
               <QuestionIcon />
             </TooltipTrigger>
             <TooltipContent side="right">
-              Each card below is a risk concern. Bump its weight up if you want it to pull the project's risk score
+              Each card below is a fragility concern. Bump its weight up if you want it to pull the project's fragility
               harder, down if you care less. Only the ratio between weights matters — setting all to 50 is the same as
               setting all to 10. The stacked bar shows the resulting mix.
             </TooltipContent>
@@ -168,11 +168,11 @@ export default function RiskWeightsSettingsTab({ form, setForm, saveAction }: Or
 
 RiskWeightsSettingsTab.Skeleton = function RiskWeightsSettingsTabSkeleton() {
   return (
-    <ComposedCard title="What should hurt a project's risk score the most?" headerClassName="mb-2">
+    <ComposedCard title="What makes a project fragile?" headerClassName="mb-2">
       <FieldDescription className="mb-3">
-        Each card below is a risk concern. Bump its weight up if you want it to pull the project's risk score harder,
-        down if you care less. Only the ratio between weights matters — setting all to 50 is the same as setting all to
-        10. The stacked bar shows the resulting mix.
+        Each card below is a fragility concern. Bump its weight up if you want it to pull the project's fragility
+        harder, down if you care less. Only the ratio between weights matters — setting all to 50 is the same as
+        setting all to 10. The stacked bar shows the resulting mix.
       </FieldDescription>
 
       <div className="flex flex-wrap gap-2 mb-4">
