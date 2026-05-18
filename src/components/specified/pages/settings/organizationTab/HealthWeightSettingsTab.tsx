@@ -28,8 +28,9 @@ export default function HealthWeightSettingsTab({ form, setForm, saveAction }: O
               <QuestionIcon />
             </TooltipTrigger>
             <TooltipContent side="right">
-              A project's health combines two things: how risky it is, and how far along it is. Pick which one should
-              matter more.
+              Project health = risk score blended with delivery progress. This setting picks the blend ratio.
+              Stability-first projects (compliance, infra) penalize risk hard; delivery-first projects (MVPs, sprints)
+              reward progress even when risky.
             </TooltipContent>
           </Tooltip>
         </div>
@@ -77,8 +78,9 @@ HealthWeightSettingsTab.Skeleton = function HealthWeightSettingsTabSkeleton() {
   return (
     <ComposedCard title="How should we judge overall project health?" headerClassName="mb-2">
       <FieldDescription className="mb-4">
-        A project's health combines two things: how risky it is, and how far along it is. Pick which one should matter
-        more.
+        Project health = risk score blended with delivery progress. This setting picks the blend ratio. Stability-first
+        projects (compliance, infra) penalize risk hard; delivery-first projects (MVPs, sprints) reward progress even
+        when risky.
       </FieldDescription>
 
       <div className="grid grid-cols-5 gap-2 mb-4">

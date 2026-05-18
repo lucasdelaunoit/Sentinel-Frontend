@@ -13,13 +13,14 @@ export default function RulesSettingsTab({ form, setForm, saveAction }: OrgSetti
     <ComposedCard
       title={
         <div className="flex items-center gap-2">
-          <span>Basis rules in plain English?</span>
+          <span>Rules in plain English</span>
           <Tooltip>
             <TooltipTrigger>
               <QuestionIcon />
             </TooltipTrigger>
             <TooltipContent side="right">
-              Read each line as a sentence. The numbers in white boxes are editable.
+              These thresholds define when Sentinel flags silos, critical projects, and skill coverage gaps. Edit the
+              boxed numbers — each sentence reads how the rule will actually apply.
             </TooltipContent>
           </Tooltip>
         </div>
@@ -103,7 +104,8 @@ RulesSettingsTab.Skeleton = function RulesSettingsTabSkeleton() {
   return (
     <ComposedCard title="Rules in plain English" headerClassName="mb-5">
       <FieldDescription className="mb-4">
-        Read each line as a sentence. The numbers in white boxes are editable.
+        These thresholds define when Sentinel flags silos, critical projects, and skill coverage gaps. Edit the boxed
+        numbers — each sentence reads how the rule will actually apply.
       </FieldDescription>
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
