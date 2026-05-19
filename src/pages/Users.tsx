@@ -246,11 +246,7 @@ function UserList() {
         </span>
       )}
       <div className="flex-1" />
-      <FilterPillGroup
-        options={USER_STATUS_FILTER_OPTIONS}
-        value={statusFilter}
-        onChange={setStatusFilter}
-      />
+      <FilterPillGroup options={USER_STATUS_FILTER_OPTIONS} value={statusFilter} onChange={setStatusFilter} />
       <SearchBar value={search} onChange={setSearch} placeholder="Search employees..." />
     </>
   );
@@ -271,7 +267,7 @@ function UserList() {
             </TableHead>
             <SortableTableHead label="Title" col="title" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
             <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Work mode
+              Work status
             </TableHead>
             <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Skills

@@ -54,21 +54,16 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
   completed: "Completed",
 };
 
-function riskColor(v: number) {
-  if (v >= 20) return "text-rose-500";
-  if (v >= 12) return "text-amber-500";
-  return "text-emerald-500";
-}
-function riskDotColor(v: number) {
-  if (v >= 20) return "bg-rose-500";
-  if (v >= 12) return "bg-amber-400";
-  return "bg-emerald-500";
-}
-function busFactorColor(v: number) {
-  if (v <= 1) return "text-rose-500";
-  if (v <= 2) return "text-amber-500";
-  return "text-emerald-500";
-}
+const SEVERITY_TEXT: Record<Severity, string> = {
+  ok: "text-emerald-500",
+  warning: "text-amber-500",
+  critical: "text-rose-500",
+};
+const SEVERITY_DOT: Record<Severity, string> = {
+  ok: "bg-emerald-500",
+  warning: "bg-amber-400",
+  critical: "bg-rose-500",
+};
 
 /* ─── Radar chart ─────────────────────────────────────────── */
 
@@ -352,15 +347,21 @@ function ProjectsTab({ userId }: { userId: string }) {
                   </TableCell>
                   <TableCell className="px-5 py-4">
                     <div className="flex items-center gap-1.5">
-                      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", riskDotColor(proj.risk_score))} />
-                      <span className={cn("text-[14px] font-bold tabular-nums", riskColor(proj.risk_score))}>
-                        {proj.risk_score}
+                      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", SEVERITY_DOT[proj.fragility.severity])} />
+                      <span className={cn("text-[13px] font-semibold whitespace-nowrap", SEVERITY_TEXT[proj.fragility.severity])}>
+                        {proj.fragility.value}
+                        {proj.fragility.raw !== null && (
+                          <span className="ml-1 tabular-nums opacity-70">{proj.fragility.raw}</span>
+                        )}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell className="px-5 py-4">
-                    <span className={cn("text-[14px] font-bold tabular-nums", busFactorColor(proj.bus_factor))}>
-                      {proj.bus_factor}
+                    <span className={cn("text-[13px] font-semibold whitespace-nowrap", SEVERITY_TEXT[proj.bus_factor.severity])}>
+                      {proj.bus_factor.value}
+                      {proj.bus_factor.raw !== null && (
+                        <span className="ml-1 tabular-nums opacity-70">{proj.bus_factor.raw}</span>
+                      )}
                     </span>
                   </TableCell>
                   <TableCell className="px-5 py-4">

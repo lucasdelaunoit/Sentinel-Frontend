@@ -28,6 +28,7 @@ import { useTablePagination } from "@/hooks/useTablePagination";
 import { HighlightMatch } from "@/utils/useHighlightableText";
 import ProjectStatusBadge from "@/components/specified/models/projects/badges/ProjectStatusBadge.tsx";
 import HealthBar from "@/components/specified/models/projects/datas/HealthBar.tsx";
+import type { StatCardData } from "@/types/dashboard";
 import FilterPillGroup, { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import {
   DropdownMenu,
@@ -52,20 +53,23 @@ type ProjSortKey = "name" | "risk_score" | "bus_factor" | "health" | "deadline";
 
 /* ─── Helpers ───────────────────────────────────────────────── */
 
-import { getFragilityTier, TONE_TEXT, TONE_BG } from "@/lib/scoring";
+const SEVERITY_TEXT: Record<Severity, string> = {
+  ok: "text-success",
+  warning: "text-warning",
+  critical: "text-danger",
+};
 
-function fragilityColor(v: number) {
-  return TONE_TEXT[getFragilityTier(v).tone];
+const SEVERITY_DOT: Record<Severity, string> = {
+  ok: "bg-success",
+  warning: "bg-warning",
+  critical: "bg-danger",
+};
+
+function severityText(card: StatCardData) {
+  return SEVERITY_TEXT[card.severity];
 }
-
-function fragilityDotColor(v: number) {
-  return TONE_BG[getFragilityTier(v).tone];
-}
-
-function busFactorColor(v: number) {
-  if (v <= 1) return "text-danger";
-  if (v <= 2) return "text-warning";
-  return "text-success";
+function severityDot(card: StatCardData) {
+  return SEVERITY_DOT[card.severity];
 }
 
 /* ─── Row Actions ───────────────────────────────────────────── */
@@ -355,22 +359,25 @@ function ProjectList() {
                   </TableCell>
                   <TableCell className="px-5 py-4">
                     <div className="flex items-center gap-1.5">
-                      <div
-                        className={cn("size-1.5 rounded-full shrink-0 shadow-sm", fragilityDotColor(project.risk_score))}
-                      />
-                      <span className={cn("text-[13px] font-semibold whitespace-nowrap", fragilityColor(project.risk_score))}>
-                        {getFragilityTier(project.risk_score).label}
-                        <span className="ml-1 tabular-nums opacity-70">{project.risk_score}</span>
+                      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", severityDot(project.fragility))} />
+                      <span className={cn("text-[13px] font-semibold whitespace-nowrap", severityText(project.fragility))}>
+                        {project.fragility.value}
+                        {project.fragility.raw !== null && (
+                          <span className="ml-1 tabular-nums opacity-70">{project.fragility.raw}</span>
+                        )}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell className="px-5 py-4">
-                    <span className={cn("text-[14px] font-bold tabular-nums", busFactorColor(project.bus_factor))}>
-                      {project.bus_factor}
+                    <span className={cn("text-[13px] font-semibold whitespace-nowrap", severityText(project.bus_factor))}>
+                      {project.bus_factor.value}
+                      {project.bus_factor.raw !== null && (
+                        <span className="ml-1 tabular-nums opacity-70">{project.bus_factor.raw}</span>
+                      )}
                     </span>
                   </TableCell>
                   <TableCell className="px-5 py-4">
-                    <HealthBar value={project.health} />
+                    <HealthBar value={project.trajectory.raw ?? 0} />
                   </TableCell>
                   <TableCell className="px-5 py-4">
                     <span

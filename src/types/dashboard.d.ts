@@ -150,9 +150,9 @@ export interface ProjectListItem {
   description: string;
   status: ProjectStatus;
   priority: ProjectPriority;
-  risk_score: number;
-  bus_factor: number;
-  health: number;
+  fragility: StatCardData;
+  bus_factor: StatCardData;
+  trajectory: StatCardData;
   started_at: string;
   deadline: string;
   paused_at: string | null;
@@ -197,9 +197,9 @@ export interface ProjectDetailResponse {
   name: string;
   description: string;
   status: ProjectStatus;
-  risk_score: number;
-  bus_factor: number;
-  health: number;
+  fragility: StatCardData;
+  bus_factor: StatCardData;
+  trajectory: StatCardData;
   started_at: string;
   deadline: string;
   paused_at: string | null;
@@ -220,9 +220,9 @@ export interface UserProjectItem {
   status: ProjectStatus;
   priority: ProjectPriority;
   role: string;
-  risk_score: number;
-  bus_factor: number;
-  health: number;
+  fragility: StatCardData;
+  bus_factor: StatCardData;
+  trajectory: StatCardData;
   deadline: string;
 }
 
