@@ -3,6 +3,5 @@ interface ScenarioMetrics {
   uncovered: number;
   silos: number;
   riskScore: number;
-  healthScore: number;
   critical: boolean;
 }

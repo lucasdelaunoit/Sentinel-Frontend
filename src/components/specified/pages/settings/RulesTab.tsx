@@ -397,7 +397,7 @@ function RuleEditorSheet({
       open={open}
       onOpenChange={onOpenChange}
       title={title}
-      description="Rules trigger trajectory penalties when violated on a given day."
+      description="Rules trigger fragility penalties when violated on a given day."
       maxWidth="sm:max-w-[440px]"
       footer={
         <>

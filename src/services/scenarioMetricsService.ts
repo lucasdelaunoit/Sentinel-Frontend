@@ -47,18 +47,12 @@ export function computeScenarioMetrics(
         totalW;
 
   const riskScore = Math.round(riskNormalized * 100);
-  const healthScore = Math.round(
-    ((100 - riskScore) * form.trajectory_fragility_weight +
-      project.progress * (100 - form.trajectory_fragility_weight)) /
-      100,
-  );
 
   return {
     busFactor,
     uncovered,
     silos,
     riskScore,
-    healthScore,
     critical: busFactor <= form.critical_bus_factor_threshold,
   };
 }

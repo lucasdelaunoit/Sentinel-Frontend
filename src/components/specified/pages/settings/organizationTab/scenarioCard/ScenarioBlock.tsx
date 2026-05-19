@@ -44,14 +44,6 @@ export default function ScenarioBlock({
           <MetricRow label="Uncovered" before={before.uncovered} after={after.uncovered} flash={flash} />
           <MetricRow label="Silos" before={before.silos} after={after.silos} flash={flash} />
           <MetricRow label="Fragility" before={before.riskScore} after={after.riskScore} suffix="%" flash={flash} />
-          <MetricRow
-            label="Trajectory"
-            before={before.healthScore}
-            after={after.healthScore}
-            invertColors
-            suffix="%"
-            flash={flash}
-          />
         </div>
       </div>
       {aboveTolerance && (

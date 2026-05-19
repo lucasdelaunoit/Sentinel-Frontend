@@ -12,7 +12,6 @@ interface OrganizationSettings {
   fragility_weight_absence_impact: number;
   silo_threshold: number;
   kci_min_level: number;
-  trajectory_fragility_weight: number;
   absence_horizon_days: number;
   critical_bus_factor_threshold: number;
   rule_violation_penalty: number;

@@ -27,7 +27,6 @@ import { useTableSort } from "@/hooks/useTableSort";
 import { useTablePagination } from "@/hooks/useTablePagination";
 import { HighlightMatch } from "@/utils/useHighlightableText";
 import ProjectStatusBadge from "@/components/specified/models/projects/badges/ProjectStatusBadge.tsx";
-import HealthBar from "@/components/specified/models/projects/datas/HealthBar.tsx";
 import type { StatCardData } from "@/types/dashboard";
 import FilterPillGroup, { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import {
@@ -49,7 +48,7 @@ import { formatDate } from "@/utils/formatters/date.ts";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
-type ProjSortKey = "name" | "risk_score" | "bus_factor" | "health" | "deadline";
+type ProjSortKey = "name" | "risk_score" | "bus_factor" | "deadline";
 
 /* ─── Helpers ───────────────────────────────────────────────── */
 
@@ -263,7 +262,6 @@ function ProjectList() {
               sortDir={sort.dir}
               onSort={toggleSort}
             />
-            <SortableTableHead label="Trajectory" col="health" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
             <SortableTableHead
               label="Deadline"
               col="deadline"
@@ -298,9 +296,6 @@ function ProjectList() {
                 </TableCell>
                 <TableCell className="px-5 py-4">
                   <Skeleton className="h-4 w-6" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <HealthBar.Skeleton />
                 </TableCell>
                 <TableCell className="px-5 py-4">
                   <Skeleton className="h-3.5 w-20" />
@@ -375,9 +370,6 @@ function ProjectList() {
                         <span className="ml-1 tabular-nums opacity-70">{project.bus_factor.raw}</span>
                       )}
                     </span>
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <HealthBar value={project.trajectory.raw ?? 0} />
                   </TableCell>
                   <TableCell className="px-5 py-4">
                     <span

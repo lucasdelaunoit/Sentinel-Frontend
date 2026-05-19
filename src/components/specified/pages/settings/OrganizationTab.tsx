@@ -3,12 +3,11 @@ import useGetOrganizationSettings from "@/api/organization/useGetOrganizationSet
 import useUpdateOrganizationSettings from "@/api/organization/useUpdateOrganizationSettings";
 import OrganizationIdentitySettingsTab from "./organizationTab/OrganizationIdentitySettingsTab";
 import RiskWeightsSettingsTab from "./organizationTab/RiskWeightsSettingsTab";
-import HealthWeightSettingsTab from "./organizationTab/HealthWeightSettingsTab";
 import SectionSaveButton from "./organizationTab/SectionSaveButton";
 import ScenarioPreviewCard from "./organizationTab/scenarioCard/ScenarioPreviewCard.tsx";
 import type { OrgFormFields } from "./organizationTab/types";
 
-type SectionKey = "identity" | "riskWeights" | "health";
+type SectionKey = "identity" | "riskWeights";
 
 const SECTION_FIELDS: Record<SectionKey, (keyof OrgFormFields)[]> = {
   identity: ["name", "fragility_tolerance"],
@@ -18,7 +17,6 @@ const SECTION_FIELDS: Record<SectionKey, (keyof OrgFormFields)[]> = {
     "fragility_weight_silos",
     "fragility_weight_absence_impact",
   ],
-  health: ["trajectory_fragility_weight"],
 };
 
 const SAVED_FLASH_MS = 2000;
@@ -46,7 +44,7 @@ export default function OrganizationTab({ previewVisible = false }: { previewVis
   }, []);
 
   const dirtyBySection = useMemo(() => {
-    const out: Record<SectionKey, boolean> = { identity: false, riskWeights: false, health: false };
+    const out: Record<SectionKey, boolean> = { identity: false, riskWeights: false };
     if (!form || !original) return out;
     (Object.keys(SECTION_FIELDS) as SectionKey[]).forEach((key) => {
       out[key] = SECTION_FIELDS[key].some((f) => form[f] !== original[f]);
@@ -95,7 +93,6 @@ export default function OrganizationTab({ previewVisible = false }: { previewVis
     <div className="space-y-5">
       <OrganizationIdentitySettingsTab form={form} setForm={setForm} saveAction={buildAction("identity")} />
       <RiskWeightsSettingsTab form={form} setForm={setForm} saveAction={buildAction("riskWeights")} />
-      <HealthWeightSettingsTab form={form} setForm={setForm} saveAction={buildAction("health")} />
     </div>
   );
 
@@ -116,7 +113,6 @@ OrganizationTab.Skeleton = function OrganizationTabSkeleton() {
     <div className="space-y-5">
       <OrganizationIdentitySettingsTab.Skeleton />
       <RiskWeightsSettingsTab.Skeleton />
-      <HealthWeightSettingsTab.Skeleton />
     </div>
   );
 };

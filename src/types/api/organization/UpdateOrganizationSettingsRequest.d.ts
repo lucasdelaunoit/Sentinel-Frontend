@@ -9,7 +9,6 @@ type UpdateOrganizationSettingsRequest = Partial<
     | "fragility_weight_absence_impact"
     | "silo_threshold"
     | "kci_min_level"
-    | "trajectory_fragility_weight"
     | "absence_horizon_days"
     | "critical_bus_factor_threshold"
     | "rule_violation_penalty"

@@ -152,7 +152,6 @@ export interface ProjectListItem {
   priority: ProjectPriority;
   fragility: StatCardData;
   bus_factor: StatCardData;
-  trajectory: StatCardData;
   started_at: string;
   deadline: string;
   paused_at: string | null;
@@ -169,7 +168,6 @@ export interface ProjectListItem {
 export interface ProjectStats {
   fragility: StatCardData;
   bus_factor: StatCardData;
-  trajectory: StatCardData;
   team: StatCardData;
 }
 
@@ -199,7 +197,6 @@ export interface ProjectDetailResponse {
   status: ProjectStatus;
   fragility: StatCardData;
   bus_factor: StatCardData;
-  trajectory: StatCardData;
   started_at: string;
   deadline: string;
   paused_at: string | null;
@@ -222,7 +219,6 @@ export interface UserProjectItem {
   role: string;
   fragility: StatCardData;
   bus_factor: StatCardData;
-  trajectory: StatCardData;
   deadline: string;
 }
 
@@ -310,7 +306,7 @@ export interface DashboardStats {
 
 export interface ProjectsStats {
   total: StatCardData;
-  avg_trajectory: StatCardData;
+  avg_fragility: StatCardData;
   fragile_count: StatCardData;
   stretched_count: StatCardData;
 }
