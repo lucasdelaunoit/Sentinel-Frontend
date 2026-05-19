@@ -1,19 +1,28 @@
+import { type ElementType } from "react";
+import { ArrowRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
-import { type ElementType, type ReactNode } from "react";
 import { Card } from "@/components/ui/card.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import type { StatCardData } from "@/types/dashboard";
+
+const SEVERITY_COLOR: Record<Severity, string> = {
+  critical: "text-destructive-foreground",
+  warning: "text-amber-500",
+  ok: "text-emerald-600",
+};
 
 interface StatCardProps {
   title: string;
-  value: ReactNode;
-  comment: ReactNode;
   icon: ElementType;
+  card: StatCardData;
   onClick?: () => void;
-  isLoading: boolean;
+  isLoading?: boolean;
 }
 
-export default function StatCard({ title, value, comment, icon: Icon, onClick, isLoading }: StatCardProps) {
-  if (isLoading) return <StatCardSkeleton />;
+export default function StatCard({ title, icon: Icon, card, onClick, isLoading = false }: StatCardProps) {
+  const color = SEVERITY_COLOR[card.severity] || "text-foreground";
+
+  if (isLoading) return <StatCard.Skeleton title={title} icon={Icon} />;
 
   return (
     <Card
@@ -26,25 +35,28 @@ export default function StatCard({ title, value, comment, icon: Icon, onClick, i
           <Icon className="size-5" />
         </span>
       </div>
-      <div className="text-3xl font-semibold">
-        {" "}
-        {/*style={{ fontSize: "34px", fontWeight: 800, color: theme.text, letterSpacing: "-0.03em", lineHeight: 1.15, marginTop: "2px" }}*/}
-        {value}
+      <div className={cn("text-3xl font-semibold")}>{card.value}</div>
+      <div className="flex flex-col gap-0.5">
+        <div className={cn("flex items-center gap-1 text-sm font-semibold", color)}>
+          <ArrowRightIcon size={13} />
+          <span>{card.hint}</span>
+        </div>
       </div>
-      {comment}
     </Card>
   );
 }
 
-function StatCardSkeleton() {
+StatCard.Skeleton = function StatCardSkeleton({ title, icon: Icon }: Pick<StatCardProps, "title" | "icon">) {
   return (
-    <Card className="px-5 py-6 gap-3">
+    <Card className="py-6 gap-3">
       <div className="flex justify-between items-start">
-        <Skeleton className="h-3.5 w-28" />
-        <Skeleton className="h-5 w-5 rounded-sm" />
+        <span className="text-sm font-normal text-muted-foreground tracking-wide">{title}</span>
+        <span className="text-muted-foreground opacity-60">
+          <Icon className="size-5" />
+        </span>
       </div>
-      <Skeleton className="h-10 w-20 mt-2" />
-      <Skeleton className="h-3.5 w-40 mt-2" />
+      <Skeleton className="h-9 w-20" />
+      <Skeleton className="h-4 w-32" />
     </Card>
   );
-}
+};

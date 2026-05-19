@@ -1,5 +1,5 @@
 import { ShieldAlert, Users, Code2, FolderKanban } from "lucide-react";
-import StatCardView from "@/components/common/cards/StatCardView";
+import StatCard from "@/components/common/cards/StatCard";
 import type { UserStats } from "@/types/dashboard";
 
 interface UserStatsSectionProps {
@@ -9,10 +9,10 @@ interface UserStatsSectionProps {
 export default function UserStatsSection({ stats }: UserStatsSectionProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <StatCardView title="Criticality" icon={ShieldAlert} card={stats.criticality} />
-      <StatCardView title="Bus Factor in Org" icon={Users} card={stats.bus_factor_in_org} />
-      <StatCardView title="Skills" icon={Code2} card={stats.skills} />
-      <StatCardView title="Active Projects" icon={FolderKanban} card={stats.active_projects} />
+      <StatCard title="Criticality" icon={ShieldAlert} card={stats.criticality} />
+      <StatCard title="Bus Factor in Org" icon={Users} card={stats.bus_factor_in_org} />
+      <StatCard title="Skills" icon={Code2} card={stats.skills} />
+      <StatCard title="Active Projects" icon={FolderKanban} card={stats.active_projects} />
     </div>
   );
 }
@@ -20,10 +20,10 @@ export default function UserStatsSection({ stats }: UserStatsSectionProps) {
 UserStatsSection.Skeleton = function UserStatsSectionSkeleton() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <StatCardView.Skeleton title="Criticality" icon={ShieldAlert} />
-      <StatCardView.Skeleton title="Bus Factor in Org" icon={Users} />
-      <StatCardView.Skeleton title="Skills" icon={Code2} />
-      <StatCardView.Skeleton title="Active Projects" icon={FolderKanban} />
+      <StatCard.Skeleton title="Criticality" icon={ShieldAlert} />
+      <StatCard.Skeleton title="Bus Factor in Org" icon={Users} />
+      <StatCard.Skeleton title="Skills" icon={Code2} />
+      <StatCard.Skeleton title="Active Projects" icon={FolderKanban} />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import StatCardView from "@/components/common/cards/StatCardView";
+import StatCard from "@/components/common/cards/StatCard";
 import useGetDashboardStats from "@/hooks/useGetDashboardStats";
 import ProjectsAtRiskModal from "@/components/specified/pages/home/stat-modals/ProjectsAtRiskModal";
 import KnowledgeCoverageModal from "@/components/specified/pages/home/stat-modals/KnowledgeCoverageModal";
@@ -10,40 +10,44 @@ import { ChartPolarIcon, LightningIcon, UserIcon, WarningIcon } from "@phosphor-
 type ModalKey = "risk" | "coverage" | "availability" | "impact";
 
 export default function HomeStatCardsSection() {
-  const { data: stats, isLoading } = useGetDashboardStats();
+  const { data: dashboardStatsData, isLoading } = useGetDashboardStats();
   const [modalOpen, setModalOpen] = useState<ModalKey | null>(null);
 
   return (
     <>
       <div className="grid grid-cols-4 gap-4">
-        <StatCardView
-          title="Fragile Projects"
-          icon={WarningIcon}
-          card={stats?.fragile_projects}
-          isLoading={isLoading}
-          onClick={() => setModalOpen("risk")}
-        />
-        <StatCardView
-          title="Knowledge Coverage"
-          icon={ChartPolarIcon}
-          card={stats?.knowledge_coverage}
-          isLoading={isLoading}
-          onClick={() => setModalOpen("coverage")}
-        />
-        <StatCardView
-          title="Team Availability"
-          icon={UserIcon}
-          card={stats?.team_availability}
-          isLoading={isLoading}
-          onClick={() => setModalOpen("availability")}
-        />
-        <StatCardView
-          title="Absence Impact"
-          icon={LightningIcon}
-          card={stats?.absence_impact}
-          isLoading={isLoading}
-          onClick={() => setModalOpen("impact")}
-        />
+        {dashboardStatsData && (
+          <>
+            <StatCard
+              title="Fragile Projects"
+              icon={WarningIcon}
+              card={dashboardStatsData.fragile_projects}
+              isLoading={isLoading || !dashboardStatsData}
+              onClick={() => setModalOpen("risk")}
+            />
+            <StatCard
+              title="Knowledge Coverage"
+              icon={ChartPolarIcon}
+              card={dashboardStatsData.knowledge_coverage}
+              isLoading={isLoading || !dashboardStatsData}
+              onClick={() => setModalOpen("coverage")}
+            />
+            <StatCard
+              title="Team Availability"
+              icon={UserIcon}
+              card={dashboardStatsData.team_availability}
+              isLoading={isLoading || !dashboardStatsData}
+              onClick={() => setModalOpen("availability")}
+            />
+            <StatCard
+              title="Absence Impact"
+              icon={LightningIcon}
+              card={dashboardStatsData.absence_impact}
+              isLoading={isLoading || !dashboardStatsData}
+              onClick={() => setModalOpen("impact")}
+            />
+          </>
+        )}
       </div>
 
       {modalOpen === "risk" && <ProjectsAtRiskModal onClose={() => setModalOpen(null)} />}
