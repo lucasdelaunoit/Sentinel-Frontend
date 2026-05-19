@@ -1,6 +1,6 @@
 interface ProjectsStats {
-  total: number;
-  avg_health: number;
-  fragile: number;
-  at_risk: number;
+  total: import("@/types/dashboard").StatCardData;
+  avg_trajectory: import("@/types/dashboard").StatCardData;
+  fragile_count: import("@/types/dashboard").StatCardData;
+  stretched_count: import("@/types/dashboard").StatCardData;
 }

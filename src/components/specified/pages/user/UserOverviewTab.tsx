@@ -180,15 +180,15 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
     );
   }
 
-  const { criticality, bus_factor_in_org } = stats;
-  const crit = critLabel(criticality.score);
-  const contributions = computeContributions(criticality.silo_count, bus_factor_in_org.count, criticality.unique_skills);
-  const recommendations = buildRecommendations(
-    criticality.score,
-    criticality.silo_count,
-    bus_factor_in_org.count,
-    criticality.unique_skills,
-  );
+  const { criticality, bus_factor_in_org, breakdown } = stats;
+  const criticalityScore = criticality.raw ?? 0;
+  const busFactorCount = bus_factor_in_org.raw ?? 0;
+  const siloCount = breakdown.criticality_detail.silo_count;
+  const uniqueSkills = breakdown.criticality_detail.unique_skills;
+  const busFactorProjects = breakdown.bus_factor_projects;
+  const crit = critLabel(criticalityScore);
+  const contributions = computeContributions(siloCount, busFactorCount, uniqueSkills);
+  const recommendations = buildRecommendations(criticalityScore, siloCount, busFactorCount, uniqueSkills);
 
   const allAbsences = absencesData?.data ?? [];
   const upcoming = upcomingAbsences(allAbsences);
@@ -213,7 +213,7 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className={cn("text-[32px] font-bold tabular-nums leading-none", crit.color)}>
-                    {criticality.score}
+                    {criticalityScore}
                   </span>
                   <span className="text-[11px] text-muted-foreground/70 font-medium">/100</span>
                 </div>
@@ -256,12 +256,10 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[12px] font-semibold text-foreground">
-                  {criticality.silo_count} silo area{criticality.silo_count !== 1 ? "s" : ""}
+                  {siloCount} silo area{siloCount !== 1 ? "s" : ""}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  {criticality.silo_count === 0
-                    ? "Knowledge is well distributed"
-                    : "Skill categories with low redundancy"}
+                  {siloCount === 0 ? "Knowledge is well distributed" : "Skill categories with low redundancy"}
                 </p>
               </div>
             </div>
@@ -272,10 +270,10 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[12px] font-semibold text-foreground">
-                  {criticality.unique_skills} unique skill{criticality.unique_skills !== 1 ? "s" : ""}
+                  {uniqueSkills} unique skill{uniqueSkills !== 1 ? "s" : ""}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  {criticality.unique_skills === 0
+                  {uniqueSkills === 0
                     ? "No skill exclusively held by this employee"
                     : "Skills no other team member holds"}
                 </p>
@@ -289,18 +287,18 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
                 </div>
                 <div className="flex-1">
                   <p className="text-[12px] font-semibold text-foreground">
-                    Bus factor for {bus_factor_in_org.count} project{bus_factor_in_org.count !== 1 ? "s" : ""}
+                    Bus factor for {busFactorCount} project{busFactorCount !== 1 ? "s" : ""}
                   </p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {bus_factor_in_org.count === 0
+                    {busFactorCount === 0
                       ? "Not a critical bottleneck anywhere"
                       : "Removal would critically impact these projects"}
                   </p>
                 </div>
               </div>
-              {bus_factor_in_org.projects.length > 0 && (
+              {busFactorProjects.length > 0 && (
                 <div className="divide-y divide-border/40 bg-muted/20">
-                  {bus_factor_in_org.projects.map((proj) => (
+                  {busFactorProjects.map((proj) => (
                     <button
                       key={proj.id}
                       onClick={() => navigate(`/projects/${proj.id}`)}

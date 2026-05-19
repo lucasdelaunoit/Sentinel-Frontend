@@ -1,9 +1,6 @@
-interface ProjectStatsResponse {
-  risk_score: number;
-  bus_factor: number;
-  health_score: number;
-  team: {
-    total: number;
-    away: number;
-  };
+interface ProjectsStatsResponse {
+  total: import("@/types/dashboard").StatCardData;
+  avg_trajectory: import("@/types/dashboard").StatCardData;
+  fragile_count: import("@/types/dashboard").StatCardData;
+  stretched_count: import("@/types/dashboard").StatCardData;
 }

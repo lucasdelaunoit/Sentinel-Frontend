@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { ArrowRightIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import StatCard from "@/components/common/cards/StatCard";
+import StatCardView from "@/components/common/cards/StatCardView";
 import useGetDashboardStats from "@/hooks/useGetDashboardStats";
 import ProjectsAtRiskModal from "@/components/specified/pages/home/stat-modals/ProjectsAtRiskModal";
 import KnowledgeCoverageModal from "@/components/specified/pages/home/stat-modals/KnowledgeCoverageModal";
@@ -11,90 +9,40 @@ import { ChartPolarIcon, LightningIcon, UserIcon, WarningIcon } from "@phosphor-
 
 type ModalKey = "risk" | "coverage" | "availability" | "impact";
 
-const SEVERITY_COLOR: Record<Severity, string> = {
-  critical: "text-destructive-foreground",
-  warning: "text-amber-500",
-  ok: "text-emerald-600",
-};
-
 export default function HomeStatCardsSection() {
-  const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
+  const { data: stats, isLoading } = useGetDashboardStats();
   const [modalOpen, setModalOpen] = useState<ModalKey | null>(null);
 
   return (
     <>
       <div className="grid grid-cols-4 gap-4">
-        <StatCard
+        <StatCardView
           title="Fragile Projects"
-          value={stats ? String(stats.projects_at_risk.value) : "—"}
           icon={WarningIcon}
+          card={stats?.fragile_projects}
+          isLoading={isLoading}
           onClick={() => setModalOpen("risk")}
-          isLoading={statsLoading}
-          comment={
-            <div
-              className={cn(
-                "text-sm flex items-center gap-1",
-                stats ? SEVERITY_COLOR[stats.projects_at_risk.severity] : "text-secondary-foreground",
-              )}
-            >
-              <ArrowRightIcon size={13} />
-              <span className="font-semibold">{stats?.projects_at_risk.insight ?? "Unavailable"}</span>
-            </div>
-          }
         />
-        <StatCard
+        <StatCardView
           title="Knowledge Coverage"
-          value={stats ? `${stats.knowledge_coverage.value}%` : "—"}
           icon={ChartPolarIcon}
+          card={stats?.knowledge_coverage}
+          isLoading={isLoading}
           onClick={() => setModalOpen("coverage")}
-          isLoading={statsLoading}
-          comment={
-            <div
-              className={cn(
-                "text-sm flex items-center gap-1",
-                stats ? SEVERITY_COLOR[stats.knowledge_coverage.severity] : "text-secondary-foreground",
-              )}
-            >
-              <ArrowRightIcon size={13} />
-              <span className="font-semibold">{stats?.knowledge_coverage.insight ?? "Unavailable"}</span>
-            </div>
-          }
         />
-        <StatCard
+        <StatCardView
           title="Team Availability"
-          value={stats ? stats.team_availability.value : "—"}
           icon={UserIcon}
+          card={stats?.team_availability}
+          isLoading={isLoading}
           onClick={() => setModalOpen("availability")}
-          isLoading={statsLoading}
-          comment={
-            <div
-              className={cn(
-                "text-sm flex items-center gap-1",
-                stats ? SEVERITY_COLOR[stats.team_availability.severity] : "text-secondary-foreground",
-              )}
-            >
-              <ArrowRightIcon size={13} />
-              <span className="font-semibold">{stats?.team_availability.insight ?? "Unavailable"}</span>
-            </div>
-          }
         />
-        <StatCard
+        <StatCardView
           title="Absence Impact"
-          value={stats ? String(stats.absence_impact.value) : "—"}
           icon={LightningIcon}
+          card={stats?.absence_impact}
+          isLoading={isLoading}
           onClick={() => setModalOpen("impact")}
-          isLoading={statsLoading}
-          comment={
-            <div
-              className={cn(
-                "text-sm flex items-center gap-1",
-                stats ? SEVERITY_COLOR[stats.absence_impact.severity] : "text-secondary-foreground",
-              )}
-            >
-              <ArrowRightIcon size={13} />
-              <span className="font-semibold">{stats?.absence_impact.insight ?? "Unavailable"}</span>
-            </div>
-          }
         />
       </div>
 

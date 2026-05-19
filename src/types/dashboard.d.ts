@@ -60,65 +60,33 @@ export interface AbsenceImpactDetail {
   uncovered_skills: UncoveredSkillDetail[];
 }
 
-/* ── Stat card shapes (GET /dashboard/stats) ─────────────── */
+/* ── Universal stat card shape ───────────────────────────── */
 
-export interface ProjectsAtRiskStat {
-  value: number;
-  insight: string;
-  severity: Severity;
-}
-
-export interface KnowledgeCoverageStat {
-  value: number;
-  insight: string;
-  severity: Severity;
-}
-
-export interface TeamAvailabilityStat {
+export interface StatCardData {
   value: string;
-  available: number;
-  total: number;
-  insight: string;
   severity: Severity;
+  change: string;
+  hint: string | null;
+  raw: number | null;
 }
 
-export interface AbsenceImpactStat {
-  value: number;
-  insight: string;
-  severity: Severity;
-}
+/* ── Users page stats (GET /users/stats) ─────────────────── */
 
-/* ── Employees page stats (GET /employees/stats) ─────────── */
-
-export interface TotalEmployeesStat {
-  value: number;
-  insight: string;
-  severity: Severity;
-}
-
-export interface CriticalEmployeesStat {
-  value: number;
-  insight: string;
-  severity: Severity;
-}
-
-export interface SkillCoverageStat {
-  value: number;
-  insight: string;
-  severity: Severity;
-}
-
-export interface DepartmentBalanceStat {
-  value: string;
-  insight: string;
-  severity: Severity;
+export interface CriticalUserPreviewItem {
+  id: number;
+  name: string;
+  title: string;
+  score: number;
+  severity: string;
 }
 
 export interface UsersStats {
-  total_employees: TotalEmployeesStat;
-  critical_employees: CriticalEmployeesStat;
-  skill_coverage: SkillCoverageStat;
-  department_balance: DepartmentBalanceStat;
+  total: StatCardData;
+  available: StatCardData;
+  critical_users: StatCardData;
+  unique_skill_holders: StatCardData;
+  departments: StatCardData;
+  critical_users_preview: CriticalUserPreviewItem[];
 }
 
 /* ── Team status (GET /employees/today-status) ───────────── */
@@ -198,7 +166,12 @@ export interface ProjectListItem {
 
 /* ── Project stats (GET /projects/:id/stats) ─────────────── */
 
-export interface ProjectStats {}
+export interface ProjectStats {
+  fragility: StatCardData;
+  bus_factor: StatCardData;
+  trajectory: StatCardData;
+  team: StatCardData;
+}
 
 /* ── Project detail (GET /projects/:id) ──────────────────── */
 
@@ -273,16 +246,15 @@ export interface UserSkillDetail {
 
 /* ── User stats (GET /users/:id/stats) ───────────────────── */
 
-export interface UserStatsCriticality {
-  score: number;
+export interface UserStatsCriticalityDetail {
   unique_skills: number;
   silo_count: number;
   bus_factor_projects: number;
 }
 
-export interface UserStatsBusFactor {
-  count: number;
-  projects: { id: number; name: string }[];
+export interface UserStatsProjectRef {
+  id: number;
+  name: string;
 }
 
 export interface UserStatsSkillCategory {
@@ -291,21 +263,19 @@ export interface UserStatsSkillCategory {
   avg_level: number;
 }
 
-export interface UserStatsSkills {
-  total: number;
-  by_category: UserStatsSkillCategory[];
-}
-
-export interface UserStatsActiveProjects {
-  count: number;
-  projects: { id: number; name: string }[];
+export interface UserStatsBreakdown {
+  criticality_detail: UserStatsCriticalityDetail;
+  bus_factor_projects: UserStatsProjectRef[];
+  skills_by_category: UserStatsSkillCategory[];
+  active_projects_list: UserStatsProjectRef[];
 }
 
 export interface UserStats {
-  criticality: UserStatsCriticality;
-  bus_factor_in_org: UserStatsBusFactor;
-  skills: UserStatsSkills;
-  active_projects: UserStatsActiveProjects;
+  criticality: StatCardData;
+  bus_factor_in_org: StatCardData;
+  skills: StatCardData;
+  active_projects: StatCardData;
+  breakdown: UserStatsBreakdown;
 }
 
 /* ── User absences (GET /users/:id/absences) ─────────────── */
@@ -330,8 +300,17 @@ export interface AbsenceItem {
 /* ── Root response ───────────────────────────────────────── */
 
 export interface DashboardStats {
-  projects_at_risk: ProjectsAtRiskStat;
-  knowledge_coverage: KnowledgeCoverageStat;
-  team_availability: TeamAvailabilityStat;
-  absence_impact: AbsenceImpactStat;
+  fragile_projects: StatCardData;
+  knowledge_coverage: StatCardData;
+  team_availability: StatCardData;
+  absence_impact: StatCardData;
+}
+
+/* ── Projects stats (GET /projects/stats) ────────────────── */
+
+export interface ProjectsStats {
+  total: StatCardData;
+  avg_trajectory: StatCardData;
+  fragile_count: StatCardData;
+  stretched_count: StatCardData;
 }
