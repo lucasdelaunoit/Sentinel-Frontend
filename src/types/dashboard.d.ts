@@ -245,36 +245,11 @@ export interface UserSkillDetail {
 
 /* ── User stats (GET /users/:id/stats) ───────────────────── */
 
-export interface UserStatsCriticalityDetail {
-  unique_skills: number;
-  silo_count: number;
-  bus_factor_projects: number;
-}
-
-export interface UserStatsProjectRef {
-  id: number;
-  name: string;
-}
-
-export interface UserStatsSkillCategory {
-  category: string;
-  count: number;
-  avg_level: number;
-}
-
-export interface UserStatsBreakdown {
-  criticality_detail: UserStatsCriticalityDetail;
-  bus_factor_projects: UserStatsProjectRef[];
-  skills_by_category: UserStatsSkillCategory[];
-  active_projects_list: UserStatsProjectRef[];
-}
-
 export interface UserStats {
   criticality: StatCardData;
   bus_factor_in_org: StatCardData;
   skills: StatCardData;
   active_projects: StatCardData;
-  breakdown: UserStatsBreakdown;
 }
 
 /* ── User absences (GET /users/:id/absences) ─────────────── */

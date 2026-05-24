@@ -1,5 +1,4 @@
-import { useNavigate } from "react-router-dom";
-import { ShieldAlert, AlertTriangle, GitBranch, Layers, Lightbulb, GraduationCap, BookOpen, Users } from "lucide-react";
+import { ShieldAlert, AlertTriangle, GitBranch, Layers, Lightbulb, Users, Briefcase } from "lucide-react";
 import { CalendarBlankIcon, SunHorizonIcon, ClockCountdownIcon } from "@phosphor-icons/react";
 import useGetUserStats from "@/api/users/useGetUserStats.ts";
 import useGetAbsencesForUser from "@/api/absences/useGetAbsencesForUser.ts";
@@ -21,23 +20,6 @@ function critLabel(score: number): { label: string; color: string; bg: string; b
   if (score >= 70) return { label: "High Criticality", color: "text-rose-700", bg: "bg-rose-50", border: "border-rose-200", ring: "ring-rose-200/60" };
   if (score >= 40) return { label: "Medium Criticality", color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200", ring: "ring-amber-200/60" };
   return { label: "Low Criticality", color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200", ring: "ring-emerald-200/60" };
-}
-
-const DRIVER_WEIGHTS = { silo: 3, bus: 2.5, unique: 1 } as const;
-
-function computeContributions(silo: number, bus: number, unique: number) {
-  const raw = {
-    silo: silo * DRIVER_WEIGHTS.silo,
-    bus: bus * DRIVER_WEIGHTS.bus,
-    unique: unique * DRIVER_WEIGHTS.unique,
-  };
-  const total = raw.silo + raw.bus + raw.unique;
-  if (total === 0) return { silo: 0, bus: 0, unique: 0 };
-  return {
-    silo: Math.round((raw.silo / total) * 100),
-    bus: Math.round((raw.bus / total) * 100),
-    unique: Math.round((raw.unique / total) * 100),
-  };
 }
 
 const ABSENCE_TYPE_DOT: Record<AbsenceType, string> = {
@@ -89,19 +71,8 @@ interface Recommendation {
   priority: "high" | "medium" | "low";
 }
 
-function buildRecommendations(score: number, silo: number, bus: number, unique: number): Recommendation[] {
+function buildRecommendations(score: number, bus: number): Recommendation[] {
   const recs: Recommendation[] = [];
-
-  if (silo > 0) {
-    recs.push({
-      icon: GraduationCap,
-      iconBg: "bg-amber-50 border-amber-100",
-      iconColor: "text-amber-600",
-      title: `Cross-train teammates on ${silo} siloed area${silo !== 1 ? "s" : ""}`,
-      description: "Identify candidates with adjacent skills and pair them with this employee for knowledge transfer.",
-      priority: silo >= 2 ? "high" : "medium",
-    });
-  }
 
   if (bus > 0) {
     recs.push({
@@ -114,18 +85,7 @@ function buildRecommendations(score: number, silo: number, bus: number, unique: 
     });
   }
 
-  if (unique > 0) {
-    recs.push({
-      icon: BookOpen,
-      iconBg: "bg-violet-50 border-violet-100",
-      iconColor: "text-violet-600",
-      title: `Document ${unique} unique skill${unique !== 1 ? "s" : ""}`,
-      description: "Capture runbooks, decision logs, and onboarding notes so the knowledge survives the person.",
-      priority: unique >= 3 ? "high" : "medium",
-    });
-  }
-
-  if (score >= 70 && recs.length > 0) {
+  if (score >= 70) {
     recs.unshift({
       icon: AlertTriangle,
       iconBg: "bg-rose-50 border-rose-100",
@@ -133,6 +93,15 @@ function buildRecommendations(score: number, silo: number, bus: number, unique: 
       title: "Schedule a knowledge-transfer review this quarter",
       description: "Criticality score is high — convene a session with the team lead to plan redundancy.",
       priority: "high",
+    });
+  } else if (score >= 40 && recs.length === 0) {
+    recs.push({
+      icon: AlertTriangle,
+      iconBg: "bg-amber-50 border-amber-100",
+      iconColor: "text-amber-600",
+      title: "Monitor criticality drift",
+      description: "Score is in the medium band. Watch for new silos or project assignments that could escalate risk.",
+      priority: "medium",
     });
   }
 
@@ -153,7 +122,6 @@ function buildRecommendations(score: number, silo: number, bus: number, unique: 
 /* ─── Main component ─────────────────────────────────────── */
 
 export default function UserOverviewTab({ userId, onViewAbsences }: UserOverviewTabProps) {
-  const navigate = useNavigate();
   const { data: stats, isLoading } = useGetUserStats(userId);
   const { data: absencesData, isLoading: absencesLoading } = useGetAbsencesForUser(userId, { per_page: 100 });
 
@@ -180,15 +148,13 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
     );
   }
 
-  const { criticality, bus_factor_in_org, breakdown } = stats;
-  const criticalityScore = criticality.raw ?? 0;
-  const busFactorCount = bus_factor_in_org.raw ?? 0;
-  const siloCount = breakdown.criticality_detail.silo_count;
-  const uniqueSkills = breakdown.criticality_detail.unique_skills;
-  const busFactorProjects = breakdown.bus_factor_projects;
+  const { criticality, bus_factor_in_org, skills, active_projects } = stats;
+  const criticalityScore = criticality.value_raw ?? criticality.raw ?? 0;
+  const busFactorCount = bus_factor_in_org.value_raw ?? bus_factor_in_org.raw ?? 0;
+  const skillsCount = skills.value_raw ?? skills.raw ?? 0;
+  const activeProjectsCount = active_projects.value_raw ?? active_projects.raw ?? 0;
   const crit = critLabel(criticalityScore);
-  const contributions = computeContributions(siloCount, busFactorCount, uniqueSkills);
-  const recommendations = buildRecommendations(criticalityScore, siloCount, busFactorCount, uniqueSkills);
+  const recommendations = buildRecommendations(criticalityScore, busFactorCount);
 
   const allAbsences = absencesData?.data ?? [];
   const upcoming = upcomingAbsences(allAbsences);
@@ -219,47 +185,25 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
                 </div>
               </div>
 
-              {/* Stacked breakdown bar */}
-              <div className="mt-4">
-                <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted/50">
-                  {contributions.silo > 0 && (
-                    <div className="h-full bg-amber-500/80" style={{ width: `${contributions.silo}%` }} title={`Silos ${contributions.silo}%`} />
-                  )}
-                  {contributions.bus > 0 && (
-                    <div className="h-full bg-rose-500/80" style={{ width: `${contributions.bus}%` }} title={`Bus factor ${contributions.bus}%`} />
-                  )}
-                  {contributions.unique > 0 && (
-                    <div className="h-full bg-violet-500/80" style={{ width: `${contributions.unique}%` }} title={`Unique skills ${contributions.unique}%`} />
-                  )}
-                </div>
-                <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-amber-500/80" />
-                    Silos <span className="tabular-nums text-foreground/70 font-semibold">{contributions.silo}%</span>
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-rose-500/80" />
-                    Bus factor <span className="tabular-nums text-foreground/70 font-semibold">{contributions.bus}%</span>
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="size-1.5 rounded-full bg-violet-500/80" />
-                    Unique <span className="tabular-nums text-foreground/70 font-semibold">{contributions.unique}%</span>
-                  </span>
-                </div>
-              </div>
+              {criticality.insight && (
+                <p className={cn("mt-3 text-[11px] font-medium", crit.color)}>{criticality.insight}</p>
+              )}
             </div>
 
             {/* Drivers */}
             <div className="flex items-center gap-3 rounded-xl border border-border/60 px-4 py-3 bg-card">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 border border-amber-100">
-                <AlertTriangle className="size-3.5 text-amber-600" />
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-rose-50 border border-rose-100">
+                <GitBranch className="size-3.5 text-rose-600" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[12px] font-semibold text-foreground">
-                  {siloCount} silo area{siloCount !== 1 ? "s" : ""}
+                  Bus factor for {busFactorCount} project{busFactorCount !== 1 ? "s" : ""}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  {siloCount === 0 ? "Knowledge is well distributed" : "Skill categories with low redundancy"}
+                  {bus_factor_in_org.insight ??
+                    (busFactorCount === 0
+                      ? "Not a critical bottleneck anywhere"
+                      : "Removal would critically impact these projects")}
                 </p>
               </div>
             </div>
@@ -270,50 +214,26 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[12px] font-semibold text-foreground">
-                  {uniqueSkills} unique skill{uniqueSkills !== 1 ? "s" : ""}
+                  {skillsCount} skill{skillsCount !== 1 ? "s" : ""}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  {uniqueSkills === 0
-                    ? "No skill exclusively held by this employee"
-                    : "Skills no other team member holds"}
+                  {skills.insight ?? "Skills currently held"}
                 </p>
               </div>
             </div>
 
-            <div className="rounded-xl border border-border/60 overflow-hidden">
-              <div className="flex items-center gap-3 px-4 py-3 bg-card border-b border-border/60">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-rose-50 border border-rose-100">
-                  <GitBranch className="size-3.5 text-rose-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[12px] font-semibold text-foreground">
-                    Bus factor for {busFactorCount} project{busFactorCount !== 1 ? "s" : ""}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {busFactorCount === 0
-                      ? "Not a critical bottleneck anywhere"
-                      : "Removal would critically impact these projects"}
-                  </p>
-                </div>
+            <div className="flex items-center gap-3 rounded-xl border border-border/60 px-4 py-3 bg-card">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 border border-emerald-100">
+                <Briefcase className="size-3.5 text-emerald-600" />
               </div>
-              {busFactorProjects.length > 0 && (
-                <div className="divide-y divide-border/40 bg-muted/20">
-                  {busFactorProjects.map((proj) => (
-                    <button
-                      key={proj.id}
-                      onClick={() => navigate(`/projects/${proj.id}`)}
-                      className="w-full flex items-center justify-between px-4 py-2.5 text-left hover:bg-muted/40 transition-colors group"
-                    >
-                      <span className="text-[12px] font-medium text-foreground group-hover:text-primary transition-colors">
-                        {proj.name}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground/50 group-hover:text-primary/60 transition-colors">
-                        View →
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-semibold text-foreground">
+                  {activeProjectsCount} active project{activeProjectsCount !== 1 ? "s" : ""}
+                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  {active_projects.insight ?? "Currently assigned"}
+                </p>
+              </div>
             </div>
           </div>
         </ComposedCard>
