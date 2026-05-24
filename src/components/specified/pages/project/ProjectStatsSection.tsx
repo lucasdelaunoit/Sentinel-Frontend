@@ -1,5 +1,6 @@
-import { ShieldAlert, AlertTriangle, Users } from "lucide-react";
+import { ShieldAlert, Users, BookOpen, CalendarClock } from "lucide-react";
 import StatCard from "@/components/common/cards/StatCard";
+import DeadlineCountdownCard from "@/components/common/cards/DeadlineCountdownCard";
 import type { ProjectStats } from "@/types/dashboard";
 
 interface ProjectStatsSectionProps {
@@ -8,20 +9,22 @@ interface ProjectStatsSectionProps {
 
 export default function ProjectStatsSection({ stats }: ProjectStatsSectionProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <StatCard title="Fragility" icon={ShieldAlert} card={stats.fragility} />
-      <StatCard title="Bus Factor" icon={AlertTriangle} card={stats.bus_factor} />
-      <StatCard title="Team" icon={Users} card={stats.team} />
+      <StatCard title="Team Availability" icon={Users} card={stats.team_availability} />
+      <StatCard title="Knowledge Coverage" icon={BookOpen} card={stats.knowledge_coverage} />
+      <DeadlineCountdownCard title="Deadline" card={stats.deadline_countdown} />
     </div>
   );
 }
 
 ProjectStatsSection.Skeleton = function ProjectStatsSectionSkeleton() {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <StatCard.Skeleton title="Fragility" icon={ShieldAlert} />
-      <StatCard.Skeleton title="Bus Factor" icon={AlertTriangle} />
-      <StatCard.Skeleton title="Team" icon={Users} />
+      <StatCard.Skeleton title="Team Availability" icon={Users} />
+      <StatCard.Skeleton title="Knowledge Coverage" icon={BookOpen} />
+      <DeadlineCountdownCard.Skeleton title="Deadline" />
     </div>
   );
 };

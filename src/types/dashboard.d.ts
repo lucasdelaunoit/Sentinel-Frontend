@@ -68,6 +68,8 @@ export interface StatCardData {
   change: string;
   hint: string | null;
   raw: number | null;
+  value_raw?: number | null;
+  insight?: string | null;
 }
 
 /* ── Users page stats (GET /users/stats) ─────────────────── */
@@ -167,8 +169,9 @@ export interface ProjectListItem {
 
 export interface ProjectStats {
   fragility: StatCardData;
-  bus_factor: StatCardData;
-  team: StatCardData;
+  team_availability: StatCardData;
+  knowledge_coverage: StatCardData;
+  deadline_countdown: StatCardData;
 }
 
 /* ── Project detail (GET /projects/:id) ──────────────────── */

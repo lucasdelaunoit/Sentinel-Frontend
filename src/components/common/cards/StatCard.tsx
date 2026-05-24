@@ -14,13 +14,13 @@ const SEVERITY_COLOR: Record<Severity, string> = {
 interface StatCardProps {
   title: string;
   icon: ElementType;
-  card: StatCardData;
+  card?: StatCardData;
   onClick?: () => void;
   isLoading?: boolean;
 }
 
 export default function StatCard({ title, icon: Icon, card, onClick, isLoading = false }: StatCardProps) {
-  const color = SEVERITY_COLOR[card.severity] || "text-foreground";
+  const color = (card && SEVERITY_COLOR[card.severity]) || "text-foreground";
 
   if (isLoading) return <StatCard.Skeleton title={title} icon={Icon} />;
 
@@ -35,11 +35,11 @@ export default function StatCard({ title, icon: Icon, card, onClick, isLoading =
           <Icon className="size-5" />
         </span>
       </div>
-      <div className={cn("text-3xl font-semibold")}>{card.value}</div>
+      <div className={cn("text-3xl font-semibold")}>{card?.value}</div>
       <div className="flex flex-col gap-0.5">
         <div className={cn("flex items-center gap-1 text-sm font-semibold", color)}>
           <ArrowRightIcon size={13} />
-          <span>{card.hint}</span>
+          <span>{card?.insight}</span>
         </div>
       </div>
     </Card>

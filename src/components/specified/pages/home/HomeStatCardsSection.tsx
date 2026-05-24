@@ -16,38 +16,34 @@ export default function HomeStatCardsSection() {
   return (
     <>
       <div className="grid grid-cols-4 gap-4">
-        {dashboardStatsData && (
-          <>
-            <StatCard
-              title="Fragile Projects"
-              icon={WarningIcon}
-              card={dashboardStatsData.fragile_projects}
-              isLoading={isLoading || !dashboardStatsData}
-              onClick={() => setModalOpen("risk")}
-            />
-            <StatCard
-              title="Knowledge Coverage"
-              icon={ChartPolarIcon}
-              card={dashboardStatsData.knowledge_coverage}
-              isLoading={isLoading || !dashboardStatsData}
-              onClick={() => setModalOpen("coverage")}
-            />
-            <StatCard
-              title="Team Availability"
-              icon={UserIcon}
-              card={dashboardStatsData.team_availability}
-              isLoading={isLoading || !dashboardStatsData}
-              onClick={() => setModalOpen("availability")}
-            />
-            <StatCard
-              title="Absence Impact"
-              icon={LightningIcon}
-              card={dashboardStatsData.absence_impact}
-              isLoading={isLoading || !dashboardStatsData}
-              onClick={() => setModalOpen("impact")}
-            />
-          </>
-        )}
+        <StatCard
+          title="Fragile Projects"
+          icon={WarningIcon}
+          card={dashboardStatsData?.fragile_projects}
+          isLoading={isLoading || !dashboardStatsData}
+          onClick={() => setModalOpen("risk")}
+        />
+        <StatCard
+          title="Knowledge Coverage"
+          icon={ChartPolarIcon}
+          card={dashboardStatsData?.knowledge_coverage}
+          isLoading={isLoading || !dashboardStatsData}
+          onClick={() => setModalOpen("coverage")}
+        />
+        <StatCard
+          title="Team Availability"
+          icon={UserIcon}
+          card={dashboardStatsData?.team_availability}
+          isLoading={isLoading || !dashboardStatsData}
+          onClick={() => setModalOpen("availability")}
+        />
+        <StatCard
+          title="Absence Impact"
+          icon={LightningIcon}
+          card={dashboardStatsData?.absence_impact}
+          isLoading={isLoading || !dashboardStatsData}
+          onClick={() => setModalOpen("impact")}
+        />
       </div>
 
       {modalOpen === "risk" && <ProjectsAtRiskModal onClose={() => setModalOpen(null)} />}
