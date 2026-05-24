@@ -1,6 +1,6 @@
 import StatCard from "@/components/common/cards/StatCard";
 import useGetProjectsStats from "@/api/projects/useGetProjectsStats.ts";
-import { FoldersIcon, HeartbeatIcon, ShieldWarningIcon, WarningIcon } from "@phosphor-icons/react";
+import { FoldersIcon, HeartbeatIcon, ShieldWarningIcon, ClockCountdownIcon } from "@phosphor-icons/react";
 
 export default function ProjectsStatCardsSection() {
   const { data: stats, isLoading } = useGetProjectsStats();
@@ -10,8 +10,8 @@ export default function ProjectsStatCardsSection() {
       <div className="grid grid-cols-4 gap-4">
         <StatCard.Skeleton title="Total Projects" icon={FoldersIcon} />
         <StatCard.Skeleton title="Avg Fragility" icon={HeartbeatIcon} />
-        <StatCard.Skeleton title="Critical" icon={ShieldWarningIcon} />
-        <StatCard.Skeleton title="Stretched" icon={WarningIcon} />
+        <StatCard.Skeleton title="Critical Projects" icon={ShieldWarningIcon} />
+        <StatCard.Skeleton title="Deadline Pressure" icon={ClockCountdownIcon} />
       </div>
     );
   }
@@ -20,8 +20,8 @@ export default function ProjectsStatCardsSection() {
     <div className="grid grid-cols-4 gap-4">
       <StatCard title="Total Projects" icon={FoldersIcon} card={stats.total} />
       <StatCard title="Avg Fragility" icon={HeartbeatIcon} card={stats.avg_fragility} />
-      <StatCard title="Critical" icon={ShieldWarningIcon} card={stats.fragile_count} />
-      <StatCard title="Stretched" icon={WarningIcon} card={stats.stretched_count} />
+      <StatCard title="Critical Projects" icon={ShieldWarningIcon} card={stats.fragile_count} />
+      <StatCard title="Deadline Pressure" icon={ClockCountdownIcon} card={stats.deadline_pressure} />
     </div>
   );
 }

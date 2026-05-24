@@ -152,8 +152,8 @@ export interface ProjectListItem {
   description: string;
   status: ProjectStatus;
   priority: ProjectPriority;
-  fragility: StatCardData;
-  bus_factor: StatCardData;
+  fragility?: StatCardData;
+  bus_factor?: StatCardData;
   started_at: string;
   deadline: string;
   paused_at: string | null;
@@ -311,5 +311,5 @@ export interface ProjectsStats {
   total: StatCardData;
   avg_fragility: StatCardData;
   fragile_count: StatCardData;
-  stretched_count: StatCardData;
+  deadline_pressure: StatCardData;
 }

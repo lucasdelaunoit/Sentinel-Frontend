@@ -353,23 +353,37 @@ function ProjectList() {
                     <ProjectStatusBadge status={project.status} />
                   </TableCell>
                   <TableCell className="px-5 py-4">
-                    <div className="flex items-center gap-1.5">
-                      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", severityDot(project.fragility))} />
-                      <span className={cn("text-[13px] font-semibold whitespace-nowrap", severityText(project.fragility))}>
-                        {project.fragility.value}
-                        {project.fragility.raw !== null && (
-                          <span className="ml-1 tabular-nums opacity-70">{project.fragility.raw}</span>
-                        )}
-                      </span>
-                    </div>
+                    {project.fragility ? (
+                      <div className="flex items-center gap-1.5">
+                        <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", severityDot(project.fragility))} />
+                        <span className={cn("text-[13px] font-semibold whitespace-nowrap", severityText(project.fragility))}>
+                          {project.fragility.value}
+                          {(project.fragility.value_raw ?? project.fragility.raw) !== null &&
+                            (project.fragility.value_raw ?? project.fragility.raw) !== undefined && (
+                              <span className="ml-1 tabular-nums opacity-70">
+                                {project.fragility.value_raw ?? project.fragility.raw}
+                              </span>
+                            )}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-[13px] text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="px-5 py-4">
-                    <span className={cn("text-[13px] font-semibold whitespace-nowrap", severityText(project.bus_factor))}>
-                      {project.bus_factor.value}
-                      {project.bus_factor.raw !== null && (
-                        <span className="ml-1 tabular-nums opacity-70">{project.bus_factor.raw}</span>
-                      )}
-                    </span>
+                    {project.bus_factor ? (
+                      <span className={cn("text-[13px] font-semibold whitespace-nowrap", severityText(project.bus_factor))}>
+                        {project.bus_factor.value}
+                        {(project.bus_factor.value_raw ?? project.bus_factor.raw) !== null &&
+                          (project.bus_factor.value_raw ?? project.bus_factor.raw) !== undefined && (
+                            <span className="ml-1 tabular-nums opacity-70">
+                              {project.bus_factor.value_raw ?? project.bus_factor.raw}
+                            </span>
+                          )}
+                      </span>
+                    ) : (
+                      <span className="text-[13px] text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="px-5 py-4">
                     <span
