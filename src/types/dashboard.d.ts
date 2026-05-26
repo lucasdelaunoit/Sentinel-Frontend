@@ -132,39 +132,6 @@ export interface UserListItem {
   skills: UserSkillItem[];
 }
 
-/* ── Project list (GET /projects) ───────────────────────── */
-
-export interface ProjectMemberSnippet {
-  id: number;
-  firstname: string;
-  lastname: string;
-  initials: string;
-}
-
-export interface ProjectSkillItem {
-  id: number;
-  name: string;
-}
-
-export interface ProjectListItem {
-  id: number;
-  name: string;
-  description: string;
-  status: ProjectStatus;
-  priority: ProjectPriority;
-  fragility?: StatCardData;
-  bus_factor?: StatCardData;
-  started_at: string;
-  deadline: string;
-  paused_at: string | null;
-  completed_at: string | null;
-  archived_at: string | null;
-  deleted_at: string | null;
-  users_count?: number;
-  team: ProjectMemberSnippet[];
-  skills: ProjectSkillItem[];
-}
-
 /* ── Project stats (GET /projects/:id/stats) ─────────────── */
 
 export interface ProjectStats {

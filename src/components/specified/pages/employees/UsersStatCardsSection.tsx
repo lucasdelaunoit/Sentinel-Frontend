@@ -5,26 +5,33 @@ import { CalendarCheckIcon, ShieldWarningIcon, UserCircleIcon, UsersIcon } from 
 export default function UsersStatCardsSection() {
   const { data: stats, isLoading } = useGetUsersStats();
 
+  if (isLoading || !stats) {
+    return (
+      <div className="grid grid-cols-4 gap-4">
+        <StatCard.Skeleton title="Total Employees" icon={UsersIcon} />
+        <StatCard.Skeleton title="Available" icon={CalendarCheckIcon} />
+        <StatCard.Skeleton title="Critical Employees" icon={ShieldWarningIcon} />
+        <StatCard.Skeleton title="Unique Skill Holders" icon={UserCircleIcon} />
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-4 gap-4">
-      {stats && (
-        <>
-          <StatCard title="Total" icon={UsersIcon} card={stats.total} isLoading={isLoading || !stats} />
-          <StatCard title="Available" icon={CalendarCheckIcon} card={stats.available} isLoading={isLoading || !stats} />
-          <StatCard
-            title="Critical Users"
-            icon={ShieldWarningIcon}
-            card={stats.critical_users}
-            isLoading={isLoading || !stats}
-          />
-          <StatCard
-            title="Unique Skill Holders"
-            icon={UserCircleIcon}
-            card={stats.unique_skill_holders}
-            isLoading={isLoading || !stats}
-          />
-        </>
-      )}
+      <StatCard title="Total Employees" icon={UsersIcon} card={stats.total} isLoading={isLoading || !stats} />
+      <StatCard title="Available" icon={CalendarCheckIcon} card={stats.available} isLoading={isLoading || !stats} />
+      <StatCard
+        title="Critical Employees"
+        icon={ShieldWarningIcon}
+        card={stats.critical_users}
+        isLoading={isLoading || !stats}
+      />
+      <StatCard
+        title="Unique Skill Holders"
+        icon={UserCircleIcon}
+        card={stats.unique_skill_holders}
+        isLoading={isLoading || !stats}
+      />
     </div>
   );
 }

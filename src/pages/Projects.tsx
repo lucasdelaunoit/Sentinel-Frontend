@@ -37,7 +37,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog";
-import type { ProjectListItem } from "@/types/dashboard";
 import usePauseProject from "@/api/projects/usePauseProject";
 import useResumeProject from "@/api/projects/useResumeProject";
 import useCompleteProject from "@/api/projects/useCompleteProject";
@@ -48,7 +47,7 @@ import { formatDate } from "@/utils/formatters/date.ts";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
-type ProjSortKey = "name" | "risk_score" | "bus_factor" | "deadline";
+type ProjSortKey = "name" | "risk_score" | "team_availability" | "knowledge_coverage" | "created_at";
 
 /* ─── Helpers ───────────────────────────────────────────────── */
 
@@ -75,14 +74,7 @@ function severityDot(card: StatCardData) {
 
 type ConfirmKind = "complete" | "archive";
 
-function deriveState(project: ProjectListItem): ProjectStatus {
-  if (project.archived_at) return "archived";
-  if (project.completed_at) return "completed";
-  if (project.paused_at) return "paused";
-  return project.status;
-}
-
-function ProjectActionsCell({ project }: { project: ProjectListItem }) {
+function ProjectActionsCell({ project }: { project: Project }) {
   const navigate = useNavigate();
   const [confirm, setConfirm] = useState<ConfirmKind | null>(null);
 
@@ -93,7 +85,6 @@ function ProjectActionsCell({ project }: { project: ProjectListItem }) {
   const archive = useArchiveProject();
   const unarchive = useUnarchiveProject();
 
-  const state = deriveState(project);
   const args = { id: project.id, name: project.name };
 
   const confirmPending =
@@ -130,37 +121,37 @@ function ProjectActionsCell({ project }: { project: ProjectListItem }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" sideOffset={4} className="min-w-[170px]">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          {state === "archived" && (
+          {project.status === "archived" && (
             <DropdownMenuItem onSelect={() => unarchive.mutate(args)}>
               <ArchiveBoxIcon weight="bold" />
               Unarchive
             </DropdownMenuItem>
           )}
-          {(state === "active" || state === "planned") && (
+          {(project.status === "active" || project.status === "planned") && (
             <DropdownMenuItem onSelect={() => pause.mutate(args)}>
               <PauseIcon weight="bold" />
               Pause
             </DropdownMenuItem>
           )}
-          {state === "paused" && (
+          {project.status === "paused" && (
             <DropdownMenuItem onSelect={() => resume.mutate(args)}>
               <PlayIcon weight="bold" />
               Resume
             </DropdownMenuItem>
           )}
-          {state === "completed" && (
+          {project.status === "completed" && (
             <DropdownMenuItem onSelect={() => reopen.mutate(args)}>
               <ArrowUUpLeftIcon weight="bold" />
               Reopen
             </DropdownMenuItem>
           )}
-          {state !== "archived" && state !== "completed" && (
+          {project.status !== "archived" && project.status !== "completed" && (
             <DropdownMenuItem onSelect={() => setConfirm("complete")}>
               <CheckCircleIcon weight="bold" />
               Complete
             </DropdownMenuItem>
           )}
-          {state !== "archived" && (
+          {project.status !== "archived" && (
             <DropdownMenuItem onSelect={() => setConfirm("archive")}>
               <ArchiveIcon weight="bold" />
               Archive
@@ -212,7 +203,6 @@ function ProjectList() {
     search: search || undefined,
     sorts: [{ field: sort.key, direction: sort.dir }],
     filters: statusFilter !== null ? [{ field: "status", value: statusFilter }] : undefined,
-    includes: ["team", "skills"],
   });
 
   const projects = data?.data ?? [];
@@ -256,19 +246,22 @@ function ProjectList() {
               onSort={toggleSort}
             />
             <SortableTableHead
-              label="Bus Factor"
-              col="bus_factor"
+              label="Team Availability"
+              col="team_availability"
               sortKey={sort.key}
               sortDir={sort.dir}
               onSort={toggleSort}
             />
             <SortableTableHead
-              label="Deadline"
-              col="deadline"
+              label="Knowledge Coverage"
+              col="knowledge_coverage"
               sortKey={sort.key}
               sortDir={sort.dir}
               onSort={toggleSort}
             />
+            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              Deadline
+            </TableHead>
             <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Actions
             </TableHead>
@@ -292,10 +285,13 @@ function ProjectList() {
                   <Skeleton className="h-5 w-16 rounded-full" />
                 </TableCell>
                 <TableCell className="px-5 py-4">
-                  <Skeleton className="h-4 w-8" />
+                  <Skeleton className="h-4 w-20" />
                 </TableCell>
                 <TableCell className="px-5 py-4">
-                  <Skeleton className="h-4 w-6" />
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <Skeleton className="h-4 w-16" />
                 </TableCell>
                 <TableCell className="px-5 py-4">
                   <Skeleton className="h-3.5 w-20" />
@@ -333,21 +329,6 @@ function ProjectList() {
                     <p className="text-[12px] text-muted-foreground mt-0.5 truncate">
                       <HighlightMatch text={project.description} searchTerm={search} />
                     </p>
-                    <div className="flex gap-1 mt-1.5 flex-wrap">
-                      {(project.skills ?? []).slice(0, 3).map((s) => (
-                        <span
-                          key={s.id}
-                          className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60"
-                        >
-                          {s.name}
-                        </span>
-                      ))}
-                      {(project.skills ?? []).length > 3 && (
-                        <span className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60">
-                          +{(project.skills ?? []).length - 3}
-                        </span>
-                      )}
-                    </div>
                   </TableCell>
                   <TableCell className="px-5 py-4">
                     <ProjectStatusBadge status={project.status} />
@@ -355,8 +336,12 @@ function ProjectList() {
                   <TableCell className="px-5 py-4">
                     {project.fragility ? (
                       <div className="flex items-center gap-1.5">
-                        <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", severityDot(project.fragility))} />
-                        <span className={cn("text-[13px] font-semibold whitespace-nowrap", severityText(project.fragility))}>
+                        <div
+                          className={cn("size-1.5 rounded-full shrink-0 shadow-sm", severityDot(project.fragility))}
+                        />
+                        <span
+                          className={cn("text-[13px] font-semibold whitespace-nowrap", severityText(project.fragility))}
+                        >
                           {project.fragility.value}
                           {(project.fragility.value_raw ?? project.fragility.raw) !== null &&
                             (project.fragility.value_raw ?? project.fragility.raw) !== undefined && (
@@ -371,16 +356,48 @@ function ProjectList() {
                     )}
                   </TableCell>
                   <TableCell className="px-5 py-4">
-                    {project.bus_factor ? (
-                      <span className={cn("text-[13px] font-semibold whitespace-nowrap", severityText(project.bus_factor))}>
-                        {project.bus_factor.value}
-                        {(project.bus_factor.value_raw ?? project.bus_factor.raw) !== null &&
-                          (project.bus_factor.value_raw ?? project.bus_factor.raw) !== undefined && (
-                            <span className="ml-1 tabular-nums opacity-70">
-                              {project.bus_factor.value_raw ?? project.bus_factor.raw}
-                            </span>
+                    {project.team_availability ? (
+                      <div className="flex items-center gap-1.5" title={project.team_availability.insight ?? undefined}>
+                        <div
+                          className={cn(
+                            "size-1.5 rounded-full shrink-0 shadow-sm",
+                            severityDot(project.team_availability),
                           )}
-                      </span>
+                        />
+                        <span
+                          className={cn(
+                            "text-[13px] font-semibold whitespace-nowrap",
+                            severityText(project.team_availability),
+                          )}
+                        >
+                          {project.team_availability.value} ({project.team_availability.value_raw})
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-[13px] text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="px-5 py-4">
+                    {project.knowledge_coverage ? (
+                      <div
+                        className="flex items-center gap-1.5"
+                        title={project.knowledge_coverage.insight ?? undefined}
+                      >
+                        <div
+                          className={cn(
+                            "size-1.5 rounded-full shrink-0 shadow-sm",
+                            severityDot(project.knowledge_coverage),
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            "text-[13px] font-semibold whitespace-nowrap",
+                            severityText(project.knowledge_coverage),
+                          )}
+                        >
+                          {project.knowledge_coverage.value}
+                        </span>
+                      </div>
                     ) : (
                       <span className="text-[13px] text-muted-foreground">—</span>
                     )}
