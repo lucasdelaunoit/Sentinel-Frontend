@@ -1,18 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarCheck, PlayCircle } from "lucide-react";
-
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import HomeStatCardsSection from "@/components/specified/pages/home/HomeStatCardsSection.tsx";
-import TeamTodayCard from "@/components/specified/pages/home/TeamTodayCard.tsx";
-import KnowledgeCoverageCard from "@/components/specified/pages/home/KnowledgeCoverageCard.tsx";
-import CriticalProjectsRiskCard from "@/components/specified/pages/home/CriticalProjectsRiskCard.tsx";
 import SinglePointsOfFailureCard from "@/components/specified/pages/home/SinglePointsOfFailureCard.tsx";
 import VulnerableSkillsCard from "@/components/specified/pages/home/VulnerableSkillsCard.tsx";
 import UpcomingRiskEventsCard from "@/components/specified/pages/home/UpcomingRiskEventsCard.tsx";
-import ProjectsRequiringAttentionCard from "@/components/specified/pages/home/ProjectsRequiringAttentionCard.tsx";
 import ImportPlanningSheet from "@/components/specified/pages/home/ImportPlanningSheet.tsx";
+import TeamStatusOfTodayCard from "@/components/specified/pages/home/TeamStatusOfTodayCard.tsx";
+import KnowledgeCoverageOfToday from "@/components/specified/pages/home/KnowledgeCoverageOfToday.tsx";
+import CriticalProjectsCard from "@/components/specified/pages/home/CriticalProjectsCard.tsx";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -39,22 +37,20 @@ export default function Dashboard() {
 
         {/* Section 2 — Core Operational Insights */}
         <div className="grid grid-cols-3 gap-5 items-start">
-          <TeamTodayCard />
-          <KnowledgeCoverageCard />
-          <CriticalProjectsRiskCard />
+          <TeamStatusOfTodayCard />
+          <KnowledgeCoverageOfToday />
+          <CriticalProjectsCard />
         </div>
 
+        <UpcomingRiskEventsCard />
         {/* Section 3 — Organizational Vulnerabilities */}
+
         <div className="grid grid-cols-2 gap-5 items-start">
           <SinglePointsOfFailureCard />
           <VulnerableSkillsCard />
         </div>
 
         {/* Section 4 — Upcoming Risk Events */}
-        <UpcomingRiskEventsCard />
-
-        {/* Section 5 — Projects Requiring Attention */}
-        <ProjectsRequiringAttentionCard />
       </div>
 
       <ImportPlanningSheet open={importSheetOpen} onOpenChange={setImportSheetOpen} />
