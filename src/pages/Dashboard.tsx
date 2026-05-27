@@ -7,10 +7,10 @@ import { USER_DETAILS, type UserDetail } from "@/data/users";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import HomeStatCardsSection from "@/components/specified/pages/home/HomeStatCardsSection.tsx";
-import TeamStatusOfTodayCard from "@/components/specified/pages/home/TeamStatusOfTodayCard.tsx";
-import KnowledgeCoverageOfToday from "@/components/specified/pages/home/KnowledgeCoverageOfToday.tsx";
+import TeamTodayCard from "@/components/specified/pages/home/TeamTodayCard.tsx";
+import KnowledgeCoverageCard from "@/components/specified/pages/home/KnowledgeCoverageCard.tsx";
 import ImportPlanningSheet from "@/components/specified/pages/home/ImportPlanningSheet.tsx";
-import CriticalProjectsCard from "@/components/specified/pages/home/CriticalProjectsCard.tsx";
+import CriticalProjectsRiskCard from "@/components/specified/pages/home/CriticalProjectsRiskCard.tsx";
 
 /* ─── Avatar ──────────────────────────────────────────────── */
 
@@ -283,16 +283,11 @@ export default function Dashboard() {
         {/* Today's Stats */}
         <HomeStatCardsSection />
 
-        {/* Today's Overview Grid */}
-        <div className="grid grid-cols-3 gap-5">
-          {/* Team Status */}
-          <TeamStatusOfTodayCard />
-
-          {/* KCI Chart */}
-          <KnowledgeCoverageOfToday />
-
-          {/* Critical Projects */}
-          <CriticalProjectsCard />
+        {/* Section 2 — Core Operational Insights */}
+        <div className="grid grid-cols-3 gap-5 items-start">
+          <TeamTodayCard />
+          <KnowledgeCoverageCard />
+          <CriticalProjectsRiskCard />
         </div>
 
         {/* Critical Staff + Risk Overview */}
