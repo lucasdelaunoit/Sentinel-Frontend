@@ -3,7 +3,7 @@ interface User {
   firstname: string;
   lastname: string;
   email: string;
-  department: string;
+  department: { id: number; name: string } | null;
   skills: number;
   projects: number;
   criticality: Criticality;

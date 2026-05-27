@@ -1,98 +1,96 @@
+import { useState } from "react";
+
 import { SecondaryButton } from "@/components/common/buttons/SecondaryButton.tsx";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
-import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
-import { useState } from "react";
-import { ChartContainer, type ChartConfig } from "@/components/ui/chart.tsx";
-import { RadialBarChart, RadialBar } from "recharts";
+import PercentDonut from "@/components/common/charts/PercentDonut.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
-import useGetTeamToday from "@/api/users/useGetTeamToday.ts";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
-import UserStatusBadge from "@/components/specified/models/employees/badges/UserStatusBadge.tsx";
 
-type SheetFilter = "all" | "available" | "remote";
+import useGetUsers from "@/api/users/useGetUsers.ts";
+import useGetUsersCapacity from "@/api/users/useGetUsersCapacity.ts";
+import AllUsersSheet from "@/components/specified/models/users/sheets/AllUsersSheet.tsx";
+import MediumUserRow from "@/components/specified/models/users/datas/items/MediumUserRow.tsx";
 
-function CapacityDonut({ percent }: { percent: number }) {
-  const color = percent >= 80 ? "#097155" : percent >= 60 ? "#f59e0b" : "#ef4444";
-  const data = [{ value: percent, fill: color }];
-  const config = { value: { label: "Capacity" } } satisfies ChartConfig;
-  const endAngle = 90 - (percent / 100) * 360;
-
-  return (
-    <ChartContainer config={config} className="aspect-square size-5" initialDimension={{ width: 28, height: 28 }}>
-      <RadialBarChart data={data} startAngle={90} endAngle={endAngle} innerRadius={6} outerRadius={10}>
-        <RadialBar dataKey="value" cornerRadius={3} />
-      </RadialBarChart>
-    </ChartContainer>
-  );
-}
-
-function toUserStatus(todayStatus: string): UserStatus {
-  return todayStatus === "Has Leave" ? "away" : "available";
-}
-
-function TeamStatusSkeleton() {
-  return (
-    <div className="space-y-1 py-1">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3 p-1.5 rounded-xl">
-          <Skeleton className="size-8 rounded-xl shrink-0" />
-          <div className="flex-1 space-y-1.5">
-            <Skeleton className="h-3.5 w-28" />
-            <Skeleton className="h-3 w-20" />
-          </div>
-          <Skeleton className="h-5 w-16 rounded-full" />
-        </div>
-      ))}
-    </div>
-  );
-}
+const PREVIEW_COUNT = 5;
 
 export default function TeamStatusOfTodayCard() {
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [search] = useState("");
-  const [filter] = useState<SheetFilter>("all");
 
-  const { data, isLoading } = useGetTeamToday();
+  const { data, isLoading, isError } = useGetUsers({
+    page: 1,
+    per_page: PREVIEW_COUNT,
+    filters: [{ field: "status", value: "away" }],
+    includes: ["department"],
+  });
 
-  const cardUsers = data?.employees ?? [];
-  const capacityPct = data?.capacity_pct ?? 0;
+  const { data: capacityData, isLoading: isCapacityLoading } = useGetUsersCapacity();
 
-  const capacityAction = (
-    <div className="flex items-center gap-2 text-secondary-foreground ml-auto">
-      <span className="text-xs">
-        <span className="font-semibold tabular-nums">{capacityPct}%</span> present
-      </span>
-      <CapacityDonut percent={capacityPct} />
-    </div>
-  );
+  if (isLoading || isCapacityLoading) {
+    return <TeamStatusOfTodayCard.Skeleton />;
+  }
+
+  const awayUsers = data?.data ?? [];
+  const capacityPct = capacityData?.capacity_pct ?? 0;
 
   return (
-    <ComposedCard title="Today's Team Status" action={capacityAction} className="flex flex-col">
-      <div className="flex flex-col justify-between h-full">
-        <div className="flex-1 flex flex-col justify-center mb-4">
-          {isLoading ? (
-            <TeamStatusSkeleton />
-          ) : cardUsers.length === 0 ? (
-            <Feedback variant="success" title="All hands on deck" description="Everyone is available today" />
-          ) : (
-            <div className="space-y-4 p-0.5">
-              {cardUsers.map((e) => (
-                <SecondaryCard
-                  key={e.id}
-                  before={
-                    <UserAvatar firstname={e.firstname} lastname={e.lastname} variant={toUserStatus(e.today_status)} />
-                  }
-                  title={`${e.firstname} ${e.lastname}`}
-                  description={e.role}
-                  action={<UserStatusBadge status={toUserStatus(e.today_status)} />}
-                />
-              ))}
-            </div>
-          )}
+    <>
+      <ComposedCard
+        title="Today's Team Status"
+        action={
+          <div className="flex items-center gap-2 text-secondary-foreground ml-auto">
+            <span className="text-xs">
+              <span className="font-semibold tabular-nums">{capacityPct}%</span> present
+            </span>
+            <PercentDonut percent={capacityPct} size="sm" />
+          </div>
+        }
+        className="flex flex-col"
+      >
+        <div className="flex flex-col justify-between h-full">
+          <div className="flex flex-col justify-center mb-4">
+            {isError ? (
+              <Feedback variant="danger" title="Failed to load team" description="Check API connection." />
+            ) : awayUsers.length === 0 ? (
+              <Feedback variant="success" title="All hands on deck" description="Everyone is available today" />
+            ) : (
+              <div className="space-y-4 p-0.5">
+                {awayUsers.map((u) => (
+                  <MediumUserRow key={u.id} user={u} />
+                ))}
+              </div>
+            )}
+          </div>
+          <SecondaryButton onClick={() => setSheetOpen(true)}>View full team →</SecondaryButton>
         </div>
-        <SecondaryButton onClick={() => setSheetOpen(true)}>View full team →</SecondaryButton>
+      </ComposedCard>
+
+      <AllUsersSheet open={sheetOpen} onOpenChange={setSheetOpen} />
+    </>
+  );
+}
+
+TeamStatusOfTodayCard.Skeleton = function TeamStatusOfTodayCardSkeleton() {
+  return (
+    <ComposedCard
+      title="Today's Team Status"
+      action={
+        <div className="flex items-center gap-2 ml-auto">
+          <Skeleton className="h-3.5 w-20" />
+          <PercentDonut.Skeleton size="sm" />
+        </div>
+      }
+      className="flex flex-col"
+    >
+      <div className="flex flex-col justify-between h-full">
+        <div className="flex flex-col justify-center mb-4">
+          <div className="space-y-4 p-0.5">
+            {Array.from({ length: PREVIEW_COUNT }).map((_, i) => (
+              <MediumUserRow.Skeleton key={i} />
+            ))}
+          </div>
+        </div>
+        <Skeleton className="h-7 w-full rounded-lg" />
       </div>
     </ComposedCard>
   );
-}
+};

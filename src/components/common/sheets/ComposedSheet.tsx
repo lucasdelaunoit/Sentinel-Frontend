@@ -19,6 +19,7 @@ interface ComposedSheetProps {
   icon?: React.ReactNode;
   subheader?: React.ReactNode;
   footer?: React.ReactNode;
+  footerClassName?: string;
   children: React.ReactNode;
   side?: "right" | "left" | "top" | "bottom";
   maxWidth?: string;
@@ -34,6 +35,7 @@ export default function ComposedSheet({
   description,
   subheader,
   footer,
+  footerClassName,
   children,
   maxWidth = "sm:max-w-[360px]",
   className,
@@ -77,7 +79,11 @@ export default function ComposedSheet({
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">{children}</div>
 
-        {footer && <SheetFooter className="px-6 py-4 border-t border-border/60 flex-row gap-2.5">{footer}</SheetFooter>}
+        {footer && (
+          <SheetFooter className={cn("px-6 py-4 border-t border-border/60 flex-row gap-2.5", footerClassName)}>
+            {footer}
+          </SheetFooter>
+        )}
       </SheetContent>
     </Sheet>
   );

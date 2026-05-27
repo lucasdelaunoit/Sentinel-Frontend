@@ -91,23 +91,10 @@ export interface UsersStats {
   critical_users_preview: CriticalUserPreviewItem[];
 }
 
-/* ── Team status (GET /employees/today-status) ───────────── */
+/* ── Users capacity (GET /users/capacity) ────────────────── */
 
-export type TodayStatus = "Available" | "Has Leave" | "Remote";
-
-export interface UserTodayStatus {
-  id: number;
-  firstname: string;
-  lastname: string;
-  role: string;
-  initials: string;
-  today_status: TodayStatus;
-}
-
-export interface TeamTodayStatusResponse {
+export interface UsersCapacityResponse {
   capacity_pct: number;
-  total: number;
-  employees: UserTodayStatus[];
 }
 
 /* ── Employee list (GET /employees) ──────────────────────── */
