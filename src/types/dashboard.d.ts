@@ -2,16 +2,41 @@
 
 export type RiskEventKind = "leave" | "sick_leave";
 export type RiskEventSeverity = "low" | "medium" | "high" | "critical";
+/** Metric-block severity from the shared Scale enums (distinct from the event severity union). */
+export type MetricBlockSeverity = "ok" | "warning" | "critical";
 
-/** Per-project impact of one person's upcoming absence. Coverage/bus values are 0–100 ints. */
+/** Per-project impact of one person's upcoming absence. Coverage/fragility are 0–100 ints. */
 export interface RiskEventProjectImpact {
   id: string;
   name: string;
+  fragility_before: number;
+  fragility_after: number;
   coverage_before: number;
   coverage_after: number;
   bus_factor_before: number;
   bus_factor_after: number;
   lost_skills: string[];
+}
+
+/** A single metric's before/after with tier + severity. Fragility: higher worse. Coverage: lower worse. */
+export interface RiskEventMetricBlock {
+  before: number;
+  after: number;
+  delta: number;
+  tier: string;
+  tier_label: string;
+  severity: MetricBlockSeverity;
+}
+
+export interface RiskEventScopeImpact {
+  fragility: RiskEventMetricBlock;
+  knowledge_coverage: RiskEventMetricBlock;
+}
+
+/** Dual-scope headline. `affected` = avg over the person's projects (punchy). `org` = whole-org avg (honest). */
+export interface RiskEventOrgImpact {
+  affected: RiskEventScopeImpact;
+  org: RiskEventScopeImpact;
 }
 
 export interface UpcomingRiskEvent {
@@ -21,7 +46,8 @@ export interface UpcomingRiskEvent {
   employee: { id: string; firstname: string; lastname: string };
   kind: RiskEventKind;
   severity: RiskEventSeverity;
-  /** Empty when the absence falls inside the org coverage horizon (already in baseline). */
+  org_impact: RiskEventOrgImpact;
+  /** Empty when removing the person changes no project metric. */
   affected_projects: RiskEventProjectImpact[];
 }
 

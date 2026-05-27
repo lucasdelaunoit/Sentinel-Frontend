@@ -1,13 +1,13 @@
-import { useNavigate } from "react-router-dom";
-import { PlayCircle, CalendarClock } from "lucide-react";
+import { CalendarClock } from "lucide-react";
 
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
 import RiskBadge from "@/components/specified/pages/home/_shared/RiskBadge.tsx";
+import { cn } from "@/lib/utils.ts";
 import useGetUpcomingRiskEvents from "@/hooks/useGetUpcomingRiskEvents.ts";
-import type { UpcomingRiskEvent } from "@/types/dashboard";
+import type { RiskEventMetricBlock, UpcomingRiskEvent } from "@/types/dashboard";
 
 const HORIZON_DAYS = 30;
 const PREVIEW_COUNT = 4;
@@ -32,29 +32,65 @@ function formatSkills(skills: string[]): string {
   return `${skills[0]}, ${skills[1]} +${skills.length - 2}`;
 }
 
-/** Turns the structured project deltas into human-readable impact lines. */
+const fmtDelta = (delta: number) => (delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : "±0");
+
+/**
+ * Renders one metric's before→after with a direction-aware delta chip.
+ * `worseWhen` says which direction is bad (fragility rises, coverage falls).
+ */
+function MetricDelta({
+  label,
+  block,
+  worseWhen,
+  showTier = false,
+  size = "sm",
+}: {
+  label: string;
+  block: RiskEventMetricBlock;
+  worseWhen: "up" | "down";
+  showTier?: boolean;
+  size?: "sm" | "xs";
+}) {
+  const worse = worseWhen === "up" ? block.delta > 0 : block.delta < 0;
+  const better = worseWhen === "up" ? block.delta < 0 : block.delta > 0;
+  const chip = worse
+    ? "bg-danger/10 text-danger"
+    : better
+      ? "bg-success/10 text-success"
+      : "bg-muted text-muted-foreground";
+  const tierTone = worse ? "text-danger" : better ? "text-success" : "text-muted-foreground";
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</span>
+      <span className={cn("font-semibold tabular-nums text-foreground", size === "sm" ? "text-[12px]" : "text-[11px]")}>
+        {block.before} → {block.after}
+      </span>
+      <span className={cn("rounded px-1 py-0.5 text-[10px] font-bold tabular-nums", chip)}>{fmtDelta(block.delta)}</span>
+      {showTier && <span className={cn("text-[10px] font-semibold", tierTone)}>{block.tier_label}</span>}
+    </div>
+  );
+}
+
+/** Per-project skill losses and bus-factor drops — concrete facts the aggregate headline can't show. */
 function composeImpacts(event: UpcomingRiskEvent): string[] {
   const multi = event.affected_projects.length > 1;
   const lines: string[] = [];
-
   for (const p of event.affected_projects) {
-    const prefix = multi ? `${p.name}: ` : "";
-    if (p.lost_skills.length > 0) {
-      lines.push(`${p.name} loses ${formatSkills(p.lost_skills)} expertise`);
-    }
-    if (p.coverage_after < p.coverage_before) {
-      lines.push(`${prefix}coverage drops to ${p.coverage_after}%`);
-    }
+    if (p.lost_skills.length > 0) lines.push(`${p.name} loses ${formatSkills(p.lost_skills)} expertise`);
     if (p.bus_factor_after < p.bus_factor_before) {
-      lines.push(`${prefix}bus factor becomes ${p.bus_factor_after}`);
+      lines.push(`${multi ? `${p.name}: ` : ""}bus factor becomes ${p.bus_factor_after}`);
     }
   }
   return lines;
 }
 
-function RiskEventItem({ event, onSimulate }: { event: UpcomingRiskEvent; onSimulate: () => void }) {
+function RiskEventItem({ event }: { event: UpcomingRiskEvent }) {
   const { date, relative } = formatWhen(event.date);
   const impacts = composeImpacts(event);
+  const { affected, org } = event.org_impact;
+  const hasCoverageDelta = affected.knowledge_coverage.delta !== 0;
+  const hasImpact = impacts.length > 0 || affected.fragility.delta !== 0 || hasCoverageDelta;
 
   return (
     <div className="flex gap-3 rounded-xl border border-border/50 bg-muted/10 p-3.5">
@@ -64,7 +100,7 @@ function RiskEventItem({ event, onSimulate }: { event: UpcomingRiskEvent; onSimu
       </div>
 
       <div className="min-w-0 flex-1">
-        <div className="mb-1.5 flex items-start justify-between gap-2">
+        <div className="mb-2 flex items-start justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
             <UserAvatar firstname={event.employee.firstname} lastname={event.employee.lastname} variant="away" size="base" />
             <div className="min-w-0">
@@ -77,34 +113,42 @@ function RiskEventItem({ event, onSimulate }: { event: UpcomingRiskEvent; onSimu
           <RiskBadge level={event.severity} size="sm" />
         </div>
 
-        {impacts.length > 0 ? (
-          <ul className="mb-2 space-y-1">
-            {impacts.map((impact) => (
-              <li key={impact} className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
-                <span className="mt-1.5 size-1 shrink-0 rounded-full bg-danger" />
-                {impact}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mb-2 text-[11px] italic text-muted-foreground/70">
-            No projected project impact within the active coverage horizon.
-          </p>
-        )}
+        {hasImpact ? (
+          <>
+            {/* Headline — affected scope (the person's own projects) */}
+            <div className="mb-1.5 space-y-1">
+              <MetricDelta label="Fragility" block={affected.fragility} worseWhen="up" showTier />
+              {hasCoverageDelta && (
+                <MetricDelta label="Coverage" block={affected.knowledge_coverage} worseWhen="down" />
+              )}
+            </div>
 
-        <button
-          onClick={onSimulate}
-          className="flex items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-semibold text-primary hover:bg-primary/10"
-        >
-          <PlayCircle className="size-3.5" /> Simulate impact
-        </button>
+            {/* Secondary — whole-org average */}
+            <p className="mb-2 text-[10px] text-muted-foreground/80">
+              Org-wide fragility {org.fragility.before} → {org.fragility.after}{" "}
+              <span className="font-semibold">({fmtDelta(org.fragility.delta)})</span>
+            </p>
+
+            {impacts.length > 0 && (
+              <ul className="space-y-1">
+                {impacts.map((impact) => (
+                  <li key={impact} className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+                    <span className="mt-1.5 size-1 shrink-0 rounded-full bg-danger" />
+                    {impact}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        ) : (
+          <p className="text-[11px] italic text-muted-foreground/70">No projected operational impact.</p>
+        )}
       </div>
     </div>
   );
 }
 
 export default function UpcomingRiskEventsCard() {
-  const navigate = useNavigate();
   const { data, isLoading, isError } = useGetUpcomingRiskEvents(HORIZON_DAYS);
 
   if (isLoading) return <UpcomingRiskEventsCard.Skeleton />;
@@ -127,7 +171,7 @@ export default function UpcomingRiskEventsCard() {
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {events.map((e) => (
-            <RiskEventItem key={e.id} event={e} onSimulate={() => navigate("/?simulate=true")} />
+            <RiskEventItem key={e.id} event={e} />
           ))}
         </div>
       )}
