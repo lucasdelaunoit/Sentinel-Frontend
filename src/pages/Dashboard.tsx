@@ -12,6 +12,7 @@ import ImportPlanningSheet from "@/components/specified/pages/home/ImportPlannin
 import CriticalProjectsRiskCard from "@/components/specified/pages/home/CriticalProjectsRiskCard.tsx";
 import SinglePointsOfFailureCard from "@/components/specified/pages/home/SinglePointsOfFailureCard.tsx";
 import VulnerableSkillsCard from "@/components/specified/pages/home/VulnerableSkillsCard.tsx";
+import UpcomingRiskEventsCard from "@/components/specified/pages/home/UpcomingRiskEventsCard.tsx";
 
 /* ─── Avatar ──────────────────────────────────────────────── */
 
@@ -163,6 +164,9 @@ export default function Dashboard() {
           <SinglePointsOfFailureCard />
           <VulnerableSkillsCard />
         </div>
+
+        {/* Section 4 — Upcoming Risk Events */}
+        <UpcomingRiskEventsCard />
 
         {/* Projects Table */}
         <div className="rounded-2xl bg-card border border-border/60 overflow-hidden shadow-sm">
