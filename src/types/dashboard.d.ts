@@ -11,7 +11,7 @@ export interface RiskProjectDetail {
 }
 
 export interface CategoryDetail {
-  category_id: string;
+  category_id: number;
   category_name: string;
   coverage_pct: number;
   safe: number;
@@ -48,7 +48,7 @@ export interface ProjectsAtRiskDetail {
 
 export interface KnowledgeCoverageDetail {
   categories: CategoryDetail[];
-  most_fragile: string;
+  most_fragile: string | null;
 }
 
 export interface TeamAvailabilityDetail {

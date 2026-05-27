@@ -1,65 +1,60 @@
 import { useMemo } from "react";
-import { USER_DETAILS, type SkillCategory } from "@/data/users.ts";
-import { ChartContainer, type ChartConfig, ChartLegend, ChartLegendContent } from "@/components/ui/chart.tsx";
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis } from "recharts";
+
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
+import Feedback from "@/components/common/feedbacks/Feedback.tsx";
+import CoverageRadar, { type CoverageRadarDatum } from "@/components/common/charts/CoverageRadar.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 
-const AXES: SkillCategory[] = ["FRONTEND", "BACKEND", "DEVOPS", "DATABASE", "SECURITY", "TESTING"];
+import useGetKnowledgeCoverageDetail from "@/hooks/useGetKnowledgeCoverageDetail.ts";
 
-const TARGET_BY_AXIS: Record<SkillCategory, number> = {
-  FRONTEND: 92,
-  BACKEND: 88,
-  DEVOPS: 93,
-  DATABASE: 87,
-  SECURITY: 88,
-  TESTING: 92,
-};
-
-const chartConfig = {
-  coverage: { label: "Current", color: "#f87171" },
-  target: { label: "Target", color: "#93c5fd" },
-} satisfies ChartConfig;
+const TARGET_PCT = 70;
 
 export default function KnowledgeCoverageOfToday() {
-  const users = useMemo(() => Object.values(USER_DETAILS), []);
+  const { data, isLoading, isError } = useGetKnowledgeCoverageDetail();
 
-  const chartData = useMemo(
+  const chartData = useMemo<CoverageRadarDatum[]>(
     () =>
-      AXES.map((cat) => {
-        const count = users.filter((e) => e.skills.some((s) => s.category === cat && s.level >= 3)).length;
-        return {
-          axis: cat,
-          coverage: Math.round((count / users.length) * 100),
-          target: TARGET_BY_AXIS[cat],
-        };
-      }),
-    [users],
+      (data?.categories ?? []).map((cat) => ({
+        axis: cat.category_name,
+        value: cat.coverage_pct,
+        target: TARGET_PCT,
+      })),
+    [data],
   );
 
+  if (isLoading) return <KnowledgeCoverageOfToday.Skeleton />;
+
   return (
-    <ComposedCard title="Today's Knowledge Coverage">
-      <ChartContainer config={chartConfig} className="mx-auto max-h-[290px] aspect-square -mt-5">
-        <RadarChart data={chartData}>
-          <PolarGrid />
-          <PolarAngleAxis dataKey="axis" tick={{ fontSize: 10, fontWeight: 600, fill: "#6B7280" }} />
-          <Radar
-            dataKey="target"
-            fill="var(--color-muted-foreground)"
-            fillOpacity={0.2}
-            stroke="var(--color-muted-foreground)"
-            strokeWidth={1.5}
-            strokeDasharray="5 3"
-          />
-          <Radar
-            dataKey="coverage"
-            fill="var(--color-primary)"
-            fillOpacity={0.45}
-            stroke="var(--color-primary)"
-            strokeWidth={2}
-          />
-          <ChartLegend content={<ChartLegendContent />} className="mt-10" />
-        </RadarChart>
-      </ChartContainer>
+    <ComposedCard
+      title="Today's Knowledge Coverage"
+      action={
+        data?.most_fragile ? (
+          <span className="text-xs text-secondary-foreground ml-auto">
+            Weakest: <span className="font-semibold">{data.most_fragile}</span>
+          </span>
+        ) : undefined
+      }
+      className="flex flex-col"
+    >
+      {isError ? (
+        <Feedback variant="danger" title="Failed to load coverage" description="Check API connection." />
+      ) : chartData.length === 0 ? (
+        <Feedback variant="neutral" title="No coverage data" description="No skill categories to display." />
+      ) : (
+        <CoverageRadar data={chartData} />
+      )}
     </ComposedCard>
   );
 }
+
+KnowledgeCoverageOfToday.Skeleton = function KnowledgeCoverageOfTodaySkeleton() {
+  return (
+    <ComposedCard
+      title="Today's Knowledge Coverage"
+      action={<Skeleton className="h-3.5 w-28 ml-auto" />}
+      className="flex flex-col"
+    >
+      <CoverageRadar.Skeleton />
+    </ComposedCard>
+  );
+};

@@ -6,9 +6,9 @@ export default function useGetKnowledgeCoverageDetail() {
   const privateApi = usePrivateApi()
 
   return useQuery<KnowledgeCoverageDetail>({
-    queryKey: ["dashboard", "stats", "knowledge-coverage"],
+    queryKey: ["dashboard", "knowledge-coverage"],
     queryFn: async () => {
-      const { data } = await privateApi.get<KnowledgeCoverageDetail>("/api/dashboard/stats/knowledge-coverage")
+      const { data } = await privateApi.get<KnowledgeCoverageDetail>("/api/dashboard/knowledge-coverage")
       return data
     },
     staleTime: 1000 * 60,

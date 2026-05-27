@@ -25,9 +25,7 @@ export default function TeamStatusOfTodayCard() {
 
   const { data: capacityData, isLoading: isCapacityLoading } = useGetUsersCapacity();
 
-  if (isLoading || isCapacityLoading) {
-    return <TeamStatusOfTodayCard.Skeleton />;
-  }
+  if (isLoading || isCapacityLoading) return <TeamStatusOfTodayCard.Skeleton />;
 
   const awayUsers = data?.data ?? [];
   const capacityPct = capacityData?.capacity_pct ?? 0;
