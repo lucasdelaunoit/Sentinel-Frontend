@@ -1,3 +1,35 @@
+/* ── Upcoming risk events (GET /dashboard/upcoming-risk-events) ─ */
+
+export type RiskEventKind = "leave" | "sick_leave";
+export type RiskEventSeverity = "low" | "medium" | "high" | "critical";
+
+/** Per-project impact of one person's upcoming absence. Coverage/bus values are 0–100 ints. */
+export interface RiskEventProjectImpact {
+  id: string;
+  name: string;
+  coverage_before: number;
+  coverage_after: number;
+  bus_factor_before: number;
+  bus_factor_after: number;
+  lost_skills: string[];
+}
+
+export interface UpcomingRiskEvent {
+  id: string;
+  /** ISO date the absence starts. */
+  date: string;
+  employee: { id: string; firstname: string; lastname: string };
+  kind: RiskEventKind;
+  severity: RiskEventSeverity;
+  /** Empty when the absence falls inside the org coverage horizon (already in baseline). */
+  affected_projects: RiskEventProjectImpact[];
+}
+
+export interface UpcomingRiskEventsResponse {
+  generated_at: string;
+  events: UpcomingRiskEvent[];
+}
+
 /* ── Shared building blocks ──────────────────────────────── */
 
 export interface RiskProjectDetail {
