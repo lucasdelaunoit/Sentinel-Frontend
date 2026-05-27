@@ -1,88 +1,80 @@
-import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils.ts";
-import { Card, CardContent, CardTitle } from "@/components/ui/card.tsx";
-import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
-import { PROJECTS } from "@/data/projects.ts";
 
-const RISK_LEVELS = [
-  { label: "Critical", threshold: 25, badge: "bg-rose-50 text-rose-600 border-rose-200/60" },
-  { label: "High",     threshold: 15, badge: "bg-orange-50 text-orange-600 border-orange-200/60" },
-  { label: "Medium",   threshold: 8,  badge: "bg-amber-50 text-amber-600 border-amber-200/60" },
-  { label: "Low",      threshold: 0,  badge: "bg-emerald-50 text-emerald-600 border-emerald-200/60" },
-];
+import { SecondaryButton } from "@/components/common/buttons/SecondaryButton.tsx";
+import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
+import Feedback from "@/components/common/feedbacks/Feedback.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 
-function getRiskLevel(score: number) {
-  return (
-    RISK_LEVELS.find((l, i) =>
-      score >= l.threshold && (i === 0 || score < RISK_LEVELS[i - 1].threshold),
-    ) ?? RISK_LEVELS[3]
-  );
-}
+import useGetProjects from "@/api/projects/useGetProjects.ts";
+import useGetProjectsStats from "@/api/projects/useGetProjectsStats.ts";
+import MediumProjectRow from "@/components/specified/models/projects/datas/items/MediumProjectRow.tsx";
+
+const PREVIEW_COUNT = 5;
 
 export default function CriticalProjectsCard() {
   const navigate = useNavigate();
 
-  const atRiskCount = useMemo(
-    () => PROJECTS.filter(p => p.riskScore >= 15 || p.health < 60).length,
-    [],
-  );
+  const { data, isLoading, isError } = useGetProjects({
+    page: 1,
+    per_page: PREVIEW_COUNT,
+    sorts: [{ field: "risk_score", direction: "desc" }],
+    filters: [{ field: "status", value: "active" }],
+  });
 
-  const criticalProjects = useMemo(
-    () => [...PROJECTS].sort((a, b) => b.riskScore - a.riskScore).slice(0, 2),
-    [],
-  );
+  const { data: statsData, isLoading: isStatsLoading } = useGetProjectsStats();
+
+  if (isLoading || isStatsLoading) return <CriticalProjectsCard.Skeleton />;
+
+  const projects = data?.data ?? [];
+  const fragileCount = statsData?.fragile_count.value ?? "0";
 
   return (
-    <Card className="p-5">
-      <div className="flex items-center justify-between">
-        <CardTitle>Critical Projects</CardTitle>
-        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-          {atRiskCount} fragile
+    <ComposedCard
+      title="Critical Projects"
+      action={
+        <span className="text-xs text-secondary-foreground ml-auto">
+          <span className="font-semibold tabular-nums">{fragileCount}</span> fragile
         </span>
-      </div>
-
-      <CardContent className="p-0">
-        <div className="space-y-2.5">
-          {criticalProjects.map((p, i) => {
-            const level = getRiskLevel(p.riskScore);
-            return (
-              <SecondaryCard
-                key={p.id}
-                onClick={() => navigate(`/projects/${p.id}`)}
-                before={
-                  <div className={cn("flex size-8 items-center justify-center rounded-xl text-[11px] font-bold text-white shadow-sm bg-destructive-foreground")}>
-                    {p.id.slice(-2)}
-                  </div>
-                }
-                title={p.name}
-                description={
-                  <span className={cn("text-[11px] font-medium")}>
-                    Bus factor: {p.busFactor} · Fragility: {p.riskScore}
-                  </span>
-                }
-                action={
-                  <div className="flex flex-col items-end gap-1">
-                    <span className={cn("text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border", level.badge)}>
-                      {level.label}
-                    </span>
-                    <Eye className={cn("size-3.5")} />
-                  </div>
-                }
-              />
-            );
-          })}
+      }
+      className="flex flex-col"
+    >
+      <div className="flex flex-col justify-between h-full">
+        <div className="flex flex-col justify-center mb-4">
+          {isError ? (
+            <Feedback variant="danger" title="Failed to load projects" description="Check API connection." />
+          ) : projects.length === 0 ? (
+            <Feedback variant="success" title="All projects healthy" description="No active projects at risk" />
+          ) : (
+            <div className="space-y-4 p-0.5">
+              {projects.map((p) => (
+                <MediumProjectRow key={p.id} project={p} onClick={() => navigate(`/projects/${p.id}`)} />
+              ))}
+            </div>
+          )}
         </div>
-
-        <button
-          onClick={() => navigate("/projects")}
-          className="mt-3 w-full py-1.5 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center justify-center gap-1.5"
-        >
-          View all projects
-          <ArrowRight className="size-3" />
-        </button>
-      </CardContent>
-    </Card>
+        <SecondaryButton onClick={() => navigate("/projects")}>View all projects →</SecondaryButton>
+      </div>
+    </ComposedCard>
   );
 }
+
+CriticalProjectsCard.Skeleton = function CriticalProjectsCardSkeleton() {
+  return (
+    <ComposedCard
+      title="Critical Projects"
+      action={<Skeleton className="h-3.5 w-16 ml-auto" />}
+      className="flex flex-col"
+    >
+      <div className="flex flex-col justify-between h-full">
+        <div className="flex flex-col justify-center mb-4">
+          <div className="space-y-4 p-0.5">
+            {Array.from({ length: PREVIEW_COUNT }).map((_, i) => (
+              <MediumProjectRow.Skeleton key={i} />
+            ))}
+          </div>
+        </div>
+        <Skeleton className="h-7 w-full rounded-lg" />
+      </div>
+    </ComposedCard>
+  );
+};
