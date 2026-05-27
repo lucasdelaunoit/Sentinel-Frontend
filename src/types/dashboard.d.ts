@@ -132,15 +132,6 @@ export interface UserListItem {
   skills: UserSkillItem[];
 }
 
-/* ── Project stats (GET /projects/:id/stats) ─────────────── */
-
-export interface ProjectStats {
-  fragility: StatCardData;
-  team_availability: StatCardData;
-  knowledge_coverage: StatCardData;
-  deadline_countdown: StatCardData;
-}
-
 /* ── Project detail (GET /projects/:id) ──────────────────── */
 
 export interface ProjectDetailUser {
