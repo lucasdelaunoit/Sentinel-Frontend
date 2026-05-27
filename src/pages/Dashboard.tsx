@@ -1,9 +1,8 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, ArrowRight, Calendar, Zap, CalendarCheck, PlayCircle } from "lucide-react";
+import { Eye, ArrowRight, CalendarCheck, PlayCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PROJECTS } from "@/data/projects";
-import { USER_DETAILS, type UserDetail } from "@/data/users";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import HomeStatCardsSection from "@/components/specified/pages/home/HomeStatCardsSection.tsx";
@@ -11,6 +10,8 @@ import TeamTodayCard from "@/components/specified/pages/home/TeamTodayCard.tsx";
 import KnowledgeCoverageCard from "@/components/specified/pages/home/KnowledgeCoverageCard.tsx";
 import ImportPlanningSheet from "@/components/specified/pages/home/ImportPlanningSheet.tsx";
 import CriticalProjectsRiskCard from "@/components/specified/pages/home/CriticalProjectsRiskCard.tsx";
+import SinglePointsOfFailureCard from "@/components/specified/pages/home/SinglePointsOfFailureCard.tsx";
+import VulnerableSkillsCard from "@/components/specified/pages/home/VulnerableSkillsCard.tsx";
 
 /* ─── Avatar ──────────────────────────────────────────────── */
 
@@ -81,77 +82,6 @@ function ProgressBar({ value }: { value: number }) {
   );
 }
 
-/* ─── Critical Employee Card ──────────────────────────────── */
-
-function CriticalUserCard({
-  user,
-  uniqueSkills,
-  onClick,
-}: {
-  user: UserDetail;
-  uniqueSkills: string[];
-  onClick: () => void;
-}) {
-  const bfColor =
-    user.busFactor <= 1
-      ? "text-rose-600 bg-rose-50 border-rose-200/60"
-      : user.busFactor <= 2
-        ? "text-orange-600 bg-orange-50 border-orange-200/60"
-        : "text-amber-600 bg-amber-50 border-amber-200/60";
-
-  const critColor =
-    user.criticality === "High"
-      ? "text-rose-500"
-      : user.criticality === "Medium"
-        ? "text-amber-500"
-        : "text-emerald-500";
-
-  return (
-    <button
-      onClick={onClick}
-      className="flex gap-3 p-3.5 rounded-xl border border-border/50 bg-muted/10 hover:bg-muted/30 hover:border-border/80 transition-all text-left w-full group"
-    >
-      <Avatar initials={user.initials} color={user.color} size="md" />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2 mb-0.5">
-          <p className="text-sm font-semibold text-foreground truncate group-hover:text-foreground">{user.name}</p>
-          <span className={cn("shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full border", bfColor)}>
-            BF {user.busFactor}
-          </span>
-        </div>
-        <p className="text-[11px] text-muted-foreground mb-2 truncate">{user.role}</p>
-        <div className="flex items-center gap-1.5 mb-2">
-          <span className={cn("text-[10px] font-semibold uppercase tracking-wide", critColor)}>
-            {user.criticality}
-          </span>
-          <span className="text-muted-foreground/40 text-[10px]">·</span>
-          <span className="text-[10px] text-muted-foreground">
-            {user.projects.filter((p) => p.status === "Active").length} active project
-            {user.projects.filter((p) => p.status === "Active").length !== 1 ? "s" : ""}
-          </span>
-        </div>
-        {uniqueSkills.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {uniqueSkills.slice(0, 3).map((s) => (
-              <span
-                key={s}
-                className="text-[9px] font-semibold text-amber-700 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded-full"
-              >
-                {s}
-              </span>
-            ))}
-            {uniqueSkills.length > 3 && (
-              <span className="text-[9px] font-medium text-muted-foreground px-1 py-0.5">
-                +{uniqueSkills.length - 3} more
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-    </button>
-  );
-}
-
 /* ─── Risk Distribution Bar ───────────────────────────────── */
 
 const RISK_LEVELS = [
@@ -196,69 +126,7 @@ function getRiskLevel(score: number) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const users = useMemo(() => Object.values(USER_DETAILS), []);
-
-  /* ── Unique skills per employee ────────────────────────── */
-  const uniqueSkillsMap = useMemo(() => {
-    const map: Record<string, string[]> = {};
-    users.forEach((emp) => {
-      map[emp.id] = emp.skills
-        .filter((s) => s.level >= 3)
-        .filter(
-          (s) =>
-            !users
-              .filter((e) => e.id !== emp.id)
-              .some((e) => e.skills.some((es) => es.name === s.name && es.level >= 3)),
-        )
-        .map((s) => s.name);
-    });
-    return map;
-  }, [users]);
-
-  /* ── Derived stats ─────────────────────────────────────── */
-
-  /* ── Modal state ───────────────────────────────────────── */
   const [importSheetOpen, setImportSheetOpen] = useState(false);
-
-  /* ── Dashboard stats (live) ────────────────────────────── */
-
-  const criticalUsers = useMemo(
-    () => users.filter((e) => e.criticality === "High").sort((a, b) => a.busFactor - b.busFactor),
-    [users],
-  );
-
-  /* ── Risk distribution ─────────────────────────────────── */
-  const riskDistribution = useMemo(
-    () =>
-      RISK_LEVELS.map((level, levelIdx) => {
-        const prevThreshold = levelIdx > 0 ? RISK_LEVELS[levelIdx - 1].threshold : Infinity;
-        const count = PROJECTS.filter((p) => {
-          const score = p.riskScore;
-          return score >= level.threshold && score < prevThreshold;
-        }).length;
-        return { ...level, count };
-      }),
-    [],
-  );
-  const maxRiskCount = Math.max(...riskDistribution.map((r) => r.count), 1);
-
-  /* ── Upcoming leaves (next 30 days) ────────────────────── */
-  const upcomingLeaves = useMemo(() => {
-    const today = new Date("2026-04-21");
-    const limit = new Date("2026-05-21");
-    return users
-      .flatMap((e) =>
-        e.leaves
-          .filter((l) => {
-            const d = new Date(l.startDate);
-            return d >= today && d <= limit && l.status === "approved";
-          })
-          .map((l) => ({ user: e, leave: l })),
-      )
-      .sort((a, b) => new Date(a.leave.startDate).getTime() - new Date(b.leave.startDate).getTime());
-  }, [users]);
-
-  /* ── Display lists ─────────────────────────────────────── */
 
   const displayProjects = [...PROJECTS]
     .filter((p) => p.status !== "Completed")
@@ -290,160 +158,10 @@ export default function Dashboard() {
           <CriticalProjectsRiskCard />
         </div>
 
-        {/* Critical Staff + Risk Overview */}
-        <div className="grid grid-cols-3 gap-4">
-          {/* Critical Staff Panel */}
-          <div className="col-span-2 rounded-2xl bg-card border border-border/60 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-1.5">
-              <h3 className="font-semibold text-foreground text-sm">Critical Staff</h3>
-              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                {criticalUsers.length} high-risk dependencies
-              </span>
-            </div>
-            <p className="text-[11px] text-muted-foreground mb-4">
-              Employees whose absence would critically impact operations — highlighted skills are unique to them.
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {criticalUsers.map((emp) => (
-                <CriticalUserCard
-                  key={emp.id}
-                  user={emp}
-                  uniqueSkills={uniqueSkillsMap[emp.id] ?? []}
-                  onClick={() => navigate(`/users/${emp.id}`)}
-                />
-              ))}
-            </div>
-            <div className="mt-4 pt-4 border-t border-border/40 flex items-center justify-between">
-              <div className="flex items-center gap-4 text-[11px] text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <span className="size-2 rounded-full bg-rose-400 inline-block" />
-                  Bus Factor 1 = single point of failure
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="text-[9px] font-semibold text-amber-700 bg-amber-50 border border-amber-200/60 px-1 py-0.5 rounded-full">
-                    skill
-                  </span>
-                  Unique to this person
-                </span>
-              </div>
-              <button
-                onClick={() => navigate("/users")}
-                className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors font-medium"
-              >
-                View all staff <ArrowRight className="size-3" />
-              </button>
-            </div>
-          </div>
-
-          {/* Risk Distribution + Upcoming Absences */}
-          <div className="rounded-2xl bg-card border border-border/60 p-5 shadow-sm flex flex-col gap-5">
-            {/* Fragility Distribution */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-foreground text-sm">Fragility Distribution</h3>
-                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                  {PROJECTS.length} projects
-                </span>
-              </div>
-              <div className="space-y-2.5">
-                {riskDistribution.map((level) => (
-                  <div key={level.label}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={cn("text-[11px] font-semibold", level.text)}>{level.label}</span>
-                      <span className="text-[11px] font-bold text-foreground">{level.count}</span>
-                    </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                      <div
-                        className={cn("h-full rounded-full transition-all", level.color)}
-                        style={{ width: level.count === 0 ? "0%" : `${(level.count / maxRiskCount) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-3 text-[10px] text-muted-foreground">
-                Avg fragility:{" "}
-                <span className="font-semibold text-foreground">
-                  {Math.round(PROJECTS.reduce((s, p) => s + p.riskScore, 0) / PROJECTS.length)}
-                </span>
-              </p>
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-border/40" />
-
-            {/* Upcoming Absences */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-foreground text-sm">Upcoming Absences</h3>
-                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">30 days</span>
-              </div>
-              {upcomingLeaves.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-4 text-center">
-                  <Calendar className="size-8 text-muted-foreground/30 mb-2" />
-                  <p className="text-[11px] text-muted-foreground">No upcoming absences</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {upcomingLeaves.map(({ user, leave }) => {
-                    const start = new Date(leave.startDate);
-                    const daysUntil = Math.ceil(
-                      (start.getTime() - new Date("2026-04-21").getTime()) / (1000 * 60 * 60 * 24),
-                    );
-                    const typeColor =
-                      leave.type === "vacation"
-                        ? "text-blue-600 bg-blue-50"
-                        : leave.type === "sick"
-                          ? "text-rose-600 bg-rose-50"
-                          : "text-violet-600 bg-violet-50";
-                    return (
-                      <div
-                        key={`${user.id}-${leave.id}`}
-                        className="flex items-center gap-2.5 p-2.5 rounded-xl bg-muted/20 hover:bg-muted/40 transition-colors"
-                      >
-                        <Avatar initials={user.initials} color={user.color} size="sm" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-semibold text-foreground truncate">{user.name}</p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {start.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                            {" · "}
-                            <span className={cn("font-medium px-1 py-0.5 rounded text-[9px]", typeColor)}>
-                              {leave.type}
-                            </span>
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <span
-                            className={cn(
-                              "text-[10px] font-bold",
-                              daysUntil <= 1
-                                ? "text-rose-500"
-                                : daysUntil <= 3
-                                  ? "text-amber-500"
-                                  : "text-muted-foreground",
-                            )}
-                          >
-                            {daysUntil === 0 ? "Today" : daysUntil === 1 ? "Tomorrow" : `in ${daysUntil}d`}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Quick action */}
-            <div className="mt-auto">
-              <button
-                onClick={() => navigate("/users?tab=calendar")}
-                className="w-full flex items-center justify-center gap-1.5 text-[11px] font-semibold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 py-2 rounded-xl transition-colors"
-              >
-                <Zap className="size-3" />
-                Simulate absence impact
-              </button>
-            </div>
-          </div>
+        {/* Section 3 — Organizational Vulnerabilities */}
+        <div className="grid grid-cols-2 gap-5 items-start">
+          <SinglePointsOfFailureCard />
+          <VulnerableSkillsCard />
         </div>
 
         {/* Projects Table */}
