@@ -1,12 +1,11 @@
-import type { UserListItem } from "@/types/dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
 import SelectorRow from "@/components/common/inputs/SelectorRow";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar";
 import { HighlightMatch } from "@/utils/useHighlightableText";
-import { getFullName, getInitials } from "@/utils/formatters/persons";
+import { getFullName } from "@/utils/formatters/persons";
 
 interface UserSelectorRowProps {
-  user: UserListItem;
+  user: User;
   selected: boolean;
   onToggle: () => void;
   searchTerm?: string;
@@ -15,12 +14,14 @@ interface UserSelectorRowProps {
 export default function UserSelectorRow({ user, selected, onToggle, searchTerm = "" }: UserSelectorRowProps) {
   return (
     <SelectorRow active={selected} onClick={onToggle}>
-      <UserAvatar initials={getInitials(user.firstname, user.lastname)} size="base" />
+      <UserAvatar firstname={user.firstname} lastname={user.lastname} size="base" />
       <span className="flex-1 text-[13px] font-semibold text-foreground truncate">
         <HighlightMatch text={getFullName(user.firstname, user.lastname)} searchTerm={searchTerm} />
       </span>
-      {user.department?.name && (
+      {user.department?.name ? (
         <span className="text-[11.5px] text-muted-foreground shrink-0">{user.department.name}</span>
+      ) : (
+        "-"
       )}
     </SelectorRow>
   );

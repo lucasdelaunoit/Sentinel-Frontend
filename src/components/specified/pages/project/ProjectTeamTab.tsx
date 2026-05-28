@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye } from "lucide-react";
+import { UserPlusIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HighlightMatch } from "@/utils/useHighlightableText";
@@ -8,6 +10,7 @@ import UserStatusBadge from "@/components/specified/models/employees/badges/User
 import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable";
 import type { FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import useGetProjectUsers from "@/api/projects/useGetProjectUsers";
+import AddProjectMembersSheet from "@/components/specified/models/projects/sheets/AddProjectMembersSheet";
 import type { UserListItem } from "@/types/dashboard";
 
 type TeamSortableField = "firstname" | "lastname" | "title" | "created_at";
@@ -20,6 +23,7 @@ const STATUS_FILTER_OPTIONS: FilterPillOption<UserStatus | null>[] = [
 
 export default function ProjectTeamTab({ projectId }: { projectId: string | undefined }) {
   const navigate = useNavigate();
+  const [addOpen, setAddOpen] = useState(false);
 
   const columns: DataTableColumn<UserListItem, TeamSortableField>[] = [
     {
@@ -121,17 +125,31 @@ export default function ProjectTeamTab({ projectId }: { projectId: string | unde
   ];
 
   return (
-    <DataTable<UserListItem, TeamSortableField, UserStatus>
-      title="Project Team"
-      hook={(params) => useGetProjectUsers(projectId, params)}
-      columns={columns}
-      defaultSort="firstname"
-      searchPlaceholder="Search team members..."
-      filter={{ options: STATUS_FILTER_OPTIONS, field: "status" }}
-      includes={["department", "skills"]}
-      onRowClick={(emp) => navigate(`/users/${emp.id}`)}
-      emptyMessage="No team members match your filters."
-      errorMessage="Failed to load team. Check API connection."
-    />
+    <>
+      <DataTable<UserListItem, TeamSortableField, UserStatus>
+        title="Project Team"
+        hook={(params) => useGetProjectUsers(projectId, params)}
+        columns={columns}
+        defaultSort="firstname"
+        searchPlaceholder="Search team members..."
+        filter={{ options: STATUS_FILTER_OPTIONS, field: "status" }}
+        includes={["department", "skills"]}
+        onRowClick={(emp) => navigate(`/users/${emp.id}`)}
+        emptyMessage="No team members match your filters."
+        errorMessage="Failed to load team. Check API connection."
+        headerAction={
+          <Button
+            size="sm"
+            onClick={() => setAddOpen(true)}
+            disabled={!projectId}
+            className="gap-1.5 h-9 px-3 text-[12px] font-medium rounded-lg btn-press"
+          >
+            <UserPlusIcon className="size-3.5" weight="bold" />
+            Add member
+          </Button>
+        }
+      />
+      <AddProjectMembersSheet projectId={projectId} open={addOpen} onOpenChange={setAddOpen} />
+    </>
   );
 }

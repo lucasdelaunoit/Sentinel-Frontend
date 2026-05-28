@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from "react";
-import type { UseQueryResult } from "@tanstack/react-query";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,7 +9,8 @@ import { useTableSort } from "@/hooks/useTableSort";
 import { useTablePagination } from "@/hooks/useTablePagination";
 import FilterPillGroup, { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import { cn } from "@/lib/utils";
-import type { LaravelPaginatedResponse, LaravelQueryParams } from "@/types/laravel";
+import type { PaginatedQuery } from "@/hooks/pagination";
+import type { QueryParams } from "@/types/pagination";
 
 export interface DataTableColumn<T, S extends string = string> {
   key: string;
@@ -29,7 +29,7 @@ export interface DataTableFilter<F> {
 
 interface DataTableProps<T, S extends string, F> {
   title: string;
-  hook: (params: LaravelQueryParams) => UseQueryResult<LaravelPaginatedResponse<T>>;
+  hook: (params: QueryParams) => PaginatedQuery<T>;
   columns: DataTableColumn<T, S>[];
   defaultSort: S;
   defaultSortDir?: "asc" | "desc";
@@ -42,6 +42,7 @@ interface DataTableProps<T, S extends string, F> {
   emptyMessage?: string;
   errorMessage?: string;
   rowClassName?: (row: T) => string | undefined;
+  headerAction?: ReactNode;
 }
 
 export default function DataTable<T extends { id: string | number }, S extends string, F = string>({
@@ -59,13 +60,14 @@ export default function DataTable<T extends { id: string | number }, S extends s
   emptyMessage = "No results match your filters.",
   errorMessage = "Failed to load data. Check API connection.",
   rowClassName,
+  headerAction,
 }: DataTableProps<T, S, F>) {
   const [search, setSearch] = useState("");
   const [filterValue, setFilterValue] = useState<F | null>(null);
   const { sort, toggleSort } = useTableSort<S>(defaultSort, defaultSortDir);
   const { page, setPage, perPage, setPerPage } = useTablePagination(defaultPerPage, [search, filterValue]);
 
-  const { data, isLoading, isError } = hook({
+  const { data: rows, total, lastPage, from, to, isLoading, isError } = hook({
     page,
     per_page: perPage,
     search: search || undefined,
@@ -76,12 +78,6 @@ export default function DataTable<T extends { id: string | number }, S extends s
         : undefined,
     includes,
   });
-
-  const rows = data?.data ?? [];
-  const total = data?.total ?? 0;
-  const lastPage = data?.last_page ?? 1;
-  const from = data?.from ?? 0;
-  const to = data?.to ?? 0;
   const colSpan = columns.length;
 
   const toolbarAction = (
@@ -94,6 +90,7 @@ export default function DataTable<T extends { id: string | number }, S extends s
       <div className="flex-1" />
       {filter && <FilterPillGroup options={filter.options} value={filterValue} onChange={setFilterValue} />}
       <SearchBar value={search} onChange={setSearch} placeholder={searchPlaceholder} />
+      {headerAction}
     </>
   );
 

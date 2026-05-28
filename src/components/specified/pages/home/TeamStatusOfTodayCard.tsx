@@ -16,7 +16,7 @@ const PREVIEW_COUNT = 5;
 export default function TeamStatusOfTodayCard() {
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const { data, isLoading, isError } = useGetUsers({
+  const { data: awayUsers, isLoading, isError } = useGetUsers({
     page: 1,
     per_page: PREVIEW_COUNT,
     filters: [{ field: "status", value: "away" }],
@@ -26,8 +26,6 @@ export default function TeamStatusOfTodayCard() {
   const { data: capacityData, isLoading: isCapacityLoading } = useGetUsersCapacity();
 
   if (isLoading || isCapacityLoading) return <TeamStatusOfTodayCard.Skeleton />;
-
-  const awayUsers = data?.data ?? [];
   const capacityPct = capacityData?.capacity_pct ?? 0;
 
   return (

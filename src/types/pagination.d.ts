@@ -1,23 +1,23 @@
-export interface LaravelSort {
+export interface SortParam {
   field: string
   direction: "asc" | "desc"
 }
 
-export interface LaravelFilter {
+export interface FilterParam {
   field: string
   value: string | number | boolean | string[]
 }
 
-export interface LaravelQueryParams {
+export interface QueryParams {
   page?: number
   per_page?: number
   search?: string
-  filters?: LaravelFilter[]
-  sorts?: LaravelSort[]
+  filters?: FilterParam[]
+  sorts?: SortParam[]
   includes?: string[]
 }
 
-export interface LaravelPaginatedResponse<T> {
+export interface PaginatedResponse<T> {
   current_page: number
   data: T[]
   first_page_url: string

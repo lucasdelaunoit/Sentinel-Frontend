@@ -1,19 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import usePrivateApi from "@/api/privateApi.ts";
-import useLaravelQuery from "@/hooks/useLaravelQuery";
-import type { LaravelPaginatedResponse, LaravelQueryParams } from "@/types/laravel";
+import { useQueryString, unwrapPagination } from "@/hooks/pagination";
+import type { PaginatedResponse, QueryParams } from "@/types/pagination";
 
-export default function useGetSkills(params: LaravelQueryParams = {}) {
+export default function useGetSkills(params: QueryParams = {}) {
   const privateApi = usePrivateApi();
-  const queryString = useLaravelQuery(params);
+  const queryString = useQueryString(params);
 
-  return useQuery<LaravelPaginatedResponse<Skill>>({
+  const { data: raw, ...rest } = useQuery<PaginatedResponse<Skill>>({
     queryKey: ["skills", queryString],
     queryFn: async () => {
-      const { data } = await privateApi.get<LaravelPaginatedResponse<Skill>>(`/api/settings/skills${queryString}`);
+      const { data } = await privateApi.get<PaginatedResponse<Skill>>(`/api/settings/skills${queryString}`);
       return data;
     },
     staleTime: 1000 * 60 * 5,
     retry: 1,
   });
+
+  return { ...rest, ...unwrapPagination(raw) };
 }

@@ -26,6 +26,7 @@ export default function SelectorList<T>({
   isLoading = false,
   emptyMessage = "No items found.",
   skeletonCount = 5,
+  maxHeight = "max-h-72",
 }: SelectorListProps<T>) {
   const isEmpty = !isLoading && items.length === 0;
 
@@ -41,7 +42,9 @@ export default function SelectorList<T>({
         className="[&_input]:w-full"
       />
 
-      <div className="mt-3 overflow-y-auto rounded-xl border border-border/60 bg-muted/20 divide-y divide-border/40 max-h-72">
+      <div
+        className={`mt-3 overflow-y-auto rounded-xl border border-border/60 bg-muted/20 divide-y divide-border/40 ${maxHeight}`}
+      >
         {isLoading ? (
           Array.from({ length: skeletonCount }).map((_, i) => <Fragment key={i}>{renderSkeleton()}</Fragment>)
         ) : isEmpty ? (

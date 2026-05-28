@@ -1,19 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import usePrivateApi from "@/api/privateApi.ts";
-import useLaravelQuery from "@/hooks/useLaravelQuery";
-import type { LaravelPaginatedResponse, LaravelQueryParams } from "@/types/laravel";
+import { useQueryString, unwrapPagination } from "@/hooks/pagination";
+import type { PaginatedResponse, QueryParams } from "@/types/pagination";
 
-export default function useGetUsers(params: LaravelQueryParams = {}) {
+export default function useGetUsers(params: QueryParams = {}) {
   const privateApi = usePrivateApi();
-  const queryString = useLaravelQuery(params);
+  const queryString = useQueryString(params);
 
-  return useQuery<LaravelPaginatedResponse<User>>({
+  const { data: raw, ...rest } = useQuery<PaginatedResponse<User>>({
     queryKey: ["users", queryString],
     queryFn: async () => {
-      const { data } = await privateApi.get<LaravelPaginatedResponse<User>>(`/api/users${queryString}`);
+      const { data } = await privateApi.get<PaginatedResponse<User>>(`/api/users${queryString}`);
       return data;
     },
     staleTime: 1000 * 60 * 5,
     retry: 1,
   });
+
+  return { ...rest, ...unwrapPagination(raw) };
 }

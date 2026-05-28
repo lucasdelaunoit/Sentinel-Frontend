@@ -223,7 +223,7 @@ function UserList() {
   const { sort, toggleSort } = useTableSort<EmpSortKey>("name");
   const { page, setPage, perPage, setPerPage } = useTablePagination(15, [search, statusFilter]);
 
-  const { data, isLoading, isError } = useGetUsers({
+  const { data: users, total, lastPage, from, to, isLoading, isError } = useGetUsers({
     page,
     per_page: perPage,
     search: search || undefined,
@@ -231,12 +231,6 @@ function UserList() {
     filters: statusFilter !== null ? [{ field: "status", value: statusFilter }] : undefined,
     includes: ["department", "skills"],
   });
-
-  const users = data?.data ?? [];
-  const total = data?.total ?? 0;
-  const lastPage = data?.last_page ?? 1;
-  const from = data?.from ?? 0;
-  const to = data?.to ?? 0;
 
   const toolbarAction = (
     <>

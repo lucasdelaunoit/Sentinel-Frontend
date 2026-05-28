@@ -1,17 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import usePrivateApi from "@/api/privateApi.ts";
-import useLaravelQuery from "@/hooks/useLaravelQuery";
+import { useQueryString, unwrapPagination } from "@/hooks/pagination";
 import type { UserProjectItem } from "@/types/dashboard";
-import type { LaravelPaginatedResponse, LaravelQueryParams } from "@/types/laravel";
+import type { PaginatedResponse, QueryParams } from "@/types/pagination";
 
-export default function useGetUserProjects(userId: string | undefined, params: LaravelQueryParams = {}) {
+export default function useGetUserProjects(userId: string | undefined, params: QueryParams = {}) {
   const privateApi = usePrivateApi();
-  const queryString = useLaravelQuery(params);
+  const queryString = useQueryString(params);
 
-  return useQuery<LaravelPaginatedResponse<UserProjectItem>>({
+  const { data: raw, ...rest } = useQuery<PaginatedResponse<UserProjectItem>>({
     queryKey: ["users", userId, "projects", queryString],
     queryFn: async () => {
-      const { data } = await privateApi.get<LaravelPaginatedResponse<UserProjectItem>>(
+      const { data } = await privateApi.get<PaginatedResponse<UserProjectItem>>(
         `/api/users/${userId}/projects${queryString}`,
       );
       return data;
@@ -20,4 +20,6 @@ export default function useGetUserProjects(userId: string | undefined, params: L
     staleTime: 1000 * 60 * 5,
     retry: 1,
   });
+
+  return { ...rest, ...unwrapPagination(raw) };
 }

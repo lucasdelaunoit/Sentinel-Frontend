@@ -1,17 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import usePrivateApi from "@/api/privateApi.ts";
-import useLaravelQuery from "@/hooks/useLaravelQuery";
+import { useQueryString, unwrapPagination } from "@/hooks/pagination";
 import type { AbsenceItem } from "@/types/dashboard";
-import type { LaravelPaginatedResponse, LaravelQueryParams } from "@/types/laravel";
+import type { PaginatedResponse, QueryParams } from "@/types/pagination";
 
-export default function useGetAbsencesForUser(userId: string | undefined, params: LaravelQueryParams = {}) {
+export default function useGetAbsencesForUser(userId: string | undefined, params: QueryParams = {}) {
   const privateApi = usePrivateApi();
-  const queryString = useLaravelQuery(params);
+  const queryString = useQueryString(params);
 
-  return useQuery<LaravelPaginatedResponse<AbsenceItem>>({
+  const { data: raw, ...rest } = useQuery<PaginatedResponse<AbsenceItem>>({
     queryKey: ["users", userId, "absences", queryString],
     queryFn: async () => {
-      const { data } = await privateApi.get<LaravelPaginatedResponse<AbsenceItem>>(
+      const { data } = await privateApi.get<PaginatedResponse<AbsenceItem>>(
         `/api/users/${userId}/absences${queryString}`,
       );
       return data;
@@ -20,4 +20,6 @@ export default function useGetAbsencesForUser(userId: string | undefined, params
     staleTime: 1000 * 60 * 5,
     retry: 1,
   });
+
+  return { ...rest, ...unwrapPagination(raw) };
 }

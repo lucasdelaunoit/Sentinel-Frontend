@@ -1,21 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import usePrivateApi from "@/api/privateApi.ts";
-import useLaravelQuery from "@/hooks/useLaravelQuery";
+import { useQueryString, unwrapPagination } from "@/hooks/pagination";
 import type { UserSkillDetail } from "@/types/dashboard";
-import type { LaravelPaginatedResponse, LaravelQueryParams } from "@/types/laravel";
+import type { PaginatedResponse, QueryParams } from "@/types/pagination";
 
-export default function useGetSkillsForUser(
-  userId: string | undefined,
-  params: LaravelQueryParams = {}
-) {
+export default function useGetSkillsForUser(userId: string | undefined, params: QueryParams = {}) {
   const privateApi = usePrivateApi();
-  const queryString = useLaravelQuery(params);
+  const queryString = useQueryString(params);
 
-  return useQuery<LaravelPaginatedResponse<UserSkillDetail>>({
+  const { data: raw, ...rest } = useQuery<PaginatedResponse<UserSkillDetail>>({
     queryKey: ["users", userId, "skills", queryString],
     queryFn: async () => {
-      const { data } = await privateApi.get<LaravelPaginatedResponse<UserSkillDetail>>(
-        `/api/users/${userId}/skills${queryString}`
+      const { data } = await privateApi.get<PaginatedResponse<UserSkillDetail>>(
+        `/api/users/${userId}/skills${queryString}`,
       );
       return data;
     },
@@ -23,4 +20,6 @@ export default function useGetSkillsForUser(
     staleTime: 1000 * 60 * 5,
     retry: 1,
   });
+
+  return { ...rest, ...unwrapPagination(raw) };
 }
