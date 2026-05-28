@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useTabParam } from "@/hooks/useTabParam";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { usePage } from "@/context/PageContext";
-import { Plus, Eye } from "lucide-react";
+import { Plus } from "lucide-react";
 import { SquaresFourIcon, FolderIcon, CertificateIcon, CalendarDotsIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -10,13 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import ComposedCard from "@/components/common/cards/ComposedCard";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { SortableTableHead } from "@/components/common/table/SortableTableHead";
-import { TablePagination } from "@/components/common/table/TablePagination";
-import { useTableSort } from "@/hooks/useTableSort";
-import { useTablePagination } from "@/hooks/useTablePagination";
 import useGetUser from "@/api/users/useGetUser";
-import useGetUserProjects from "@/api/users/useGetUserProjects";
 import useGetSkillsForUser from "@/api/users/useGetSkillsForUser";
 import useGetUserStats from "@/api/users/useGetUserStats";
 import type { UserSkillDetail } from "@/types/dashboard";
@@ -24,46 +18,7 @@ import UserProfileCard from "@/components/specified/pages/user/UserProfileCard.t
 import UserStatsSection from "@/components/specified/pages/user/UserStatsSection.tsx";
 import UserOverviewTab from "@/components/specified/pages/user/UserOverviewTab.tsx";
 import UserAbsencesTab from "@/components/specified/pages/user/UserAbsencesTab.tsx";
-
-/* ─── Types ───────────────────────────────────────────────── */
-
-type ProjectSortKey = "name" | "progress" | "risk_score" | "bus_factor" | "end_date";
-
-/* ─── Helpers ─────────────────────────────────────────────── */
-
-function fmtDate(date: string) {
-  return new Date(date).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-/* ─── Project status helpers ──────────────────────────────── */
-
-const STATUS_STYLES: Record<ProjectStatus, string> = {
-  active: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400",
-  completed: "bg-blue-50 text-blue-700 ring-1 ring-blue-200/60 dark:bg-blue-500/10 dark:text-blue-400",
-  on_hold: "bg-amber-50 text-amber-700 ring-1 ring-amber-200/60 dark:bg-amber-500/10 dark:text-amber-400",
-  planning: "bg-violet-50 text-violet-700 ring-1 ring-violet-200/60 dark:bg-violet-500/10 dark:text-violet-400",
-};
-const STATUS_LABELS: Record<ProjectStatus, string> = {
-  active: "Active",
-  on_hold: "On Hold",
-  planning: "Planning",
-  completed: "Completed",
-};
-
-const SEVERITY_TEXT: Record<Severity, string> = {
-  ok: "text-emerald-500",
-  warning: "text-amber-500",
-  critical: "text-rose-500",
-};
-const SEVERITY_DOT: Record<Severity, string> = {
-  ok: "bg-emerald-500",
-  warning: "bg-amber-400",
-  critical: "bg-rose-500",
-};
+import UserProjectsTab from "@/components/specified/pages/user/UserProjectsTab.tsx";
 
 /* ─── Radar chart ─────────────────────────────────────────── */
 
@@ -192,218 +147,6 @@ function SkillBarSkeleton() {
   );
 }
 
-/* ─── Projects Tab ────────────────────────────────────────── */
-
-function ProjectsTab({ userId }: { userId: string }) {
-  const navigate = useNavigate();
-  const { sort, toggleSort } = useTableSort<ProjectSortKey>("name");
-  const { page, setPage, perPage, setPerPage } = useTablePagination(10, []);
-
-  const { data: projects, total, lastPage, from, to, isLoading, isError } = useGetUserProjects(userId, {
-    page,
-    per_page: perPage,
-    sorts: [{ field: sort.key, direction: sort.dir }],
-  });
-
-  return (
-    <ComposedCard
-      title="Projects"
-      action={
-        <>
-          {!isLoading && (
-            <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
-              {total}
-            </span>
-          )}
-          <div className="flex-1" />
-          <Button size="xs" variant="outline" className="gap-1.5 text-[10px]">
-            <Plus className="size-3" />
-            Assign project
-          </Button>
-        </>
-      }
-      className="p-0 overflow-hidden"
-      headerClassName="px-6 pt-5 pb-4 border-b border-border/60"
-    >
-      <Table className="text-sm">
-        <TableHeader>
-          <TableRow className="border-b border-t border-border/60 bg-muted/30 hover:bg-muted/30">
-            <SortableTableHead label="Project" col="name" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
-            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Role
-            </TableHead>
-            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Status
-            </TableHead>
-            <SortableTableHead
-              label="Progress"
-              col="progress"
-              sortKey={sort.key}
-              sortDir={sort.dir}
-              onSort={toggleSort}
-            />
-            <SortableTableHead
-              label="Fragility"
-              col="risk_score"
-              sortKey={sort.key}
-              sortDir={sort.dir}
-              onSort={toggleSort}
-            />
-            <SortableTableHead
-              label="Bus Factor"
-              col="bus_factor"
-              sortKey={sort.key}
-              sortDir={sort.dir}
-              onSort={toggleSort}
-            />
-            <SortableTableHead label="Due" col="end_date" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
-            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody className="[&_tr]:border-border/40">
-          {isLoading ? (
-            Array.from({ length: Math.min(perPage, 8) }).map((_, i) => (
-              <TableRow key={i} className="border-border/40">
-                <TableCell className="px-5 py-4">
-                  <div className="space-y-1.5">
-                    <Skeleton className="h-3.5 w-40" />
-                    <Skeleton className="h-3 w-56" />
-                  </div>
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-4 w-20" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-5 w-16 rounded-full" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-3 w-28 rounded-full" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-4 w-8" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-4 w-6" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-3.5 w-20" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-8 w-14 rounded-lg" />
-                </TableCell>
-              </TableRow>
-            ))
-          ) : isError ? (
-            <TableRow>
-              <TableCell colSpan={8} className="px-6 py-12 text-center text-sm text-muted-foreground">
-                Failed to load projects. Check API connection.
-              </TableCell>
-            </TableRow>
-          ) : projects.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={8} className="px-6 py-12 text-center text-sm text-muted-foreground">
-                No projects assigned.
-              </TableCell>
-            </TableRow>
-          ) : (
-            projects.map((proj) => {
-              const overdue = new Date(proj.end_date) < new Date() && proj.status !== "completed";
-              return (
-                <TableRow
-                  key={proj.id}
-                  className="hover:bg-muted/20 transition-colors cursor-pointer border-border/40"
-                  onClick={() => navigate(`/projects/${proj.id}`)}
-                >
-                  <TableCell className="px-5 py-4 max-w-[220px]">
-                    <p className="font-semibold text-foreground text-[14px] truncate">{proj.name}</p>
-                    <p className="text-[12px] text-muted-foreground mt-0.5 truncate">{proj.description}</p>
-                  </TableCell>
-                  <TableCell className="px-5 py-4 text-[13px] text-foreground">{proj.role}</TableCell>
-                  <TableCell className="px-5 py-4">
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold",
-                        STATUS_STYLES[proj.status],
-                      )}
-                    >
-                      {STATUS_LABELS[proj.status]}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <div className="flex items-center gap-2 min-w-[110px]">
-                      <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
-                        <div className="h-full rounded-full bg-primary/70" style={{ width: `${proj.progress}%` }} />
-                      </div>
-                      <span className="text-[12px] font-medium tabular-nums w-8 text-right">{proj.progress}%</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <div className="flex items-center gap-1.5">
-                      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", SEVERITY_DOT[proj.fragility.severity])} />
-                      <span className={cn("text-[13px] font-semibold whitespace-nowrap", SEVERITY_TEXT[proj.fragility.severity])}>
-                        {proj.fragility.value}
-                        {proj.fragility.raw !== null && (
-                          <span className="ml-1 tabular-nums opacity-70">{proj.fragility.raw}</span>
-                        )}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <span className={cn("text-[13px] font-semibold whitespace-nowrap", SEVERITY_TEXT[proj.bus_factor.severity])}>
-                      {proj.bus_factor.value}
-                      {proj.bus_factor.raw !== null && (
-                        <span className="ml-1 tabular-nums opacity-70">{proj.bus_factor.raw}</span>
-                      )}
-                    </span>
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <span
-                      className={cn(
-                        "text-[12px] font-medium whitespace-nowrap",
-                        overdue ? "text-rose-500" : "text-foreground",
-                      )}
-                    >
-                      {fmtDate(proj.end_date)}
-                    </span>
-                    {overdue && <p className="text-[10px] text-rose-400 mt-0.5 font-medium">Overdue</p>}
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <Button
-                      size="sm"
-                      className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/projects/${proj.id}`);
-                      }}
-                    >
-                      <Eye className="size-3.5" /> View
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-      </Table>
-
-      {!isLoading && !isError && (
-        <TablePagination
-          page={page}
-          lastPage={lastPage}
-          perPage={perPage}
-          total={total}
-          from={from}
-          to={to}
-          onPageChange={setPage}
-          onPerPageChange={setPerPage}
-        />
-      )}
-    </ComposedCard>
-  );
-}
-
 /* ─── Skills Tab ──────────────────────────────────────────── */
 
 function SkillsTab({ userId }: { userId: string }) {
@@ -516,7 +259,7 @@ export default function UserDetail() {
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         {/* ── Hero ─────────────────────────────────────────────── */}
-        {isLoading ? <UserProfileCard.Skeleton /> : user && <UserProfileCard user={user} />}
+        <UserProfileCard user={user} isLoading={isLoading} />
 
         {/* ── Stats ─────────────────────────────────────────────── */}
         {isLoadingStats || !stats ? <UserStatsSection.Skeleton /> : <UserStatsSection stats={stats} />}
@@ -546,7 +289,7 @@ export default function UserDetail() {
               <UserOverviewTab userId={id} onViewAbsences={() => setActiveTab("absences")} />
             </TabsContent>
             <TabsContent value="projects">
-              <ProjectsTab userId={id} />
+              <UserProjectsTab userId={id} />
             </TabsContent>
             <TabsContent value="skills">
               <SkillsTab userId={id} />

@@ -22,7 +22,7 @@ export default function ProjectProfileCard({ project }: ProjectProfileCardProps)
   return (
     <Card className="p-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div className="flex items-start gap-4">
+        <div className="flex items-center gap-4">
           <ProjectAvatar name={project.name} variant={project.status} size="2xl" />
           <div>
             <div className="flex items-center gap-2 flex-wrap">
