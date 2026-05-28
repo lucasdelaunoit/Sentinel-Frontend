@@ -82,16 +82,23 @@ export function unwrapPagination<T>(response: PaginatedResponse<T> | undefined):
     };
   }
 
+  const meta = (response as unknown as { meta?: Partial<PaginatedResponse<T>> }).meta;
+  const links = (response as unknown as { links?: { next?: string | null; prev?: string | null } }).links;
+  const src = { ...response, ...(meta ?? {}) } as PaginatedResponse<T>;
+
+  const nextUrl = links?.next ?? response.next_page_url ?? null;
+  const prevUrl = links?.prev ?? response.prev_page_url ?? null;
+
   return {
     data: response.data ?? [],
-    total: response.total ?? 0,
-    currentPage: response.current_page ?? 1,
-    lastPage: response.last_page ?? 1,
-    perPage: response.per_page ?? 0,
-    from: response.from ?? 0,
-    to: response.to ?? 0,
-    hasNextPage: response.next_page_url !== null,
-    hasPrevPage: response.prev_page_url !== null,
+    total: src.total ?? 0,
+    currentPage: src.current_page ?? 1,
+    lastPage: src.last_page ?? 1,
+    perPage: src.per_page ?? 0,
+    from: src.from ?? 0,
+    to: src.to ?? 0,
+    hasNextPage: nextUrl !== null,
+    hasPrevPage: prevUrl !== null,
   };
 }
 

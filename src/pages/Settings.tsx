@@ -5,13 +5,15 @@ import { Label } from "@/components/ui/label";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import SkillsTab from "@/components/specified/pages/settings/SkillsTab.tsx";
 import RulesTab from "@/components/specified/pages/settings/RulesTab.tsx";
-import { BookOpenIcon, CalendarIcon, ShieldIcon, SlidersIcon } from "@phosphor-icons/react";
+import { BookOpenIcon, BuildingsIcon, CalendarIcon, ShieldIcon, SlidersIcon } from "@phosphor-icons/react";
 import CalendarTab from "@/components/specified/pages/settings/CalendarTab.tsx";
 import OrganizationTab from "@/components/specified/pages/settings/OrganizationTab.tsx";
+import DepartmentsTab from "@/components/specified/pages/settings/DepartmentsTab.tsx";
 import { useTabParam } from "@/hooks/useTabParam";
 
 const SETTINGS_TABS = [
   { value: "organization", label: "Organization", icon: ShieldIcon },
+  { value: "departments", label: "Departments", icon: BuildingsIcon },
   { value: "skills", label: "Skills", icon: BookOpenIcon },
   { value: "rules", label: "Rules", icon: SlidersIcon },
   { value: "calendar", label: "Calendar", icon: CalendarIcon },
@@ -59,6 +61,9 @@ export default function Settings() {
 
           <TabsContent value="organization" className="mt-5">
             <OrganizationTab previewVisible={previewVisible} />
+          </TabsContent>
+          <TabsContent value="departments" className="mt-5">
+            <DepartmentsTab />
           </TabsContent>
           <TabsContent value="skills" className="mt-5">
             <SkillsTab />

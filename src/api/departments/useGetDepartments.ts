@@ -10,7 +10,7 @@ export default function useGetDepartments(params: QueryParams = {}) {
   const { data: raw, ...rest } = useQuery<PaginatedResponse<Department>>({
     queryKey: ["departments", queryString],
     queryFn: async () => {
-      const { data } = await privateApi.get<PaginatedResponse<Department>>(`/api/departments${queryString}`);
+      const { data } = await privateApi.get<PaginatedResponse<Department>>(`/api/settings/departments${queryString}`);
       return data;
     },
     staleTime: 1000 * 60 * 5,

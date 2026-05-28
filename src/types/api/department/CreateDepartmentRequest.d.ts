@@ -1,0 +1,3 @@
+interface CreateDepartmentRequest {
+  name: string;
+}
