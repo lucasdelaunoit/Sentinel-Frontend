@@ -14,7 +14,7 @@ const PREVIEW_COUNT = 5;
 export default function CriticalProjectsCard() {
   const navigate = useNavigate();
 
-  const { data, isLoading, isError } = useGetProjects({
+  const { data: projects, isLoading, isError } = useGetProjects({
     page: 1,
     per_page: PREVIEW_COUNT,
     sorts: [{ field: "risk_score", direction: "desc" }],
@@ -24,8 +24,6 @@ export default function CriticalProjectsCard() {
   const { data: statsData, isLoading: isStatsLoading } = useGetProjectsStats();
 
   if (isLoading || isStatsLoading) return <CriticalProjectsCard.Skeleton />;
-
-  const projects = data?.data ?? [];
   const fragileCount = statsData?.fragile_count.value ?? "0";
 
   return (

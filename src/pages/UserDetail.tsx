@@ -199,17 +199,11 @@ function ProjectsTab({ userId }: { userId: string }) {
   const { sort, toggleSort } = useTableSort<ProjectSortKey>("name");
   const { page, setPage, perPage, setPerPage } = useTablePagination(10, []);
 
-  const { data, isLoading, isError } = useGetUserProjects(userId, {
+  const { data: projects, total, lastPage, from, to, isLoading, isError } = useGetUserProjects(userId, {
     page,
     per_page: perPage,
     sorts: [{ field: sort.key, direction: sort.dir }],
   });
-
-  const projects = data?.data ?? [];
-  const total = data?.total ?? 0;
-  const lastPage = data?.last_page ?? 1;
-  const from = data?.from ?? 0;
-  const to = data?.to ?? 0;
 
   return (
     <ComposedCard
@@ -413,7 +407,7 @@ function ProjectsTab({ userId }: { userId: string }) {
 /* ─── Skills Tab ──────────────────────────────────────────── */
 
 function SkillsTab({ userId }: { userId: string }) {
-  const { data: skillsData, isLoading, isError } = useGetSkillsForUser(userId);
+  const { data: list, isLoading, isError } = useGetSkillsForUser(userId);
 
   if (isLoading) {
     return (
@@ -436,7 +430,6 @@ function SkillsTab({ userId }: { userId: string }) {
     return <p className="text-sm text-muted-foreground text-center py-12">Failed to load skills.</p>;
   }
 
-  const list = skillsData?.data ?? [];
   const left = list.filter((_, i) => i % 2 === 0);
   const right = list.filter((_, i) => i % 2 !== 0);
 

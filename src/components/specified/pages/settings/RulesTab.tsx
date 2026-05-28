@@ -377,10 +377,8 @@ function RuleEditorSheet({
   title: string;
 }) {
   const [state, setState] = useState<RuleEditorState>(initial);
-  const { data: skillsData } = useGetSkills({ per_page: 200 });
-  const { data: projectsData } = useGetProjects({ per_page: 200 });
-  const skills = skillsData?.data ?? [];
-  const projects = projectsData?.data ?? [];
+  const { data: skills } = useGetSkills({ per_page: 200 });
+  const { data: projects } = useGetProjects({ per_page: 200 });
 
   useEffect(() => {
     if (open) setState(initial);

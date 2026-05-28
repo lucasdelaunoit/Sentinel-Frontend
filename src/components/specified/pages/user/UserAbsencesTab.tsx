@@ -267,20 +267,13 @@ export default function UserAbsencesTab({ userId }: UserAbsencesTabProps) {
     return () => clearTimeout(t);
   }, [search]);
 
-  const { data, isLoading, isError } = useGetAbsencesForUser(userId, {
+  const { data: absences, total, lastPage, from, to, isLoading, isError } = useGetAbsencesForUser(userId, {
     page,
     per_page: perPage,
     search: debouncedSearch || undefined,
   });
 
-  const { data: allData, isLoading: allLoading } = useGetAbsencesForUser(userId, { per_page: 100 });
-
-  const absences = data?.data ?? [];
-  const allAbsences = allData?.data ?? [];
-  const total = data?.total ?? 0;
-  const lastPage = data?.last_page ?? 1;
-  const from = data?.from ?? 0;
-  const to = data?.to ?? 0;
+  const { data: allAbsences, isLoading: allLoading } = useGetAbsencesForUser(userId, { per_page: 100 });
 
   function openDetail(absence: AbsenceItem) {
     setDetailAbsence(absence);

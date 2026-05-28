@@ -116,12 +116,10 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
     per_page: 50,
     search: userSearch || undefined,
   });
-  const { data: skillsData, isLoading: skillsLoading } = useGetSkills({
+  const { data: skills, isLoading: skillsLoading } = useGetSkills({
     per_page: 50,
     search: skillSearch || undefined,
   });
-
-  const skills = skillsData?.data ?? [];
 
   const selectedUsers = useMemo(() => users.filter((u) => userIds.includes(Number(u.id))), [users, userIds]);
 

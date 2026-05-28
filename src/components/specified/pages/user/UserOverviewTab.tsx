@@ -123,7 +123,7 @@ function buildRecommendations(score: number, bus: number): Recommendation[] {
 
 export default function UserOverviewTab({ userId, onViewAbsences }: UserOverviewTabProps) {
   const { data: stats, isLoading } = useGetUserStats(userId);
-  const { data: absencesData, isLoading: absencesLoading } = useGetAbsencesForUser(userId, { per_page: 100 });
+  const { data: allAbsencesList, isLoading: absencesLoading } = useGetAbsencesForUser(userId, { per_page: 100 });
 
   if (isLoading || !stats) {
     return (
@@ -156,7 +156,7 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
   const crit = critLabel(criticalityScore);
   const recommendations = buildRecommendations(criticalityScore, busFactorCount);
 
-  const allAbsences = absencesData?.data ?? [];
+  const allAbsences = allAbsencesList;
   const upcoming = upcomingAbsences(allAbsences);
   const ytd = daysThisYear(allAbsences);
 

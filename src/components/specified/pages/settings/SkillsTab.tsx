@@ -26,7 +26,7 @@ export default function SkillsTab() {
   const [catSheetOpen, setCatSheetOpen] = useState(false);
 
   const { data: categoriesData, isLoading: catLoading } = useGetSkillCategories();
-  const { data: skillsData, isLoading: skillsLoading } = useGetSkills({
+  const { data: list, lastPage: totalPages, isLoading: skillsLoading } = useGetSkills({
     page,
     per_page: ITEMS_PER_PAGE,
     search: search || undefined,
@@ -34,8 +34,6 @@ export default function SkillsTab() {
   });
 
   const categories: SkillCategory[] = categoriesData ?? [];
-  const list: Skill[] = skillsData?.data ?? [];
-  const totalPages = skillsData?.last_page ?? 1;
 
   useEffect(() => {
     setPage(1);

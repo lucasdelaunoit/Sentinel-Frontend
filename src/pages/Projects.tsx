@@ -197,19 +197,13 @@ function ProjectList() {
   const { sort, toggleSort } = useTableSort<ProjSortKey>("name");
   const { page, setPage, perPage, setPerPage } = useTablePagination(15, [search, statusFilter]);
 
-  const { data, isLoading, isError } = useGetProjects({
+  const { data: projects, total, lastPage, from, to, isLoading, isError } = useGetProjects({
     page,
     per_page: perPage,
     search: search || undefined,
     sorts: [{ field: sort.key, direction: sort.dir }],
     filters: statusFilter !== null ? [{ field: "status", value: statusFilter }] : undefined,
   });
-
-  const projects = data?.data ?? [];
-  const total = data?.total ?? 0;
-  const lastPage = data?.last_page ?? 1;
-  const from = data?.from ?? 0;
-  const to = data?.to ?? 0;
 
   const toolbarAction = (
     <>
