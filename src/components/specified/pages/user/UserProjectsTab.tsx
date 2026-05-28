@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye } from "lucide-react";
+import { FolderPlusIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -7,11 +9,11 @@ import { HighlightMatch } from "@/utils/useHighlightableText";
 import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable";
 import type { FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import ProjectStatusBadge from "@/components/specified/models/projects/badges/ProjectStatusBadge.tsx";
+import AddUserProjectsSheet from "@/components/specified/models/projects/sheets/AddUserProjectsSheet";
 import useGetUserProjects from "@/api/users/useGetUserProjects";
-import type { UserProjectItem, StatCardData } from "@/types/dashboard";
 import { formatDate } from "@/utils/formatters/date.ts";
 
-type ProjectSortField = "name" | "risk_score" | "bus_factor" | "deadline";
+type ProjectSortField = "name" | "risk_score" | "team_availability" | "knowledge_coverage" | "created_at";
 
 const STATUS_FILTER_OPTIONS: FilterPillOption<ProjectStatus | null>[] = [
   { value: null, label: "All" },
@@ -34,15 +36,16 @@ const SEVERITY_DOT: Record<Severity, string> = {
   critical: "bg-danger",
 };
 
-function MetricCell({ stat }: { stat: StatCardData | null | undefined }) {
-  if (!stat) return <span className="text-[13px] text-muted-foreground">—</span>;
-  const raw = stat.value_raw ?? stat.raw;
+function MetricCell({ metric, withRaw = false }: { metric: MetricResult | null | undefined; withRaw?: boolean }) {
+  if (!metric) return <span className="text-[13px] text-muted-foreground">—</span>;
   return (
-    <div className="flex items-center gap-1.5" title={stat.insight ?? undefined}>
-      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", SEVERITY_DOT[stat.severity])} />
-      <span className={cn("text-[13px] font-semibold whitespace-nowrap", SEVERITY_TEXT[stat.severity])}>
-        {stat.value}
-        {raw !== null && raw !== undefined && <span className="ml-1 tabular-nums opacity-70">{raw}</span>}
+    <div className="flex items-center gap-1.5" title={metric.insight ?? undefined}>
+      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", SEVERITY_DOT[metric.severity])} />
+      <span className={cn("text-[13px] font-semibold whitespace-nowrap", SEVERITY_TEXT[metric.severity])}>
+        {metric.value}
+        {withRaw && metric.value_raw !== null && metric.value_raw !== undefined && (
+          <span className="ml-1 tabular-nums opacity-70">({metric.value_raw})</span>
+        )}
       </span>
     </div>
   );
@@ -50,8 +53,9 @@ function MetricCell({ stat }: { stat: StatCardData | null | undefined }) {
 
 export default function UserProjectsTab({ userId }: { userId: string | undefined }) {
   const navigate = useNavigate();
+  const [addOpen, setAddOpen] = useState(false);
 
-  const columns: DataTableColumn<UserProjectItem, ProjectSortField>[] = [
+  const columns: DataTableColumn<Project, ProjectSortField>[] = [
     {
       key: "project",
       header: "Project",
@@ -74,12 +78,6 @@ export default function UserProjectsTab({ userId }: { userId: string | undefined
       ),
     },
     {
-      key: "role",
-      header: "Role",
-      cell: (proj) => <span className="text-[13px] text-foreground">{proj.role || "—"}</span>,
-      skeleton: <Skeleton className="h-4 w-20" />,
-    },
-    {
       key: "status",
       header: "Status",
       cell: (proj) => <ProjectStatusBadge status={proj.status} />,
@@ -89,20 +87,26 @@ export default function UserProjectsTab({ userId }: { userId: string | undefined
       key: "fragility",
       header: "Fragility",
       sortKey: "risk_score",
-      cell: (proj) => <MetricCell stat={proj.fragility} />,
+      cell: (proj) => <MetricCell metric={proj.fragility} withRaw />,
       skeleton: <Skeleton className="h-4 w-20" />,
     },
     {
-      key: "bus_factor",
-      header: "Bus Factor",
-      sortKey: "bus_factor",
-      cell: (proj) => <MetricCell stat={proj.bus_factor} />,
+      key: "team_availability",
+      header: "Team Availability",
+      sortKey: "team_availability",
+      cell: (proj) => <MetricCell metric={proj.team_availability} withRaw />,
+      skeleton: <Skeleton className="h-4 w-20" />,
+    },
+    {
+      key: "knowledge_coverage",
+      header: "Knowledge Coverage",
+      sortKey: "knowledge_coverage",
+      cell: (proj) => <MetricCell metric={proj.knowledge_coverage} />,
       skeleton: <Skeleton className="h-4 w-16" />,
     },
     {
       key: "deadline",
       header: "Deadline",
-      sortKey: "deadline",
       cell: (proj) => {
         const overdue = !!proj.deadline && new Date(proj.deadline) < new Date() && proj.status !== "completed";
         return (
@@ -134,16 +138,30 @@ export default function UserProjectsTab({ userId }: { userId: string | undefined
   ];
 
   return (
-    <DataTable<UserProjectItem, ProjectSortField, ProjectStatus>
-      title="Assigned Projects"
-      hook={(params) => useGetUserProjects(userId, params)}
-      columns={columns}
-      defaultSort="name"
-      searchPlaceholder="Search projects..."
-      filter={{ options: STATUS_FILTER_OPTIONS, field: "status" }}
-      onRowClick={(proj) => navigate(`/projects/${proj.id}`)}
-      emptyMessage="No projects match your filters."
-      errorMessage="Failed to load projects. Check API connection."
-    />
+    <>
+      <DataTable<Project, ProjectSortField, ProjectStatus>
+        title="Assigned Projects"
+        hook={(params) => useGetUserProjects(userId, params)}
+        columns={columns}
+        defaultSort="name"
+        searchPlaceholder="Search projects..."
+        filter={{ options: STATUS_FILTER_OPTIONS, field: "status" }}
+        onRowClick={(proj) => navigate(`/projects/${proj.id}`)}
+        emptyMessage="No projects match your filters."
+        errorMessage="Failed to load projects. Check API connection."
+        headerAction={
+          <Button
+            size="sm"
+            onClick={() => setAddOpen(true)}
+            disabled={!userId}
+            className="gap-1.5 h-9 px-3 text-[12px] font-medium rounded-lg btn-press"
+          >
+            <FolderPlusIcon className="size-3.5" weight="bold" />
+            Assign project
+          </Button>
+        }
+      />
+      <AddUserProjectsSheet userId={userId} open={addOpen} onOpenChange={setAddOpen} />
+    </>
   );
 }

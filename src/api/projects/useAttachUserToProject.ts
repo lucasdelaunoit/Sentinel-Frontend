@@ -15,10 +15,12 @@ export default function useAttachUserToProject() {
   const mutation = useMutation({
     mutationFn: ({ projectId, userId }: AttachUserArgs) =>
       privateApi.post(`/api/projects/${projectId}/users`, { user_id: userId }),
-    onSuccess: (_, { projectId }) => {
+    onSuccess: (_, { projectId, userId }) => {
       queryClient.invalidateQueries({ queryKey: ["projects", projectId, "users"] });
       queryClient.invalidateQueries({ queryKey: ["projects", String(projectId)] });
       queryClient.invalidateQueries({ queryKey: ["projects-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["users", String(userId), "projects"] });
+      queryClient.invalidateQueries({ queryKey: ["users", String(userId), "stats"] });
     },
     onError: (error) => {
       toast.error(extractApiErrorMessage(error, "Failed to add member."));
