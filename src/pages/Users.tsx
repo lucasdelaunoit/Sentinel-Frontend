@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Eye, PenSquare, X } from "lucide-react";
+import { Eye } from "lucide-react";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { PlusIcon, DotsThreeVerticalIcon, CalendarPlusIcon, TrashIcon } from "@phosphor-icons/react";
@@ -28,121 +27,12 @@ import UserAvatar from "@/components/specified/models/employees/avatars/UserAvat
 import UserStatusBadge from "@/components/specified/models/employees/badges/UserStatusBadge.tsx";
 import UsersStatCardsSection from "@/components/specified/pages/employees/UsersStatCardsSection.tsx";
 import FilterPillGroup, { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
+import CreateUserSheet from "@/components/specified/models/employees/sheets/CreateUserSheet";
 import type { UserListItem } from "@/types/dashboard";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
 type EmpSortKey = "name" | "email" | "title";
-
-interface UserFormData {
-  name?: string;
-  email?: string;
-  department?: string;
-  criticality?: string;
-}
-
-/* ─── Employee Modal ────────────────────────────────────────── */
-
-interface UserModalProps {
-  open: boolean;
-  onClose: () => void;
-  user?: UserFormData;
-}
-
-function UserModal({ open, onClose, user }: UserModalProps) {
-  if (!open) return null;
-  const isEdit = !!user;
-
-  const fieldCls =
-    "w-full rounded-xl border border-border/60 bg-background px-4 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all";
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-end">
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 flex h-full w-[480px] flex-col bg-card shadow-2xl">
-        <div className="h-[3px] w-full shrink-0 bg-gradient-to-r from-primary via-primary to-transparent" />
-        <div className="flex items-start justify-between px-8 pt-7 pb-5">
-          <div>
-            <h2 className="text-[18px] font-bold text-foreground tracking-tight">
-              {isEdit ? "Edit Employee" : "Add a New Employee"}
-            </h2>
-            <p className="mt-1 text-[13px] text-muted-foreground">
-              {isEdit
-                ? "Update the employee information below"
-                : "Fill in the details to create a new employee profile"}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="flex size-8 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-5">
-          {[
-            {
-              label: "Full Name",
-              type: "text",
-              placeholder: "e.g. John Doe",
-              defaultValue: user ? `${user.firstname} ${user.lastname}` : undefined,
-            },
-            {
-              label: "Email Address",
-              type: "email",
-              placeholder: "e.g. john@company.com",
-              defaultValue: user?.email,
-            },
-          ].map(({ label, ...props }) => (
-            <div key={label} className="space-y-1.5">
-              <label className="block text-[12px] font-medium text-foreground/70">{label}</label>
-              <input className={fieldCls} {...props} />
-            </div>
-          ))}
-          <div className="space-y-1.5">
-            <label className="block text-[12px] font-medium text-foreground/70">Department</label>
-            <select defaultValue={user?.department ?? ""} className={cn(fieldCls, "appearance-none cursor-pointer")}>
-              <option value="" disabled>
-                Select a department
-              </option>
-              {["Management", "Engineering", "Design", "Data", "Security", "DevOps"].map((d) => (
-                <option key={d}>{d}</option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-[12px] font-medium text-foreground/70">Role / Position</label>
-            <input type="text" placeholder="e.g. Senior Developer" className={fieldCls} />
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-[12px] font-medium text-foreground/70">Start Date</label>
-            <input type="date" className={fieldCls} />
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-[12px] font-medium text-foreground/70">Criticality Level</label>
-            <select defaultValue={user?.criticality ?? ""} className={cn(fieldCls, "appearance-none cursor-pointer")}>
-              <option value="" disabled>
-                Select criticality
-              </option>
-              {["High", "Medium", "Low"].map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="shrink-0 px-8 py-5 border-t border-border/60">
-          <Button
-            className="w-full justify-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-11 text-[13px] font-semibold shadow-sm shadow-primary/10 btn-press"
-            onClick={onClose}
-          >
-            <PenSquare className="size-4" />
-            {isEdit ? "Save Changes" : "Create Employee"}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ─── Row Actions ───────────────────────────────────────────── */
 
@@ -223,7 +113,15 @@ function UserList() {
   const { sort, toggleSort } = useTableSort<EmpSortKey>("name");
   const { page, setPage, perPage, setPerPage } = useTablePagination(15, [search, statusFilter]);
 
-  const { data: users, total, lastPage, from, to, isLoading, isError } = useGetUsers({
+  const {
+    data: users,
+    total,
+    lastPage,
+    from,
+    to,
+    isLoading,
+    isError,
+  } = useGetUsers({
     page,
     per_page: perPage,
     search: search || undefined,
@@ -397,11 +295,11 @@ function UserList() {
 
 export default function Users() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [modalOpen, setModalOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     if (searchParams.get("action") === "add") {
-      setModalOpen(true);
+      setSheetOpen(true);
       setSearchParams({}, { replace: true });
     }
   }, [searchParams, setSearchParams]);
@@ -412,7 +310,7 @@ export default function Users() {
         title="All Employees"
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" className="font-semibold" size="lg" onClick={() => setModalOpen(true)}>
+            <Button size="lg" onClick={() => setSheetOpen(true)}>
               <PlusIcon /> Add a New Employee
             </Button>
           </div>
@@ -424,7 +322,7 @@ export default function Users() {
         <UserList />
       </div>
 
-      <UserModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <CreateUserSheet open={sheetOpen} onOpenChange={setSheetOpen} />
     </>
   );
 }
