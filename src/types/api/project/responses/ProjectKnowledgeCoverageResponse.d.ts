@@ -1,0 +1,3 @@
+interface ProjectKnowledgeCoverageResponse {
+  data: ProjectKnowledgeCoverageItem[];
+}

@@ -1,0 +1,3 @@
+interface ProjectCompetencyRadarResponse {
+  data: ProjectCompetencyRadarItem[];
+}
