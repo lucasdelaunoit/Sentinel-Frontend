@@ -7,7 +7,7 @@ import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import { SecondaryButton } from "@/components/common/buttons/SecondaryButton.tsx";
 import { cn } from "@/lib/utils.ts";
-import type { AbsenceItem, AbsenceType } from "@/types/dashboard.ts";
+import { AbsenceType, ABSENCE_TYPE_LABEL, type AbsenceItem } from "@/types/absence";
 
 interface UserOverviewTabProps {
   userId: string;
@@ -23,15 +23,16 @@ function critLabel(score: number): { label: string; color: string; bg: string; b
 }
 
 const ABSENCE_TYPE_DOT: Record<AbsenceType, string> = {
-  vacation: "bg-blue-500",
-  sick: "bg-rose-500",
-  conference: "bg-violet-500",
+  [AbsenceType.Vacation]: "bg-blue-500",
+  [AbsenceType.Conference]: "bg-violet-500",
+  [AbsenceType.Training]: "bg-amber-500",
+  [AbsenceType.Parental]: "bg-emerald-500",
+  [AbsenceType.Sabbatical]: "bg-indigo-500",
+  [AbsenceType.Other]: "bg-slate-500",
 };
-const ABSENCE_TYPE_LABEL: Record<AbsenceType, string> = {
-  vacation: "Vacation",
-  sick: "Sick leave",
-  conference: "Conference",
-};
+
+function typeDot(t: AbsenceType | null) { return t ? ABSENCE_TYPE_DOT[t] : "bg-muted-foreground"; }
+function typeLabel(t: AbsenceType | null) { return t ? ABSENCE_TYPE_LABEL[t] : "Unspecified"; }
 
 function fmtShort(date: string) {
   return new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
@@ -339,10 +340,10 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
                     key={a.id}
                     before={
                       <div className="flex size-8 items-center justify-center rounded-lg bg-muted/50 border border-border/40">
-                        <span className={cn("size-2 rounded-full", ABSENCE_TYPE_DOT[a.type])} />
+                        <span className={cn("size-2 rounded-full", typeDot(a.type))} />
                       </div>
                     }
-                    title={ABSENCE_TYPE_LABEL[a.type]}
+                    title={typeLabel(a.type)}
                     description={`${fmtShort(a.start_date)} → ${fmtShort(a.end_date)}`}
                     action={
                       <span className="text-[11px] font-medium text-muted-foreground tabular-nums">

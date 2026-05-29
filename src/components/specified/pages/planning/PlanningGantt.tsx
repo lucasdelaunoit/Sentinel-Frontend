@@ -26,7 +26,7 @@ import {
   hasLeaveOverlap,
   isOnRealLeave,
 } from "@/utils/planning/leaves";
-import { ABSENCE_THEME, simColor } from "@/utils/planning/theme";
+import { absenceTheme, simColor } from "@/utils/planning/theme";
 import PlanningCapacityStrip from "./PlanningCapacityStrip";
 import PlanningLegend from "./PlanningLegend";
 
@@ -410,7 +410,7 @@ export default function PlanningGantt({
                   ))}
 
                   {viewLeaves.map((lr, i) => {
-                    const theme = ABSENCE_THEME[lr.type];
+                    const theme = absenceTheme(lr.type);
                     const left = toX(lr.start);
                     const width = toX(lr.end + 1) - left;
                     return (

@@ -1,6 +1,6 @@
 export type Criticality = 'High' | 'Medium' | 'Low'
 export type TodayStatus = 'Available' | 'Has Leave' | 'Remote'
-export type LeaveType = 'vacation' | 'sick' | 'conference'
+export type LeaveType = 'vacation' | 'conference' | 'training' | 'parental' | 'sabbatical' | 'other'
 export type SkillCategory = 'FRONTEND' | 'BACKEND' | 'DEVOPS' | 'DATABASE' | 'SECURITY' | 'TESTING'
 
 export interface Skill {
@@ -72,7 +72,7 @@ export const USER_DETAILS: Record<string, UserDetail> = {
     ],
     leaves: [
       { id: 'L1', type: 'vacation', startDate: '2026-02-20', endDate: '2026-02-27', status: 'approved' },
-      { id: 'L2', type: 'sick', startDate: '2025-11-05', endDate: '2025-11-06', status: 'approved' },
+      { id: 'L2', type: 'other', startDate: '2025-11-05', endDate: '2025-11-06', status: 'approved' },
       { id: 'L3', type: 'conference', startDate: '2025-09-15', endDate: '2025-09-18', status: 'approved' },
     ],
     projects: [

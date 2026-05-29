@@ -49,8 +49,6 @@ export default function Dashboard() {
           <SinglePointsOfFailureCard />
           <VulnerableSkillsCard />
         </div>
-
-        {/* Section 4 — Upcoming Risk Events */}
       </div>
 
       <ImportPlanningSheet open={importSheetOpen} onOpenChange={setImportSheetOpen} />

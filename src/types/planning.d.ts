@@ -1,4 +1,4 @@
-import type { AbsenceStatus, AbsenceType } from "@/types/dashboard";
+import type { AbsenceType } from "@/types/absence";
 
 export type ImpactLevel = "critical" | "warning" | "safe";
 export type PlanningMode = "view" | "simulate";
@@ -17,7 +17,7 @@ export interface SimBlock {
 export interface ViewLeave {
   start: number;
   end: number;
-  type: AbsenceType;
+  type: AbsenceType | null;
 }
 
 export interface BlockDisplayRange {
@@ -31,8 +31,7 @@ export interface BlockDisplayRange {
 
 export interface PlanningAbsence {
   id: number;
-  type: AbsenceType;
-  status: AbsenceStatus;
+  type: AbsenceType | null;
   start_date: string;
   start_half: Half;
   end_date: string;

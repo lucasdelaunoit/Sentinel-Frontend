@@ -14,7 +14,7 @@ export function getViewLeaves(user: PlanningUser, viewYear: number, viewMonth: n
   const viewEnd = makeDateStr(viewYear, viewMonth, daysInMonth);
 
   return user.absences
-    .filter((l) => l.status === "approved" && l.end_date >= viewStart && l.start_date <= viewEnd)
+    .filter((l) => l.end_date >= viewStart && l.start_date <= viewEnd)
     .map((l) => {
       const startParsed = parseDateStr(l.start_date);
       const endParsed = parseDateStr(l.end_date);

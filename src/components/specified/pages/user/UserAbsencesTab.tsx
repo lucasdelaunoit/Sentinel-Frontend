@@ -9,10 +9,12 @@ import StatCard from "@/components/common/cards/StatCard.tsx";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import FilterPillGroup, { type FilterPillOption } from "@/components/common/filters/FilterPillGroup.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
+import AbsenceTypeBadge from "@/components/specified/models/absence/badges/AbsenceTypeBadge.tsx";
 import CreateAbsenceSheet from "@/components/specified/models/absence/sheets/CreateAbsenceSheet.tsx";
 import AbsenceDetailSheet from "@/components/specified/models/absence/sheets/AbsenceDetailSheet.tsx";
 import { cn } from "@/lib/utils.ts";
-import type { AbsenceItem, AbsenceType, StatCardData } from "@/types/dashboard.ts";
+import type { StatCardData } from "@/types/dashboard.ts";
+import { AbsenceType, ABSENCE_TYPE_LABEL, ABSENCE_TYPE_VALUES, type AbsenceItem } from "@/types/absence";
 
 interface UserAbsencesTabProps {
   userId: string;
@@ -22,59 +24,68 @@ interface UserAbsencesTabProps {
 
 const TYPE_FILTER_OPTIONS: FilterPillOption<AbsenceType | null>[] = [
   { value: null, label: "All" },
-  { value: "vacation", label: "Vacation" },
-  { value: "sick", label: "Sick" },
-  { value: "personal", label: "Personal" },
-  { value: "other", label: "Other" },
+  ...ABSENCE_TYPE_VALUES.map((value) => ({ value, label: ABSENCE_TYPE_LABEL[value] })),
 ];
 
 const ABSENCE_TYPE_DOT: Record<AbsenceType, string> = {
-  vacation: "bg-blue-500",
-  sick: "bg-rose-500",
-  conference: "bg-violet-500",
-  personal: "bg-amber-500",
-  other: "bg-slate-500",
-};
-
-const ABSENCE_TYPE_LABEL: Record<AbsenceType, string> = {
-  vacation: "Vacation",
-  sick: "Sick leave",
-  conference: "Conference",
-  personal: "Personal",
-  other: "Other",
+  [AbsenceType.Vacation]: "bg-blue-500",
+  [AbsenceType.Conference]: "bg-violet-500",
+  [AbsenceType.Training]: "bg-amber-500",
+  [AbsenceType.Parental]: "bg-emerald-500",
+  [AbsenceType.Sabbatical]: "bg-indigo-500",
+  [AbsenceType.Other]: "bg-slate-500",
 };
 
 const ABSENCE_TYPE_CALENDAR_BG: Record<AbsenceType, string> = {
-  vacation: "bg-blue-500/15 text-blue-700 ring-blue-300/60",
-  sick: "bg-rose-500/15 text-rose-700 ring-rose-300/60",
-  conference: "bg-violet-500/15 text-violet-700 ring-violet-300/60",
-  personal: "bg-amber-500/15 text-amber-700 ring-amber-300/60",
-  other: "bg-slate-500/15 text-slate-700 ring-slate-300/60",
+  [AbsenceType.Vacation]: "bg-blue-500/15 text-blue-700 ring-blue-300/60",
+  [AbsenceType.Conference]: "bg-violet-500/15 text-violet-700 ring-violet-300/60",
+  [AbsenceType.Training]: "bg-amber-500/15 text-amber-700 ring-amber-300/60",
+  [AbsenceType.Parental]: "bg-emerald-500/15 text-emerald-700 ring-emerald-300/60",
+  [AbsenceType.Sabbatical]: "bg-indigo-500/15 text-indigo-700 ring-indigo-300/60",
+  [AbsenceType.Other]: "bg-slate-500/15 text-slate-700 ring-slate-300/60",
 };
 
 const ABSENCE_TYPE_PILL_BG: Record<AbsenceType, string> = {
-  vacation: "bg-blue-100",
-  sick: "bg-rose-100",
-  conference: "bg-violet-100",
-  personal: "bg-amber-100",
-  other: "bg-slate-100",
+  [AbsenceType.Vacation]: "bg-blue-100",
+  [AbsenceType.Conference]: "bg-violet-100",
+  [AbsenceType.Training]: "bg-amber-100",
+  [AbsenceType.Parental]: "bg-emerald-100",
+  [AbsenceType.Sabbatical]: "bg-indigo-100",
+  [AbsenceType.Other]: "bg-slate-100",
 };
 
 const ABSENCE_TYPE_DOT_BG: Record<AbsenceType, string> = {
-  vacation: "bg-blue-500",
-  sick: "bg-rose-500",
-  conference: "bg-violet-500",
-  personal: "bg-amber-500",
-  other: "bg-slate-500",
+  [AbsenceType.Vacation]: "bg-blue-500",
+  [AbsenceType.Conference]: "bg-violet-500",
+  [AbsenceType.Training]: "bg-amber-500",
+  [AbsenceType.Parental]: "bg-emerald-500",
+  [AbsenceType.Sabbatical]: "bg-indigo-500",
+  [AbsenceType.Other]: "bg-slate-500",
 };
 
 const ABSENCE_TYPE_TEXT: Record<AbsenceType, string> = {
-  vacation: "text-blue-700",
-  sick: "text-rose-700",
-  conference: "text-violet-700",
-  personal: "text-amber-700",
-  other: "text-slate-700",
+  [AbsenceType.Vacation]: "text-blue-700",
+  [AbsenceType.Conference]: "text-violet-700",
+  [AbsenceType.Training]: "text-amber-700",
+  [AbsenceType.Parental]: "text-emerald-700",
+  [AbsenceType.Sabbatical]: "text-indigo-700",
+  [AbsenceType.Other]: "text-slate-700",
 };
+
+const NEUTRAL = {
+  dot: "bg-muted-foreground",
+  calendarBg: "bg-muted text-muted-foreground ring-border/60",
+  pillBg: "bg-muted",
+  text: "text-muted-foreground",
+  label: "Unspecified",
+};
+
+function typeDot(t: AbsenceType | null) { return t ? ABSENCE_TYPE_DOT[t] : NEUTRAL.dot; }
+function typeCalendarBg(t: AbsenceType | null) { return t ? ABSENCE_TYPE_CALENDAR_BG[t] : NEUTRAL.calendarBg; }
+function typePillBg(t: AbsenceType | null) { return t ? ABSENCE_TYPE_PILL_BG[t] : NEUTRAL.pillBg; }
+function typeDotBg(t: AbsenceType | null) { return t ? ABSENCE_TYPE_DOT_BG[t] : NEUTRAL.dot; }
+function typeText(t: AbsenceType | null) { return t ? ABSENCE_TYPE_TEXT[t] : NEUTRAL.text; }
+function typeLabel(t: AbsenceType | null) { return t ? ABSENCE_TYPE_LABEL[t] : NEUTRAL.label; }
 
 /* ─── Helpers ────────────────────────────────────────────── */
 
@@ -184,7 +195,7 @@ function MiniCalendar({
 
   const todayTs = new Date().setHours(0, 0, 0, 0);
   const presentTypes = useMemo(() => {
-    const set = new Set<AbsenceType>();
+    const set = new Set<AbsenceType | null>();
     absences.forEach((a) => set.add(a.type));
     return Array.from(set);
   }, [absences]);
@@ -251,10 +262,10 @@ function MiniCalendar({
                 cell.inMonth && !hasAbsence && "text-foreground/80",
                 hasAbsence &&
                   cell.inMonth &&
-                  cn("ring-1 cursor-pointer hover:scale-105", ABSENCE_TYPE_CALENDAR_BG[cell.absence!.type]),
+                  cn("ring-1 cursor-pointer hover:scale-105", typeCalendarBg(cell.absence!.type)),
                 hasAbsence &&
                   !cell.inMonth &&
-                  cn("ring-1 opacity-40 cursor-pointer", ABSENCE_TYPE_CALENDAR_BG[cell.absence!.type]),
+                  cn("ring-1 opacity-40 cursor-pointer", typeCalendarBg(cell.absence!.type)),
                 isToday && "ring-2 ring-primary/70 font-bold",
               )}
             >
@@ -267,10 +278,10 @@ function MiniCalendar({
       {/* Legend (only types actually present) */}
       {presentTypes.length > 0 && (
         <div className="mt-4 pt-3 border-t border-border/40 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-muted-foreground">
-          {presentTypes.map((t) => (
-            <span key={t} className="flex items-center gap-1.5">
-              <span className={cn("size-2 rounded-full", ABSENCE_TYPE_DOT[t])} />
-              {ABSENCE_TYPE_LABEL[t]}
+          {presentTypes.map((t, i) => (
+            <span key={t ?? `unk-${i}`} className="flex items-center gap-1.5">
+              <span className={cn("size-2 rounded-full", typeDot(t))} />
+              {typeLabel(t)}
             </span>
           ))}
         </div>
@@ -322,7 +333,6 @@ function AbsenceListCard({ absence, onClick }: { absence: AbsenceItem; onClick: 
   const anchorDate = lk === "past" ? absence.end_date : absence.start_date;
   const bullets: string[] = [];
 
-  bullets.push(`${days} calendar day${days > 1 ? "s" : ""} of ${ABSENCE_TYPE_LABEL[absence.type].toLowerCase()}`);
   if (lk !== "past") {
     const back = new Date(absence.end_date);
     back.setDate(back.getDate() + 1);
@@ -333,34 +343,33 @@ function AbsenceListCard({ absence, onClick }: { absence: AbsenceItem; onClick: 
   return (
     <button
       onClick={onClick}
-      className={cn(
-        "group relative flex w-full items-stretch overflow-hidden rounded-xl border border-border/60 bg-card text-left transition-all",
-        "hover:border-border hover:shadow-md",
-      )}
+      className="group flex w-full gap-3 rounded-xl border border-border/50 bg-muted/10 p-3.5 text-left transition-all hover:border-border hover:bg-muted/20"
     >
-      {/* Left date strip */}
-      <div className="flex flex-col items-center justify-center gap-1 px-5 py-5 shrink-0 bg-muted/40 border-r border-border/60 min-w-[96px]">
-        <span className="text-[15px] font-bold text-foreground tabular-nums leading-none whitespace-nowrap">
+      {/* Date tile */}
+      <div className="flex w-14 shrink-0 flex-col items-center justify-center rounded-lg bg-muted/40 py-2 text-center">
+        <span className="text-[13px] font-bold leading-tight text-foreground whitespace-nowrap">
           {shortDateLabel(anchorDate)}
         </span>
-        <span className="text-[11px] text-muted-foreground leading-none">{dateRelativeLabel(anchorDate, lk)}</span>
+        <span className="text-[10px] font-medium text-muted-foreground">
+          {dateRelativeLabel(anchorDate, lk)}
+        </span>
       </div>
 
       {/* Body */}
-      <div className="flex-1 min-w-0 px-5 py-4 flex flex-col gap-2">
-        {/* Header row */}
-        <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0 flex-1">
+        {/* Header */}
+        <div className="mb-2 flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <h4 className={cn("text-[15px] font-bold leading-tight", ABSENCE_TYPE_TEXT[absence.type])}>
-              {ABSENCE_TYPE_LABEL[absence.type]}
-            </h4>
-            <p className="text-[12px] text-muted-foreground mt-0.5">
-              {absence.reason ? absence.reason : "No reason provided"}
+            <div className="flex items-center gap-2">
+              <AbsenceTypeBadge type={absence.type} />
+            </div>
+            <p className="mt-1 truncate text-[11px] text-muted-foreground">
+              {absence.reason ?? "No reason provided"}
             </p>
           </div>
           <span
             className={cn(
-              "shrink-0 inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+              "shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
               LIFECYCLE_PILL[lk],
             )}
           >
@@ -368,32 +377,38 @@ function AbsenceListCard({ absence, onClick }: { absence: AbsenceItem; onClick: 
           </span>
         </div>
 
-        {/* Meta row */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Period</span>
-          <span className="text-[14px] font-semibold tabular-nums text-foreground">{fmtDate(absence.start_date)}</span>
-          <ArrowRight className="size-3.5 text-muted-foreground/60" />
-          <span className="text-[14px] font-semibold tabular-nums text-foreground">{fmtDate(absence.end_date)}</span>
+        {/* Meta row — dates + duration */}
+        <div className="mb-1.5 flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Period</span>
+          <span className="text-[12px] font-semibold tabular-nums text-foreground">
+            {fmtDate(absence.start_date)}
+          </span>
+          <ArrowRight className="size-3 text-muted-foreground/60" />
+          <span className="text-[12px] font-semibold tabular-nums text-foreground">
+            {fmtDate(absence.end_date)}
+          </span>
           <span
             className={cn(
-              "ml-1 inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-bold tabular-nums",
-              ABSENCE_TYPE_PILL_BG[absence.type],
-              ABSENCE_TYPE_TEXT[absence.type],
+              "rounded px-1 py-0.5 text-[10px] font-bold tabular-nums",
+              typePillBg(absence.type),
+              typeText(absence.type),
             )}
           >
-            +{days}d
+            {days}d
           </span>
         </div>
 
         {/* Bullets */}
-        <ul className="space-y-1 mt-0.5">
-          {bullets.map((b, i) => (
-            <li key={i} className="flex items-start gap-2 text-[12.5px] text-foreground/85">
-              <span className={cn("mt-1.5 size-1.5 rounded-full shrink-0", ABSENCE_TYPE_DOT_BG[absence.type])} />
-              <span className="leading-snug">{b}</span>
-            </li>
-          ))}
-        </ul>
+        {bullets.length > 0 && (
+          <ul className="space-y-1">
+            {bullets.map((b, i) => (
+              <li key={i} className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+                <span className={cn("mt-1.5 size-1 shrink-0 rounded-full", typeDotBg(absence.type))} />
+                <span className="leading-snug">{b}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </button>
   );
@@ -401,24 +416,12 @@ function AbsenceListCard({ absence, onClick }: { absence: AbsenceItem; onClick: 
 
 function AbsenceListCardSkeleton() {
   return (
-    <div className="flex items-stretch overflow-hidden rounded-xl border border-border/60 bg-card">
-      <div className="px-5 py-5 shrink-0 bg-muted/40 border-r border-border/60 min-w-[96px] flex flex-col items-center justify-center gap-1.5">
-        <Skeleton className="h-4 w-14" />
-        <Skeleton className="h-3 w-10" />
-      </div>
-      <div className="flex-1 px-5 py-4 space-y-2.5">
-        <div className="flex justify-between items-start gap-3">
-          <div className="space-y-1.5 flex-1">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-3 w-48" />
-          </div>
-          <Skeleton className="h-5 w-20 rounded-full" />
-        </div>
-        <Skeleton className="h-4 w-64" />
-        <div className="space-y-1.5 pt-1">
-          <Skeleton className="h-3 w-72" />
-          <Skeleton className="h-3 w-56" />
-        </div>
+    <div className="flex gap-3 rounded-xl border border-border/50 bg-muted/10 p-3.5">
+      <Skeleton className="size-14 shrink-0 rounded-lg" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-4/5" />
       </div>
     </div>
   );
@@ -524,7 +527,7 @@ export default function UserAbsencesTab({ userId }: UserAbsencesTabProps) {
         }
       >
         {isLoading ? (
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {Array.from({ length: 4 }).map((_, i) => (
               <AbsenceListCardSkeleton key={i} />
             ))}
@@ -547,7 +550,7 @@ export default function UserAbsencesTab({ userId }: UserAbsencesTabProps) {
             }
           />
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {filtered.map((absence) => (
               <AbsenceListCard key={absence.id} absence={absence} onClick={() => openDetail(absence)} />
             ))}

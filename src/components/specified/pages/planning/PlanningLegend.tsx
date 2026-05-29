@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { AbsenceType } from "@/types/dashboard";
+import { ABSENCE_TYPE_VALUES } from "@/types/absence";
 import { ABSENCE_THEME } from "@/utils/planning/theme";
 
 interface PlanningLegendProps {
@@ -10,7 +10,6 @@ interface PlanningLegendProps {
   className?: string;
 }
 
-const TYPES: AbsenceType[] = ["vacation", "sick", "conference"];
 
 export default function PlanningLegend({
   variant = "row",
@@ -28,7 +27,7 @@ export default function PlanningLegend({
         className,
       )}
     >
-      {TYPES.map((t) => {
+      {ABSENCE_TYPE_VALUES.map((t) => {
         const meta = ABSENCE_THEME[t];
         return (
           <div key={t} className="flex items-center gap-2">

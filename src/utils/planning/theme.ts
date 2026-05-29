@@ -1,5 +1,5 @@
 import type { ImpactLevel } from "@/types/planning";
-import type { AbsenceType } from "@/types/dashboard";
+import { AbsenceType } from "@/types/absence";
 
 export interface SimColor {
   bg: string;
@@ -56,25 +56,55 @@ export interface AbsenceTheme {
 }
 
 export const ABSENCE_THEME: Record<AbsenceType, AbsenceTheme> = {
-  vacation: {
+  [AbsenceType.Vacation]: {
     label: "Vacation",
     bg: "bg-info/10",
     border: "border-info/30",
     dot: "bg-info",
   },
-  sick: {
-    label: "Sick leave",
-    bg: "bg-danger/10",
-    border: "border-danger/30",
-    dot: "bg-danger",
-  },
-  conference: {
+  [AbsenceType.Conference]: {
     label: "Conference",
     bg: "bg-planned/10",
     border: "border-planned/30",
     dot: "bg-planned",
   },
+  [AbsenceType.Training]: {
+    label: "Training",
+    bg: "bg-warning/10",
+    border: "border-warning/30",
+    dot: "bg-warning",
+  },
+  [AbsenceType.Parental]: {
+    label: "Parental leave",
+    bg: "bg-success/10",
+    border: "border-success/30",
+    dot: "bg-success",
+  },
+  [AbsenceType.Sabbatical]: {
+    label: "Sabbatical",
+    bg: "bg-primary/10",
+    border: "border-primary/30",
+    dot: "bg-primary",
+  },
+  [AbsenceType.Other]: {
+    label: "Other",
+    bg: "bg-muted",
+    border: "border-border",
+    dot: "bg-muted-foreground",
+  },
 };
+
+const UNKNOWN_ABSENCE_THEME: AbsenceTheme = {
+  label: "Unspecified",
+  bg: "bg-muted",
+  border: "border-border",
+  dot: "bg-muted-foreground",
+};
+
+export function absenceTheme(type: AbsenceType | null | undefined): AbsenceTheme {
+  if (!type) return UNKNOWN_ABSENCE_THEME;
+  return ABSENCE_THEME[type] ?? UNKNOWN_ABSENCE_THEME;
+}
 
 export function capacityToneClass(ratio: number): string {
   if (ratio >= 0.9) return "bg-success";

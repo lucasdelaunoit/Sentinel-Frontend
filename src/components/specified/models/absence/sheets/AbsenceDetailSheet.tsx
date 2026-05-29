@@ -3,37 +3,17 @@ import { CalendarBlankIcon, ClockCountdownIcon } from "@phosphor-icons/react";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog";
 import { Button } from "@/components/ui/button";
+import AbsenceTypeBadge from "@/components/specified/models/absence/badges/AbsenceTypeBadge";
 import useDeleteAbsence from "@/api/absences/useDeleteAbsence";
 import { cn } from "@/lib/utils";
-import type { AbsenceItem, AbsenceType, AbsenceStatus } from "@/types/dashboard";
+import type { Absence } from "@/types/absence";
 
 interface AbsenceDetailSheetProps {
-  absence: AbsenceItem | null;
+  absence: Absence | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userId: string;
 }
-
-const ABSENCE_TYPE_STYLES: Record<AbsenceType, string> = {
-  vacation: "bg-blue-50 text-blue-700 ring-1 ring-blue-200/60",
-  sick: "bg-rose-50 text-rose-700 ring-1 ring-rose-200/60",
-  conference: "bg-violet-50 text-violet-700 ring-1 ring-violet-200/60",
-};
-const ABSENCE_TYPE_LABELS: Record<AbsenceType, string> = {
-  vacation: "Vacation",
-  sick: "Sick leave",
-  conference: "Conference",
-};
-const ABSENCE_STATUS_STYLES: Record<AbsenceStatus, string> = {
-  approved: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60",
-  pending: "bg-amber-50 text-amber-700 ring-1 ring-amber-200/60",
-  rejected: "bg-rose-50 text-rose-700 ring-1 ring-rose-200/60",
-};
-const ABSENCE_STATUS_LABELS: Record<AbsenceStatus, string> = {
-  approved: "Approved",
-  pending: "Pending",
-  rejected: "Rejected",
-};
 
 function fmtLong(date: string) {
   return new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric", weekday: "short" });
@@ -59,7 +39,7 @@ function relativeStatus(start: string, end: string): { label: string; tone: "ong
 }
 
 const TONE_STYLES = {
-  ongoing: "bg-rose-50 text-rose-700 ring-rose-200/60",
+  ongoing: "bg-emerald-50 text-emerald-700 ring-emerald-200/60",
   upcoming: "bg-amber-50 text-amber-700 ring-amber-200/60",
   past: "bg-muted/60 text-muted-foreground ring-border/60",
 };
@@ -116,13 +96,13 @@ export default function AbsenceDetailSheet({ absence, open, onOpenChange, userId
       <div className="space-y-4">
         {/* Badges */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className={cn("inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold", ABSENCE_TYPE_STYLES[absence.type])}>
-            {ABSENCE_TYPE_LABELS[absence.type]}
-          </span>
-          <span className={cn("inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold", ABSENCE_STATUS_STYLES[absence.status])}>
-            {ABSENCE_STATUS_LABELS[absence.status]}
-          </span>
-          <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1", TONE_STYLES[rel.tone])}>
+          <AbsenceTypeBadge type={absence.type} />
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1",
+              TONE_STYLES[rel.tone],
+            )}
+          >
             <ClockCountdownIcon className="size-3" />
             {rel.label}
           </span>

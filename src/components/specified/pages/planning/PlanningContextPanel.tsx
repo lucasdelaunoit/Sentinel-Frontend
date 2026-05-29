@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import type { PlanningMode, PlanningUser, ProjectImpact, SimBlock, SimulateResponse } from "@/types/planning";
 import { MONTH_NAMES, blockDurationLabel, formatHalfDate } from "@/utils/planning/calendar";
 import { getViewLeaves, isOnRealLeave } from "@/utils/planning/leaves";
-import { ABSENCE_THEME, IMPACT_THEME, simColor } from "@/utils/planning/theme";
+import { absenceTheme, IMPACT_THEME, simColor } from "@/utils/planning/theme";
 import ImpactBadge from "./badges/ImpactBadge";
 
 type PanelLayout = "side" | "below";
@@ -132,7 +132,7 @@ function ViewPanel({
           </CardHeader>
           <CardContent className="p-0 divide-y divide-border/40">
             {upcomingLeaves.map(({ user, leave }, i) => {
-              const meta = ABSENCE_THEME[leave.type];
+              const meta = absenceTheme(leave.type);
               return (
                 <div key={i} className="px-5 py-3 flex items-center gap-3">
                   <div

@@ -31,7 +31,6 @@ function buildPlanningUser(user: (typeof USERS_LIST)[number], month: string): Pl
     .map((l, idx) => ({
       id: Number.parseInt(l.id.replace(/[^0-9]/g, ""), 10) || idx + 1,
       type: l.type,
-      status: l.status,
       start_date: l.startDate,
       start_half: 0,
       end_date: l.endDate,
@@ -64,7 +63,7 @@ export async function fetchPlanningMock(month: string): Promise<PlanningResponse
     const todayStr = today.toISOString().slice(0, 10);
     const total = USERS_LIST.length;
     const onLeave = USERS_LIST.filter((u) =>
-      u.leaves.some((l) => l.status === "approved" && l.startDate <= todayStr && l.endDate >= todayStr),
+      u.leaves.some((l) => l.startDate <= todayStr && l.endDate >= todayStr),
     ).length;
     capacity_today = { available: total - onLeave, on_leave: onLeave, total };
   }
@@ -87,7 +86,7 @@ export async function fetchPlanningCapacityMock(month: string): Promise<Planning
     const day = i + 1;
     const dateStr = `${yearStr}-${monthStr}-${String(day).padStart(2, "0")}`;
     const onLeave = USERS_LIST.filter((u) =>
-      u.leaves.some((l) => l.status === "approved" && l.startDate <= dateStr && l.endDate >= dateStr),
+      u.leaves.some((l) => l.startDate <= dateStr && l.endDate >= dateStr),
     ).length;
     const available = total - onLeave;
     return { day, ratio: total === 0 ? 0 : available / total, available, on_leave: onLeave };

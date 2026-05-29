@@ -14,7 +14,6 @@ const PREVIEW_COUNT = 4;
 
 const KIND_LABEL: Record<UpcomingRiskEvent["kind"], string> = {
   leave: "Planned leave",
-  sick_leave: "Sick leave",
 };
 
 function formatWhen(iso: string): { date: string; relative: string } {

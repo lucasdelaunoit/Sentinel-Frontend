@@ -9,7 +9,7 @@ import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useCreateAbsence from "@/api/absences/useCreateAbsence";
 import { cn } from "@/lib/utils";
-import type { AbsenceType } from "@/types/dashboard";
+import { AbsenceType, ABSENCE_TYPE_LABEL, ABSENCE_TYPE_VALUES } from "@/types/absence";
 
 interface FormValues {
   type: AbsenceType;
@@ -24,14 +24,17 @@ interface CreateAbsenceSheetProps {
   userId: string;
 }
 
-const TYPE_OPTIONS: { value: AbsenceType; label: string; color: string; activeBg: string; activeText: string }[] = [
-  { value: "vacation", label: "Vacation", color: "border-blue-200 bg-blue-50/60", activeBg: "bg-blue-600 border-blue-600", activeText: "text-white" },
-  { value: "sick", label: "Sick leave", color: "border-rose-200 bg-rose-50/60", activeBg: "bg-rose-600 border-rose-600", activeText: "text-white" },
-  { value: "conference", label: "Conference", color: "border-violet-200 bg-violet-50/60", activeBg: "bg-violet-600 border-violet-600", activeText: "text-white" },
-];
+const TYPE_STYLE: Record<AbsenceType, { idle: string; active: string }> = {
+  [AbsenceType.Vacation]: { idle: "border-blue-200 bg-blue-50/60", active: "bg-blue-600 border-blue-600 text-white" },
+  [AbsenceType.Conference]: { idle: "border-violet-200 bg-violet-50/60", active: "bg-violet-600 border-violet-600 text-white" },
+  [AbsenceType.Training]: { idle: "border-amber-200 bg-amber-50/60", active: "bg-amber-600 border-amber-600 text-white" },
+  [AbsenceType.Parental]: { idle: "border-emerald-200 bg-emerald-50/60", active: "bg-emerald-600 border-emerald-600 text-white" },
+  [AbsenceType.Sabbatical]: { idle: "border-indigo-200 bg-indigo-50/60", active: "bg-indigo-600 border-indigo-600 text-white" },
+  [AbsenceType.Other]: { idle: "border-slate-200 bg-slate-50/60", active: "bg-slate-600 border-slate-600 text-white" },
+};
 
 const schema = yup.object({
-  type: yup.string().oneOf(["vacation", "sick", "conference"] as AbsenceType[]).required("Type is required."),
+  type: yup.string().oneOf(ABSENCE_TYPE_VALUES).required("Type is required."),
   start_date: yup.string().required("Start date is required."),
   end_date: yup
     .string()
@@ -54,7 +57,7 @@ export default function CreateAbsenceSheet({ open, onOpenChange, userId }: Creat
     formState: { errors, isValid, isDirty },
   } = useForm<FormValues>({
     resolver: yupResolver(schema) as never,
-    defaultValues: { type: "vacation", start_date: "", end_date: "", reason: "" },
+    defaultValues: { type: AbsenceType.Vacation, start_date: "", end_date: "", reason: "" },
     mode: "onChange",
   });
 
@@ -112,19 +115,20 @@ export default function CreateAbsenceSheet({ open, onOpenChange, userId }: Creat
                 Type <span className="text-destructive-foreground">*</span>
               </FieldLabel>
               <div className="grid grid-cols-3 gap-2 pt-0.5">
-                {TYPE_OPTIONS.map((opt) => {
-                  const active = selectedType === opt.value;
+                {ABSENCE_TYPE_VALUES.map((value) => {
+                  const active = selectedType === value;
+                  const style = TYPE_STYLE[value];
                   return (
                     <button
-                      key={opt.value}
+                      key={value}
                       type="button"
-                      onClick={() => setValue("type", opt.value, { shouldDirty: true, shouldValidate: true })}
+                      onClick={() => setValue("type", value, { shouldDirty: true, shouldValidate: true })}
                       className={cn(
                         "rounded-xl border-2 px-3 py-2.5 text-[12px] font-semibold transition-all duration-150",
-                        active ? `${opt.activeBg} ${opt.activeText}` : `${opt.color} text-foreground hover:opacity-80`,
+                        active ? style.active : `${style.idle} text-foreground hover:opacity-80`,
                       )}
                     >
-                      {opt.label}
+                      {ABSENCE_TYPE_LABEL[value]}
                     </button>
                   );
                 })}

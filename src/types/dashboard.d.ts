@@ -1,6 +1,6 @@
 /* ── Upcoming risk events (GET /dashboard/upcoming-risk-events) ─ */
 
-export type RiskEventKind = "leave" | "sick_leave";
+export type RiskEventKind = "leave";
 export type RiskEventSeverity = "low" | "medium" | "high" | "critical";
 /** Metric-block severity from the shared Scale enums (distinct from the event severity union). */
 export type MetricBlockSeverity = "ok" | "warning" | "critical";
@@ -258,22 +258,8 @@ export interface UserStats {
 
 /* ── User absences (GET /users/:id/absences) ─────────────── */
 
-export type AbsenceType = "vacation" | "sick" | "conference" | "personal" | "other";
-export type AbsenceStatus = "approved" | "pending" | "rejected";
-
-export interface AbsenceItem {
-  id: number;
-  user_id: number;
-  type: AbsenceType;
-  start_date: string;
-  start_half?: 0 | 1;
-  end_date: string;
-  end_half?: 0 | 1;
-  status?: AbsenceStatus;
-  reason?: string | null;
-  created_at: string;
-  updated_at: string;
-}
+/** Re-exports for back-compat; canonical home is `@/types/absence`. */
+export { AbsenceType, type Absence, type AbsenceItem } from "./absence";
 
 /* ── Root response ───────────────────────────────────────── */
 
