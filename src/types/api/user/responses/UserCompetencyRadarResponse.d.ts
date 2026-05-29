@@ -1,0 +1,3 @@
+interface UserCompetencyRadarResponse {
+  data: UserCompetencyRadarItem[];
+}

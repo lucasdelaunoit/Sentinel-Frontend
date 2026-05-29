@@ -42,8 +42,6 @@ function computeCoverage(project: ProjectData, members: UserDetail[]): SkillCove
   });
 }
 
-type AlertSeverity = "critical" | "warning" | "info";
-
 /* ─── Project Detail Page ─────────────────────────────────── */
 
 const tabs: { key: DetailTab; label: string; icon: typeof ShieldWarningIcon }[] = [

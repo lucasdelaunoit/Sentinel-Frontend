@@ -3,19 +3,19 @@ import { toast } from "sonner";
 import usePrivateApi from "@/api/privateApi";
 import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
 
-interface AttachSkillArgs {
+interface UpdateLevelArgs {
   userId: string | number;
   skillId: number;
   level: number;
 }
 
-export default function useAttachSkillToUser() {
+export default function useUpdateUserSkillLevel() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: ({ userId, skillId, level }: AttachSkillArgs) =>
-      privateApi.post(`/api/users/${userId}/skills`, { skill_id: skillId, level }),
+    mutationFn: ({ userId, skillId, level }: UpdateLevelArgs) =>
+      privateApi.patch(`/api/users/${userId}/skills/${skillId}`, { level }),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: ["users", String(userId), "skills"] });
       queryClient.invalidateQueries({ queryKey: ["users", String(userId), "competency-radar"] });
@@ -23,12 +23,12 @@ export default function useAttachSkillToUser() {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to attach skill."));
+      toast.error(extractApiErrorMessage(error, "Failed to update skill level."));
     },
   });
 
   return {
-    attachSkillToUser: mutation.mutateAsync,
+    updateUserSkillLevel: mutation.mutateAsync,
     isLoading: mutation.isPending,
     isError: mutation.isError,
     error: mutation.error,

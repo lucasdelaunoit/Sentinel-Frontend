@@ -5,11 +5,11 @@ import { type ElementType, type ReactNode } from "react";
 type FeedbackVariant = "success" | "warning" | "danger" | "info" | "neutral";
 
 const VARIANTS: Record<FeedbackVariant, { icon: ElementType; foreground: string }> = {
-  success: { icon: CheckIcon, foreground: "text-success-foreground" },
-  warning: { icon: WarningIcon, foreground: "text-warning-foreground" },
-  danger: { icon: XIcon, foreground: "text-danger-foreground" },
-  info: { icon: InfoIcon, foreground: "text-info-foreground" },
-  neutral: { icon: QuestionIcon, foreground: "text-neutral-foreground" },
+  success: { icon: CheckIcon, foreground: "text-success" },
+  warning: { icon: WarningIcon, foreground: "text-warning" },
+  danger: { icon: XIcon, foreground: "text-danger" },
+  info: { icon: InfoIcon, foreground: "text-info" },
+  neutral: { icon: QuestionIcon, foreground: "text-neutral" },
 };
 
 interface FeedbackProps {
@@ -36,7 +36,7 @@ export default function Feedback({
       <div className={cn("flex items-center justify-center rounded-full mb-1")}>
         <span>{Icon ? <Icon /> : <VariantIcon className={cn(VARIANTS[variant].foreground, "size-6")} />}</span>
       </div>
-      <div>
+      <div className="mb-1">
         <p className={cn("text-sm font-semibold", VARIANTS[variant].foreground)}>{title}</p>
         {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
       </div>

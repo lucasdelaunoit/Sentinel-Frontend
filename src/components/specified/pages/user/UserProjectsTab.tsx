@@ -111,7 +111,9 @@ export default function UserProjectsTab({ userId }: { userId: string | undefined
         const overdue = !!proj.deadline && new Date(proj.deadline) < new Date() && proj.status !== "completed";
         return (
           <div>
-            <span className={cn("text-[12px] font-medium whitespace-nowrap", overdue ? "text-danger" : "text-foreground")}>
+            <span
+              className={cn("text-[12px] font-medium whitespace-nowrap", overdue ? "text-danger" : "text-foreground")}
+            >
               {proj.deadline ? formatDate(proj.deadline) : "—"}
             </span>
             {overdue && <p className="text-[10px] text-danger mt-0.5 font-medium">Overdue</p>}

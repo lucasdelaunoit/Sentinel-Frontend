@@ -67,7 +67,15 @@ export default function DataTable<T extends { id: string | number }, S extends s
   const { sort, toggleSort } = useTableSort<S>(defaultSort, defaultSortDir);
   const { page, setPage, perPage, setPerPage } = useTablePagination(defaultPerPage, [search, filterValue]);
 
-  const { data: rows, total, lastPage, from, to, isLoading, isError } = hook({
+  const {
+    data: rows,
+    total,
+    lastPage,
+    from,
+    to,
+    isLoading,
+    isError,
+  } = hook({
     page,
     per_page: perPage,
     search: search || undefined,
@@ -80,26 +88,25 @@ export default function DataTable<T extends { id: string | number }, S extends s
   });
   const colSpan = columns.length;
 
-  const toolbarAction = (
-    <>
-      {!isLoading && (
-        <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
-          {total}
-        </span>
-      )}
-      <div className="flex-1" />
-      {filter && <FilterPillGroup options={filter.options} value={filterValue} onChange={setFilterValue} />}
-      <SearchBar value={search} onChange={setSearch} placeholder={searchPlaceholder} />
-      {headerAction}
-    </>
-  );
-
   const skeletonRowCount = perPage > 10 ? 8 : perPage;
 
   return (
     <ComposedCard
-      title={title}
-      action={toolbarAction}
+      title={
+        <div className="flex items-center gap-2">
+          <span>{title}</span>
+          <span className="text-[13px] font-normal text-muted-foreground tabular-nums">
+            ({isLoading ? "..." : total})
+          </span>
+        </div>
+      }
+      action={
+        <div className="flex gap-2 items-center">
+          {filter && <FilterPillGroup options={filter.options} value={filterValue} onChange={setFilterValue} />}
+          <SearchBar value={search} onChange={setSearch} placeholder={searchPlaceholder} />
+          {headerAction}
+        </div>
+      }
       className="p-0 overflow-hidden"
       headerClassName="px-6 pt-4 flex-wrap gap-3"
     >

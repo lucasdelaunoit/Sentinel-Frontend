@@ -19,7 +19,7 @@ export default function FilterPillGroup<T extends string | number | null>({
   className,
 }: FilterPillGroupProps<T>) {
   return (
-    <div className={cn("flex items-center gap-0.5 rounded-xl border border-border p-1", className)}>
+    <div className={cn("flex items-center gap-0.5 rounded-xl border border-border p-1 h-8", className)}>
       {options.map((opt) => {
         const active = opt.value === value;
         return (

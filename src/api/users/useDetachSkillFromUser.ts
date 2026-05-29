@@ -3,19 +3,18 @@ import { toast } from "sonner";
 import usePrivateApi from "@/api/privateApi";
 import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
 
-interface AttachSkillArgs {
+interface DetachSkillArgs {
   userId: string | number;
   skillId: number;
-  level: number;
 }
 
-export default function useAttachSkillToUser() {
+export default function useDetachSkillFromUser() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: ({ userId, skillId, level }: AttachSkillArgs) =>
-      privateApi.post(`/api/users/${userId}/skills`, { skill_id: skillId, level }),
+    mutationFn: ({ userId, skillId }: DetachSkillArgs) =>
+      privateApi.delete(`/api/users/${userId}/skills/${skillId}`),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: ["users", String(userId), "skills"] });
       queryClient.invalidateQueries({ queryKey: ["users", String(userId), "competency-radar"] });
@@ -23,12 +22,12 @@ export default function useAttachSkillToUser() {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to attach skill."));
+      toast.error(extractApiErrorMessage(error, "Failed to remove skill."));
     },
   });
 
   return {
-    attachSkillToUser: mutation.mutateAsync,
+    detachSkillFromUser: mutation.mutateAsync,
     isLoading: mutation.isPending,
     isError: mutation.isError,
     error: mutation.error,

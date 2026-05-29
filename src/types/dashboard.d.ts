@@ -233,6 +233,7 @@ export interface UserProjectItem {
 export interface UserSkillDetail {
   id: number;
   skill_category_id: number;
+  skill_category: SkillCategory;
   name: string;
   created_at: string;
   updated_at: string;
