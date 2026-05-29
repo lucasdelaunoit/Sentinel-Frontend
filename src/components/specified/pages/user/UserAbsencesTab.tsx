@@ -329,15 +329,19 @@ export default function UserAbsencesTab({ userId }: UserAbsencesTabProps) {
           <Feedback
             variant="warning"
             title={typeFilter ? "No absences match your filters." : "No absences recorded for this employee yet."}
-            description={typeFilter ? undefined : "Log an absence to keep planning up to date."}
+            description={
+              typeFilter
+                ? "Try clearing the type filter or selecting a different category to see more results."
+                : "Log an absence to keep planning up to date."
+            }
             className="h-64"
             action={
-              !typeFilter ? (
+              !typeFilter && (
                 <Button onClick={() => setCreateOpen(true)} size="sm" className="gap-1.5">
                   <PlusIcon className="size-3.5" weight="bold" />
                   Add first absence
                 </Button>
-              ) : undefined
+              )
             }
           />
         ) : (
@@ -350,15 +354,19 @@ export default function UserAbsencesTab({ userId }: UserAbsencesTabProps) {
       </ComposedCard>
 
       <CreateAbsenceSheet open={createOpen} onOpenChange={setCreateOpen} userId={userId} />
-      <AbsenceDetailSheet
-        absence={detailAbsence}
-        open={detailOpen}
-        onOpenChange={(v) => {
-          setDetailOpen(v);
-          if (!v) setDetailAbsence(null);
-        }}
-        userId={userId}
-      />
+      {detailAbsence ? (
+        <AbsenceDetailSheet
+          absence={detailAbsence}
+          open={detailOpen}
+          onOpenChange={(v) => {
+            setDetailOpen(v);
+            if (!v) setDetailAbsence(null);
+          }}
+          userId={userId}
+        />
+      ) : (
+        <AbsenceDetailSheet.Skeleton open={detailOpen} onOpenChange={setDetailOpen} />
+      )}
     </div>
   );
 }

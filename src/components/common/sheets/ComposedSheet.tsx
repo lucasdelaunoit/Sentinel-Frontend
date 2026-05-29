@@ -9,18 +9,18 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 
 interface ComposedSheetProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  trigger?: React.ReactNode;
+  trigger?: ReactNode;
   title: string;
-  description?: React.ReactNode;
-  icon?: React.ReactNode;
-  subheader?: React.ReactNode;
-  footer?: React.ReactNode;
+  description?: ReactNode;
+  subheader?: ReactNode;
+  footer?: ReactNode;
   footerClassName?: string;
-  children: React.ReactNode;
+  children: ReactNode;
   side?: "right" | "left" | "top" | "bottom";
   maxWidth?: string;
   className?: string;

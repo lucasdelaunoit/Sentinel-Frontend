@@ -1,151 +1,131 @@
-import { Trash2 } from "lucide-react";
-import { CalendarBlankIcon, ClockCountdownIcon } from "@phosphor-icons/react";
+import { CalendarDays } from "lucide-react";
+import {
+  CalendarCheckIcon,
+  CalendarXIcon,
+  ClockCountdownIcon,
+  NotePencilIcon,
+  HourglassIcon,
+} from "@phosphor-icons/react";
+import { Skeleton } from "@/components/ui/skeleton";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog";
-import { Button } from "@/components/ui/button";
-import AbsenceTypeBadge from "@/components/specified/models/absence/badges/AbsenceTypeBadge";
-import useDeleteAbsence from "@/api/absences/useDeleteAbsence";
-import { cn } from "@/lib/utils";
+import DataDisplay from "@/components/common/data/DataDisplay";
+import LifecycleBadge from "@/components/specified/models/absence/badges/LifecycleBadge";
+import { absenceDuration, dateRelativeLabel, lifecycleKey } from "@/utils/absence/lifecycle";
+import { formatDate } from "@/utils/formatters/date";
 import type { Absence } from "@/types/absence";
+import { capitalize } from "@/utils/formatters/string.ts";
 
 interface AbsenceDetailSheetProps {
-  absence: Absence | null;
+  absence: Absence;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userId: string;
 }
 
-function fmtLong(date: string) {
-  return new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric", weekday: "short" });
-}
-
-function durationDays(start: string, end: string) {
-  return Math.max(1, Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86_400_000) + 1);
-}
-
-function relativeStatus(start: string, end: string): { label: string; tone: "ongoing" | "upcoming" | "past" } {
-  const now = Date.now();
-  const s = new Date(start).getTime();
-  const e = new Date(end).getTime();
-  if (now < s) {
-    const days = Math.ceil((s - now) / 86_400_000);
-    return { label: `Starts in ${days} day${days !== 1 ? "s" : ""}`, tone: "upcoming" };
-  }
-  if (now > e) {
-    const days = Math.ceil((now - e) / 86_400_000);
-    return { label: `Ended ${days} day${days !== 1 ? "s" : ""} ago`, tone: "past" };
-  }
-  return { label: "Currently absent", tone: "ongoing" };
-}
-
-const TONE_STYLES = {
-  ongoing: "bg-emerald-50 text-emerald-700 ring-emerald-200/60",
-  upcoming: "bg-amber-50 text-amber-700 ring-amber-200/60",
-  past: "bg-muted/60 text-muted-foreground ring-border/60",
-};
-
-export default function AbsenceDetailSheet({ absence, open, onOpenChange, userId }: AbsenceDetailSheetProps) {
-  const { deleteAbsence, isLoading: isPending } = useDeleteAbsence();
-
-  if (!absence) {
-    return (
-      <ComposedSheet open={open} onOpenChange={onOpenChange} title="Absence" description="Loading…">
-        <div />
-      </ComposedSheet>
-    );
-  }
-
-  const rel = relativeStatus(absence.start_date, absence.end_date);
-  const days = durationDays(absence.start_date, absence.end_date);
-
-  async function handleDelete() {
-    if (!absence) return;
-    try {
-      await deleteAbsence({ id: absence.id, userId });
-      onOpenChange(false);
-    } catch {
-      /* toast handled in hook */
-    }
-  }
+export default function AbsenceDetailSheet({ absence, open, onOpenChange }: AbsenceDetailSheetProps) {
+  const lk = lifecycleKey(absence.start_date, absence.end_date);
+  const days = absenceDuration(absence.start_date, absence.end_date);
+  const anchorDate = lk === "past" ? absence.end_date : absence.start_date;
+  const relLabel = dateRelativeLabel(anchorDate, lk);
 
   return (
     <ComposedSheet
       open={open}
       onOpenChange={onOpenChange}
       title="Absence details"
-      description="Full record of this absence"
-      icon={<CalendarBlankIcon className="size-4 text-primary" />}
-      footer={
-        <ComposedAlertDialog
-          trigger={
-            <Button variant="outline" className="flex-1 gap-1.5" size="lg">
-              <Trash2 className="size-4" />
-              Delete absence
-            </Button>
-          }
-          title="Delete absence?"
-          description="This will permanently remove this absence record and cannot be undone."
-          confirmLabel="Delete"
-          pendingLabel="Deleting…"
-          variant="destructive"
-          isPending={isPending}
-          onConfirm={handleDelete}
-        />
-      }
+      description="Timing, type and notes at a glance."
     >
-      <div className="space-y-4">
-        {/* Badges */}
-        <div className="flex flex-wrap items-center gap-2">
-          <AbsenceTypeBadge type={absence.type} />
-          <span
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1",
-              TONE_STYLES[rel.tone],
-            )}
-          >
-            <ClockCountdownIcon className="size-3" />
-            {rel.label}
-          </span>
+      <div className="rounded-2xl border border-border/60 bg-tertiary p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              Duration
+            </span>
+            <span className="mt-1 text-[40px] font-black leading-none tabular-nums text-foreground">
+              {days}
+              <span className="ml-1 text-[16px] font-bold text-muted-foreground">day{days !== 1 ? "s" : ""}</span>
+            </span>
+            <span className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+              <ClockCountdownIcon className="size-3" />
+              {relLabel}
+            </span>
+          </div>
+          <LifecycleBadge lifecycle={lk} />
         </div>
+      </div>
 
-        {/* Period */}
-        <div className="rounded-xl border border-border/60 bg-card px-4 py-3.5 space-y-3">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Start</p>
-            <p className="text-[13px] font-medium text-foreground mt-0.5">{fmtLong(absence.start_date)}</p>
-          </div>
-          <div className="border-t border-border/40 pt-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">End</p>
-            <p className="text-[13px] font-medium text-foreground mt-0.5">{fmtLong(absence.end_date)}</p>
-          </div>
-          <div className="border-t border-border/40 pt-3 flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Duration</p>
-            <p className="text-[14px] font-bold text-foreground tabular-nums">
-              {days} day{days !== 1 ? "s" : ""}
-            </p>
-          </div>
-        </div>
+      <div className="grid grid-cols-2 gap-3">
+        <DataDisplay icon={CalendarCheckIcon} label="Start" value={formatDate(absence.start_date)} />
+        <DataDisplay icon={CalendarXIcon} label="End" value={formatDate(absence.end_date)} />
+      </div>
 
-        {/* Reason */}
-        <div className="rounded-xl border border-border/60 bg-card px-4 py-3.5">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Reason</p>
-          <p className="text-[13px] text-foreground mt-1.5 leading-relaxed whitespace-pre-wrap">
-            {absence.reason?.trim() || <span className="text-muted-foreground/50">No reason provided.</span>}
-          </p>
-        </div>
+      <DataDisplay icon={HourglassIcon} label="Reason" value={capitalize(absence.type)} />
 
-        {/* Meta */}
-        <div className="rounded-xl border border-border/60 bg-card px-4 py-3.5 space-y-2 text-[11px] text-muted-foreground">
-          <div className="flex items-center justify-between">
-            <span>Created</span>
-            <span className="text-foreground font-medium">{fmtLong(absence.created_at)}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span>Last updated</span>
-            <span className="text-foreground font-medium">{fmtLong(absence.updated_at)}</span>
-          </div>
+      <div className="rounded-xl border border-border/60 bg-muted/10 px-3.5 py-3">
+        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <NotePencilIcon className="size-3.5" />
+          <span className="mt-0.5">Note</span>
         </div>
+        {absence.reason?.trim() ? (
+          <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{absence.reason}</p>
+        ) : (
+          <p className="text-sm text-muted-foreground">—</p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <DataDisplay icon={CalendarDays} label="Created" value={formatDate(absence.created_at)} />
+        <DataDisplay icon={CalendarDays} label="Last updated" value={formatDate(absence.updated_at)} />
       </div>
     </ComposedSheet>
   );
 }
+
+AbsenceDetailSheet.Skeleton = function AbsenceDetailSheetSkeleton({
+  open,
+  onOpenChange,
+}: Pick<AbsenceDetailSheetProps, "open" | "onOpenChange">) {
+  return (
+    <ComposedSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Absence details"
+      description="Timing, type and notes at a glance."
+    >
+      <div className="rounded-2xl border border-border/60 bg-tertiary p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-2">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-10 w-28" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+          <Skeleton className="h-5 w-20 rounded-full" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <DataDisplay.Skeleton icon={CalendarCheckIcon} label="Start" />
+        <DataDisplay.Skeleton icon={CalendarXIcon} label="End" />
+      </div>
+
+      <DataDisplay.Skeleton icon={HourglassIcon} label="Duration" />
+
+      <div className="rounded-xl border border-border/60 bg-muted/10 px-3.5 py-3">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <NotePencilIcon className="size-3.5" />
+            <span className="mt-0.5">Note</span>
+          </div>
+          <Skeleton className="h-5 w-16 rounded-full" />
+        </div>
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="mt-1.5 h-4 w-3/4" />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <DataDisplay.Skeleton icon={CalendarDays} label="Created" />
+        <DataDisplay.Skeleton icon={CalendarDays} label="Last updated" />
+      </div>
+    </ComposedSheet>
+  );
+};

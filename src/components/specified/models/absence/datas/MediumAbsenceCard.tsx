@@ -50,13 +50,13 @@ export default function MediumAbsenceCard({ absence, userId }: MediumAbsenceCard
           </div>
         }
         title={
-          <span className="flex items-center gap-2">
+          <span className="flex items-center gap-2 font-bold">
             {absence.type ? capitalize(absence.type) : <i>Geen type</i>}
             <LifecycleBadge lifecycle={lk} />
           </span>
         }
         description={
-          <div className="space-y-1.5 mt-1">
+          <div className="space-y-1.5 mt-1.5">
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-[12px] font-semibold tabular-nums text-foreground">
                 {fmtDate(absence.start_date)}
