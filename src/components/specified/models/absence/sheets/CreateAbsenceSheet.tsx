@@ -62,7 +62,7 @@ export default function CreateAbsenceSheet({ open, onOpenChange, userId }: Creat
     if (open) reset({ type: "vacation", start_date: "", end_date: "", reason: "" });
   }, [open, reset]);
 
-  const { mutate: createAbsence, isPending } = useCreateAbsence();
+  const { createAbsence, isLoading: isPending } = useCreateAbsence();
   const selectedType = watch("type");
 
   function handleClose() {
@@ -70,11 +70,13 @@ export default function CreateAbsenceSheet({ open, onOpenChange, userId }: Creat
     onOpenChange(false);
   }
 
-  function onSubmit({ type, start_date, end_date, reason }: FormValues) {
-    createAbsence(
-      { userId, type, start_date, end_date, reason: reason || undefined },
-      { onSuccess: handleClose },
-    );
+  async function onSubmit({ type, start_date, end_date, reason }: FormValues) {
+    try {
+      await createAbsence({ userId, type, start_date, end_date, reason: reason || undefined });
+      handleClose();
+    } catch {
+      /* toast handled in hook */
+    }
   }
 
   return (

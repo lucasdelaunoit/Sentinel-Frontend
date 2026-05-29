@@ -258,7 +258,7 @@ export interface UserStats {
 
 /* ── User absences (GET /users/:id/absences) ─────────────── */
 
-export type AbsenceType = "vacation" | "sick" | "conference";
+export type AbsenceType = "vacation" | "sick" | "conference" | "personal" | "other";
 export type AbsenceStatus = "approved" | "pending" | "rejected";
 
 export interface AbsenceItem {
@@ -266,10 +266,10 @@ export interface AbsenceItem {
   user_id: number;
   type: AbsenceType;
   start_date: string;
-  start_half: 0 | 1;
+  start_half?: 0 | 1;
   end_date: string;
-  end_half: 0 | 1;
-  status: AbsenceStatus;
+  end_half?: 0 | 1;
+  status?: AbsenceStatus;
   reason?: string | null;
   created_at: string;
   updated_at: string;

@@ -12,7 +12,7 @@ export default function useDeleteAbsence() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ id }: DeleteAbsencePayload) => privateApi.delete(`/api/absences/${id}`),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: ["users", userId, "absences"] });
@@ -22,4 +22,12 @@ export default function useDeleteAbsence() {
       toast.error(extractApiErrorMessage(error, "Failed to delete absence."));
     },
   });
+
+  return {
+    deleteAbsence: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

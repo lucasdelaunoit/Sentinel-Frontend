@@ -16,7 +16,7 @@ export default function useCreateAbsence() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ userId, ...body }: CreateAbsencePayload) =>
       privateApi.post(`/api/users/${userId}/absences`, body),
     onSuccess: (_, { userId }) => {
@@ -27,4 +27,12 @@ export default function useCreateAbsence() {
       toast.error(extractApiErrorMessage(error, "Failed to add absence."));
     },
   });
+
+  return {
+    createAbsence: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

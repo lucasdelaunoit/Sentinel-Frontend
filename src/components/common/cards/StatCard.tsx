@@ -17,16 +17,17 @@ interface StatCardProps {
   card?: StatCardData;
   onClick?: () => void;
   isLoading?: boolean;
+  className?: string;
 }
 
-export default function StatCard({ title, icon: Icon, card, onClick, isLoading = false }: StatCardProps) {
+export default function StatCard({ title, icon: Icon, card, onClick, isLoading = false, className }: StatCardProps) {
   const color = (card && SEVERITY_COLOR[card.severity]) || "text-foreground";
 
-  if (isLoading) return <StatCard.Skeleton title={title} icon={Icon} />;
+  if (isLoading) return <StatCard.Skeleton title={title} icon={Icon} className={className} />;
 
   return (
     <Card
-      className={cn("py-6 gap-3", onClick && "cursor-pointer hover:bg-muted/30 transition-colors")}
+      className={cn("py-6 gap-3", onClick && "cursor-pointer hover:bg-muted/30 transition-colors", className)}
       onClick={onClick}
     >
       <div className="flex justify-between items-start">
@@ -36,19 +37,21 @@ export default function StatCard({ title, icon: Icon, card, onClick, isLoading =
         </span>
       </div>
       <div className={cn("text-3xl font-semibold")}>{card?.value}</div>
-      <div className="flex flex-col gap-0.5">
-        <div className={cn("flex items-center gap-1 text-sm font-semibold", color)}>
-          <ArrowRightIcon size={13} />
-          <span>{card?.insight}</span>
+      {card?.insight && (
+        <div className="flex flex-col gap-0.5">
+          <div className={cn("flex items-center gap-1 text-sm font-semibold", color)}>
+            <ArrowRightIcon size={13} />
+            <span>{card.insight}</span>
+          </div>
         </div>
-      </div>
+      )}
     </Card>
   );
 }
 
-StatCard.Skeleton = function StatCardSkeleton({ title, icon: Icon }: Pick<StatCardProps, "title" | "icon">) {
+StatCard.Skeleton = function StatCardSkeleton({ title, icon: Icon, className }: Pick<StatCardProps, "title" | "icon" | "className">) {
   return (
-    <Card className="py-6 gap-3">
+    <Card className={cn("py-6 gap-3", className)}>
       <div className="flex justify-between items-start">
         <span className="text-sm font-normal text-muted-foreground tracking-wide">{title}</span>
         <span className="text-muted-foreground opacity-60">

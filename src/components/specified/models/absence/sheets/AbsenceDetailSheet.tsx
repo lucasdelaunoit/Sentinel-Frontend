@@ -65,7 +65,7 @@ const TONE_STYLES = {
 };
 
 export default function AbsenceDetailSheet({ absence, open, onOpenChange, userId }: AbsenceDetailSheetProps) {
-  const { mutate: deleteAbsence, isPending } = useDeleteAbsence();
+  const { deleteAbsence, isLoading: isPending } = useDeleteAbsence();
 
   if (!absence) {
     return (
@@ -78,9 +78,14 @@ export default function AbsenceDetailSheet({ absence, open, onOpenChange, userId
   const rel = relativeStatus(absence.start_date, absence.end_date);
   const days = durationDays(absence.start_date, absence.end_date);
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!absence) return;
-    deleteAbsence({ id: absence.id, userId }, { onSuccess: () => onOpenChange(false) });
+    try {
+      await deleteAbsence({ id: absence.id, userId });
+      onOpenChange(false);
+    } catch {
+      /* toast handled in hook */
+    }
   }
 
   return (
