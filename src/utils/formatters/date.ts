@@ -1,3 +1,5 @@
+import type { AbsenceLifecycle } from "@/utils/absence/lifecycle.ts";
+
 type DateInput = Date | string | number | null | undefined;
 
 function toDate(input: DateInput): Date | null {
@@ -82,4 +84,14 @@ export function isPast(input: DateInput): boolean {
 export function isFuture(input: DateInput): boolean {
   const d = toDate(input);
   return !!d && d.getTime() > Date.now();
+}
+
+export function classifyAbsenceLifecycle(start: string, end: string): AbsenceLifecycle {
+  const today = new Date().setHours(0, 0, 0, 0);
+  const s = new Date(start).setHours(0, 0, 0, 0);
+  const e = new Date(end).setHours(0, 0, 0, 0);
+
+  if (today < s) return "upcoming";
+  if (today > e) return "past";
+  return "ongoing";
 }

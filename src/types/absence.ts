@@ -34,9 +34,3 @@ export const ABSENCE_TYPE_LABEL: Record<AbsenceType, string> = {
 
 /** All enum values, for iteration (filter dropdowns, legends, etc.). */
 export const ABSENCE_TYPE_VALUES: AbsenceType[] = Object.values(AbsenceType);
-
-/** Safe label lookup with null fallback. */
-export function absenceTypeLabel(type: AbsenceType | null | undefined, fallback = "Unspecified"): string {
-  if (!type) return fallback;
-  return ABSENCE_TYPE_LABEL[type] ?? fallback;
-}
