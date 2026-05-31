@@ -261,6 +261,14 @@ export interface UserStats {
 /** Re-exports for back-compat; canonical home is `@/types/absence`. */
 export { AbsenceType, type Absence, type AbsenceItem } from "./absence";
 
+/* ── User absence stats (GET /users/:id/absences/stats) ──── */
+
+export interface UserAbsenceStats {
+  total_absences: StatCardData;
+  days_off: StatCardData;
+  upcoming: StatCardData;
+}
+
 /* ── Root response ───────────────────────────────────────── */
 
 export interface DashboardStats {
