@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import { ABSENCE_TYPE_VALUES } from "@/types/absence";
 import { ABSENCE_THEME } from "@/utils/planning/theme";
+import { ABSENCE_TYPE_VALUES } from "@/utils/absence/absenceType.ts";
 
 interface PlanningLegendProps {
   variant?: "row" | "stack";
@@ -9,7 +9,6 @@ interface PlanningLegendProps {
   holidayText?: string;
   className?: string;
 }
-
 
 export default function PlanningLegend({
   variant = "row",
@@ -52,9 +51,7 @@ export default function PlanningLegend({
           <span className="text-[11px] text-muted-foreground">Today</span>
         </div>
       )}
-      {holidayText && (
-        <span className="text-[10px] text-muted-foreground/60 ml-auto truncate">{holidayText}</span>
-      )}
+      {holidayText && <span className="text-[10px] text-muted-foreground/60 ml-auto truncate">{holidayText}</span>}
     </div>
   );
 }

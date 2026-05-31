@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import usePrivateApi from "@/api/privateApi.ts";
 import { toast } from "sonner";
 import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
-import type { AbsenceType } from "@/types/absence";
 
 interface CreateAbsencePayload {
   userId: string;
@@ -17,8 +16,7 @@ export default function useCreateAbsence() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: ({ userId, ...body }: CreateAbsencePayload) =>
-      privateApi.post(`/api/users/${userId}/absences`, body),
+    mutationFn: ({ userId, ...body }: CreateAbsencePayload) => privateApi.post(`/api/users/${userId}/absences`, body),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: ["users", userId, "absences"] });
       toast.success("Absence added.");

@@ -9,7 +9,7 @@ import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useUpdateAbsence from "@/api/absences/useUpdateAbsence";
 import { cn } from "@/lib/utils";
-import { AbsenceType, ABSENCE_TYPE_LABEL, ABSENCE_TYPE_VALUES, type AbsenceItem } from "@/types/absence";
+import { ABSENCE_TYPE_LABEL, ABSENCE_TYPE_VALUES } from "@/utils/absence/absenceType.ts";
 
 interface FormValues {
   type: AbsenceType;
@@ -19,19 +19,31 @@ interface FormValues {
 }
 
 interface EditAbsenceSheetProps {
-  absence: AbsenceItem;
+  absence: Absence;
   userId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 const TYPE_STYLE: Record<AbsenceType, { idle: string; active: string }> = {
-  [AbsenceType.Vacation]: { idle: "border-blue-200 bg-blue-50/60", active: "bg-blue-600 border-blue-600 text-white" },
-  [AbsenceType.Conference]: { idle: "border-violet-200 bg-violet-50/60", active: "bg-violet-600 border-violet-600 text-white" },
-  [AbsenceType.Training]: { idle: "border-amber-200 bg-amber-50/60", active: "bg-amber-600 border-amber-600 text-white" },
-  [AbsenceType.Parental]: { idle: "border-emerald-200 bg-emerald-50/60", active: "bg-emerald-600 border-emerald-600 text-white" },
-  [AbsenceType.Sabbatical]: { idle: "border-indigo-200 bg-indigo-50/60", active: "bg-indigo-600 border-indigo-600 text-white" },
-  [AbsenceType.Other]: { idle: "border-slate-200 bg-slate-50/60", active: "bg-slate-600 border-slate-600 text-white" },
+  vacation: { idle: "border-blue-200 bg-blue-50/60", active: "bg-blue-600 border-blue-600 text-white" },
+  conference: {
+    idle: "border-violet-200 bg-violet-50/60",
+    active: "bg-violet-600 border-violet-600 text-white",
+  },
+  training: {
+    idle: "border-amber-200 bg-amber-50/60",
+    active: "bg-amber-600 border-amber-600 text-white",
+  },
+  parental: {
+    idle: "border-emerald-200 bg-emerald-50/60",
+    active: "bg-emerald-600 border-emerald-600 text-white",
+  },
+  sabbatical: {
+    idle: "border-indigo-200 bg-indigo-50/60",
+    active: "bg-indigo-600 border-indigo-600 text-white",
+  },
+  other: { idle: "border-slate-200 bg-slate-50/60", active: "bg-slate-600 border-slate-600 text-white" },
 };
 
 const schema = yup.object({
@@ -48,9 +60,9 @@ const schema = yup.object({
   reason: yup.string().max(255, "Reason must be 255 characters or fewer.").optional().default(""),
 });
 
-function defaults(absence: AbsenceItem): FormValues {
+function defaults(absence: Absence): FormValues {
   return {
-    type: absence.type ?? AbsenceType.Vacation,
+    type: absence.type ?? ("vacation" as AbsenceType),
     start_date: absence.start_date,
     end_date: absence.end_date,
     reason: absence.reason ?? "",
@@ -101,7 +113,9 @@ export default function EditAbsenceSheet({ absence, userId, open, onOpenChange }
   return (
     <ComposedSheet
       open={open}
-      onOpenChange={(v) => { if (!v) handleClose(); }}
+      onOpenChange={(v) => {
+        if (!v) handleClose();
+      }}
       title="Edit absence"
       description="Update this absence record"
       icon={<CalendarBlankIcon className="size-4 text-primary" />}

@@ -9,7 +9,7 @@ import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useCreateAbsence from "@/api/absences/useCreateAbsence";
 import { cn } from "@/lib/utils";
-import { AbsenceType, ABSENCE_TYPE_LABEL, ABSENCE_TYPE_VALUES } from "@/types/absence";
+import { ABSENCE_TYPE_LABEL, ABSENCE_TYPE_VALUES } from "@/utils/absence/absenceType.ts";
 
 interface FormValues {
   type: AbsenceType;
@@ -25,12 +25,24 @@ interface CreateAbsenceSheetProps {
 }
 
 const TYPE_STYLE: Record<AbsenceType, { idle: string; active: string }> = {
-  [AbsenceType.Vacation]: { idle: "border-blue-200 bg-blue-50/60", active: "bg-blue-600 border-blue-600 text-white" },
-  [AbsenceType.Conference]: { idle: "border-violet-200 bg-violet-50/60", active: "bg-violet-600 border-violet-600 text-white" },
-  [AbsenceType.Training]: { idle: "border-amber-200 bg-amber-50/60", active: "bg-amber-600 border-amber-600 text-white" },
-  [AbsenceType.Parental]: { idle: "border-emerald-200 bg-emerald-50/60", active: "bg-emerald-600 border-emerald-600 text-white" },
-  [AbsenceType.Sabbatical]: { idle: "border-indigo-200 bg-indigo-50/60", active: "bg-indigo-600 border-indigo-600 text-white" },
-  [AbsenceType.Other]: { idle: "border-slate-200 bg-slate-50/60", active: "bg-slate-600 border-slate-600 text-white" },
+  vacation: { idle: "border-blue-200 bg-blue-50/60", active: "bg-blue-600 border-blue-600 text-white" },
+  conference: {
+    idle: "border-violet-200 bg-violet-50/60",
+    active: "bg-violet-600 border-violet-600 text-white",
+  },
+  training: {
+    idle: "border-amber-200 bg-amber-50/60",
+    active: "bg-amber-600 border-amber-600 text-white",
+  },
+  parental: {
+    idle: "border-emerald-200 bg-emerald-50/60",
+    active: "bg-emerald-600 border-emerald-600 text-white",
+  },
+  sabbatical: {
+    idle: "border-indigo-200 bg-indigo-50/60",
+    active: "bg-indigo-600 border-indigo-600 text-white",
+  },
+  other: { idle: "border-slate-200 bg-slate-50/60", active: "bg-slate-600 border-slate-600 text-white" },
 };
 
 const schema = yup.object({
@@ -57,7 +69,7 @@ export default function CreateAbsenceSheet({ open, onOpenChange, userId }: Creat
     formState: { errors, isValid, isDirty },
   } = useForm<FormValues>({
     resolver: yupResolver(schema) as never,
-    defaultValues: { type: AbsenceType.Vacation, start_date: "", end_date: "", reason: "" },
+    defaultValues: { type: "vacation", start_date: "", end_date: "", reason: "" },
     mode: "onChange",
   });
 
@@ -85,7 +97,9 @@ export default function CreateAbsenceSheet({ open, onOpenChange, userId }: Creat
   return (
     <ComposedSheet
       open={open}
-      onOpenChange={(v) => { if (!v) handleClose(); }}
+      onOpenChange={(v) => {
+        if (!v) handleClose();
+      }}
       title="Add Absence"
       description="Record a planned or past absence for this employee"
       icon={<CalendarBlankIcon className="size-4 text-primary" />}
@@ -147,11 +161,7 @@ export default function CreateAbsenceSheet({ open, onOpenChange, userId }: Creat
                 <FieldLabel>
                   Start date <span className="text-destructive-foreground">*</span>
                 </FieldLabel>
-                <Input
-                  {...field}
-                  type="date"
-                  aria-invalid={!!errors.start_date}
-                />
+                <Input {...field} type="date" aria-invalid={!!errors.start_date} />
                 {errors.start_date && <FieldError>{errors.start_date.message}</FieldError>}
               </Field>
             )}
@@ -165,11 +175,7 @@ export default function CreateAbsenceSheet({ open, onOpenChange, userId }: Creat
                 <FieldLabel>
                   End date <span className="text-destructive-foreground">*</span>
                 </FieldLabel>
-                <Input
-                  {...field}
-                  type="date"
-                  aria-invalid={!!errors.end_date}
-                />
+                <Input {...field} type="date" aria-invalid={!!errors.end_date} />
                 {errors.end_date && <FieldError>{errors.end_date.message}</FieldError>}
               </Field>
             )}
