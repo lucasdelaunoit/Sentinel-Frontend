@@ -7,7 +7,7 @@ import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import { SecondaryButton } from "@/components/common/buttons/SecondaryButton.tsx";
 import { cn } from "@/lib/utils.ts";
-import { AbsenceType, ABSENCE_TYPE_LABEL, type AbsenceItem } from "@/types/absence";
+import { ABSENCE_TYPE_LABEL } from "@/utils/absence/absenceType.ts";
 
 interface UserOverviewTabProps {
   userId: string;
@@ -17,22 +17,34 @@ interface UserOverviewTabProps {
 /* ─── Helpers ────────────────────────────────────────────── */
 
 function critLabel(score: number): { label: string; color: string; bg: string; border: string; ring: string } {
-  if (score >= 70) return { label: "High Criticality", color: "text-rose-700", bg: "bg-rose-50", border: "border-rose-200", ring: "ring-rose-200/60" };
-  if (score >= 40) return { label: "Medium Criticality", color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200", ring: "ring-amber-200/60" };
-  return { label: "Low Criticality", color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200", ring: "ring-emerald-200/60" };
+  if (score >= 70)
+    return {
+      label: "High Criticality",
+      color: "text-rose-700",
+      bg: "bg-rose-50",
+      border: "border-rose-200",
+      ring: "ring-rose-200/60",
+    };
+  if (score >= 40)
+    return {
+      label: "Medium Criticality",
+      color: "text-amber-700",
+      bg: "bg-amber-50",
+      border: "border-amber-200",
+      ring: "ring-amber-200/60",
+    };
+  return {
+    label: "Low Criticality",
+    color: "text-emerald-700",
+    bg: "bg-emerald-50",
+    border: "border-emerald-200",
+    ring: "ring-emerald-200/60",
+  };
 }
 
-const ABSENCE_TYPE_DOT: Record<AbsenceType, string> = {
-  [AbsenceType.Vacation]: "bg-blue-500",
-  [AbsenceType.Conference]: "bg-violet-500",
-  [AbsenceType.Training]: "bg-amber-500",
-  [AbsenceType.Parental]: "bg-emerald-500",
-  [AbsenceType.Sabbatical]: "bg-indigo-500",
-  [AbsenceType.Other]: "bg-slate-500",
-};
-
-function typeDot(t: AbsenceType | null) { return t ? ABSENCE_TYPE_DOT[t] : "bg-muted-foreground"; }
-function typeLabel(t: AbsenceType | null) { return t ? ABSENCE_TYPE_LABEL[t] : "Unspecified"; }
+function typeLabel(t: AbsenceType | null) {
+  return t ? ABSENCE_TYPE_LABEL[t] : "Unspecified";
+}
 
 function fmtShort(date: string) {
   return new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
@@ -42,7 +54,7 @@ function daysBetween(start: string, end: string) {
   return Math.max(1, Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86_400_000) + 1);
 }
 
-function daysThisYear(absences: AbsenceItem[]) {
+function daysThisYear(absences: Absence[]) {
   const year = new Date().getFullYear();
   const yearStart = new Date(`${year}-01-01`).getTime();
   const yearEnd = new Date(`${year}-12-31`).getTime();
@@ -54,7 +66,7 @@ function daysThisYear(absences: AbsenceItem[]) {
   }, 0);
 }
 
-function upcomingAbsences(absences: AbsenceItem[]) {
+function upcomingAbsences(absences: Absence[]) {
   const today = new Date().setHours(0, 0, 0, 0);
   return absences
     .filter((a) => new Date(a.end_date).getTime() >= today)
@@ -133,17 +145,23 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
           <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-5">
             <Skeleton className="h-5 w-32" />
             <Skeleton className="h-20 rounded-xl" />
-            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-xl" />)}
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 rounded-xl" />
+            ))}
           </div>
           <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-3">
             <Skeleton className="h-5 w-36" />
-            {Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Skeleton key={i} className="h-14 rounded-xl" />
+            ))}
           </div>
         </div>
         <div className="rounded-2xl bg-card border border-border/60 p-6 shadow-sm space-y-4">
           <Skeleton className="h-5 w-36" />
           <Skeleton className="h-20 rounded-xl" />
-          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12" />)}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-12" />
+          ))}
         </div>
       </div>
     );
@@ -217,9 +235,7 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
                 <p className="text-[12px] font-semibold text-foreground">
                   {skillsCount} skill{skillsCount !== 1 ? "s" : ""}
                 </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
-                  {skills.insight ?? "Skills currently held"}
-                </p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{skills.insight ?? "Skills currently held"}</p>
               </div>
             </div>
 
@@ -308,7 +324,9 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
               {absencesLoading ? (
                 <Skeleton className="h-6 w-10 mt-1.5" />
               ) : (
-                <p className="text-[20px] font-bold text-foreground leading-tight mt-1 tabular-nums">{upcoming.length}</p>
+                <p className="text-[20px] font-bold text-foreground leading-tight mt-1 tabular-nums">
+                  {upcoming.length}
+                </p>
               )}
             </div>
           </div>
@@ -340,7 +358,7 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
                     key={a.id}
                     before={
                       <div className="flex size-8 items-center justify-center rounded-lg bg-muted/50 border border-border/40">
-                        <span className={cn("size-2 rounded-full", typeDot(a.type))} />
+                        <span className={cn("size-2 rounded-full")} />
                       </div>
                     }
                     title={typeLabel(a.type)}

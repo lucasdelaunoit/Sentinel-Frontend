@@ -1,5 +1,4 @@
 import type { ImpactLevel } from "@/types/planning";
-import { AbsenceType } from "@/types/absence";
 
 export interface SimColor {
   bg: string;
@@ -56,37 +55,37 @@ export interface AbsenceTheme {
 }
 
 export const ABSENCE_THEME: Record<AbsenceType, AbsenceTheme> = {
-  [AbsenceType.Vacation]: {
+  vacation: {
     label: "Vacation",
     bg: "bg-info/10",
     border: "border-info/30",
     dot: "bg-info",
   },
-  [AbsenceType.Conference]: {
+  conference: {
     label: "Conference",
     bg: "bg-planned/10",
     border: "border-planned/30",
     dot: "bg-planned",
   },
-  [AbsenceType.Training]: {
+  training: {
     label: "Training",
     bg: "bg-warning/10",
     border: "border-warning/30",
     dot: "bg-warning",
   },
-  [AbsenceType.Parental]: {
+  parental: {
     label: "Parental leave",
     bg: "bg-success/10",
     border: "border-success/30",
     dot: "bg-success",
   },
-  [AbsenceType.Sabbatical]: {
+  sabbatical: {
     label: "Sabbatical",
     bg: "bg-primary/10",
     border: "border-primary/30",
     dot: "bg-primary",
   },
-  [AbsenceType.Other]: {
+  other: {
     label: "Other",
     bg: "bg-muted",
     border: "border-border",
