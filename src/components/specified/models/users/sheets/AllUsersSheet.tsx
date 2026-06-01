@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { TablePagination } from "@/components/common/table/TablePagination.tsx";
+import DataPagination from "@/components/common/pagination/DataPagination.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import { useTablePagination } from "@/hooks/useTablePagination.ts";
 import { cn } from "@/lib/utils.ts";
@@ -35,9 +35,15 @@ export default function AllUsersSheet({
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<SheetFilter>("all");
-  const { page, setPage, perPage, setPerPage } = useTablePagination(15, [search, filter]);
+  const { page, setPage, perPage } = useTablePagination(15, [search, filter]);
 
-  const { data: users, total, lastPage, from, to, isLoading, isError } = useGetUsers({
+  const {
+    data: users,
+    total,
+    lastPage,
+    isLoading,
+    isError,
+  } = useGetUsers({
     page,
     per_page: perPage,
     search: search || undefined,
@@ -83,19 +89,9 @@ export default function AllUsersSheet({
       }
       footer={
         !isLoading && !isError && total > 0 ? (
-          <TablePagination
-            page={page}
-            lastPage={lastPage}
-            perPage={perPage}
-            total={total}
-            from={from}
-            to={to}
-            onPageChange={setPage}
-            onPerPageChange={setPerPage}
-          />
+          <DataPagination page={page} totalPages={lastPage} onPageChange={setPage} />
         ) : null
       }
-      footerClassName="p-0 border-t border-border/60 flex-col"
     >
       {isLoading ? (
         <div className="space-y-4 p-0.5">
@@ -115,11 +111,11 @@ export default function AllUsersSheet({
       ) : users.length === 0 ? (
         <Feedback variant="neutral" title="No matches" description="Try adjusting the search or filter." />
       ) : (
-        <div className="space-y-4 p-0.5">
+        <div className="space-y-2">
           {users.map((user) => (
             <MediumUserRow
               key={user.id}
-              className="hover:bg-tertiary cursor-pointer rounded-md transition-all"
+              className="cursor-pointer"
               user={user}
               onClick={() => {
                 navigate(`/users/${user.id}`);

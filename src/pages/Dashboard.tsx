@@ -36,7 +36,7 @@ export default function Dashboard() {
         <HomeStatCardsSection />
 
         {/* Section 2 — Core Operational Insights */}
-        <div className="grid grid-cols-3 gap-5 items-start">
+        <div className="grid grid-cols-3 gap-5 items-stretch">
           <TeamStatusOfTodayCard />
           <KnowledgeCoverageOfToday />
           <CriticalProjectsCard />

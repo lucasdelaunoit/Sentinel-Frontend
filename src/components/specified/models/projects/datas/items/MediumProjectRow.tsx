@@ -2,6 +2,7 @@ import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import ProjectAvatar from "@/components/specified/models/projects/avatars/ProjectAvatar.tsx";
 import FragilityBadge from "@/components/specified/models/projects/datas/FragilityBadge.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import ProjectFragilityAvatar from "@/components/specified/models/projects/avatars/ProjectFragilityAvatar.tsx";
 
 interface MediumProjectRowProps {
   project: Project;
@@ -9,20 +10,15 @@ interface MediumProjectRowProps {
   onClick?: () => void;
 }
 
-function fragilityScore(metric?: MetricResult): number | null {
-  const raw = metric?.value_raw;
-  return typeof raw === "number" ? raw : null;
-}
-
 export default function MediumProjectRow({ project, className, onClick }: MediumProjectRowProps) {
   return (
     <SecondaryCard
       className={className}
       onClick={onClick}
-      before={<ProjectAvatar name={project.name} variant={project.status} />}
+      before={<ProjectFragilityAvatar name={project.name} fragilitySeverity={project.fragility.severity} />}
       title={project.name}
       description={project.description || "—"}
-      action={<FragilityBadge value={fragilityScore(project.fragility)} size="sm" />}
+      action={<FragilityBadge fragility={project.fragility} />}
     />
   );
 }

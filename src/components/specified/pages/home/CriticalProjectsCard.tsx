@@ -9,12 +9,16 @@ import useGetProjects from "@/api/projects/useGetProjects.ts";
 import useGetProjectsStats from "@/api/projects/useGetProjectsStats.ts";
 import MediumProjectRow from "@/components/specified/models/projects/datas/items/MediumProjectRow.tsx";
 
-const PREVIEW_COUNT = 5;
+const PREVIEW_COUNT = 4;
 
 export default function CriticalProjectsCard() {
   const navigate = useNavigate();
 
-  const { data: projects, isLoading, isError } = useGetProjects({
+  const {
+    data: projects,
+    isLoading,
+    isError,
+  } = useGetProjects({
     page: 1,
     per_page: PREVIEW_COUNT,
     sorts: [{ field: "risk_score", direction: "desc" }],
@@ -43,7 +47,7 @@ export default function CriticalProjectsCard() {
           ) : projects.length === 0 ? (
             <Feedback variant="success" title="All projects healthy" description="No active projects at risk" />
           ) : (
-            <div className="space-y-4 p-0.5">
+            <div className="space-y-2">
               {projects.map((p) => (
                 <MediumProjectRow key={p.id} project={p} onClick={() => navigate(`/projects/${p.id}`)} />
               ))}

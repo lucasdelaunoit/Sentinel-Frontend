@@ -1,46 +1,19 @@
-import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { getFragilityTier, TONE_TEXT, TONE_SOFT_BG, TONE_SOFT_BORDER } from "@/lib/scoring";
+import { Badge } from "@/components/ui/badge.tsx";
+
+const FRAGILITY_COLORS_TIERS: Record<Severity, string> = {
+  critical: "bg-danger",
+  warning: "bg-warning",
+  ok: "bg-success",
+};
 
 interface FragilityBadgeProps {
-  value?: number | null;
-  empty?: ReactNode;
-  error?: ReactNode;
-  showScore?: boolean;
-  size?: "sm" | "md";
+  fragility: MetricResult;
 }
 
-export default function FragilityBadge({
-  value,
-  empty = "—",
-  error,
-  showScore = true,
-  size = "md",
-}: FragilityBadgeProps) {
-  if (error) {
-    return <span className="text-[12px] font-medium text-destructive">{error}</span>;
-  }
-  if (value == null) {
-    return <span className="text-[12px] font-medium text-muted-foreground">{empty}</span>;
-  }
-  const tier = getFragilityTier(value);
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-md border font-semibold",
-        size === "sm" ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-0.5 text-[11px]",
-        TONE_SOFT_BG[tier.tone],
-        TONE_SOFT_BORDER[tier.tone],
-        TONE_TEXT[tier.tone],
-      )}
-    >
-      {tier.label}
-      {showScore && (
-        <span className="font-bold tabular-nums opacity-70">{value}</span>
-      )}
-    </span>
-  );
+export default function FragilityBadge({ fragility }: FragilityBadgeProps) {
+  return <Badge className={FRAGILITY_COLORS_TIERS[fragility.severity]}>{fragility.value}</Badge>;
 }
 
 FragilityBadge.Skeleton = function FragilityBadgeSkeleton({ size = "md" }: { size?: "sm" | "md" }) {

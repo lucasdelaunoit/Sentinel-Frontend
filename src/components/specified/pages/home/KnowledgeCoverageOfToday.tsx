@@ -36,13 +36,17 @@ export default function KnowledgeCoverageOfToday() {
       }
       className="flex flex-col"
     >
-      {isError ? (
-        <Feedback variant="danger" title="Failed to load coverage" description="Check API connection." />
-      ) : chartData.length === 0 ? (
-        <Feedback variant="neutral" title="No coverage data" description="No skill categories to display." />
-      ) : (
-        <CoverageRadar data={chartData} />
-      )}
+      <div className="h-full flex flex-col">
+        <div className="my-auto w-full">
+          {isError ? (
+            <Feedback variant="danger" title="Failed to load coverage" description="Check API connection." />
+          ) : chartData.length === 0 ? (
+            <Feedback variant="neutral" title="No coverage data" description="No skill categories to display." />
+          ) : (
+            <CoverageRadar data={chartData} />
+          )}
+        </div>
+      </div>
     </ComposedCard>
   );
 }
@@ -54,7 +58,11 @@ KnowledgeCoverageOfToday.Skeleton = function KnowledgeCoverageOfTodaySkeleton() 
       action={<Skeleton className="h-3.5 w-28 ml-auto" />}
       className="flex flex-col"
     >
-      <CoverageRadar.Skeleton />
+      <div className="h-full flex flex-col">
+        <div className="my-auto w-full">
+          <CoverageRadar.Skeleton />
+        </div>
+      </div>
     </ComposedCard>
   );
 };
