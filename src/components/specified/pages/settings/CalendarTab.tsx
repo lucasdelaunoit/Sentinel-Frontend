@@ -41,10 +41,13 @@ export default function CalendarTab() {
   const holidayEvents = useMemo<HolidayEvent[]>(() => {
     const year = cursor.getFullYear();
     return holidaysAll.map((h) => {
-      const src = new Date(h.date);
-      const y = h.recurring ? year : src.getFullYear();
-      const date = new Date(y, src.getMonth(), src.getDate());
-      return { holiday: h, start: date, end: date };
+      const srcStart = new Date(h.start_date);
+      const srcEnd = new Date(h.end_date);
+      const startY = h.recurring ? year : srcStart.getFullYear();
+      const endY = h.recurring ? year + (srcEnd.getFullYear() - srcStart.getFullYear()) : srcEnd.getFullYear();
+      const start = new Date(startY, srcStart.getMonth(), srcStart.getDate());
+      const end = new Date(endY, srcEnd.getMonth(), srcEnd.getDate());
+      return { holiday: h, start, end };
     });
   }, [holidaysAll, cursor]);
 

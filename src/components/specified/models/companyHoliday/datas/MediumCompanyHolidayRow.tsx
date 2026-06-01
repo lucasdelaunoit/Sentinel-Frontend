@@ -28,12 +28,20 @@ export default function MediumCompanyHolidayRow({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const { mutate: deleteHoliday, isPending: isDeleting } = useDeleteCompanyHoliday();
 
-  const d = new Date(holiday.date);
-  const dayNum = d.getDate();
+  const start = new Date(holiday.start_date);
+  const end = new Date(holiday.end_date);
+  const dayNum = start.getDate();
+  const sameDay = holiday.start_date === holiday.end_date;
+  const startMonthDay = start.toLocaleString("en-US", { month: "long", day: "numeric" });
+  const endMonthDay = end.toLocaleString("en-US", { month: "long", day: "numeric" });
+  const startFull = start.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const endFull = end.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const dateLabel = holiday.recurring
-    ? `${d.toLocaleString("en-US", { month: "long", day: "numeric" })} (yearly)`
-    : d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  const weekdayLabel = d.toLocaleDateString("en-US", { weekday: "short" });
+    ? (sameDay ? `${startMonthDay} (yearly)` : `${startMonthDay} → ${endMonthDay} (yearly)`)
+    : (sameDay ? startFull : `${startFull} → ${endFull}`);
+  const weekdayLabel = sameDay
+    ? start.toLocaleDateString("en-US", { weekday: "short" })
+    : `${start.toLocaleDateString("en-US", { weekday: "short" })} → ${end.toLocaleDateString("en-US", { weekday: "short" })}`;
 
   function handleConfirmDelete() {
     deleteHoliday(holiday.id, {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CalendarDays, Pencil, Trash2 } from "lucide-react";
-import { CalendarCheckIcon, CalendarBlankIcon, RepeatIcon, CircleNotchIcon } from "@phosphor-icons/react";
+import { CalendarCheckIcon, CalendarBlankIcon, CircleNotchIcon } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
@@ -23,10 +23,17 @@ export default function CompanyHolidayDetailSheet({ holiday, open, onOpenChange 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const { mutate: deleteHoliday, isPending: isDeleting } = useDeleteCompanyHoliday();
 
-  const d = new Date(holiday.date);
-  const dayNum = d.getDate();
-  const weekdayLabel = d.toLocaleDateString("en-US", { weekday: "long" });
-  const monthDayLabel = d.toLocaleString("en-US", { month: "long", day: "numeric" });
+  const start = new Date(holiday.start_date);
+  const end = new Date(holiday.end_date);
+  const dayNum = start.getDate();
+  const sameDay = holiday.start_date === holiday.end_date;
+  const startWeekday = start.toLocaleDateString("en-US", { weekday: "long" });
+  const endWeekday = end.toLocaleDateString("en-US", { weekday: "long" });
+  const weekdayLabel = sameDay ? startWeekday : `${startWeekday} → ${endWeekday}`;
+  const startMonthDay = start.toLocaleString("en-US", { month: "long", day: "numeric" });
+  const endMonthDay = end.toLocaleString("en-US", { month: "long", day: "numeric" });
+  const monthDayLabel = sameDay ? startMonthDay : `${startMonthDay} → ${endMonthDay}`;
+  const dayCount = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
 
   function handleConfirmDelete() {
     deleteHoliday(holiday.id, {
@@ -98,16 +105,15 @@ export default function CompanyHolidayDetailSheet({ holiday, open, onOpenChange 
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <DataDisplay icon={CalendarCheckIcon} label="Date" value={formatDate(holiday.date)} />
-        <DataDisplay icon={CalendarBlankIcon} label="Weekday" value={weekdayLabel} />
+        <DataDisplay icon={CalendarCheckIcon} label="Start" value={formatDate(holiday.start_date)} />
+        <DataDisplay icon={CalendarCheckIcon} label="End" value={formatDate(holiday.end_date)} />
       </div>
-
-      <DataDisplay icon={RepeatIcon} label="Recurring yearly" value={holiday.recurring ? "Yes" : "No"} />
 
       <div className="grid grid-cols-2 gap-3">
-        <DataDisplay icon={CalendarDays} label="Type" value={holiday.recurring ? "Yearly" : "One-off"} />
-        <DataDisplay icon={CalendarDays} label="Reference" value={`#${holiday.id}`} />
+        <DataDisplay icon={CalendarBlankIcon} label="Weekday" value={weekdayLabel} />
+        <DataDisplay icon={CalendarDays} label="Length" value={`${dayCount} day${dayCount > 1 ? "s" : ""}`} />
       </div>
+
     </ComposedSheet>
     <EditCompanyHolidaySheet holiday={holiday} open={editOpen} onOpenChange={setEditOpen} />
     </>
@@ -140,16 +146,15 @@ CompanyHolidayDetailSheet.Skeleton = function CompanyHolidayDetailSheetSkeleton(
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <DataDisplay.Skeleton icon={CalendarCheckIcon} label="Date" />
-        <DataDisplay.Skeleton icon={CalendarBlankIcon} label="Weekday" />
+        <DataDisplay.Skeleton icon={CalendarCheckIcon} label="Start" />
+        <DataDisplay.Skeleton icon={CalendarCheckIcon} label="End" />
       </div>
-
-      <DataDisplay.Skeleton icon={RepeatIcon} label="Recurring yearly" />
 
       <div className="grid grid-cols-2 gap-3">
-        <DataDisplay.Skeleton icon={CalendarDays} label="Type" />
-        <DataDisplay.Skeleton icon={CalendarDays} label="Reference" />
+        <DataDisplay.Skeleton icon={CalendarBlankIcon} label="Weekday" />
+        <DataDisplay.Skeleton icon={CalendarDays} label="Length" />
       </div>
+
     </ComposedSheet>
   );
 };

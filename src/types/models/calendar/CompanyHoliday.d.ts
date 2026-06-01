@@ -1,6 +1,7 @@
 interface CompanyHoliday {
   id: number;
   name: string;
-  date: string;
+  start_date: string;
+  end_date: string;
   recurring: boolean;
 }

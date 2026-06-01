@@ -11,10 +11,12 @@ import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useUpdateCompanyHoliday from "@/api/company-holidays/useUpdateCompanyHoliday";
 
 const MAX_NAME_LENGTH = 64;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 interface FormValues {
   name: string;
-  date: string;
+  start_date: string;
+  end_date: string;
   recurring: boolean;
 }
 
@@ -31,29 +33,48 @@ export default function EditCompanyHolidaySheet({ holiday, open, onOpenChange }:
       .required("Name is required.")
       .min(2, "Name must be at least 2 characters.")
       .max(MAX_NAME_LENGTH, `Name must be ${MAX_NAME_LENGTH} characters or fewer.`),
-    date: yup
+    start_date: yup
       .string()
-      .required("Date is required.")
-      .matches(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD."),
+      .required("Start date is required.")
+      .matches(DATE_RE, "Date must be YYYY-MM-DD."),
+    end_date: yup
+      .string()
+      .required("End date is required.")
+      .matches(DATE_RE, "Date must be YYYY-MM-DD.")
+      .test("after-start", "End date must be on or after start date.", function (value) {
+        const { start_date } = this.parent as FormValues;
+        return !value || !start_date || value >= start_date;
+      }),
     recurring: yup.boolean().required(),
   });
 
-  const initialDate = holiday.date.slice(0, 10);
+  const initialStart = holiday.start_date.slice(0, 10);
+  const initialEnd = holiday.end_date.slice(0, 10);
 
   const {
     control,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isValid, isDirty },
   } = useForm<FormValues>({
     resolver: yupResolver(schema),
-    defaultValues: { name: holiday.name, date: initialDate, recurring: holiday.recurring },
+    defaultValues: { name: holiday.name, start_date: initialStart, end_date: initialEnd, recurring: holiday.recurring },
     mode: "onChange",
   });
 
   useEffect(() => {
-    if (open) reset({ name: holiday.name, date: initialDate, recurring: holiday.recurring });
-  }, [open, holiday, initialDate, reset]);
+    if (open) reset({ name: holiday.name, start_date: initialStart, end_date: initialEnd, recurring: holiday.recurring });
+  }, [open, holiday, initialStart, initialEnd, reset]);
+
+  const startWatch = watch("start_date");
+  const endWatch = watch("end_date");
+  useEffect(() => {
+    if (startWatch && endWatch && endWatch < startWatch) {
+      setValue("end_date", startWatch, { shouldValidate: true, shouldDirty: true });
+    }
+  }, [startWatch, endWatch, setValue]);
 
   const { mutate: updateHoliday, isPending } = useUpdateCompanyHoliday();
 
@@ -62,8 +83,8 @@ export default function EditCompanyHolidaySheet({ holiday, open, onOpenChange }:
     onOpenChange(false);
   }
 
-  function onSubmit({ name, date, recurring }: FormValues) {
-    updateHoliday({ id: holiday.id, name: name.trim(), date, recurring }, { onSuccess: handleClose });
+  function onSubmit({ name, start_date, end_date, recurring }: FormValues) {
+    updateHoliday({ id: holiday.id, name: name.trim(), start_date, end_date, recurring }, { onSuccess: handleClose });
   }
 
   return (
@@ -73,7 +94,7 @@ export default function EditCompanyHolidaySheet({ holiday, open, onOpenChange }:
         if (!v) handleClose();
       }}
       title="Edit Holiday"
-      description="Update the holiday name, date or recurrence."
+      description="Update the holiday name, dates or recurrence."
       icon={<CalendarDays className="size-4 text-primary" />}
       footer={
         <>
@@ -102,7 +123,7 @@ export default function EditCompanyHolidaySheet({ holiday, open, onOpenChange }:
               </FieldLabel>
               <Input
                 {...field}
-                placeholder="e.g. Easter Monday, Labour Day"
+                placeholder="e.g. Easter Monday, Summer Shutdown"
                 autoFocus
                 autoComplete="off"
                 maxLength={MAX_NAME_LENGTH + 1}
@@ -119,28 +140,46 @@ export default function EditCompanyHolidaySheet({ holiday, open, onOpenChange }:
           )}
         />
 
-        <Controller
-          name="date"
-          control={control}
-          render={({ field }) => (
-            <Field>
-              <FieldLabel>
-                Date <span className="text-destructive-foreground">*</span>
-              </FieldLabel>
-              <Input
-                type="date"
-                value={field.value}
-                onChange={(e) => field.onChange(e.target.value)}
-                aria-invalid={!!errors.date}
-              />
-              {errors.date ? (
-                <FieldError>{errors.date.message}</FieldError>
-              ) : (
-                <FieldDescription>Enable "Recurring yearly" to repeat across years</FieldDescription>
-              )}
-            </Field>
-          )}
-        />
+        <div className="grid grid-cols-2 gap-3">
+          <Controller
+            name="start_date"
+            control={control}
+            render={({ field }) => (
+              <Field>
+                <FieldLabel>
+                  Start <span className="text-destructive-foreground">*</span>
+                </FieldLabel>
+                <Input
+                  type="date"
+                  value={field.value}
+                  onChange={(e) => field.onChange(e.target.value)}
+                  aria-invalid={!!errors.start_date}
+                />
+                {errors.start_date && <FieldError>{errors.start_date.message}</FieldError>}
+              </Field>
+            )}
+          />
+          <Controller
+            name="end_date"
+            control={control}
+            render={({ field }) => (
+              <Field>
+                <FieldLabel>
+                  End <span className="text-destructive-foreground">*</span>
+                </FieldLabel>
+                <Input
+                  type="date"
+                  value={field.value}
+                  min={startWatch || undefined}
+                  onChange={(e) => field.onChange(e.target.value)}
+                  aria-invalid={!!errors.end_date}
+                />
+                {errors.end_date && <FieldError>{errors.end_date.message}</FieldError>}
+              </Field>
+            )}
+          />
+        </div>
+        <FieldDescription>Single-day holiday: leave start and end the same. Otherwise, span any range.</FieldDescription>
 
         <Controller
           name="recurring"
@@ -155,7 +194,7 @@ export default function EditCompanyHolidaySheet({ holiday, open, onOpenChange }:
               <FieldLabel htmlFor="edit-recurring-checkbox" className="font-normal cursor-pointer">
                 Recurring yearly
                 <FieldDescription className="mt-0.5">
-                  Applies on the same month/day every year (e.g. Christmas Day).
+                  Repeats on the same month/day range every year.
                 </FieldDescription>
               </FieldLabel>
             </Field>
