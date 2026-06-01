@@ -37,17 +37,22 @@ export default function Settings() {
     window.localStorage.setItem(PREVIEW_STORAGE_KEY, previewVisible ? "1" : "0");
   }, [previewVisible]);
 
-  const topBarActions =
-    activeTab === "organization" ? (
-      <Label htmlFor="preview-toggle" className="flex items-center gap-2 text-sm cursor-pointer">
-        <span className="text-muted-foreground">Live preview</span>
-        <Switch id="preview-toggle" checked={previewVisible} onCheckedChange={setPreviewVisible} />
-      </Label>
-    ) : null;
-
   return (
     <>
-      <TopBar title="Settings" actions={topBarActions} />
+      <TopBar
+        title="Settings"
+        actions={
+          activeTab === "organization" && (
+            <Label
+              htmlFor="preview-toggle"
+              className="flex items-center gap-2 text-sm cursor-pointer border border-border p-3 rounded-md"
+            >
+              <span className="text-muted-foreground">Live preview</span>
+              <Switch id="preview-toggle" checked={previewVisible} onCheckedChange={setPreviewVisible} />
+            </Label>
+          )
+        }
+      />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>

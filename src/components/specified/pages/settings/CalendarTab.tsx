@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { FieldDescription } from "@/components/ui/field";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import MediumCalendar from "@/components/common/calendar/MediumCalendar";
-import { Plus, CalendarDays } from "lucide-react";
+import { Plus } from "lucide-react";
+import Feedback from "@/components/common/feedbacks/Feedback";
 import MediumCompanyHolidayRow from "@/components/specified/models/companyHoliday/datas/MediumCompanyHolidayRow";
 import useUpdateCalendarSettings from "@/api/calendar/useUpdateCalendarSettings";
 import useGetWorkingDays from "@/api/organization/useGetWorkingDays";
 import useGetCompanyHolidays from "@/api/company-holidays/useGetCompanyHolidays";
-import useDeleteCompanyHoliday from "@/api/company-holidays/useDeleteCompanyHoliday";
 import CreateCompanyHolidaySheet from "@/components/specified/models/companyHoliday/sheets/CreateCompanyHolidaySheet";
+import CompanyHolidayDetailSheet from "@/components/specified/models/companyHoliday/sheets/CompanyHolidayDetailSheet";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 
 const DOW_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -25,9 +26,10 @@ export default function CalendarTab() {
   const { data: workdays, isLoading: workdaysLoading } = useGetWorkingDays();
   const { data: allHolidays, total: holidaysTotal, isLoading: holidaysLoading } = useGetCompanyHolidays();
   const updateSettings = useUpdateCalendarSettings();
-  const deleteHoliday = useDeleteCompanyHoliday();
 
   const [holidaySheetOpen, setHolidaySheetOpen] = useState(false);
+  const [detailHoliday, setDetailHoliday] = useState<CompanyHoliday | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [cursor, setCursor] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -48,6 +50,11 @@ export default function CalendarTab() {
 
   const workingDaysPerWeek = useMemo(() => (workingDays ? workingDays.reduce((a, b) => a + b, 0) : 0), [workingDays]);
 
+  function openHolidayDetail(event: HolidayEvent) {
+    setDetailHoliday(event.holiday);
+    setDetailOpen(true);
+  }
+
   function toggleWorkingDay(isoIndex: number) {
     if (!workingDays) return;
     const next = workingDays.map((bit, i) => (i === isoIndex ? (bit ? 0 : 1) : bit));
@@ -57,7 +64,7 @@ export default function CalendarTab() {
   function dayClassName(date: Date): string | undefined {
     if (!workingDays) return undefined;
     const weekday = (date.getDay() + 6) % 7;
-    return workingDays[weekday] === 1 ? "bg-muted/40 text-foreground" : "text-muted-foreground/30";
+    return workingDays[weekday] === 1 ? "bg-tertiary text-foreground" : "text-muted-foreground/30";
   }
 
   if (workdaysLoading || holidaysLoading || !workingDays) {
@@ -81,18 +88,19 @@ export default function CalendarTab() {
           events={holidayEvents}
           getKey={(e) => e.holiday.id}
           getRange={(e) => ({ start: e.start, end: e.end })}
-          getCellClassName={() => "bg-amber-100 text-amber-600 line-through border border-amber-200"}
+          getCellClassName={() => "bg-success text-background font-bold"}
           getDayClassName={dayClassName}
           month={cursor}
           onMonthChange={setCursor}
+          onEventClick={openHolidayDetail}
           footer={
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5">
-                <div className="size-2.5 rounded-sm bg-muted/40" />
+                <div className="size-2.5 rounded-sm bg-tertiary border border-border" />
                 <span className="text-[10px] text-muted-foreground">Working</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="size-2.5 rounded-sm bg-amber-100" />
+                <div className="size-2.5 rounded-sm bg-success" />
                 <span className="text-[10px] text-muted-foreground">Holiday</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -102,6 +110,7 @@ export default function CalendarTab() {
             </div>
           }
         />
+
         <ComposedCard
           title={
             <div className="flex items-center gap-2">
@@ -115,19 +124,20 @@ export default function CalendarTab() {
               Add Holiday
             </Button>
           }
+          className="min-h-[500px]"
         >
           {holidays.length === 0 ? (
-            <div className="py-10 text-center">
-              <CalendarDays className="size-8 text-muted-foreground/30 mx-auto mb-2" />
-              <p className="text-[13px] text-muted-foreground">No holidays configured</p>
-              <p className="text-[11px] text-muted-foreground/60 mt-0.5">
-                Add a company-specific day off to get started.
-              </p>
+            <div className="flex h-full items-center justify-center">
+              <Feedback
+                variant="neutral"
+                title="No holidays configured"
+                description="Add a company-specific day off to get started."
+              />
             </div>
           ) : (
             <div className="space-y-4 p-0.5">
               {holidays.map((h) => (
-                <MediumCompanyHolidayRow key={h.id} holiday={h} onDelete={(id) => deleteHoliday.mutate(id)} />
+                <MediumCompanyHolidayRow key={h.id} holiday={h} />
               ))}
             </div>
           )}
@@ -141,10 +151,9 @@ export default function CalendarTab() {
             <span className="font-semibold tabular-nums">{workingDaysPerWeek}</span> / 7 active
           </span>
         }
-        headerClassName="mb-2"
       >
-        <FieldDescription className="mb-5">Select which days are regular working days.</FieldDescription>
-        <div className="grid grid-cols-7 gap-2">
+        <FieldDescription className="mb-4 mt-2">Select which days are regular working days.</FieldDescription>
+        <div className="flex flex-wrap gap-2">
           {DOW_LABELS.map((label, i) => {
             const active = workingDays[i] === 1;
             const isWeekend = i >= 5;
@@ -155,9 +164,9 @@ export default function CalendarTab() {
                 onClick={() => toggleWorkingDay(i)}
                 disabled={updateSettings.isPending}
                 className={cn(
-                  "h-14 rounded-2xl text-[13px] font-semibold transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed",
+                  "h-8 px-3 rounded-lg text-[12px] font-semibold transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed",
                   active
-                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/25 ring-1 ring-primary/40 hover:bg-primary/90"
+                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20 ring-1 ring-primary/40 hover:bg-primary/90"
                     : cn(
                         "bg-transparent border border-dashed hover:bg-muted/40 hover:text-foreground",
                         isWeekend
@@ -174,6 +183,18 @@ export default function CalendarTab() {
       </ComposedCard>
 
       <CreateCompanyHolidaySheet open={holidaySheetOpen} onOpenChange={setHolidaySheetOpen} />
+      {detailHoliday ? (
+        <CompanyHolidayDetailSheet
+          holiday={detailHoliday}
+          open={detailOpen}
+          onOpenChange={(v) => {
+            setDetailOpen(v);
+            if (!v) setDetailHoliday(null);
+          }}
+        />
+      ) : (
+        <CompanyHolidayDetailSheet.Skeleton open={detailOpen} onOpenChange={setDetailOpen} />
+      )}
     </div>
   );
 }
