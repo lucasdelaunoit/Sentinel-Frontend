@@ -12,6 +12,7 @@ import CreateAbsenceSheet from "@/components/specified/models/absence/sheets/Cre
 import AbsenceDetailSheet from "@/components/specified/models/absence/sheets/AbsenceDetailSheet.tsx";
 import MediumCalendar from "@/components/common/calendar/MediumCalendar.tsx";
 import { ABSENCE_TYPE_LABEL, ABSENCE_TYPE_VALUES } from "@/utils/absence/absenceType.ts";
+import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 
 interface UserAbsencesTabProps {
   userId: string;
@@ -89,9 +90,7 @@ export default function UserAbsencesTab({ userId }: UserAbsencesTabProps) {
         title={
           <div className="flex items-center gap-2">
             <span>All absences</span>
-            <span className="text-[12px] font-normal text-muted-foreground tabular-nums">
-              ({isLoading ? "…" : allAbsences.length})
-            </span>
+            <CountDisplay isLoading={isLoading} count={allAbsences.length} />
           </div>
         }
         action={

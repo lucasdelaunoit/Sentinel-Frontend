@@ -11,8 +11,8 @@ export default function useGetWorkingDays() {
   return useQuery<WorkingDaysResponse>({
     queryKey: ["working-days"],
     queryFn: async () => {
-      const { data } = await privateApi.get<WorkingDaysResponse>("/api/settings/workdays");
-      return data;
+      const { data } = await privateApi.get<WorkingDaysResponse | number[]>("/api/settings/workdays");
+      return Array.isArray(data) ? { working_days: data } : data;
     },
     staleTime: 1000 * 60 * 5,
     retry: 1,

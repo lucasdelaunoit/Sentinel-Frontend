@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
@@ -29,9 +29,13 @@ interface MediumCalendarProps<T> {
   getKey: (event: T) => string | number;
   getRange: (event: T) => { start: string | Date; end: string | Date };
   getCellClassName?: (event: T) => string;
+  getDayClassName?: (date: Date) => string | undefined;
   onEventClick?: (event: T) => void;
   initialMonth?: Date;
+  month?: Date;
+  onMonthChange?: (date: Date) => void;
   className?: string;
+  footer?: ReactNode;
 }
 
 interface DayCell<T> {
@@ -74,12 +78,20 @@ export default function MediumCalendar<T>({
   events,
   getKey,
   getRange,
+  getCellClassName,
+  getDayClassName,
   onEventClick,
   initialMonth,
+  month,
+  onMonthChange,
   className,
+  footer,
 }: MediumCalendarProps<T>) {
   const today = new Date();
-  const [cursor, setCursor] = useState(() => initialMonth ?? new Date(today.getFullYear(), today.getMonth(), 1));
+  const [internalCursor, setInternalCursor] = useState(
+    () => initialMonth ?? new Date(today.getFullYear(), today.getMonth(), 1),
+  );
+  const cursor = month ?? internalCursor;
 
   const cells = useMemo(
     () => buildMonthGrid(cursor.getFullYear(), cursor.getMonth(), events, getRange),
@@ -88,8 +100,13 @@ export default function MediumCalendar<T>({
 
   const todayTs = new Date().setHours(0, 0, 0, 0);
 
+  function setCursor(next: Date) {
+    if (onMonthChange) onMonthChange(next);
+    else setInternalCursor(next);
+  }
+
   function shift(delta: number) {
-    setCursor((c) => new Date(c.getFullYear(), c.getMonth() + delta, 1));
+    setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + delta, 1));
   }
 
   return (
@@ -103,20 +120,20 @@ export default function MediumCalendar<T>({
         <div className="flex items-center gap-1">
           <button
             onClick={() => shift(-1)}
-            className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+            className="size-7 cursor-pointer rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
             aria-label="Previous month"
           >
             <ChevronLeft className="size-4" />
           </button>
           <button
-            onClick={() => setCursor(new Date(today.getFullYear(), today.getMonth(), 1))}
+            onClick={() => setCursor(new Date(new Date().getFullYear(), new Date().getMonth(), 1))}
             className="px-2 h-7 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
           >
             Today
           </button>
           <button
             onClick={() => shift(1)}
-            className="size-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+            className="size-7 cursor-pointer rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
             aria-label="Next month"
           >
             <ChevronRight className="size-4" />
@@ -141,6 +158,8 @@ export default function MediumCalendar<T>({
           {cells.map((cell, i) => {
             const isToday = cell.date.setHours(0, 0, 0, 0) === todayTs;
             const hasEvent = !!cell.event;
+            const eventClass = hasEvent && getCellClassName ? getCellClassName(cell.event as T) : undefined;
+            const dayClass = !hasEvent && cell.inMonth && getDayClassName ? getDayClassName(cell.date) : undefined;
 
             return (
               <button
@@ -148,14 +167,14 @@ export default function MediumCalendar<T>({
                 disabled={!hasEvent}
                 onClick={() => cell.event && onEventClick?.(cell.event)}
                 className={cn(
-                  "h-full w-full rounded-md flex items-center justify-center text-[12px] font-medium transition-all",
+                  "h-full w-full rounded-lg flex items-center justify-center text-[12px] font-medium transition-all",
                   !cell.inMonth && "text-muted-foreground/30",
-                  cell.inMonth && !hasEvent && "text-foreground/80",
-                  hasEvent && cell.inMonth && cn("text-background border-success border cursor-pointer bg-success"),
-                  hasEvent &&
-                    !cell.inMonth &&
-                    cn("text-background border-success border opacity-40 cursor-pointer bg-success"),
-                  isToday && "ring-2 ring-foreground font-bold",
+                  cell.inMonth && !hasEvent && !dayClass && "text-foreground/80",
+                  hasEvent && !eventClass && "text-background bg-success border border-success cursor-pointer",
+                  hasEvent && !eventClass && !cell.inMonth && "opacity-40",
+                  hasEvent && eventClass && cn("cursor-pointer", eventClass),
+                  dayClass,
+                  isToday && "ring-2 ring-primary font-bold",
                 )}
               >
                 {cell.date.getDate()}
@@ -163,6 +182,7 @@ export default function MediumCalendar<T>({
             );
           })}
         </div>
+        {footer && <div className="mt-3 pt-3 border-t border-border/40">{footer}</div>}
       </div>
     </ComposedCard>
   );

@@ -16,7 +16,11 @@ const PREVIEW_COUNT = 5;
 export default function TeamStatusOfTodayCard() {
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const { data: awayUsers, isLoading, isError } = useGetUsers({
+  const {
+    data: awayUsers,
+    isLoading,
+    isError,
+  } = useGetUsers({
     page: 1,
     per_page: PREVIEW_COUNT,
     filters: [{ field: "status", value: "away" }],
