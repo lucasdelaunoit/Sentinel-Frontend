@@ -39,18 +39,6 @@ export interface RiskEventOrgImpact {
   org: RiskEventScopeImpact;
 }
 
-export interface UpcomingRiskEvent {
-  id: string;
-  /** ISO date the absence starts. */
-  date: string;
-  employee: { id: string; firstname: string; lastname: string };
-  kind: RiskEventKind;
-  severity: RiskEventSeverity;
-  org_impact: RiskEventOrgImpact;
-  /** Empty when removing the person changes no project metric. */
-  affected_projects: RiskEventProjectImpact[];
-}
-
 export interface UpcomingRiskEventsResponse {
   generated_at: string;
   events: UpcomingRiskEvent[];
@@ -258,12 +246,7 @@ export interface UserStats {
 
 /* ── User recommendations (GET /users/:id/recommendations) ─ */
 
-export type UserRecommendationIcon =
-  | "shield-alert"
-  | "alert-triangle"
-  | "git-branch"
-  | "users"
-  | "lightbulb";
+export type UserRecommendationIcon = "shield-alert" | "alert-triangle" | "git-branch" | "users" | "lightbulb";
 
 export interface UserRecommendation {
   id: string;

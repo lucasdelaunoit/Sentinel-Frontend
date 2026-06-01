@@ -13,4 +13,5 @@ interface User {
   color: string;
   leaves: LeaveRange[];
   created_at: string;
+  title: string;
 }

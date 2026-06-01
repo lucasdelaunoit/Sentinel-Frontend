@@ -17,7 +17,7 @@ export default function MediumUserRow({ user, className, onClick }: MediumUserRo
       onClick={onClick}
       before={<UserAvatar firstname={user.firstname} lastname={user.lastname} variant={user.status} />}
       title={getFullName(user.firstname, user.lastname)}
-      description={user.department?.name ?? "—"}
+      description={`${user.department?.name ?? "—"} - ${user.title ?? "—"}`}
       action={<UserStatusBadge status={user.status} />}
     />
   );

@@ -53,7 +53,7 @@ export default function TeamStatusOfTodayCard() {
             ) : awayUsers.length === 0 ? (
               <Feedback variant="success" title="All hands on deck" description="Everyone is available today" />
             ) : (
-              <div className="space-y-4 p-0.5">
+              <div className="space-y-2">
                 {awayUsers.map((u) => (
                   <MediumUserRow key={u.id} user={u} />
                 ))}
