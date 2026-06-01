@@ -39,16 +39,8 @@ export function getFragilityTier(raw: number): FragilityTier {
   return FRAGILITY_TIERS.find((t) => raw >= t.min && raw <= t.max) ?? FRAGILITY_TIERS[0];
 }
 
-export function getFragilityTierByKey(key: FragilityKey): FragilityTier {
-  return FRAGILITY_TIERS.find((t) => t.key === key) ?? FRAGILITY_TIERS[0];
-}
-
 export function getTrajectoryTier(raw: number): TrajectoryTier {
   return TRAJECTORY_TIERS.find((t) => raw >= t.min && raw <= t.max) ?? TRAJECTORY_TIERS[0];
-}
-
-export function getTrajectoryTierByKey(key: TrajectoryKey): TrajectoryTier {
-  return TRAJECTORY_TIERS.find((t) => t.key === key) ?? TRAJECTORY_TIERS[0];
 }
 
 export const TONE_TEXT: Record<Tone, string> = {
@@ -61,12 +53,6 @@ export const TONE_BG: Record<Tone, string> = {
   success: "bg-success",
   warning: "bg-warning",
   danger: "bg-danger",
-};
-
-export const TONE_SOFT_BG: Record<Tone, string> = {
-  success: "bg-success/10",
-  warning: "bg-warning/10",
-  danger: "bg-danger/10",
 };
 
 export const TONE_SOFT_BORDER: Record<Tone, string> = {

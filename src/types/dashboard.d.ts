@@ -5,19 +5,6 @@ export type RiskEventSeverity = "low" | "medium" | "high" | "critical";
 /** Metric-block severity from the shared Scale enums (distinct from the event severity union). */
 export type MetricBlockSeverity = "ok" | "warning" | "critical";
 
-/** Per-project impact of one person's upcoming absence. Coverage/fragility are 0–100 ints. */
-export interface RiskEventProjectImpact {
-  id: string;
-  name: string;
-  fragility_before: number;
-  fragility_after: number;
-  coverage_before: number;
-  coverage_after: number;
-  bus_factor_before: number;
-  bus_factor_after: number;
-  lost_skills: string[];
-}
-
 /** A single metric's before/after with tier + severity. Fragility: higher worse. Coverage: lower worse. */
 export interface RiskEventMetricBlock {
   before: number;
@@ -202,20 +189,6 @@ export interface ProjectDetailResponse {
   created_at: string;
 }
 
-/* ── User projects (GET /users/:id/projects) ─────────────── */
-
-export interface UserProjectItem {
-  id: number;
-  name: string;
-  description: string;
-  status: ProjectStatus;
-  priority: ProjectPriority;
-  role: string;
-  fragility: StatCardData;
-  bus_factor: StatCardData;
-  deadline: string;
-}
-
 /* ── User skills (GET /users/:id/skills) ─────────────────── */
 
 export interface UserSkillDetail {
@@ -277,13 +250,4 @@ export interface DashboardStats {
   knowledge_coverage: StatCardData;
   team_availability: StatCardData;
   absence_impact: StatCardData;
-}
-
-/* ── Projects stats (GET /projects/stats) ────────────────── */
-
-export interface ProjectsStats {
-  total: StatCardData;
-  avg_fragility: StatCardData;
-  fragile_count: StatCardData;
-  deadline_pressure: StatCardData;
 }
