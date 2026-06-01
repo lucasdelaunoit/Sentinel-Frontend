@@ -33,6 +33,7 @@ export default function UserSkillsTab({ userId }: UserSkillsTabProps) {
   const {
     data: skills,
     isLoading,
+    total: skillsTotal,
     isError,
   } = useGetSkillsForUser(userId, {
     per_page: 100,
@@ -56,7 +57,7 @@ export default function UserSkillsTab({ userId }: UserSkillsTabProps) {
           title={
             <div className="flex items-center gap-2">
               <span>Skills & Proficiency</span>
-              <CountDisplay count={skills.total} />
+              <CountDisplay isLoading={isLoading} count={skillsTotal} />
             </div>
           }
           action={

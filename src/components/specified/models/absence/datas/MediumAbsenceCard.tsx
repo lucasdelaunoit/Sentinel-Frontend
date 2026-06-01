@@ -10,13 +10,12 @@ import EditAbsenceSheet from "@/components/specified/models/absence/sheets/EditA
 import useDeleteAbsence from "@/api/absences/useDeleteAbsence.ts";
 import { absenceDuration, dateRelativeLabel, fmtDate } from "@/utils/absence/lifecycle.ts";
 import DurationBadge from "@/components/specified/models/absence/badges/DurationBadge.tsx";
-import type { AbsenceItem } from "@/types/absence";
 import { capitalize } from "@/utils/formatters/string.ts";
 import LifecycleBadge from "@/components/specified/models/absence/badges/LifecycleBadge.tsx";
 import { classifyAbsenceLifecycle } from "@/utils/formatters/date.ts";
 
 interface MediumAbsenceCardProps {
-  absence: AbsenceItem;
+  absence: Absence;
   userId: string;
 }
 
@@ -97,7 +96,7 @@ export default function MediumAbsenceCard({ absence, userId }: MediumAbsenceCard
             </Button>
           </div>
         }
-        className="bg-tertiary p-3"
+        className="p-3"
       />
 
       <ComposedAlertDialog

@@ -11,13 +11,14 @@ import MediumCompanyHolidayRow from "@/components/specified/models/companyHolida
 import useUpdateCalendarSettings from "@/api/calendar/useUpdateCalendarSettings";
 import useGetWorkingDays from "@/api/organization/useGetWorkingDays";
 import useGetCompanyHolidays from "@/api/company-holidays/useGetCompanyHolidays";
+import useGetCompanyHolidaysForMonth from "@/api/company-holidays/useGetCompanyHolidaysForMonth";
 import CreateCompanyHolidaySheet from "@/components/specified/models/companyHoliday/sheets/CreateCompanyHolidaySheet";
 import CompanyHolidayDetailSheet from "@/components/specified/models/companyHoliday/sheets/CompanyHolidayDetailSheet";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 import DataPagination from "@/components/common/pagination/DataPagination";
 
 const DOW_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const HOLIDAYS_PER_PAGE = 8;
+const HOLIDAYS_PER_PAGE = 6;
 
 interface HolidayEvent {
   holiday: CompanyHoliday;
@@ -27,7 +28,6 @@ interface HolidayEvent {
 
 export default function CalendarTab() {
   const { data: workdays, isLoading: workdaysLoading } = useGetWorkingDays();
-  const { data: allHolidays, total: holidaysTotal, isLoading: holidaysLoading } = useGetCompanyHolidays();
   const updateSettings = useUpdateCalendarSettings();
 
   const [holidaySheetOpen, setHolidaySheetOpen] = useState(false);
@@ -39,12 +39,19 @@ export default function CalendarTab() {
     return new Date(d.getFullYear(), d.getMonth(), 1);
   });
 
+  const {
+    data: holidays,
+    total: holidaysTotal,
+    lastPage: holidaysLastPage,
+    isLoading: holidaysLoading,
+  } = useGetCompanyHolidays({ page: holidaysPage, per_page: HOLIDAYS_PER_PAGE });
+  const { data: monthHolidays, isLoading: monthHolidaysLoading } = useGetCompanyHolidaysForMonth(cursor);
+
   const workingDays = workdays?.working_days;
-  const holidaysAll = allHolidays ?? [];
 
   const holidayEvents = useMemo<HolidayEvent[]>(() => {
     const year = cursor.getFullYear();
-    return holidaysAll.map((h) => {
+    return monthHolidays.map((h) => {
       const srcStart = new Date(h.start_date);
       const srcEnd = new Date(h.end_date);
       const startY = h.recurring ? year : srcStart.getFullYear();
@@ -53,7 +60,7 @@ export default function CalendarTab() {
       const end = new Date(endY, srcEnd.getMonth(), srcEnd.getDate());
       return { holiday: h, start, end };
     });
-  }, [holidaysAll, cursor]);
+  }, [monthHolidays, cursor]);
 
   const workingDaysPerWeek = useMemo(() => (workingDays ? workingDays.reduce((a, b) => a + b, 0) : 0), [workingDays]);
 
@@ -74,12 +81,10 @@ export default function CalendarTab() {
     return workingDays[weekday] === 1 ? "bg-tertiary text-foreground" : "text-muted-foreground/30";
   }
 
-  const holidaysTotalPages = Math.max(1, Math.ceil(holidaysAll.length / HOLIDAYS_PER_PAGE));
+  const holidaysTotalPages = Math.max(1, holidaysLastPage);
   const safeHolidaysPage = Math.min(holidaysPage, holidaysTotalPages);
-  const holidaysPageStart = (safeHolidaysPage - 1) * HOLIDAYS_PER_PAGE;
-  const holidays = holidaysAll.slice(holidaysPageStart, holidaysPageStart + HOLIDAYS_PER_PAGE);
 
-  if (workdaysLoading || holidaysLoading || !workingDays) {
+  if (workdaysLoading || holidaysLoading || monthHolidaysLoading || !workingDays) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
@@ -91,20 +96,22 @@ export default function CalendarTab() {
                 <CountDisplay isLoading count={0} />
               </div>
             }
-            action={<Button disabled className="gap-1.5 opacity-60"><Plus className="size-3.5" />Add Holiday</Button>}
+            action={
+              <Button disabled className="gap-1.5 opacity-60">
+                <Plus className="size-3.5" />
+                Add Holiday
+              </Button>
+            }
             className="min-h-[500px]"
           >
-            <div className="space-y-4 p-0.5">
-              {Array.from({ length: 4 }).map((_, i) => (
+            <div className="space-y-2 p-0.5">
+              {Array.from({ length: 5 }).map((_, i) => (
                 <MediumCompanyHolidayRow.Skeleton key={i} />
               ))}
             </div>
           </ComposedCard>
         </div>
-        <ComposedCard
-          title="Working Week"
-          action={<Skeleton className="h-4 w-16" />}
-        >
+        <ComposedCard title="Working Week" action={<Skeleton className="h-4 w-16" />}>
           <FieldDescription className="mb-4 mt-2">Select which days are regular working days.</FieldDescription>
           <div className="flex flex-wrap gap-2">
             {DOW_LABELS.map((label) => (
@@ -171,7 +178,7 @@ export default function CalendarTab() {
             </div>
           ) : (
             <div className="flex flex-col h-full">
-              <div className="space-y-4 p-0.5 flex-1">
+              <div className="space-y-2 flex-1">
                 {holidays.map((h) => (
                   <MediumCompanyHolidayRow
                     key={h.id}
@@ -183,11 +190,7 @@ export default function CalendarTab() {
                   />
                 ))}
               </div>
-              <DataPagination
-                page={safeHolidaysPage}
-                totalPages={holidaysTotalPages}
-                onPageChange={setHolidaysPage}
-              />
+              <DataPagination page={safeHolidaysPage} totalPages={holidaysTotalPages} onPageChange={setHolidaysPage} />
             </div>
           )}
         </ComposedCard>

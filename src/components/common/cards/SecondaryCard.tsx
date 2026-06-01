@@ -14,7 +14,11 @@ export default function SecondaryCard({ before, title, description, action, onCl
   return (
     <div
       onClick={onClick}
-      className={cn("flex items-center gap-3 rounded-xl transition-colors", onClick && "cursor-pointer", className)}
+      className={cn(
+        "flex items-center gap-3 rounded-xl transition-colors bg-tertiary p-3",
+        onClick && "cursor-pointer",
+        className,
+      )}
     >
       {before && <div className="shrink-0">{before}</div>}
       <div className="flex-1 min-w-0">
