@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { FieldDescription } from "@/components/ui/field";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import MediumCalendar from "@/components/common/calendar/MediumCalendar";
@@ -70,19 +71,44 @@ export default function CalendarTab() {
     return workingDays[weekday] === 1 ? "bg-tertiary text-foreground" : "text-muted-foreground/30";
   }
 
+  const holidays = holidaysAll;
+
   if (workdaysLoading || holidaysLoading || !workingDays) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-border/60 bg-card h-72 animate-pulse" />
-          <div className="rounded-2xl border border-border/60 bg-card h-72 animate-pulse" />
+          <MediumCalendar.Skeleton />
+          <ComposedCard
+            title={
+              <div className="flex items-center gap-2">
+                <span>Company Holidays</span>
+                <CountDisplay isLoading count={0} />
+              </div>
+            }
+            action={<Button disabled className="gap-1.5 opacity-60"><Plus className="size-3.5" />Add Holiday</Button>}
+            className="min-h-[500px]"
+          >
+            <div className="space-y-4 p-0.5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <MediumCompanyHolidayRow.Skeleton key={i} />
+              ))}
+            </div>
+          </ComposedCard>
         </div>
-        <div className="rounded-2xl border border-border/60 bg-card h-32 animate-pulse" />
+        <ComposedCard
+          title="Working Week"
+          action={<Skeleton className="h-4 w-16" />}
+        >
+          <FieldDescription className="mb-4 mt-2">Select which days are regular working days.</FieldDescription>
+          <div className="flex flex-wrap gap-2">
+            {DOW_LABELS.map((label) => (
+              <Skeleton key={label} className="h-8 w-12 rounded-lg" />
+            ))}
+          </div>
+        </ComposedCard>
       </div>
     );
   }
-
-  const holidays = holidaysAll;
 
   return (
     <div className="space-y-6">
@@ -140,7 +166,14 @@ export default function CalendarTab() {
           ) : (
             <div className="space-y-4 p-0.5">
               {holidays.map((h) => (
-                <MediumCompanyHolidayRow key={h.id} holiday={h} />
+                <MediumCompanyHolidayRow
+                  key={h.id}
+                  holiday={h}
+                  onClick={() => {
+                    setDetailHoliday(h);
+                    setDetailOpen(true);
+                  }}
+                />
               ))}
             </div>
           )}

@@ -11,6 +11,7 @@ import useGetUserCompetencyRadar from "@/api/users/useGetUserCompetencyRadar";
 import useGetSkillCategories from "@/hooks/useGetSkillCategories";
 import MediumUserSkillCard from "@/components/specified/models/userSkill/datas/MediumUserSkillCard.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
+import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 
 interface UserSkillsTabProps {
   userId: string;
@@ -55,9 +56,7 @@ export default function UserSkillsTab({ userId }: UserSkillsTabProps) {
           title={
             <div className="flex items-center gap-2">
               <span>Skills & Proficiency</span>
-              {!isLoading && skills && (
-                <span className="text-[12px] font-normal text-muted-foreground tabular-nums">({skills.length})</span>
-              )}
+              <CountDisplay count={skills.total} />
             </div>
           }
           action={
