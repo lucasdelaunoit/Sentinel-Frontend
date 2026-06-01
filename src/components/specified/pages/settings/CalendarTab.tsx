@@ -14,8 +14,10 @@ import useGetCompanyHolidays from "@/api/company-holidays/useGetCompanyHolidays"
 import CreateCompanyHolidaySheet from "@/components/specified/models/companyHoliday/sheets/CreateCompanyHolidaySheet";
 import CompanyHolidayDetailSheet from "@/components/specified/models/companyHoliday/sheets/CompanyHolidayDetailSheet";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
+import DataPagination from "@/components/common/pagination/DataPagination";
 
 const DOW_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const HOLIDAYS_PER_PAGE = 8;
 
 interface HolidayEvent {
   holiday: CompanyHoliday;
@@ -31,6 +33,7 @@ export default function CalendarTab() {
   const [holidaySheetOpen, setHolidaySheetOpen] = useState(false);
   const [detailHoliday, setDetailHoliday] = useState<CompanyHoliday | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [holidaysPage, setHolidaysPage] = useState(1);
   const [cursor, setCursor] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -71,7 +74,10 @@ export default function CalendarTab() {
     return workingDays[weekday] === 1 ? "bg-tertiary text-foreground" : "text-muted-foreground/30";
   }
 
-  const holidays = holidaysAll;
+  const holidaysTotalPages = Math.max(1, Math.ceil(holidaysAll.length / HOLIDAYS_PER_PAGE));
+  const safeHolidaysPage = Math.min(holidaysPage, holidaysTotalPages);
+  const holidaysPageStart = (safeHolidaysPage - 1) * HOLIDAYS_PER_PAGE;
+  const holidays = holidaysAll.slice(holidaysPageStart, holidaysPageStart + HOLIDAYS_PER_PAGE);
 
   if (workdaysLoading || holidaysLoading || !workingDays) {
     return (
@@ -164,17 +170,24 @@ export default function CalendarTab() {
               />
             </div>
           ) : (
-            <div className="space-y-4 p-0.5">
-              {holidays.map((h) => (
-                <MediumCompanyHolidayRow
-                  key={h.id}
-                  holiday={h}
-                  onClick={() => {
-                    setDetailHoliday(h);
-                    setDetailOpen(true);
-                  }}
-                />
-              ))}
+            <div className="flex flex-col h-full">
+              <div className="space-y-4 p-0.5 flex-1">
+                {holidays.map((h) => (
+                  <MediumCompanyHolidayRow
+                    key={h.id}
+                    holiday={h}
+                    onClick={() => {
+                      setDetailHoliday(h);
+                      setDetailOpen(true);
+                    }}
+                  />
+                ))}
+              </div>
+              <DataPagination
+                page={safeHolidaysPage}
+                totalPages={holidaysTotalPages}
+                onPageChange={setHolidaysPage}
+              />
             </div>
           )}
         </ComposedCard>

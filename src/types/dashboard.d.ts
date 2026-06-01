@@ -256,6 +256,24 @@ export interface UserStats {
   active_projects: StatCardData;
 }
 
+/* ── User recommendations (GET /users/:id/recommendations) ─ */
+
+export type UserRecommendationIcon =
+  | "shield-alert"
+  | "alert-triangle"
+  | "git-branch"
+  | "users"
+  | "lightbulb";
+
+export interface UserRecommendation {
+  id: string;
+  icon: UserRecommendationIcon;
+  title: string;
+  description: string;
+  severity: Severity;
+  priority: "high" | "medium" | "low";
+}
+
 /* ── User absences (GET /users/:id/absences) ─────────────── */
 
 /** Re-exports for back-compat; canonical home is `@/types/absence`. */
