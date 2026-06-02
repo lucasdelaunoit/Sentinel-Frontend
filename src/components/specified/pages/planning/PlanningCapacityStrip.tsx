@@ -1,11 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { DayLoad, PlanningUser, Severity, SimBlock } from "@/types/planning";
-import {
-  CAPACITY_ROW_HEIGHT,
-  DAY_COL_WIDTH,
-  NAME_COL_WIDTH,
-  makeDateStr,
-} from "@/utils/planning/calendar";
+import { CAPACITY_ROW_HEIGHT, DAY_COL_WIDTH, NAME_COL_WIDTH, makeDateStr } from "@/utils/planning/calendar";
 import { isOnRealLeave, isOnSimLeave } from "@/utils/planning/leaves";
 import { capacityToneClass } from "@/utils/planning/theme";
 
@@ -43,21 +38,18 @@ export default function PlanningCapacityStrip({
     if (isClosedDay(day)) return -1;
     if (total === 0) return 0;
     const absent = users.filter(
-      (u) =>
-        isOnRealLeave(u, day, viewYear, viewMonth) || isOnSimLeave(u.id, day, simBlocks, viewYear, viewMonth),
+      (u) => isOnRealLeave(u, day, viewYear, viewMonth) || isOnSimLeave(u.id, day, simBlocks, viewYear, viewMonth),
     ).length;
     return (total - absent) / total;
   }
 
   return (
-    <div className="flex border-b border-border/40">
+    <div className="flex border-b border-border/40 pt-1">
       <div
         className="shrink-0 sticky left-0 z-20 bg-card border-r border-border/40 flex items-center px-5"
         style={{ width: NAME_COL_WIDTH, height: CAPACITY_ROW_HEIGHT }}
       >
-        <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50">
-          Capacity
-        </span>
+        <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50">Capacity</span>
       </div>
       <div className="flex" style={{ width: days.length * DAY_COL_WIDTH }}>
         {days.map((d) => {
@@ -84,9 +76,7 @@ export default function PlanningCapacityStrip({
                     style={{ height: Math.max(3, Math.round(ratio * 18)) }}
                     title={`${Math.round(ratio * 100)}% available`}
                   />
-                  <span className="text-[7px] font-medium text-muted-foreground/50">
-                    {Math.round(ratio * 100)}
-                  </span>
+                  <span className="text-[7px] font-medium text-muted-foreground/50">{Math.round(ratio * 100)}</span>
                 </>
               )}
             </div>

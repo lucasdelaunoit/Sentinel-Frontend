@@ -1,4 +1,17 @@
-import { CheckCircle2, Flame, Lightbulb, Play, Plus, ShieldAlert, Sparkles, TrendingDown, TrendingUp, Users, X, Zap } from "lucide-react";
+import {
+  CheckCircle2,
+  Flame,
+  Lightbulb,
+  Play,
+  Plus,
+  ShieldAlert,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
+  Users,
+  X,
+  Zap,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -52,9 +65,6 @@ export default function PlanningContextPanel({
   combined,
   layout = "side",
 }: PlanningContextPanelProps) {
-  if (mode === "view") {
-    return <ViewPanel users={users} viewYear={viewYear} viewMonth={viewMonth} layout={layout} />;
-  }
   return (
     <SimulatePanel
       users={users}
@@ -87,117 +97,6 @@ function severityClass(sev: Severity): string {
   if (sev === "medium") return "border-warning/40 text-warning";
   return "";
 }
-
-/* ─────────────────────── View mode ─────────────────────── */
-
-function ViewPanel({
-  users,
-  viewYear,
-  viewMonth,
-  layout,
-}: {
-  users: PlanningUser[];
-  viewYear: number;
-  viewMonth: number;
-  layout: PanelLayout;
-}) {
-  const today = new Date();
-  const todayInView = today.getFullYear() === viewYear && today.getMonth() + 1 === viewMonth;
-  const todayDay = todayInView ? today.getDate() : null;
-
-  const totalEmps = users.length;
-  const onLeaveToday =
-    todayDay !== null ? users.filter((u) => isOnRealLeave(u, todayDay, viewYear, viewMonth)).length : null;
-  const availableToday = onLeaveToday !== null ? totalEmps - onLeaveToday : null;
-  const monthAbbr = MONTH_NAMES[viewMonth - 1].slice(0, 3);
-
-  const upcomingLeaves = users
-    .flatMap((u) =>
-      getViewLeaves(u, viewYear, viewMonth)
-        .filter((l) => todayDay === null || l.start >= todayDay)
-        .map((l) => ({ user: u, leave: l })),
-    )
-    .sort((a, b) => a.leave.start - b.leave.start)
-    .slice(0, 6);
-
-  return (
-    <div className={panelContainerClass(layout)}>
-      <Card className="p-0 gap-0 overflow-hidden">
-        <CardHeader className="px-5 py-4 border-b border-border/60 bg-muted/20">
-          <SectionHeader>
-            {todayDay !== null ? `Today — ${monthAbbr} ${todayDay}` : `${MONTH_NAMES[viewMonth - 1]} ${viewYear}`}
-          </SectionHeader>
-        </CardHeader>
-        <CardContent className="px-5 py-4 space-y-3">
-          <Row dot="bg-success" label="Available" value={availableToday} />
-          <Row dot="bg-destructive-foreground" label="On Leave" value={onLeaveToday} />
-          {availableToday !== null && totalEmps > 0 && (
-            <>
-              <div className="mt-2 h-2 rounded-full bg-muted overflow-hidden">
-                <div
-                  className="h-full bg-success rounded-full transition-all"
-                  style={{ width: `${(availableToday / totalEmps) * 100}%` }}
-                />
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                {Math.round((availableToday / totalEmps) * 100)}% team available
-              </p>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {upcomingLeaves.length > 0 && (
-        <Card className="p-0 gap-0 overflow-hidden">
-          <CardHeader className="px-5 py-4 border-b border-border/60 bg-muted/20">
-            <SectionHeader>Upcoming leaves</SectionHeader>
-          </CardHeader>
-          <CardContent className="p-3 space-y-2">
-            {upcomingLeaves.map(({ user, leave }, i) => {
-              const meta = absenceTheme(leave.type);
-              return (
-                <SecondaryCard
-                  key={i}
-                  before={
-                    <div
-                      className={cn(
-                        "flex size-7 items-center justify-center rounded-lg text-[9px] font-bold text-white shadow-sm",
-                        user.color,
-                      )}
-                    >
-                      {user.initials}
-                    </div>
-                  }
-                  title={`${user.firstname} ${user.lastname}`}
-                  description={`${monthAbbr} ${leave.start}–${leave.end}`}
-                  action={
-                    <Badge variant="outline" className="gap-1.5">
-                      <span className={cn("size-1.5 rounded-full", meta.dot)} />
-                      {meta.label}
-                    </Badge>
-                  }
-                />
-              );
-            })}
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-}
-
-function Row({ dot, label, value }: { dot: string; label: string; value: number | null }) {
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <div className={cn("size-2 rounded-full", dot)} />
-        <span className="text-[13px] text-foreground">{label}</span>
-      </div>
-      <span className="text-[13px] font-bold text-foreground">{value !== null ? value : "—"}</span>
-    </div>
-  );
-}
-
 /* ─────────────────────── Simulate mode ─────────────────────── */
 
 function SimulatePanel({
@@ -335,7 +234,12 @@ function ImpactTabs({ combined, usersById }: { combined: SimulateResponse; users
         <TabPill value="projects" icon={Users} label="Projects" count={combined.per_project_impact.length} />
         <TabPill value="skills" icon={Sparkles} label="Skills" count={combined.per_skill_impact.length} />
         <TabPill value="hotspots" icon={Flame} label="Hotspots" count={combined.hotspots.length} />
-        <TabPill value="recommendations" icon={Lightbulb} label="Recommendations" count={combined.recommendations.length} />
+        <TabPill
+          value="recommendations"
+          icon={Lightbulb}
+          label="Recommendations"
+          count={combined.recommendations.length}
+        />
         <TabPill value="warnings" icon={ShieldAlert} label="Warnings" count={combined.warnings.length} />
       </TabsList>
 
@@ -407,12 +311,18 @@ function ProjectsTab({ projects }: { projects: ProjectImpact[] }) {
 }
 
 function ProjectImpactRow({ project }: { project: ProjectImpact }) {
-  const sev: Severity = project.status_after === "blocked" ? "critical" : project.status_after === "at_risk" ? "high" : "safe";
+  const sev: Severity =
+    project.status_after === "blocked" ? "critical" : project.status_after === "at_risk" ? "high" : "safe";
   return (
     <div className="px-5 py-3.5 space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span className={cn("size-2 rounded-full shrink-0", sev === "critical" ? "bg-destructive-foreground" : sev === "high" ? "bg-warning" : "bg-success")} />
+          <span
+            className={cn(
+              "size-2 rounded-full shrink-0",
+              sev === "critical" ? "bg-destructive-foreground" : sev === "high" ? "bg-warning" : "bg-success",
+            )}
+          />
           <span className="text-[12px] font-semibold text-foreground truncate">{project.name}</span>
         </div>
         <ImpactBadge level={project.level} />
@@ -420,7 +330,12 @@ function ProjectImpactRow({ project }: { project: ProjectImpact }) {
 
       <div className="grid grid-cols-3 gap-2 text-[10px]">
         <MetricMini label="Bus factor" before={project.bus_factor_before} after={project.bus_factor_after} invertGood />
-        <MetricMini label="Coverage" before={project.coverage_pct_before} after={project.coverage_pct_after} suffix="%" />
+        <MetricMini
+          label="Coverage"
+          before={project.coverage_pct_before}
+          after={project.coverage_pct_after}
+          suffix="%"
+        />
         <MetricMini label="Risk" before={project.risk_score_before} after={project.risk_score_after} invertGood />
       </div>
 
@@ -502,7 +417,18 @@ function SkillsTab({ skills }: { skills: SkillImpact[] }) {
         <div key={s.skill_id} className="px-5 py-3 space-y-1.5">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <span className={cn("size-2 rounded-full shrink-0", s.severity === "critical" ? "bg-destructive-foreground" : s.severity === "high" ? "bg-warning" : s.severity === "medium" ? "bg-warning" : "bg-success")} />
+              <span
+                className={cn(
+                  "size-2 rounded-full shrink-0",
+                  s.severity === "critical"
+                    ? "bg-destructive-foreground"
+                    : s.severity === "high"
+                      ? "bg-warning"
+                      : s.severity === "medium"
+                        ? "bg-warning"
+                        : "bg-success",
+                )}
+              />
               <span className="text-[12px] font-semibold text-foreground truncate">{s.name}</span>
               {s.is_critical_for_org && (
                 <Badge variant="destructive" className="h-4 px-1.5 text-[9px]">
@@ -516,10 +442,15 @@ function SkillsTab({ skills }: { skills: SkillImpact[] }) {
           </div>
           <p className="text-[10px] text-muted-foreground">
             Coverage {s.coverage_pct_before}% →{" "}
-            <span className={cn(s.coverage_pct_after < s.coverage_pct_before && "text-destructive-foreground font-semibold")}>
+            <span
+              className={cn(
+                s.coverage_pct_after < s.coverage_pct_before && "text-destructive-foreground font-semibold",
+              )}
+            >
               {s.coverage_pct_after}%
             </span>
-            {s.projects_impacted.length > 0 && ` · ${s.projects_impacted.length} project${s.projects_impacted.length === 1 ? "" : "s"}`}
+            {s.projects_impacted.length > 0 &&
+              ` · ${s.projects_impacted.length} project${s.projects_impacted.length === 1 ? "" : "s"}`}
           </p>
           {s.dates_uncovered.length > 0 && (
             <p className="text-[10px] text-destructive-foreground">
@@ -540,7 +471,11 @@ function HotspotsTab({ hotspots, usersById }: { hotspots: Hotspot[]; usersById: 
       {hotspots.map((h, i) => (
         <SecondaryCard
           key={i}
-          before={<Flame className={cn("size-4", h.severity === "critical" ? "text-destructive-foreground" : "text-warning")} />}
+          before={
+            <Flame
+              className={cn("size-4", h.severity === "critical" ? "text-destructive-foreground" : "text-warning")}
+            />
+          }
           title={`${h.date_range[0]} → ${h.date_range[1]}`}
           description={h.reason}
           action={
@@ -597,7 +532,12 @@ function RecommendationsTab({ recs }: { recs: Recommendation[] }) {
                   {r.impact_preview.risk_score_delta !== undefined && (
                     <Badge
                       variant="secondary"
-                      className={cn("h-4 px-1.5 text-[9px]", r.impact_preview.risk_score_delta < 0 ? "bg-success/15 text-success" : "bg-destructive/10 text-destructive-foreground")}
+                      className={cn(
+                        "h-4 px-1.5 text-[9px]",
+                        r.impact_preview.risk_score_delta < 0
+                          ? "bg-success/15 text-success"
+                          : "bg-destructive/10 text-destructive-foreground",
+                      )}
                     >
                       Risk {r.impact_preview.risk_score_delta > 0 ? "+" : ""}
                       {r.impact_preview.risk_score_delta}
@@ -606,7 +546,12 @@ function RecommendationsTab({ recs }: { recs: Recommendation[] }) {
                   {r.impact_preview.coverage_delta_pct !== undefined && (
                     <Badge
                       variant="secondary"
-                      className={cn("h-4 px-1.5 text-[9px]", r.impact_preview.coverage_delta_pct > 0 ? "bg-success/15 text-success" : "bg-destructive/10 text-destructive-foreground")}
+                      className={cn(
+                        "h-4 px-1.5 text-[9px]",
+                        r.impact_preview.coverage_delta_pct > 0
+                          ? "bg-success/15 text-success"
+                          : "bg-destructive/10 text-destructive-foreground",
+                      )}
                     >
                       Coverage {r.impact_preview.coverage_delta_pct > 0 ? "+" : ""}
                       {r.impact_preview.coverage_delta_pct}%
@@ -636,7 +581,10 @@ function WarningsTab({ warnings }: { warnings: SimWarning[] }) {
           key={i}
           before={
             <ShieldAlert
-              className={cn("size-4", w.severity === "critical" || w.severity === "high" ? "text-destructive-foreground" : "text-warning")}
+              className={cn(
+                "size-4",
+                w.severity === "critical" || w.severity === "high" ? "text-destructive-foreground" : "text-warning",
+              )}
             />
           }
           title={w.code.replace(/_/g, " ")}

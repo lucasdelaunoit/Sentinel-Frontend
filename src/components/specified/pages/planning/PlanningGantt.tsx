@@ -20,15 +20,11 @@ import {
   toHalves,
   toX,
 } from "@/utils/planning/calendar";
-import {
-  clampDrawEnd,
-  getViewLeaves,
-  hasLeaveOverlap,
-  isOnRealLeave,
-} from "@/utils/planning/leaves";
+import { clampDrawEnd, getViewLeaves, hasLeaveOverlap, isOnRealLeave } from "@/utils/planning/leaves";
 import { absenceTheme, simColor } from "@/utils/planning/theme";
 import PlanningCapacityStrip from "./PlanningCapacityStrip";
 import PlanningLegend from "./PlanningLegend";
+import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
 
 type DragMode = "move" | "resize-left" | "resize-right";
 
@@ -261,9 +257,7 @@ export default function PlanningGantt({
               className="shrink-0 sticky left-0 z-20 bg-muted border-r border-border/40 flex items-end px-5 pb-2 pt-3"
               style={{ width: NAME_COL_WIDTH }}
             >
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
-                Employee
-              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">Employee</span>
             </div>
             <div className="flex" style={{ width: totalDaysWidth }}>
               {days.map((d) => {
@@ -344,14 +338,7 @@ export default function PlanningGantt({
                   className="shrink-0 sticky left-0 z-10 bg-card border-r border-border/40 flex items-center px-5 gap-2.5"
                   style={{ width: NAME_COL_WIDTH }}
                 >
-                  <div
-                    className={cn(
-                      "flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white shadow-sm",
-                      emp.color,
-                    )}
-                  >
-                    {emp.initials}
-                  </div>
+                  <UserAvatar firstname={emp.firstname} lastname={emp.lastname} variant={emp.status} />
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-foreground text-[13px] whitespace-nowrap truncate">
                       {emp.firstname} {emp.lastname}
@@ -362,10 +349,16 @@ export default function PlanningGantt({
                     <div
                       className={cn(
                         "flex shrink-0 size-5 items-center justify-center rounded-full",
-                        impact === "critical" ? "bg-danger/15 text-destructive-foreground" : "bg-warning/15 text-warning",
+                        impact === "critical"
+                          ? "bg-danger/15 text-destructive-foreground"
+                          : "bg-warning/15 text-warning",
                       )}
                     >
-                      {impact === "critical" ? <ShieldAlert className="size-3" /> : <AlertTriangle className="size-3" />}
+                      {impact === "critical" ? (
+                        <ShieldAlert className="size-3" />
+                      ) : (
+                        <AlertTriangle className="size-3" />
+                      )}
                     </div>
                   )}
                 </div>

@@ -25,6 +25,7 @@ import SimBlockDetailSheet from "@/components/specified/pages/planning/sheets/Si
 import SaveStatusIndicator from "@/components/specified/pages/planning/badges/SaveStatusIndicator";
 import PlanningStatStrip from "@/components/specified/pages/planning/PlanningStatStrip";
 import { SIM_COLORS } from "@/utils/planning/theme";
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
 
 export default function Planning() {
   const today = new Date();
@@ -130,13 +131,20 @@ export default function Planning() {
               <SaveStatusIndicator status={simulation.status} className="mr-1" />
             )}
 
+            <div className="flex items-center text-muted-foreground">
+              <Button size="icon" variant="ghost" onClick={() => navigateMonth(-1)}>
+                <CaretLeftIcon className="size-4" />
+              </Button>
+              <span className="text-[13px] font-semibold text-foreground min-w-[90px] text-center">
+                {MONTH_NAMES[viewMonth - 1]} {viewYear}
+              </span>
+              <Button size="icon" variant="ghost" onClick={() => navigateMonth(1)}>
+                <CaretRightIcon className="size-4" />
+              </Button>
+            </div>
+
             {mode === "view" ? (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setMode("simulate")}
-                className="gap-1.5 rounded-xl h-8 px-3.5 text-[12px] font-semibold"
-              >
+              <Button size="lg" onClick={() => setMode("simulate")}>
                 <Zap className="size-3.5" />
                 Start simulation
               </Button>
@@ -167,26 +175,6 @@ export default function Planning() {
                 </Button>
               </div>
             )}
-
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <button
-                type="button"
-                className="flex size-7 items-center justify-center rounded-lg hover:bg-muted/50 transition-colors"
-                onClick={() => navigateMonth(-1)}
-              >
-                <ChevronLeft className="size-4" />
-              </button>
-              <span className="text-[13px] font-semibold text-foreground min-w-[104px] text-center">
-                {MONTH_NAMES[viewMonth - 1]} {viewYear}
-              </span>
-              <button
-                type="button"
-                className="flex size-7 items-center justify-center rounded-lg hover:bg-muted/50 transition-colors"
-                onClick={() => navigateMonth(1)}
-              >
-                <ChevronRight className="size-4" />
-              </button>
-            </div>
           </div>
         }
       />
