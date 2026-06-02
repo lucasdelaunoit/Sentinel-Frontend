@@ -1,30 +1,33 @@
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, ArrowLeft, ArrowRight, GripVertical, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useCalendarSettings } from "@/hooks/useCalendarSettings";
+import { usePlanningCalendar } from "@/hooks/usePlanningCalendar";
 import type { DayLoad, Half, PlanningMode, PlanningUser, SimBlock, UserImpact } from "@/types/planning";
 import {
+  CAPACITY_ROW_HEIGHT,
   DAY_COL_WIDTH,
   MONTH_NAMES,
   NAME_COL_WIDTH,
   ROW_HEIGHT,
-  blockDurationLabel,
+  countWorkingHalves,
   drawDisplayRange,
   fromHalves,
   getBlockDisplayRange,
   getDayLabel,
-  getDayOfWeekForDay,
   getDaysInMonth,
   getFirstDayOfWeek,
+  halvesLabel,
   makeDateStr,
   toHalves,
   toX,
+  workingSegments,
 } from "@/utils/planning/calendar";
 import { clampDrawEnd, getViewLeaves, hasLeaveOverlap, isOnRealLeave } from "@/utils/planning/leaves";
 import { absenceTheme, simColor } from "@/utils/planning/theme";
 import PlanningCapacityStrip from "./PlanningCapacityStrip";
 import PlanningLegend from "./PlanningLegend";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type DragMode = "move" | "resize-left" | "resize-right";
 
@@ -74,7 +77,7 @@ export default function PlanningGantt({
   perUserImpact,
   perDayLoad,
 }: PlanningGanttProps) {
-  const { settings } = useCalendarSettings();
+  const { isClosedDay, holidays, holidayByDay } = usePlanningCalendar(viewYear, viewMonth);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const dragStateRef = useRef<DragState | null>(null);
   const didMoveRef = useRef(false);
@@ -95,11 +98,6 @@ export default function PlanningGantt({
   const todayDay = todayInView ? today.getDate() : null;
 
   const usersById = new Map(users.map((u) => [u.id, u]));
-
-  function isClosedDay(day: number): boolean {
-    const dow = getDayOfWeekForDay(day, firstDayOfWeek);
-    return !settings.workingDays.includes(dow) || settings.holidays.some((h) => h.day === day);
-  }
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
@@ -240,8 +238,8 @@ export default function PlanningGantt({
     setDrawState(draw);
   }
 
-  const holidayText = settings.holidays.length
-    ? settings.holidays.map((h) => `${MONTH_NAMES[viewMonth - 1].slice(0, 3)} ${h.day} (${h.label})`).join(" · ")
+  const holidayText = holidays.length
+    ? holidays.map((h) => `${MONTH_NAMES[viewMonth - 1].slice(0, 3)} ${h.day} (${h.label})`).join(" · ")
     : undefined;
 
   return (
@@ -262,7 +260,7 @@ export default function PlanningGantt({
             <div className="flex" style={{ width: totalDaysWidth }}>
               {days.map((d) => {
                 const closed = isClosedDay(d);
-                const holiday = settings.holidays.find((h) => h.day === d);
+                const holiday = holidayByDay.get(d);
                 const isToday = d === todayDay;
                 return (
                   <div
@@ -272,7 +270,7 @@ export default function PlanningGantt({
                       closed && "bg-muted/40",
                     )}
                     style={{ width: DAY_COL_WIDTH }}
-                    title={holiday?.label}
+                    title={holiday}
                   >
                     {isToday && <div className="absolute top-0 inset-x-0 h-0.5 bg-primary rounded-b" />}
                     <span
@@ -383,8 +381,14 @@ export default function PlanningGantt({
                     isClosedDay(d) ? (
                       <div
                         key={d}
-                        className="absolute inset-y-0 bg-muted/30 pointer-events-none"
-                        style={{ left: toX(d), width: DAY_COL_WIDTH }}
+                        className="absolute inset-y-0 pointer-events-none"
+                        style={{
+                          left: toX(d),
+                          width: DAY_COL_WIDTH,
+                          backgroundColor: "color-mix(in srgb, var(--muted) 35%, transparent)",
+                          backgroundImage:
+                            "repeating-linear-gradient(45deg, transparent 0 5px, color-mix(in srgb, var(--muted-foreground) 9%, transparent) 5px 6px)",
+                        }}
                       />
                     ) : null,
                   )}
@@ -407,117 +411,163 @@ export default function PlanningGantt({
 
                   {viewLeaves.map((lr, i) => {
                     const theme = absenceTheme(lr.type);
-                    const left = toX(lr.start);
-                    const width = toX(lr.end + 1) - left;
-                    return (
-                      <div
-                        key={i}
-                        className={cn(
-                          "absolute rounded-lg flex items-center justify-center border",
-                          theme.bg,
-                          theme.border,
-                        )}
-                        style={{ left: left + 2, width: width - 4, top: 10, height: 34 }}
-                      >
-                        <div className={cn("size-1.5 rounded-full", theme.dot)} />
-                      </div>
-                    );
+                    const segs = workingSegments(lr.start, 0, lr.end, 1, daysInMonth, isClosedDay);
+                    const list = segs.length ? segs : [{ startDay: lr.start, startHalf: 0 as Half, endDay: lr.end, endHalf: 1 as Half }];
+                    return list.map((s, j) => {
+                      const left = toX(s.startDay, s.startHalf);
+                      const width = toX(s.endDay, s.endHalf) + DAY_COL_WIDTH / 2 - left;
+                      return (
+                        <div
+                          key={`${i}-${j}`}
+                          className={cn(
+                            "absolute rounded-lg flex items-center justify-center border",
+                            theme.bg,
+                            theme.border,
+                            !segs.length && "opacity-50",
+                          )}
+                          style={{ left: left + 2, width: width - 4, top: 10, height: 34 }}
+                        >
+                          {j === 0 && <div className={cn("size-1.5 rounded-full", theme.dot)} />}
+                        </div>
+                      );
+                    });
                   })}
 
                   {drawState?.userId === emp.id &&
                     (() => {
                       const { startDay, startHalf, endDay, endHalf } = drawDisplayRange(drawState);
-                      const left = toX(startDay, startHalf);
-                      const right = toX(endDay, endHalf) + DAY_COL_WIDTH / 2;
-                      const width = Math.max(right - left, DAY_COL_WIDTH / 2);
-                      return (
-                        <div
-                          className="absolute rounded-xl border-2 border-dashed border-planned bg-planned/15 pointer-events-none"
-                          style={{ left: left + 2, width: width - 4, top: 6, height: 44, zIndex: 30 }}
-                        />
-                      );
+                      const segs = workingSegments(startDay, startHalf, endDay, endHalf, daysInMonth, isClosedDay);
+                      const list = segs.length ? segs : [{ startDay, startHalf, endDay, endHalf }];
+                      return list.map((s, j) => {
+                        const left = toX(s.startDay, s.startHalf);
+                        const right = toX(s.endDay, s.endHalf) + DAY_COL_WIDTH / 2;
+                        const width = Math.max(right - left, DAY_COL_WIDTH / 2);
+                        return (
+                          <div
+                            key={j}
+                            className={cn(
+                              "absolute rounded-xl border-2 border-dashed border-planned bg-planned/15 pointer-events-none",
+                              !segs.length && "opacity-50",
+                            )}
+                            style={{ left: left + 2, width: width - 4, top: 6, height: 44, zIndex: 30 }}
+                          />
+                        );
+                      });
                     })()}
 
                   {empBlocksInView.map(({ block, range }) => {
                     const color = simColor(block.colorIdx);
-                    const left = toX(range.startDay, range.startHalf);
-                    const right = toX(range.endDay, range.endHalf) + DAY_COL_WIDTH / 2;
-                    const width = Math.max(right - left, DAY_COL_WIDTH / 2);
                     const isDragging = dragState?.blockId === block.id;
                     const isSelected = selectedBlockId === block.id;
-
-                    return (
-                      <div
-                        key={block.id}
-                        className={cn(
-                          "absolute flex items-center rounded-xl border-2 border-dashed select-none transition-shadow duration-100",
-                          range.clippedStart && "rounded-l-none opacity-90",
-                          range.clippedEnd && "rounded-r-none opacity-90",
-                          isDragging && "shadow-xl opacity-95",
-                          isSelected && "ring-2 ring-offset-1 shadow-md",
-                        )}
-                        style={{
-                          left: left + 2,
-                          width: width - 4,
-                          top: 6,
-                          height: 44,
-                          zIndex: isDragging ? 20 : isSelected ? 10 : 5,
-                          cursor: isDragging ? "grabbing" : "grab",
-                          background: color.bg,
-                          borderColor: color.border,
-                          color: color.fg,
-                          // @ts-expect-error -- CSS var passthrough for ring color
-                          "--tw-ring-color": color.border,
-                        }}
-                        onMouseUp={() => {
-                          if (!didMoveRef.current) setSelectedBlockId(block.id === selectedBlockId ? null : block.id);
-                          didMoveRef.current = false;
-                        }}
-                      >
-                        {range.clippedStart ? (
-                          <div
-                            className="absolute left-0 inset-y-0 w-5 flex items-center justify-center opacity-60"
-                            style={{ color: color.fg }}
-                          >
-                            <ArrowLeft className="size-3" />
-                          </div>
-                        ) : (
-                          <div
-                            className="absolute left-0 inset-y-0 w-3.5 rounded-l-xl cursor-ew-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
-                            style={{ background: color.border }}
-                            onMouseDown={(e) => startDrag(e, block, "resize-left")}
-                          >
-                            <GripVertical className="size-2.5 text-white" />
-                          </div>
-                        )}
-                        <div
-                          className="flex-1 flex items-center justify-center mx-3.5 overflow-hidden"
-                          onMouseDown={(e) => startDrag(e, block, "move")}
-                        >
-                          {width > 50 && (
-                            <span className="text-[11px] font-bold truncate" style={{ color: color.fg }}>
-                              {blockDurationLabel(block)}
-                            </span>
-                          )}
-                        </div>
-                        {range.clippedEnd ? (
-                          <div
-                            className="absolute right-0 inset-y-0 w-5 flex items-center justify-center opacity-60"
-                            style={{ color: color.fg }}
-                          >
-                            <ArrowRight className="size-3" />
-                          </div>
-                        ) : (
-                          <div
-                            className="absolute right-0 inset-y-0 w-3.5 rounded-r-xl cursor-ew-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
-                            style={{ background: color.border }}
-                            onMouseDown={(e) => startDrag(e, block, "resize-right")}
-                          >
-                            <GripVertical className="size-2.5 text-white" />
-                          </div>
-                        )}
-                      </div>
+                    const segs = workingSegments(
+                      range.startDay,
+                      range.startHalf,
+                      range.endDay,
+                      range.endHalf,
+                      daysInMonth,
+                      isClosedDay,
                     );
+                    const ghost = segs.length === 0;
+                    const list = ghost
+                      ? [{ startDay: range.startDay, startHalf: range.startHalf, endDay: range.endDay, endHalf: range.endHalf }]
+                      : segs;
+                    const workingHalves = countWorkingHalves(
+                      range.startDay,
+                      range.startHalf,
+                      range.endDay,
+                      range.endHalf,
+                      daysInMonth,
+                      isClosedDay,
+                    );
+                    const label = halvesLabel(workingHalves);
+
+                    const onSelect = () => {
+                      if (!didMoveRef.current) setSelectedBlockId(block.id === selectedBlockId ? null : block.id);
+                      didMoveRef.current = false;
+                    };
+
+                    return list.map((s, i) => {
+                      const isFirst = i === 0;
+                      const isLast = i === list.length - 1;
+                      const left = toX(s.startDay, s.startHalf);
+                      const right = toX(s.endDay, s.endHalf) + DAY_COL_WIDTH / 2;
+                      const width = Math.max(right - left, DAY_COL_WIDTH / 2);
+                      const clipLeft = isFirst && range.clippedStart;
+                      const clipRight = isLast && range.clippedEnd;
+                      const showLeftHandle = isFirst && !range.clippedStart && !ghost;
+                      const showRightHandle = isLast && !range.clippedEnd && !ghost;
+
+                      return (
+                        <div
+                          key={`${block.id}-${i}`}
+                          className={cn(
+                            "absolute flex items-center rounded-xl border-2 border-dashed select-none transition-shadow duration-100",
+                            clipLeft && "rounded-l-none",
+                            clipRight && "rounded-r-none",
+                            ghost && "opacity-50",
+                            isDragging && "shadow-xl opacity-95",
+                            isSelected && "ring-2 ring-offset-1 shadow-md",
+                          )}
+                          style={{
+                            left: left + 2,
+                            width: width - 4,
+                            top: 6,
+                            height: 44,
+                            zIndex: isDragging ? 20 : isSelected ? 10 : 5,
+                            cursor: isDragging ? "grabbing" : "grab",
+                            background: color.bg,
+                            borderColor: color.border,
+                            color: color.fg,
+                            // @ts-expect-error -- CSS var passthrough for ring color
+                            "--tw-ring-color": color.border,
+                          }}
+                          onMouseUp={onSelect}
+                        >
+                          {clipLeft ? (
+                            <div
+                              className="absolute left-0 inset-y-0 w-5 flex items-center justify-center opacity-60"
+                              style={{ color: color.fg }}
+                            >
+                              <ArrowLeft className="size-3" />
+                            </div>
+                          ) : showLeftHandle ? (
+                            <div
+                              className="absolute left-0 inset-y-0 w-3.5 rounded-l-xl cursor-ew-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+                              style={{ background: color.border }}
+                              onMouseDown={(e) => startDrag(e, block, "resize-left")}
+                            >
+                              <GripVertical className="size-2.5 text-white" />
+                            </div>
+                          ) : null}
+                          <div
+                            className="flex-1 flex items-center justify-center mx-3.5 overflow-hidden"
+                            onMouseDown={(e) => startDrag(e, block, "move")}
+                          >
+                            {isFirst && width > 50 && (
+                              <span className="text-[11px] font-bold truncate" style={{ color: color.fg }}>
+                                {label}
+                              </span>
+                            )}
+                          </div>
+                          {clipRight ? (
+                            <div
+                              className="absolute right-0 inset-y-0 w-5 flex items-center justify-center opacity-60"
+                              style={{ color: color.fg }}
+                            >
+                              <ArrowRight className="size-3" />
+                            </div>
+                          ) : showRightHandle ? (
+                            <div
+                              className="absolute right-0 inset-y-0 w-3.5 rounded-r-xl cursor-ew-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+                              style={{ background: color.border }}
+                              onMouseDown={(e) => startDrag(e, block, "resize-right")}
+                            >
+                              <GripVertical className="size-2.5 text-white" />
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    });
                   })}
                 </div>
               </div>
@@ -535,3 +585,153 @@ export default function PlanningGantt({
     </div>
   );
 }
+
+const CLOSED_DAY_STYLE = {
+  backgroundColor: "color-mix(in srgb, var(--muted) 35%, transparent)",
+  backgroundImage:
+    "repeating-linear-gradient(45deg, transparent 0 5px, color-mix(in srgb, var(--muted-foreground) 9%, transparent) 5px 6px)",
+} as const;
+
+PlanningGantt.Skeleton = function PlanningGanttSkeleton({
+  viewYear,
+  viewMonth,
+  rows = 6,
+}: {
+  viewYear: number;
+  viewMonth: number;
+  rows?: number;
+}) {
+  const { isClosedDay } = usePlanningCalendar(viewYear, viewMonth);
+  const daysInMonth = getDaysInMonth(viewYear, viewMonth);
+  const firstDayOfWeek = getFirstDayOfWeek(viewYear, viewMonth);
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const totalDaysWidth = daysInMonth * DAY_COL_WIDTH;
+
+  return (
+    <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm">
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: NAME_COL_WIDTH + totalDaysWidth }}>
+          {/* Header — real dates, frame is known before data loads */}
+          <div className="flex border-b border-border/60 bg-muted">
+            <div
+              className="shrink-0 sticky left-0 z-20 bg-muted border-r border-border/40 flex items-end px-5 pb-2 pt-3"
+              style={{ width: NAME_COL_WIDTH }}
+            >
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">Employee</span>
+            </div>
+            <div className="flex" style={{ width: totalDaysWidth }}>
+              {days.map((d) => {
+                const closed = isClosedDay(d);
+                return (
+                  <div
+                    key={d}
+                    className={cn(
+                      "flex flex-col items-center justify-end border-r border-border/20 last:border-r-0 pb-1.5 pt-2",
+                      closed && "bg-muted/40",
+                    )}
+                    style={{ width: DAY_COL_WIDTH }}
+                  >
+                    <span
+                      className={cn(
+                        "text-[9px] font-medium leading-none",
+                        closed ? "text-muted-foreground/30" : "text-muted-foreground/60",
+                      )}
+                    >
+                      {getDayLabel(d, firstDayOfWeek)}
+                    </span>
+                    <span
+                      className={cn(
+                        "text-[11px] font-bold leading-snug",
+                        closed ? "text-muted-foreground/30" : "text-foreground/70",
+                      )}
+                    >
+                      {d}
+                    </span>
+                    <div className="flex w-full px-px mt-0.5">
+                      <div className="flex-1 text-center text-[7px] text-muted-foreground/30">am</div>
+                      <div className="w-px self-stretch bg-border/20" />
+                      <div className="flex-1 text-center text-[7px] text-muted-foreground/30">pm</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Capacity strip */}
+          <div className="flex border-b border-border/40 pt-1">
+            <div
+              className="shrink-0 sticky left-0 z-20 bg-card border-r border-border/40 flex items-center px-5"
+              style={{ width: NAME_COL_WIDTH, height: CAPACITY_ROW_HEIGHT }}
+            >
+              <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50">Capacity</span>
+            </div>
+            <div className="flex" style={{ width: totalDaysWidth }}>
+              {days.map((d) => {
+                const closed = isClosedDay(d);
+                return (
+                  <div
+                    key={d}
+                    className={cn(
+                      "border-r border-border/10 last:border-r-0 flex flex-col items-center justify-end pb-1",
+                      closed && "bg-muted/40",
+                    )}
+                    style={{ width: DAY_COL_WIDTH, height: CAPACITY_ROW_HEIGHT }}
+                  >
+                    {!closed && <Skeleton className="w-[18px]" style={{ height: 6 + ((d * 5) % 12) }} />}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Employee rows */}
+          {Array.from({ length: rows }).map((_, r) => {
+            const barStart = 1 + ((r * 5) % Math.max(1, daysInMonth - 6));
+            const barDays = 2 + (r % 4);
+            return (
+              <div
+                key={r}
+                className="flex border-b border-border/40 last:border-b-0"
+                style={{ minHeight: ROW_HEIGHT }}
+              >
+                <div
+                  className="shrink-0 sticky left-0 z-10 bg-card border-r border-border/40 flex items-center px-5 gap-2.5"
+                  style={{ width: NAME_COL_WIDTH }}
+                >
+                  <UserAvatar.Skeleton />
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-2 w-16" />
+                  </div>
+                </div>
+                <div className="relative" style={{ width: totalDaysWidth, height: ROW_HEIGHT }}>
+                  {days.map((d) =>
+                    isClosedDay(d) ? (
+                      <div
+                        key={d}
+                        className="absolute inset-y-0 pointer-events-none"
+                        style={{ left: toX(d), width: DAY_COL_WIDTH, ...CLOSED_DAY_STYLE }}
+                      />
+                    ) : null,
+                  )}
+                  {days.map((d) => (
+                    <div
+                      key={`b${d}`}
+                      className="absolute inset-y-0 border-r border-border/10 pointer-events-none"
+                      style={{ left: toX(d) + DAY_COL_WIDTH - 1, width: 1 }}
+                    />
+                  ))}
+                  <Skeleton
+                    className="absolute rounded-xl"
+                    style={{ left: toX(barStart) + 2, width: DAY_COL_WIDTH * barDays - 4, top: 10, height: 34 }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};

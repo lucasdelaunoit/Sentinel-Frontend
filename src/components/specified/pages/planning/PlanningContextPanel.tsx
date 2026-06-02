@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SecondaryCard from "@/components/common/cards/SecondaryCard";
 import Feedback from "@/components/common/feedbacks/Feedback";
@@ -82,6 +83,27 @@ export default function PlanningContextPanel({
 function panelContainerClass(layout: PanelLayout): string {
   return layout === "below" ? "grid grid-cols-1 lg:grid-cols-3 gap-4 items-start" : "flex flex-col gap-4";
 }
+
+PlanningContextPanel.Skeleton = function PlanningContextPanelSkeleton({ layout = "below" }: { layout?: PanelLayout }) {
+  return (
+    <div className={panelContainerClass(layout)}>
+      <Card className="p-0 gap-0 overflow-hidden">
+        <CardHeader className="px-5 py-4 border-b border-border/60 flex flex-row items-center justify-between">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-12" />
+        </CardHeader>
+        <CardContent className="px-5 py-3">
+          <Skeleton className="h-8 w-full rounded-xl" />
+        </CardContent>
+        <div className="border-t border-border/40 p-2 space-y-1.5">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full rounded-lg" />
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+};
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{children}</p>;

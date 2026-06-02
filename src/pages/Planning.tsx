@@ -181,34 +181,42 @@ export default function Planning() {
 
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         {mode === "simulate" && <PlanningStatStrip totals={simulation.data.totals} blockCount={simBlocks.length} />}
-        <PlanningGantt
-          mode={mode}
-          users={users}
-          simBlocks={simBlocks}
-          viewYear={viewYear}
-          viewMonth={viewMonth}
-          setSimBlocks={setSimBlocks}
-          selectedBlockId={selectedBlockId}
-          setSelectedBlockId={setSelectedBlockId}
-          onCreateBlock={addBlock}
-          perUserImpact={simulation.data.per_user_impact}
-          perDayLoad={simulation.data.per_day_load}
-        />
-
-        <div>
-          <PlanningContextPanel
-            layout="below"
+        {planningQuery.isLoading ? (
+          <PlanningGantt.Skeleton viewYear={viewYear} viewMonth={viewMonth} />
+        ) : (
+          <PlanningGantt
             mode={mode}
             users={users}
             simBlocks={simBlocks}
             viewYear={viewYear}
             viewMonth={viewMonth}
-            onOpenAddSheet={() => setShowAddSheet(true)}
-            onSelectBlock={setSelectedBlockId}
-            onRemoveBlock={removeBlock}
-            onClearAll={clearAll}
-            combined={simulation.data}
+            setSimBlocks={setSimBlocks}
+            selectedBlockId={selectedBlockId}
+            setSelectedBlockId={setSelectedBlockId}
+            onCreateBlock={addBlock}
+            perUserImpact={simulation.data.per_user_impact}
+            perDayLoad={simulation.data.per_day_load}
           />
+        )}
+
+        <div>
+          {planningQuery.isLoading ? (
+            <PlanningContextPanel.Skeleton layout="below" />
+          ) : (
+            <PlanningContextPanel
+              layout="below"
+              mode={mode}
+              users={users}
+              simBlocks={simBlocks}
+              viewYear={viewYear}
+              viewMonth={viewMonth}
+              onOpenAddSheet={() => setShowAddSheet(true)}
+              onSelectBlock={setSelectedBlockId}
+              onRemoveBlock={removeBlock}
+              onClearAll={clearAll}
+              combined={simulation.data}
+            />
+          )}
         </div>
       </div>
 

@@ -90,9 +90,14 @@ export default function SimBlockDetailSheet({ block, user, onClose, onDelete }: 
           <span className="font-semibold text-right">{formatHalfDate(block.startDate, block.startHalf)}</span>
           <span className="opacity-70">To</span>
           <span className="font-semibold text-right">{formatHalfDate(block.endDate, block.endHalf)}</span>
-          <span className="opacity-70">Duration</span>
+          <span className="opacity-70">Calendar span</span>
           <span className="font-semibold text-right">{blockDurationLabel(block)}</span>
+          <span className="opacity-70">Working days off</span>
+          <span className="font-semibold text-right">
+            {userImpact ? `${userImpact.days_off} day${userImpact.days_off === 1 ? "" : "s"}` : "—"}
+          </span>
         </div>
+        <p className="text-[10px] opacity-60 leading-snug">Weekends &amp; holidays excluded from working days.</p>
       </div>
 
       {userImpact && (

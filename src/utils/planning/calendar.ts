@@ -117,6 +117,75 @@ export function getBlockDisplayRange(
   return { startDay, endDay, startHalf, endHalf, clippedStart, clippedEnd };
 }
 
+export interface WorkingSegment {
+  startDay: number;
+  startHalf: Half;
+  endDay: number;
+  endHalf: Half;
+}
+
+/**
+ * Split a half-resolution range into contiguous runs of WORKING halves,
+ * dropping closed days (weekends / holidays). Each run becomes a visual segment
+ * so one logical absence renders as multiple pills with gaps over closed days.
+ */
+export function workingSegments(
+  startDay: number,
+  startHalf: Half,
+  endDay: number,
+  endHalf: Half,
+  daysInMonth: number,
+  isClosedDay: (day: number) => boolean,
+): WorkingSegment[] {
+  const a = toHalves(startDay, startHalf);
+  const b = toHalves(endDay, endHalf);
+  const segs: WorkingSegment[] = [];
+  let cur: WorkingSegment | null = null;
+  for (let h = a; h <= b; h++) {
+    const { day, half } = fromHalves(h, daysInMonth);
+    if (isClosedDay(day)) {
+      if (cur) {
+        segs.push(cur);
+        cur = null;
+      }
+      continue;
+    }
+    if (!cur) cur = { startDay: day, startHalf: half, endDay: day, endHalf: half };
+    else {
+      cur.endDay = day;
+      cur.endHalf = half;
+    }
+  }
+  if (cur) segs.push(cur);
+  return segs;
+}
+
+/** Count of working halves in a range (closed days excluded). */
+export function countWorkingHalves(
+  startDay: number,
+  startHalf: Half,
+  endDay: number,
+  endHalf: Half,
+  daysInMonth: number,
+  isClosedDay: (day: number) => boolean,
+): number {
+  const a = toHalves(startDay, startHalf);
+  const b = toHalves(endDay, endHalf);
+  let n = 0;
+  for (let h = a; h <= b; h++) {
+    if (!isClosedDay(fromHalves(h, daysInMonth).day)) n++;
+  }
+  return n;
+}
+
+/** Human label from a count of halves: 1 → "½ day", 2 → "1 day", n → "x days". */
+export function halvesLabel(halves: number): string {
+  if (halves <= 0) return "0 days";
+  if (halves === 1) return "½ day";
+  if (halves === 2) return "1 day";
+  return `${halves / 2} days`;
+}
+
 export interface DrawRange {
   startDay: number;
   startHalf: Half;
