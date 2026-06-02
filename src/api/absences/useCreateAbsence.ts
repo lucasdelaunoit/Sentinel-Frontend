@@ -7,7 +7,9 @@ interface CreateAbsencePayload {
   userId: string;
   type?: AbsenceType;
   start_date: string;
+  start_half?: AbsenceHalf;
   end_date: string;
+  end_half?: AbsenceHalf;
   reason?: string;
 }
 

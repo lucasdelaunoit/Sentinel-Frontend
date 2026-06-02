@@ -8,7 +8,8 @@ import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog
 import AbsenceDetailSheet from "@/components/specified/models/absence/sheets/AbsenceDetailSheet.tsx";
 import EditAbsenceSheet from "@/components/specified/models/absence/sheets/EditAbsenceSheet.tsx";
 import useDeleteAbsence from "@/api/absences/useDeleteAbsence.ts";
-import { absenceDuration, dateRelativeLabel, fmtDate } from "@/utils/absence/lifecycle.ts";
+import { dateRelativeLabel, fmtDate } from "@/utils/absence/lifecycle.ts";
+import { halfRangeDuration, ABSENCE_HALF_SHORT } from "@/utils/absence/halfDay.ts";
 import DurationBadge from "@/components/specified/models/absence/badges/DurationBadge.tsx";
 import { capitalize } from "@/utils/formatters/string.ts";
 import LifecycleBadge from "@/components/specified/models/absence/badges/LifecycleBadge.tsx";
@@ -25,7 +26,7 @@ export default function MediumAbsenceCard({ absence, userId }: MediumAbsenceCard
   const [editOpen, setEditOpen] = useState(false);
   const { deleteAbsence, isLoading: isDeleting } = useDeleteAbsence();
 
-  const days = absenceDuration(absence.start_date, absence.end_date);
+  const days = halfRangeDuration(absence);
   const lk = classifyAbsenceLifecycle(absence.start_date, absence.end_date);
   const anchorDate = lk === "past" ? absence.end_date : absence.start_date;
 
@@ -59,10 +60,16 @@ export default function MediumAbsenceCard({ absence, userId }: MediumAbsenceCard
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-[12px] font-semibold tabular-nums text-foreground">
                 {fmtDate(absence.start_date)}
+                <span className="ml-1 text-[10px] font-bold text-muted-foreground/70">
+                  {ABSENCE_HALF_SHORT[absence.start_half ?? "morning"]}
+                </span>
               </span>
               <ArrowRight className="size-3 text-muted-foreground/60" />
               <span className="text-[12px] font-semibold tabular-nums text-foreground">
                 {fmtDate(absence.end_date)}
+                <span className="ml-1 text-[10px] font-bold text-muted-foreground/70">
+                  {ABSENCE_HALF_SHORT[absence.end_half ?? "afternoon"]}
+                </span>
               </span>
             </div>
             <p className="truncate text-[11px] text-muted-foreground">{absence.reason ?? "No reason provided"}</p>

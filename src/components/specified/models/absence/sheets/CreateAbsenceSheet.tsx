@@ -1,63 +1,24 @@
-import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
 import { CalendarBlankIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useCreateAbsence from "@/api/absences/useCreateAbsence";
-import { cn } from "@/lib/utils";
-import { ABSENCE_TYPE_LABEL, ABSENCE_TYPE_VALUES } from "@/utils/absence/absenceType.ts";
-
-interface FormValues {
-  type: AbsenceType;
-  start_date: string;
-  end_date: string;
-  reason: string;
-}
+import useGetAbsencesForUser from "@/api/absences/useGetAbsencesForUser.ts";
+import { findOverlappingAbsence, formatHalfRange } from "@/utils/absence/halfDay.ts";
+import AbsenceFormFields from "@/components/specified/models/absence/sheets/AbsenceFormFields.tsx";
+import {
+  ABSENCE_FORM_DEFAULTS,
+  absenceSchema,
+  type AbsenceFormValues,
+} from "@/components/specified/models/absence/sheets/absenceForm.ts";
 
 interface CreateAbsenceSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userId: string;
 }
-
-const TYPE_STYLE: Record<AbsenceType, { idle: string; active: string }> = {
-  vacation: { idle: "border-blue-200 bg-blue-50/60", active: "bg-blue-600 border-blue-600 text-white" },
-  conference: {
-    idle: "border-violet-200 bg-violet-50/60",
-    active: "bg-violet-600 border-violet-600 text-white",
-  },
-  training: {
-    idle: "border-amber-200 bg-amber-50/60",
-    active: "bg-amber-600 border-amber-600 text-white",
-  },
-  parental: {
-    idle: "border-emerald-200 bg-emerald-50/60",
-    active: "bg-emerald-600 border-emerald-600 text-white",
-  },
-  sabbatical: {
-    idle: "border-indigo-200 bg-indigo-50/60",
-    active: "bg-indigo-600 border-indigo-600 text-white",
-  },
-  other: { idle: "border-slate-200 bg-slate-50/60", active: "bg-slate-600 border-slate-600 text-white" },
-};
-
-const schema = yup.object({
-  type: yup.string().oneOf(ABSENCE_TYPE_VALUES).required("Type is required."),
-  start_date: yup.string().required("Start date is required."),
-  end_date: yup
-    .string()
-    .required("End date is required.")
-    .test("end-after-start", "End date must be on or after start date.", function (value) {
-      const { start_date } = this.parent;
-      if (!start_date || !value) return true;
-      return new Date(value) >= new Date(start_date);
-    }),
-  reason: yup.string().max(255, "Reason must be 255 characters or fewer.").optional().default(""),
-});
 
 export default function CreateAbsenceSheet({ open, onOpenChange, userId }: CreateAbsenceSheetProps) {
   const {
@@ -67,27 +28,43 @@ export default function CreateAbsenceSheet({ open, onOpenChange, userId }: Creat
     setValue,
     watch,
     formState: { errors, isValid, isDirty },
-  } = useForm<FormValues>({
-    resolver: yupResolver(schema) as never,
-    defaultValues: { type: "vacation", start_date: "", end_date: "", reason: "" },
+  } = useForm<AbsenceFormValues>({
+    resolver: yupResolver(absenceSchema) as never,
+    defaultValues: ABSENCE_FORM_DEFAULTS,
     mode: "onChange",
   });
 
   useEffect(() => {
-    if (open) reset({ type: "vacation", start_date: "", end_date: "", reason: "" });
+    if (open) reset(ABSENCE_FORM_DEFAULTS);
   }, [open, reset]);
 
   const { createAbsence, isLoading: isPending } = useCreateAbsence();
-  const selectedType = watch("type");
+
+  // Existing absences for this user, to block overlapping ranges client-side.
+  const { data: existing } = useGetAbsencesForUser(open ? userId : undefined, { per_page: 100 });
+
+  const startDate = watch("start_date");
+  const startHalf = watch("start_half");
+  const endDate = watch("end_date");
+  const endHalf = watch("end_half");
+
+  const overlapError = useMemo(() => {
+    const hit = findOverlappingAbsence(
+      { start_date: startDate, start_half: startHalf, end_date: endDate, end_half: endHalf },
+      existing ?? [],
+    );
+    return hit ? `Overlaps an existing absence: ${formatHalfRange(hit)}.` : null;
+  }, [startDate, startHalf, endDate, endHalf, existing]);
 
   function handleClose() {
     reset();
     onOpenChange(false);
   }
 
-  async function onSubmit({ type, start_date, end_date, reason }: FormValues) {
+  async function onSubmit({ type, start_date, start_half, end_date, end_half, reason }: AbsenceFormValues) {
+    if (overlapError) return;
     try {
-      await createAbsence({ userId, type, start_date, end_date, reason: reason || undefined });
+      await createAbsence({ userId, type, start_date, start_half, end_date, end_half, reason: reason || undefined });
       handleClose();
     } catch {
       /* toast handled in hook */
@@ -110,7 +87,7 @@ export default function CreateAbsenceSheet({ open, onOpenChange, userId }: Creat
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
-            disabled={!isDirty || !isValid || isPending}
+            disabled={!isDirty || !isValid || isPending || !!overlapError}
             className="flex-1"
             size="lg"
           >
@@ -119,91 +96,15 @@ export default function CreateAbsenceSheet({ open, onOpenChange, userId }: Creat
         </>
       }
     >
-      <div className="space-y-4">
-        <Controller
-          name="type"
-          control={control}
-          render={() => (
-            <Field>
-              <FieldLabel>
-                Type <span className="text-destructive-foreground">*</span>
-              </FieldLabel>
-              <div className="grid grid-cols-3 gap-2 pt-0.5">
-                {ABSENCE_TYPE_VALUES.map((value) => {
-                  const active = selectedType === value;
-                  const style = TYPE_STYLE[value];
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setValue("type", value, { shouldDirty: true, shouldValidate: true })}
-                      className={cn(
-                        "rounded-xl border-2 px-3 py-2.5 text-[12px] font-semibold transition-all duration-150",
-                        active ? style.active : `${style.idle} text-foreground hover:opacity-80`,
-                      )}
-                    >
-                      {ABSENCE_TYPE_LABEL[value]}
-                    </button>
-                  );
-                })}
-              </div>
-              {errors.type && <FieldError>{errors.type.message}</FieldError>}
-            </Field>
-          )}
-        />
-
-        <div className="grid grid-cols-2 gap-3">
-          <Controller
-            name="start_date"
-            control={control}
-            render={({ field }) => (
-              <Field>
-                <FieldLabel>
-                  Start date <span className="text-destructive-foreground">*</span>
-                </FieldLabel>
-                <Input {...field} type="date" aria-invalid={!!errors.start_date} />
-                {errors.start_date && <FieldError>{errors.start_date.message}</FieldError>}
-              </Field>
-            )}
-          />
-
-          <Controller
-            name="end_date"
-            control={control}
-            render={({ field }) => (
-              <Field>
-                <FieldLabel>
-                  End date <span className="text-destructive-foreground">*</span>
-                </FieldLabel>
-                <Input {...field} type="date" aria-invalid={!!errors.end_date} />
-                {errors.end_date && <FieldError>{errors.end_date.message}</FieldError>}
-              </Field>
-            )}
-          />
-        </div>
-
-        <Controller
-          name="reason"
-          control={control}
-          render={({ field }) => (
-            <Field>
-              <FieldLabel>Reason</FieldLabel>
-              <textarea
-                {...field}
-                rows={3}
-                placeholder="Optional — e.g. Annual leave, doctor appointment…"
-                maxLength={256}
-                className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all resize-none"
-              />
-              {errors.reason ? (
-                <FieldError>{errors.reason.message}</FieldError>
-              ) : (
-                <FieldDescription>Optional context for this absence</FieldDescription>
-              )}
-            </Field>
-          )}
-        />
-      </div>
+      <AbsenceFormFields
+        control={control}
+        errors={errors}
+        setValue={setValue}
+        watch={watch}
+        defaultMode="single"
+        resetKey={open ? "open" : "closed"}
+        overlapError={overlapError}
+      />
     </ComposedSheet>
   );
 }

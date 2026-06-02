@@ -30,6 +30,7 @@ interface MediumCalendarProps<T> {
   getRange: (event: T) => { start: string | Date; end: string | Date };
   getCellClassName?: (event: T) => string;
   getDayClassName?: (date: Date) => string | undefined;
+  getDayCoverage?: (event: T, date: Date) => "full" | "morning" | "afternoon";
   onEventClick?: (event: T) => void;
   initialMonth?: Date;
   month?: Date;
@@ -41,7 +42,7 @@ interface MediumCalendarProps<T> {
 interface DayCell<T> {
   date: Date;
   inMonth: boolean;
-  event?: T;
+  events: T[];
 }
 
 /* ─── Grid build ─────────────────────────────────────────── */
@@ -61,13 +62,14 @@ function buildMonthGrid<T>(
     const d = new Date(gridStart);
     d.setDate(gridStart.getDate() + i);
     const ts = d.setHours(12, 0, 0, 0);
-    const hit = events.find((e) => {
+    // Keep every event covering the day — a single day may hold two half-day events.
+    const hits = events.filter((e) => {
       const { start, end } = getRange(e);
       const s = new Date(start).setHours(0, 0, 0, 0);
       const eTs = new Date(end).setHours(23, 59, 59, 999);
       return ts >= s && ts <= eTs;
     });
-    cells.push({ date: new Date(d), inMonth: d.getMonth() === month, event: hit });
+    cells.push({ date: new Date(d), inMonth: d.getMonth() === month, events: hits });
   }
   return cells;
 }
@@ -80,6 +82,7 @@ export default function MediumCalendar<T>({
   getRange,
   getCellClassName,
   getDayClassName,
+  getDayCoverage,
   onEventClick,
   initialMonth,
   month,
@@ -157,27 +160,84 @@ export default function MediumCalendar<T>({
         <div className="grid grid-cols-7 grid-rows-6 gap-1.5 flex-1 min-h-[200px]">
           {cells.map((cell, i) => {
             const isToday = cell.date.setHours(0, 0, 0, 0) === todayTs;
-            const hasEvent = !!cell.event;
-            const eventClass = hasEvent && getCellClassName ? getCellClassName(cell.event as T) : undefined;
+            const dayEvents = cell.events;
+            const hasEvent = dayEvents.length > 0;
+            const coverageOf = (e: T) => (getDayCoverage ? getDayCoverage(e, cell.date) : "full");
+
+            // Owner of each half — may be two different absences on the same day.
+            const morningEvent = dayEvents.find((e) => coverageOf(e) !== "afternoon");
+            const afternoonEvent = dayEvents.find((e) => coverageOf(e) !== "morning");
+            const isSplit = !!morningEvent && !!afternoonEvent && morningEvent !== afternoonEvent;
+
+            // Two distinct half-day absences → render as two separate blocks with a gap.
+            if (isSplit) {
+              return (
+                <div
+                  key={`split-${i}`}
+                  className={cn("relative flex h-full w-full gap-1", isToday && "rounded-lg ring-2 ring-primary")}
+                >
+                  <button
+                    onClick={() => onEventClick?.(morningEvent)}
+                    aria-label="Morning absence"
+                    className={cn(
+                      "h-full flex-1 rounded-md bg-success cursor-pointer transition-all hover:brightness-110",
+                      !cell.inMonth && "opacity-40",
+                    )}
+                  />
+                  <button
+                    onClick={() => onEventClick?.(afternoonEvent)}
+                    aria-label="Afternoon absence"
+                    className={cn(
+                      "h-full flex-1 rounded-md bg-success cursor-pointer transition-all hover:brightness-110",
+                      !cell.inMonth && "opacity-40",
+                    )}
+                  />
+                  <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <span
+                      className={cn(
+                        "flex size-5 items-center justify-center rounded-full bg-background text-[11px] font-semibold leading-none text-foreground ring-1 ring-success",
+                        isToday && "font-bold",
+                      )}
+                    >
+                      {cell.date.getDate()}
+                    </span>
+                  </span>
+                </div>
+              );
+            }
+
+            const event = morningEvent ?? afternoonEvent;
+            const eventClass = event && getCellClassName ? getCellClassName(event) : undefined;
             const dayClass = !hasEvent && cell.inMonth && getDayClassName ? getDayClassName(cell.date) : undefined;
+            const coverage = event ? coverageOf(event) : "full";
+            // Default fill (no custom eventClass) renders a lone half-day as a split cell.
+            const defaultFill = hasEvent && !eventClass;
+            const isHalf = defaultFill && coverage !== "full";
 
             return (
               <button
-                key={hasEvent ? `${getKey(cell.event as T)}-${i}` : i}
+                key={event ? `${getKey(event)}-${i}` : i}
                 disabled={!hasEvent}
-                onClick={() => cell.event && onEventClick?.(cell.event)}
+                onClick={() => event && onEventClick?.(event)}
                 className={cn(
-                  "h-full w-full rounded-lg flex items-center justify-center text-[12px] font-medium transition-all",
+                  "relative h-full w-full overflow-hidden rounded-lg flex items-center justify-center text-[12px] font-medium transition-all",
                   !cell.inMonth && "text-muted-foreground/30",
                   cell.inMonth && !hasEvent && !dayClass && "text-foreground/80",
-                  hasEvent && !eventClass && "text-background bg-success border border-success cursor-pointer",
-                  hasEvent && !eventClass && !cell.inMonth && "opacity-40",
+                  defaultFill && !isHalf && "text-background bg-success border border-success cursor-pointer",
+                  defaultFill && isHalf && "text-foreground bg-success/15 border border-success cursor-pointer",
+                  defaultFill && !cell.inMonth && "opacity-40",
                   hasEvent && eventClass && cn("cursor-pointer", eventClass),
                   dayClass,
                   isToday && "ring-2 ring-primary font-bold",
                 )}
               >
-                {cell.date.getDate()}
+                {isHalf && (
+                  <span
+                    aria-hidden
+                    className={cn("absolute inset-y-0 w-1/2 bg-success", coverage === "morning" ? "left-0" : "right-0")}
+                  />
+                )}
+                <span className="relative">{cell.date.getDate()}</span>
               </button>
             );
           })}

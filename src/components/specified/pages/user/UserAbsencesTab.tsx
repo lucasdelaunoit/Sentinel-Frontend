@@ -12,6 +12,7 @@ import CreateAbsenceSheet from "@/components/specified/models/absence/sheets/Cre
 import AbsenceDetailSheet from "@/components/specified/models/absence/sheets/AbsenceDetailSheet.tsx";
 import MediumCalendar from "@/components/common/calendar/MediumCalendar.tsx";
 import { ABSENCE_TYPE_LABEL, ABSENCE_TYPE_VALUES } from "@/utils/absence/absenceType.ts";
+import { dayCoverage } from "@/utils/absence/halfDay.ts";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 
 interface UserAbsencesTabProps {
@@ -80,6 +81,7 @@ export default function UserAbsencesTab({ userId }: UserAbsencesTabProps) {
             events={allAbsences}
             getKey={(a) => a.id}
             getRange={(a) => ({ start: a.start_date, end: a.end_date })}
+            getDayCoverage={(a, date) => dayCoverage(a, date) ?? "full"}
             onEventClick={openDetail}
           />
         )}

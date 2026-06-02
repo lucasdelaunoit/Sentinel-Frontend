@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { CalendarDays } from "lucide-react";
 import {
   CalendarCheckIcon,
@@ -5,14 +6,19 @@ import {
   ClockCountdownIcon,
   NotePencilIcon,
   HourglassIcon,
+  TrashIcon,
+  CircleNotchIcon,
 } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
+import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
 import DataDisplay from "@/components/common/data/DataDisplay";
 import LifecycleBadge from "@/components/specified/models/absence/badges/LifecycleBadge";
-import { absenceDuration, dateRelativeLabel, lifecycleKey } from "@/utils/absence/lifecycle";
+import useDeleteAbsence from "@/api/absences/useDeleteAbsence.ts";
+import { dateRelativeLabel, lifecycleKey } from "@/utils/absence/lifecycle";
+import { halfRangeDuration, ABSENCE_HALF_LABEL } from "@/utils/absence/halfDay";
 import { formatDate } from "@/utils/formatters/date";
-import type { Absence } from "@/types/absence";
 import { capitalize } from "@/utils/formatters/string.ts";
 
 interface AbsenceDetailSheetProps {
@@ -22,11 +28,24 @@ interface AbsenceDetailSheetProps {
   userId: string;
 }
 
-export default function AbsenceDetailSheet({ absence, open, onOpenChange }: AbsenceDetailSheetProps) {
+export default function AbsenceDetailSheet({ absence, open, onOpenChange, userId }: AbsenceDetailSheetProps) {
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const { deleteAbsence, isLoading: isDeleting } = useDeleteAbsence();
+
   const lk = lifecycleKey(absence.start_date, absence.end_date);
-  const days = absenceDuration(absence.start_date, absence.end_date);
+  const days = halfRangeDuration(absence);
   const anchorDate = lk === "past" ? absence.end_date : absence.start_date;
   const relLabel = dateRelativeLabel(anchorDate, lk);
+
+  async function confirmDelete() {
+    try {
+      await deleteAbsence({ id: absence.id, userId });
+      setDeleteOpen(false);
+      onOpenChange(false);
+    } catch {
+      /* hook toasts */
+    }
+  }
 
   return (
     <ComposedSheet
@@ -34,6 +53,12 @@ export default function AbsenceDetailSheet({ absence, open, onOpenChange }: Abse
       onOpenChange={onOpenChange}
       title="Absence details"
       description="Timing, type and notes at a glance."
+      footer={
+        <Button variant="destructive" onClick={() => setDeleteOpen(true)} disabled={isDeleting} className="flex-1 gap-1.5" size="lg">
+          {isDeleting ? <CircleNotchIcon className="animate-spin" weight="bold" /> : <TrashIcon weight="bold" />}
+          Delete absence
+        </Button>
+      }
     >
       <div className="rounded-2xl border border-border/60 bg-tertiary p-5">
         <div className="flex items-start justify-between gap-3">
@@ -55,11 +80,19 @@ export default function AbsenceDetailSheet({ absence, open, onOpenChange }: Abse
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <DataDisplay icon={CalendarCheckIcon} label="Start" value={formatDate(absence.start_date)} />
-        <DataDisplay icon={CalendarXIcon} label="End" value={formatDate(absence.end_date)} />
+        <DataDisplay
+          icon={CalendarCheckIcon}
+          label="Start"
+          value={`${formatDate(absence.start_date)} · ${ABSENCE_HALF_LABEL[absence.start_half ?? "morning"]}`}
+        />
+        <DataDisplay
+          icon={CalendarXIcon}
+          label="End"
+          value={`${formatDate(absence.end_date)} · ${ABSENCE_HALF_LABEL[absence.end_half ?? "afternoon"]}`}
+        />
       </div>
 
-      <DataDisplay icon={HourglassIcon} label="Reason" value={capitalize(absence.type)} />
+      <DataDisplay icon={HourglassIcon} label="Type" value={capitalize(absence.type ?? "")} />
 
       <div className="rounded-xl border border-border/60 bg-muted/10 px-3.5 py-3">
         <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -77,6 +110,18 @@ export default function AbsenceDetailSheet({ absence, open, onOpenChange }: Abse
         <DataDisplay icon={CalendarDays} label="Created" value={formatDate(absence.created_at)} />
         <DataDisplay icon={CalendarDays} label="Last updated" value={formatDate(absence.updated_at)} />
       </div>
+
+      <ComposedAlertDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Delete this absence?"
+        description="This will permanently remove the absence record and cannot be undone."
+        confirmLabel="Delete"
+        pendingLabel="Deleting…"
+        isPending={isDeleting}
+        variant="destructive"
+        onConfirm={confirmDelete}
+      />
     </ComposedSheet>
   );
 }

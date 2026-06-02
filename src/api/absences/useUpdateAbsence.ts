@@ -2,14 +2,15 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import usePrivateApi from "@/api/privateApi.ts";
 import { toast } from "sonner";
 import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
-import type { AbsenceType } from "@/types/absence";
 
 interface UpdateAbsencePayload {
   id: number;
   userId: string;
   type?: AbsenceType;
   start_date?: string;
+  start_half?: AbsenceHalf;
   end_date?: string;
+  end_half?: AbsenceHalf;
   reason?: string | null;
 }
 
