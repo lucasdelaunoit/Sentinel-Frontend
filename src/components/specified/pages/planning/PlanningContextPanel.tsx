@@ -1,11 +1,26 @@
-import { CheckCircle2, Play, Plus, X, Zap } from "lucide-react";
+import { CheckCircle2, Flame, Lightbulb, Play, Plus, ShieldAlert, Sparkles, TrendingDown, TrendingUp, Users, X, Zap } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SecondaryCard from "@/components/common/cards/SecondaryCard";
+import Feedback from "@/components/common/feedbacks/Feedback";
 import { cn } from "@/lib/utils";
-import type { PlanningMode, PlanningUser, ProjectImpact, SimBlock, SimulateResponse } from "@/types/planning";
+import type {
+  Hotspot,
+  PlanningMode,
+  PlanningUser,
+  ProjectImpact,
+  Recommendation,
+  Severity,
+  SimBlock,
+  SimWarning,
+  SimulateResponse,
+  SkillImpact,
+} from "@/types/planning";
 import { MONTH_NAMES, blockDurationLabel, formatHalfDate } from "@/utils/planning/calendar";
 import { getViewLeaves, isOnRealLeave } from "@/utils/planning/leaves";
-import { absenceTheme, IMPACT_THEME, simColor } from "@/utils/planning/theme";
+import { absenceTheme, simColor } from "@/utils/planning/theme";
 import ImpactBadge from "./badges/ImpactBadge";
 
 type PanelLayout = "side" | "below";
@@ -55,16 +70,25 @@ export default function PlanningContextPanel({
 }
 
 function panelContainerClass(layout: PanelLayout): string {
-  return layout === "below"
-    ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start"
-    : "flex flex-col gap-4";
+  return layout === "below" ? "grid grid-cols-1 lg:grid-cols-3 gap-4 items-start" : "flex flex-col gap-4";
 }
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{children}</p>
-  );
+  return <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{children}</p>;
 }
+
+function severityBadgeVariant(sev: Severity): "default" | "secondary" | "destructive" | "outline" {
+  if (sev === "critical" || sev === "high") return "destructive";
+  if (sev === "medium") return "outline";
+  return "secondary";
+}
+
+function severityClass(sev: Severity): string {
+  if (sev === "medium") return "border-warning/40 text-warning";
+  return "";
+}
+
+/* ─────────────────────── View mode ─────────────────────── */
 
 function ViewPanel({
   users,
@@ -101,9 +125,7 @@ function ViewPanel({
       <Card className="p-0 gap-0 overflow-hidden">
         <CardHeader className="px-5 py-4 border-b border-border/60 bg-muted/20">
           <SectionHeader>
-            {todayDay !== null
-              ? `Today — ${monthAbbr} ${todayDay}`
-              : `${MONTH_NAMES[viewMonth - 1]} ${viewYear}`}
+            {todayDay !== null ? `Today — ${monthAbbr} ${todayDay}` : `${MONTH_NAMES[viewMonth - 1]} ${viewYear}`}
           </SectionHeader>
         </CardHeader>
         <CardContent className="px-5 py-4 space-y-3">
@@ -130,38 +152,36 @@ function ViewPanel({
           <CardHeader className="px-5 py-4 border-b border-border/60 bg-muted/20">
             <SectionHeader>Upcoming leaves</SectionHeader>
           </CardHeader>
-          <CardContent className="p-0 divide-y divide-border/40">
+          <CardContent className="p-3 space-y-2">
             {upcomingLeaves.map(({ user, leave }, i) => {
               const meta = absenceTheme(leave.type);
               return (
-                <div key={i} className="px-5 py-3 flex items-center gap-3">
-                  <div
-                    className={cn(
-                      "flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white shadow-sm",
-                      user.color,
-                    )}
-                  >
-                    {user.initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-medium text-foreground truncate">
-                      {user.firstname} {user.lastname}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {monthAbbr} {leave.start}–{leave.end}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className={cn("size-1.5 rounded-full", meta.dot)} />
-                    <span className="text-[10px] text-muted-foreground">{meta.label}</span>
-                  </div>
-                </div>
+                <SecondaryCard
+                  key={i}
+                  before={
+                    <div
+                      className={cn(
+                        "flex size-7 items-center justify-center rounded-lg text-[9px] font-bold text-white shadow-sm",
+                        user.color,
+                      )}
+                    >
+                      {user.initials}
+                    </div>
+                  }
+                  title={`${user.firstname} ${user.lastname}`}
+                  description={`${monthAbbr} ${leave.start}–${leave.end}`}
+                  action={
+                    <Badge variant="outline" className="gap-1.5">
+                      <span className={cn("size-1.5 rounded-full", meta.dot)} />
+                      {meta.label}
+                    </Badge>
+                  }
+                />
               );
             })}
           </CardContent>
         </Card>
       )}
-
     </div>
   );
 }
@@ -177,6 +197,8 @@ function Row({ dot, label, value }: { dot: string; label: string; value: number 
     </div>
   );
 }
+
+/* ─────────────────────── Simulate mode ─────────────────────── */
 
 function SimulatePanel({
   users,
@@ -198,6 +220,7 @@ function SimulatePanel({
   layout: PanelLayout;
 }) {
   const usersById = new Map(users.map((u) => [u.id, u]));
+  const hasData = simBlocks.length > 0;
 
   return (
     <div className={panelContainerClass(layout)}>
@@ -206,20 +229,21 @@ function SimulatePanel({
           <div className="flex items-center gap-2">
             <Zap className="size-4 text-planned" />
             <p className="text-[13px] font-bold text-planned">Scenario</p>
-            {simBlocks.length > 0 && (
-              <span className="text-[10px] font-bold bg-planned/20 text-planned px-1.5 py-0.5 rounded-full">
+            {hasData && (
+              <Badge variant="secondary" className="bg-planned/20 text-planned h-4 px-1.5 text-[10px]">
                 {simBlocks.length}
-              </span>
+              </Badge>
             )}
           </div>
-          {simBlocks.length > 0 && (
-            <button
-              type="button"
+          {hasData && (
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onClearAll}
-              className="text-[11px] text-planned/70 hover:text-destructive-foreground transition-colors font-medium"
+              className="h-7 px-2 text-[11px] text-planned/70 hover:text-destructive-foreground"
             >
               Clear all
-            </button>
+            </Button>
           )}
         </CardHeader>
 
@@ -235,111 +259,398 @@ function SimulatePanel({
           </Button>
         </CardContent>
 
-        {simBlocks.length > 0 ? (
-          <div className="border-t border-planned/20 divide-y divide-planned/10">
+        {hasData ? (
+          <div className="border-t border-planned/20 max-h-64 overflow-y-auto p-2 space-y-1.5">
             {simBlocks.map((block) => {
               const user = usersById.get(block.userId);
               const color = simColor(block.colorIdx);
               const impact = combined.per_user_impact[block.userId];
               return (
-                <div key={block.id} className="flex items-center gap-2.5 px-4 py-2.5 group">
-                  <button
-                    type="button"
-                    className="flex items-center gap-2.5 flex-1 min-w-0 text-left"
-                    onClick={() => onSelectBlock(block.id)}
-                  >
-                    <div className="size-2 rounded-full shrink-0" style={{ background: color.border }} />
-                    <div
-                      className={cn(
-                        "flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white",
-                        user?.color ?? "bg-muted",
-                      )}
-                    >
-                      {user?.initials}
+                <SecondaryCard
+                  key={block.id}
+                  onClick={() => onSelectBlock(block.id)}
+                  before={
+                    <div className="flex items-center gap-2">
+                      <div className="size-2 rounded-full shrink-0" style={{ background: color.border }} />
+                      <div
+                        className={cn(
+                          "flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white",
+                          user?.color ?? "bg-muted",
+                        )}
+                      >
+                        {user?.initials}
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-medium text-foreground truncate">
-                        {user ? `${user.firstname} ${user.lastname}` : "Unknown"}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {formatHalfDate(block.startDate, block.startHalf)} – {formatHalfDate(block.endDate, block.endHalf)}{" "}
-                        · {blockDurationLabel(block)}
-                      </p>
+                  }
+                  title={user ? `${user.firstname} ${user.lastname}` : "Unknown"}
+                  description={`${formatHalfDate(block.startDate, block.startHalf)} – ${formatHalfDate(block.endDate, block.endHalf)} · ${blockDurationLabel(block)}`}
+                  action={
+                    <div className="flex items-center gap-1.5">
+                      {impact && <ImpactBadge level={impact.level} />}
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="size-6"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemoveBlock(block.id);
+                        }}
+                      >
+                        <X className="size-3.5" />
+                      </Button>
                     </div>
-                  </button>
-                  {impact && <ImpactBadge level={impact} />}
-                  <button
-                    type="button"
-                    onClick={() => onRemoveBlock(block.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive-foreground ml-1"
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                </div>
+                  }
+                  className="bg-card/60 hover:bg-card"
+                />
               );
             })}
           </div>
         ) : (
-          <CardContent className="px-5 py-4 text-center">
-            <p className="text-[12px] text-planned/70">No absences simulated yet.</p>
-            <p className="text-[11px] text-planned/60 mt-0.5">Add employees above to begin.</p>
+          <CardContent className="px-5 py-6">
+            <Feedback variant="info" title="No absences simulated" description="Add employees above to begin." />
           </CardContent>
         )}
       </Card>
 
-      {simBlocks.length > 0 && (
-        <Card className="p-0 gap-0 overflow-hidden">
-          <CardHeader className="px-5 py-4 border-b border-border/60 bg-muted/20 flex flex-row items-center gap-2">
+      {hasData && (
+        <Card className={cn("p-0 gap-0 overflow-hidden", layout === "below" && "lg:col-span-2")}>
+          <CardHeader className="px-5 py-3.5 border-b border-border/60 bg-muted/20 flex flex-row items-center gap-2">
             <Play className="size-3.5 text-primary" />
             <SectionHeader>Combined impact</SectionHeader>
-            {combined.projects.length > 0 && <ImpactBadge level={combined.overall_level} className="ml-auto" />}
+            <ImpactBadge level={combined.overall_level} className="ml-auto" />
           </CardHeader>
-
-          {combined.projects.length === 0 ? (
-            <CardContent className="px-5 py-4 text-center">
-              <CheckCircle2 className="size-5 text-success mx-auto mb-1.5" />
-              <p className="text-[12px] text-success font-medium">No project impact</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">All skills remain covered.</p>
-            </CardContent>
-          ) : (
-            <div className="divide-y divide-border/40">
-              {combined.projects.map((p) => (
-                <ProjectImpactRow key={p.id} project={p} />
-              ))}
-            </div>
-          )}
+          <ImpactTabs combined={combined} usersById={usersById} />
         </Card>
       )}
     </div>
   );
 }
 
-function ProjectImpactRow({ project }: { project: ProjectImpact }) {
-  const theme = IMPACT_THEME[project.level];
+/* ─────────────────────── Tabs ─────────────────────── */
+
+function ImpactTabs({ combined, usersById }: { combined: SimulateResponse; usersById: Map<string, PlanningUser> }) {
   return (
-    <div className="px-5 py-3.5 space-y-1.5">
-      <div className="flex items-center gap-2">
-        <div className={cn("size-2 rounded-full shrink-0", theme.dot)} />
-        <span className="text-[12px] font-semibold text-foreground truncate">{project.name}</span>
+    <Tabs defaultValue="projects" className="w-full">
+      <TabsList className="w-full justify-start rounded-none bg-muted/10 border-b border-border/60 h-9 p-0 px-3 gap-1">
+        <TabPill value="projects" icon={Users} label="Projects" count={combined.per_project_impact.length} />
+        <TabPill value="skills" icon={Sparkles} label="Skills" count={combined.per_skill_impact.length} />
+        <TabPill value="hotspots" icon={Flame} label="Hotspots" count={combined.hotspots.length} />
+        <TabPill value="recommendations" icon={Lightbulb} label="Recommendations" count={combined.recommendations.length} />
+        <TabPill value="warnings" icon={ShieldAlert} label="Warnings" count={combined.warnings.length} />
+      </TabsList>
+
+      <TabsContent value="projects" className="m-0">
+        <ProjectsTab projects={combined.per_project_impact} />
+      </TabsContent>
+      <TabsContent value="skills" className="m-0">
+        <SkillsTab skills={combined.per_skill_impact} />
+      </TabsContent>
+      <TabsContent value="hotspots" className="m-0">
+        <HotspotsTab hotspots={combined.hotspots} usersById={usersById} />
+      </TabsContent>
+      <TabsContent value="recommendations" className="m-0">
+        <RecommendationsTab recs={combined.recommendations} />
+      </TabsContent>
+      <TabsContent value="warnings" className="m-0">
+        <WarningsTab warnings={combined.warnings} />
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+function TabPill({
+  value,
+  icon: Icon,
+  label,
+  count,
+}: {
+  value: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  count: number;
+}) {
+  return (
+    <TabsTrigger
+      value={value}
+      className="h-8 gap-1.5 px-2.5 rounded-md text-[11px] font-semibold data-[state=active]:bg-card data-[state=active]:shadow-sm"
+    >
+      <Icon className="size-3.5" />
+      <span>{label}</span>
+      {count > 0 && (
+        <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
+          {count}
+        </Badge>
+      )}
+    </TabsTrigger>
+  );
+}
+
+/* ─────────────────────── Tab contents ─────────────────────── */
+
+function EmptyTab({ title, description }: { title: string; description?: string }) {
+  return (
+    <div className="p-6">
+      <Feedback variant="success" title={title} description={description} />
+    </div>
+  );
+}
+
+function ProjectsTab({ projects }: { projects: ProjectImpact[] }) {
+  if (projects.length === 0) return <EmptyTab title="No project impact" description="All skills remain covered." />;
+  return (
+    <div className="divide-y divide-border/40">
+      {projects.map((p) => (
+        <ProjectImpactRow key={p.project_id} project={p} />
+      ))}
+    </div>
+  );
+}
+
+function ProjectImpactRow({ project }: { project: ProjectImpact }) {
+  const sev: Severity = project.status_after === "blocked" ? "critical" : project.status_after === "at_risk" ? "high" : "safe";
+  return (
+    <div className="px-5 py-3.5 space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={cn("size-2 rounded-full shrink-0", sev === "critical" ? "bg-destructive-foreground" : sev === "high" ? "bg-warning" : "bg-success")} />
+          <span className="text-[12px] font-semibold text-foreground truncate">{project.name}</span>
+        </div>
+        <ImpactBadge level={project.level} />
       </div>
-      {project.uncovered_skills.length > 0 && (
-        <p className="text-[11px] text-destructive-foreground pl-4">
-          <span className="font-semibold">Uncovered: </span>
-          {project.uncovered_skills.join(", ")}
-        </p>
+
+      <div className="grid grid-cols-3 gap-2 text-[10px]">
+        <MetricMini label="Bus factor" before={project.bus_factor_before} after={project.bus_factor_after} invertGood />
+        <MetricMini label="Coverage" before={project.coverage_pct_before} after={project.coverage_pct_after} suffix="%" />
+        <MetricMini label="Risk" before={project.risk_score_before} after={project.risk_score_after} invertGood />
+      </div>
+
+      {project.skills_at_risk.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {project.skills_at_risk.map((s) => (
+            <Badge
+              key={s.skill_id}
+              variant={severityBadgeVariant(s.severity)}
+              className={cn("text-[10px]", severityClass(s.severity))}
+            >
+              {s.name} · {s.owners_left} left
+            </Badge>
+          ))}
+        </div>
       )}
-      {project.siloed_skills.length > 0 && (
-        <p className="text-[11px] text-warning pl-4">
-          <span className="font-semibold">At risk: </span>
-          {project.siloed_skills.join(", ")}
-        </p>
-      )}
-      {project.safe_skills.length > 0 && (
-        <p className="text-[11px] text-success pl-4">
-          <span className="font-semibold">Covered: </span>
-          {project.safe_skills.join(", ")}
+
+      {project.recommendation && (
+        <p className="text-[11px] text-muted-foreground italic flex items-start gap-1.5">
+          <Lightbulb className="size-3 shrink-0 mt-0.5" />
+          {project.recommendation}
         </p>
       )}
     </div>
   );
 }
+
+function MetricMini({
+  label,
+  before,
+  after,
+  suffix = "",
+  invertGood = false,
+}: {
+  label: string;
+  before: number;
+  after: number;
+  suffix?: string;
+  invertGood?: boolean;
+}) {
+  const delta = after - before;
+  const improved = invertGood ? delta < 0 : delta > 0;
+  const worse = invertGood ? delta > 0 : delta < 0;
+  return (
+    <div className="rounded-md bg-muted/30 px-2 py-1.5">
+      <p className="text-[9px] uppercase tracking-wider text-muted-foreground/70">{label}</p>
+      <div className="flex items-center gap-1 text-[11px] font-bold">
+        <span className="text-muted-foreground">
+          {before}
+          {suffix}
+        </span>
+        <span className="text-muted-foreground/40">→</span>
+        <span className={cn(worse && "text-destructive-foreground", improved && "text-success")}>
+          {after}
+          {suffix}
+        </span>
+        {delta !== 0 && (
+          <Badge
+            variant={worse ? "destructive" : "secondary"}
+            className={cn("ml-auto h-4 px-1 text-[9px] gap-0", improved && "bg-success/15 text-success")}
+          >
+            {delta > 0 ? <TrendingUp /> : <TrendingDown />}
+            {Math.abs(delta)}
+            {suffix}
+          </Badge>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SkillsTab({ skills }: { skills: SkillImpact[] }) {
+  if (skills.length === 0) return <EmptyTab title="No skill impact" />;
+  const order: Severity[] = ["critical", "high", "medium", "low", "safe"];
+  const sorted = [...skills].sort((a, b) => order.indexOf(a.severity) - order.indexOf(b.severity));
+  return (
+    <div className="divide-y divide-border/40">
+      {sorted.map((s) => (
+        <div key={s.skill_id} className="px-5 py-3 space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className={cn("size-2 rounded-full shrink-0", s.severity === "critical" ? "bg-destructive-foreground" : s.severity === "high" ? "bg-warning" : s.severity === "medium" ? "bg-warning" : "bg-success")} />
+              <span className="text-[12px] font-semibold text-foreground truncate">{s.name}</span>
+              {s.is_critical_for_org && (
+                <Badge variant="destructive" className="h-4 px-1.5 text-[9px]">
+                  Critical
+                </Badge>
+              )}
+            </div>
+            <Badge variant={severityBadgeVariant(s.severity)} className={cn("text-[10px]", severityClass(s.severity))}>
+              {s.owners_left}/{s.owners_total} owners
+            </Badge>
+          </div>
+          <p className="text-[10px] text-muted-foreground">
+            Coverage {s.coverage_pct_before}% →{" "}
+            <span className={cn(s.coverage_pct_after < s.coverage_pct_before && "text-destructive-foreground font-semibold")}>
+              {s.coverage_pct_after}%
+            </span>
+            {s.projects_impacted.length > 0 && ` · ${s.projects_impacted.length} project${s.projects_impacted.length === 1 ? "" : "s"}`}
+          </p>
+          {s.dates_uncovered.length > 0 && (
+            <p className="text-[10px] text-destructive-foreground">
+              Uncovered: {s.dates_uncovered.slice(0, 4).join(", ")}
+              {s.dates_uncovered.length > 4 ? ` +${s.dates_uncovered.length - 4}` : ""}
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HotspotsTab({ hotspots, usersById }: { hotspots: Hotspot[]; usersById: Map<string, PlanningUser> }) {
+  if (hotspots.length === 0) return <EmptyTab title="No critical overlap windows" />;
+  return (
+    <div className="p-3 space-y-2">
+      {hotspots.map((h, i) => (
+        <SecondaryCard
+          key={i}
+          before={<Flame className={cn("size-4", h.severity === "critical" ? "text-destructive-foreground" : "text-warning")} />}
+          title={`${h.date_range[0]} → ${h.date_range[1]}`}
+          description={h.reason}
+          action={
+            <div className="flex flex-col items-end gap-1.5">
+              <Badge variant={severityBadgeVariant(h.severity)} className="text-[10px] uppercase">
+                {h.severity}
+              </Badge>
+              <div className="flex flex-wrap gap-1 justify-end">
+                {h.absent_user_ids.slice(0, 6).map((uid) => {
+                  const u = usersById.get(uid);
+                  return (
+                    <span
+                      key={uid}
+                      className={cn(
+                        "flex size-5 items-center justify-center rounded-md text-[8px] font-bold text-white",
+                        u?.color ?? "bg-muted",
+                      )}
+                    >
+                      {u?.initials ?? "?"}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
+function RecommendationsTab({ recs }: { recs: Recommendation[] }) {
+  if (recs.length === 0) return <EmptyTab title="No actions needed" />;
+  const sorted = [...recs].sort((a, b) => a.priority - b.priority);
+  return (
+    <div className="p-3 space-y-2">
+      {sorted.map((r) => (
+        <SecondaryCard
+          key={r.id}
+          before={<Lightbulb className="size-4 text-primary" />}
+          title={
+            <span className="flex items-center gap-2">
+              <Badge variant="default" className="h-4 px-1.5 text-[9px] uppercase">
+                {r.type}
+              </Badge>
+              {r.title}
+            </span>
+          }
+          description={
+            <span>
+              {r.detail}
+              {r.impact_preview && (
+                <span className="flex gap-2 mt-1">
+                  {r.impact_preview.risk_score_delta !== undefined && (
+                    <Badge
+                      variant="secondary"
+                      className={cn("h-4 px-1.5 text-[9px]", r.impact_preview.risk_score_delta < 0 ? "bg-success/15 text-success" : "bg-destructive/10 text-destructive-foreground")}
+                    >
+                      Risk {r.impact_preview.risk_score_delta > 0 ? "+" : ""}
+                      {r.impact_preview.risk_score_delta}
+                    </Badge>
+                  )}
+                  {r.impact_preview.coverage_delta_pct !== undefined && (
+                    <Badge
+                      variant="secondary"
+                      className={cn("h-4 px-1.5 text-[9px]", r.impact_preview.coverage_delta_pct > 0 ? "bg-success/15 text-success" : "bg-destructive/10 text-destructive-foreground")}
+                    >
+                      Coverage {r.impact_preview.coverage_delta_pct > 0 ? "+" : ""}
+                      {r.impact_preview.coverage_delta_pct}%
+                    </Badge>
+                  )}
+                  {r.impact_preview.absent_headcount_peak !== undefined && (
+                    <Badge variant="outline" className="h-4 px-1.5 text-[9px]">
+                      Peak → {r.impact_preview.absent_headcount_peak}
+                    </Badge>
+                  )}
+                </span>
+              )}
+            </span>
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
+function WarningsTab({ warnings }: { warnings: SimWarning[] }) {
+  if (warnings.length === 0) return <EmptyTab title="No warnings" />;
+  return (
+    <div className="p-3 space-y-2">
+      {warnings.map((w, i) => (
+        <SecondaryCard
+          key={i}
+          before={
+            <ShieldAlert
+              className={cn("size-4", w.severity === "critical" || w.severity === "high" ? "text-destructive-foreground" : "text-warning")}
+            />
+          }
+          title={w.code.replace(/_/g, " ")}
+          description={w.message}
+          action={
+            <Badge variant={severityBadgeVariant(w.severity)} className="text-[10px] uppercase">
+              {w.severity}
+            </Badge>
+          }
+        />
+      ))}
+    </div>
+  );
+}
+
+/* legacy export retained — CheckCircle2 used in some empty hints */
+export { CheckCircle2 };

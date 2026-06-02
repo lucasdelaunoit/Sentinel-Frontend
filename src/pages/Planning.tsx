@@ -13,7 +13,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { useCalendarSettings } from "@/hooks/useCalendarSettings";
 import useGetPlanning from "@/api/planning/useGetPlanning";
 import useSimulatePlanning from "@/api/planning/useSimulatePlanning";
 import useApplyPlanningSimulation from "@/api/planning/useApplyPlanningSimulation";
@@ -24,6 +23,7 @@ import PlanningContextPanel from "@/components/specified/pages/planning/Planning
 import AddAbsenceSheet from "@/components/specified/pages/planning/sheets/AddAbsenceSheet";
 import SimBlockDetailSheet from "@/components/specified/pages/planning/sheets/SimBlockDetailSheet";
 import SaveStatusIndicator from "@/components/specified/pages/planning/badges/SaveStatusIndicator";
+import PlanningStatStrip from "@/components/specified/pages/planning/PlanningStatStrip";
 import { SIM_COLORS } from "@/utils/planning/theme";
 
 export default function Planning() {
@@ -192,6 +192,7 @@ export default function Planning() {
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
+        {mode === "simulate" && <PlanningStatStrip totals={simulation.data.totals} blockCount={simBlocks.length} />}
         <PlanningGantt
           mode={mode}
           users={users}
@@ -203,22 +204,23 @@ export default function Planning() {
           setSelectedBlockId={setSelectedBlockId}
           onCreateBlock={addBlock}
           perUserImpact={simulation.data.per_user_impact}
+          perDayLoad={simulation.data.per_day_load}
         />
 
         <div>
           <PlanningContextPanel
-              layout="below"
-              mode={mode}
-              users={users}
-              simBlocks={simBlocks}
-              viewYear={viewYear}
-              viewMonth={viewMonth}
-              onOpenAddSheet={() => setShowAddSheet(true)}
-              onSelectBlock={setSelectedBlockId}
-              onRemoveBlock={removeBlock}
-              onClearAll={clearAll}
-              combined={simulation.data}
-            />
+            layout="below"
+            mode={mode}
+            users={users}
+            simBlocks={simBlocks}
+            viewYear={viewYear}
+            viewMonth={viewMonth}
+            onOpenAddSheet={() => setShowAddSheet(true)}
+            onSelectBlock={setSelectedBlockId}
+            onRemoveBlock={removeBlock}
+            onClearAll={clearAll}
+            combined={simulation.data}
+          />
         </div>
       </div>
 

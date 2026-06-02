@@ -1,9 +1,10 @@
 import { cn } from "@/lib/utils";
-import type { PlanningUser, SimBlock } from "@/types/planning";
+import type { DayLoad, PlanningUser, Severity, SimBlock } from "@/types/planning";
 import {
   CAPACITY_ROW_HEIGHT,
   DAY_COL_WIDTH,
   NAME_COL_WIDTH,
+  makeDateStr,
 } from "@/utils/planning/calendar";
 import { isOnRealLeave, isOnSimLeave } from "@/utils/planning/leaves";
 import { capacityToneClass } from "@/utils/planning/theme";
@@ -15,7 +16,16 @@ interface PlanningCapacityStripProps {
   viewYear: number;
   viewMonth: number;
   isClosedDay: (d: number) => boolean;
+  perDayLoad?: DayLoad[];
 }
+
+const SEV_TINT: Record<Severity, string> = {
+  safe: "",
+  low: "",
+  medium: "bg-warning/10",
+  high: "bg-warning/20",
+  critical: "bg-danger/20",
+};
 
 export default function PlanningCapacityStrip({
   days,
@@ -24,8 +34,10 @@ export default function PlanningCapacityStrip({
   viewYear,
   viewMonth,
   isClosedDay,
+  perDayLoad,
 }: PlanningCapacityStripProps) {
   const total = users.length;
+  const loadByDate = new Map((perDayLoad ?? []).map((d) => [d.date, d] as const));
 
   function availability(day: number): number {
     if (isClosedDay(day)) return -1;
@@ -51,14 +63,19 @@ export default function PlanningCapacityStrip({
         {days.map((d) => {
           const ratio = availability(d);
           const closed = ratio === -1;
+          const dateStr = makeDateStr(viewYear, viewMonth, d);
+          const load = loadByDate.get(dateStr);
+          const tint = load ? SEV_TINT[load.severity] : "";
           return (
             <div
               key={d}
               className={cn(
                 "border-r border-border/10 last:border-r-0 flex flex-col items-center justify-end pb-1 gap-1",
                 closed && "bg-muted/40",
+                !closed && tint,
               )}
               style={{ width: DAY_COL_WIDTH, height: CAPACITY_ROW_HEIGHT }}
+              title={load ? `${load.absent_count} absent · ${load.coverage_pct}% coverage` : undefined}
             >
               {!closed && (
                 <>

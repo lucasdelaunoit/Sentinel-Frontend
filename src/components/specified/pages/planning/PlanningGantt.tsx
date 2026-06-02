@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, ArrowLeft, ArrowRight, GripVertical, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCalendarSettings } from "@/hooks/useCalendarSettings";
-import type { Half, ImpactLevel, PlanningMode, PlanningUser, SimBlock } from "@/types/planning";
+import type { DayLoad, Half, PlanningMode, PlanningUser, SimBlock, UserImpact } from "@/types/planning";
 import {
   DAY_COL_WIDTH,
   MONTH_NAMES,
@@ -61,7 +61,8 @@ interface PlanningGanttProps {
   selectedBlockId: string | null;
   setSelectedBlockId: (id: string | null) => void;
   onCreateBlock: (empId: string, startDate: string, startHalf: Half, endDate: string, endHalf: Half) => void;
-  perUserImpact: Record<string, ImpactLevel>;
+  perUserImpact: Record<string, UserImpact>;
+  perDayLoad?: DayLoad[];
 }
 
 export default function PlanningGantt({
@@ -75,6 +76,7 @@ export default function PlanningGantt({
   setSelectedBlockId,
   onCreateBlock,
   perUserImpact,
+  perDayLoad,
 }: PlanningGanttProps) {
   const { settings } = useCalendarSettings();
   const [dragState, setDragState] = useState<DragState | null>(null);
@@ -318,6 +320,7 @@ export default function PlanningGantt({
             viewYear={viewYear}
             viewMonth={viewMonth}
             isClosedDay={isClosedDay}
+            perDayLoad={perDayLoad}
           />
 
           {users.map((emp) => {
@@ -329,7 +332,7 @@ export default function PlanningGantt({
               block: SimBlock;
               range: NonNullable<ReturnType<typeof getBlockDisplayRange>>;
             }[];
-            const impact = mode === "simulate" ? perUserImpact[emp.id] : undefined;
+            const impact = mode === "simulate" ? perUserImpact[emp.id]?.level : undefined;
 
             return (
               <div

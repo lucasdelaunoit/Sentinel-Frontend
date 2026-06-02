@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import usePrivateApi from "@/api/privateApi";
 import type { SimulateAbsenceInput, SimulateResponse } from "@/types/planning";
 import { PLANNING_MOCK_ENABLED, simulatePlanningMock } from "./mock";
@@ -9,7 +9,44 @@ interface UseSimulatePlanningOptions {
   debounceMs?: number;
 }
 
-const EMPTY_RESULT: SimulateResponse = { overall_level: "safe", projects: [], per_user_impact: {} };
+function buildEmpty(month: string): SimulateResponse {
+  return {
+    totals: {
+      risk_score: 0,
+      risk_score_delta: 0,
+      bus_factor: 0,
+      bus_factor_delta: 0,
+      coverage_pct: 100,
+      coverage_delta_pct: 0,
+      absent_fte_days: 0,
+      absent_headcount_peak: 0,
+      absent_headcount_peak_date: null,
+      org_capacity_loss_pct: 0,
+      projects_at_risk_count: 0,
+      projects_blocked_count: 0,
+      critical_skills_uncovered_count: 0,
+      severity: "safe",
+    },
+    per_user_impact: {},
+    per_project_impact: [],
+    per_skill_impact: [],
+    per_day_load: [],
+    hotspots: [],
+    skill_concentration_shifts: [],
+    cascading_risks: [],
+    warnings: [],
+    recommendations: [],
+    comparison_vs_baseline: {
+      risk_score: { before: 0, after: 0, delta_pct: 0 },
+      bus_factor: { before: 0, after: 0 },
+      coverage_pct: { before: 100, after: 100 },
+      projects_healthy_count: { before: 0, after: 0 },
+    },
+    meta: { computed_at: new Date(0).toISOString(), computation_ms: 0, absences_evaluated: 0, month },
+    overall_level: "safe",
+    projects: [],
+  };
+}
 
 export default function useSimulatePlanning(
   absences: SimulateAbsenceInput[],
@@ -18,7 +55,9 @@ export default function useSimulatePlanning(
 ) {
   const { debounceMs = 300 } = options;
   const privateApi = usePrivateApi();
-  const [data, setData] = useState<SimulateResponse>(EMPTY_RESULT);
+  const month = absences[0]?.start_date.slice(0, 7) ?? "1970-01";
+  const emptyResult = useMemo(() => buildEmpty(month), [month]);
+  const [data, setData] = useState<SimulateResponse>(emptyResult);
   const [status, setStatus] = useState<SimulateStatus>("idle");
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const reqIdRef = useRef(0);
@@ -27,7 +66,7 @@ export default function useSimulatePlanning(
 
   useEffect(() => {
     if (absences.length === 0) {
-      setData(EMPTY_RESULT);
+      setData(emptyResult);
       setStatus("idle");
       return;
     }
