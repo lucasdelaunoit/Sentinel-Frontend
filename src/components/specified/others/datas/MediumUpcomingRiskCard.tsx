@@ -15,7 +15,7 @@ function formatWhen(iso: string): { date: string; relative: string } {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const days = Math.round((start.getTime() - today.getTime()) / 86_400_000);
-  const relative = days <= 0 ? "Today" : days === 1 ? "Tomorrow" : `${days}d`;
+  const relative = days <= 0 ? "Today" : days === 1 ? "Tomo." : `${days}d`;
   const date = start.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
   return { date, relative };
 }
@@ -118,7 +118,7 @@ export default function MediumUpcomingRiskCard({ event }: MediumUpcomingRiskCard
                     )}
                     {busFactorDrop && (
                       <span className="ml-auto rounded bg-danger/10 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-danger">
-                        BF {busFactorDrop.before} → {busFactorDrop.after}
+                        Bus Factor {busFactorDrop.before} → {busFactorDrop.after}
                       </span>
                     )}
                   </span>

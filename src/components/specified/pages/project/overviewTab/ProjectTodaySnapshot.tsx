@@ -8,7 +8,6 @@ interface ProjectTodaySnapshotProps {
   onLeave: number;
   silos: number;
   uncovered: number;
-  warnings: number;
   isLoading?: boolean;
 }
 
@@ -18,14 +17,12 @@ export default function ProjectTodaySnapshot({
   onLeave,
   silos,
   uncovered,
-  warnings,
   isLoading = false,
 }: ProjectTodaySnapshotProps) {
   const rows: { label: string; value: number; tone: MetricTone }[] = [
     { label: "On leave today", value: onLeave, tone: onLeave > 0 ? "warning" : "neutral" },
     { label: "Knowledge silos", value: silos, tone: silos > 0 ? "warning" : "neutral" },
     { label: "Uncovered skills", value: uncovered, tone: uncovered > 0 ? "danger" : "neutral" },
-    { label: "Active warnings", value: warnings, tone: warnings > 0 ? "warning" : "neutral" },
   ];
 
   if (isLoading) return <ProjectTodaySnapshot.Skeleton />;
@@ -52,7 +49,7 @@ ProjectTodaySnapshot.Skeleton = function ProjectTodaySnapshotSkeleton() {
   return (
     <ComposedCard title="Today's Snapshot" action={<Skeleton className="h-3 w-32" />}>
       <MetricRow.List>
-        {Array.from({ length: 4 }).map((_, i) => (
+        {Array.from({ length: 3 }).map((_, i) => (
           <MetricRow.Skeleton key={i} />
         ))}
       </MetricRow.List>

@@ -11,15 +11,15 @@ interface ProjectHealthCardProps {
   coveragePct: number;
   deadlineLabel: string;
   deadlineTone: MetricTone;
-  criticalCount: number;
+  isLoading?: boolean;
 }
 
-type HealthLevel = { label: string; tone: Tone };
+type HealthLevel = { label: string; tone: Tone; caption: string };
 
 function healthLevel(health: number): HealthLevel {
-  if (health < 50) return { label: "Critical", tone: "danger" };
-  if (health < 65) return { label: "Degraded", tone: "warning" };
-  return { label: "Healthy", tone: "success" };
+  if (health < 50) return { label: "Critical", tone: "danger", caption: "Immediate attention required" };
+  if (health < 65) return { label: "Degraded", tone: "warning", caption: "Monitor closely" };
+  return { label: "Healthy", tone: "success", caption: "Operating normally" };
 }
 
 export default function ProjectHealthCard({
@@ -28,7 +28,7 @@ export default function ProjectHealthCard({
   coveragePct,
   deadlineLabel,
   deadlineTone,
-  criticalCount,
+  isLoading = false,
 }: ProjectHealthCardProps) {
   const level = healthLevel(health);
 
@@ -48,17 +48,15 @@ export default function ProjectHealthCard({
     { icon: CalendarIcon, label: "Deadline", value: deadlineLabel, tone: deadlineTone },
   ];
 
+  if (isLoading) return <ProjectHealthCard.Skeleton />;
+
   return (
     <Card>
       <div className="space-y-4 mt-2">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className={cn("text-[15px] font-bold", TONE_TEXT[level.tone])}>Project {level.label}</p>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              {criticalCount > 0
-                ? `${criticalCount} critical issue${criticalCount !== 1 ? "s" : ""} need attention`
-                : "No critical issues — monitor warnings"}
-            </p>
+            <p className={cn("text-lg font-bold", TONE_TEXT[level.tone])}>Project {level.label}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{level.caption}</p>
           </div>
           <div className="flex items-baseline gap-0.5 shrink-0">
             <span className={cn("text-[28px] font-bold tabular-nums leading-none", TONE_TEXT[level.tone])}>
@@ -84,11 +82,11 @@ ProjectHealthCard.Skeleton = function ProjectHealthCardSkeleton() {
       <div className="space-y-4 mt-2">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1.5">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-3 w-40" />
+            <Skeleton className="h-9 w-32" />
+            <Skeleton className="h-5 w-40" />
           </div>
           <div className="flex items-baseline gap-0.5 shrink-0">
-            <Skeleton className="h-7 w-12" />
+            <Skeleton className="h-9 w-12" />
             <Skeleton className="h-3 w-7" />
           </div>
         </div>

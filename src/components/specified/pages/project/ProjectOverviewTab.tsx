@@ -1,20 +1,18 @@
 import { useMemo } from "react";
-import { WarningIcon } from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import ComposedCard from "@/components/common/cards/ComposedCard";
-import SecondaryCard from "@/components/common/cards/SecondaryCard";
 import Feedback from "@/components/common/feedbacks/Feedback";
 import CountDisplay from "@/components/common/displays/CountDisplay";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar";
 import useGetProjectStats from "@/api/projects/useGetProjectStats";
 import useGetProjectMetrics from "@/api/projects/useGetProjectMetrics";
 import useGetProjectKnowledgeCoverage from "@/api/projects/useGetProjectKnowledgeCoverage";
-import useGetProjectFragilityAlerts from "@/api/projects/useGetProjectFragilityAlerts";
 import { cn } from "@/lib/utils";
 import { TONE_TEXT, TONE_BG, type Tone } from "@/lib/scoring";
 import ProjectHealthCard from "@/components/specified/pages/project/overviewTab/ProjectHealthCard.tsx";
 import ProjectTodaySnapshot from "@/components/specified/pages/project/overviewTab/ProjectTodaySnapshot.tsx";
+import ProjectFragilityAlertsCard from "@/components/specified/pages/project/overviewTab/ProjectFragilityAlertsCard.tsx";
 
 /* ─── Derived member impact ───────────────────────────────── */
 
@@ -83,59 +81,6 @@ const TONE_SOFT: Record<Tone, string> = {
   danger: "bg-danger/5 border-danger/30",
 };
 
-/* ─── Alert row ───────────────────────────────────────────── */
-
-const SEVERITY_TONE: Record<ProjectFragilityAlertSeverity, Tone> = {
-  critical: "danger",
-  warning: "warning",
-  info: "success",
-};
-
-const SEVERITY_STYLE: Record<ProjectFragilityAlertSeverity, string> = {
-  critical: "bg-danger text-background",
-  warning: "bg-warning/10 text-warning",
-  info: "bg-success/10 text-success",
-};
-
-function AlertRow({ alert }: { alert: ProjectFragilityAlert }) {
-  const tone = SEVERITY_TONE[alert.severity];
-  return (
-    <SecondaryCard
-      before={
-        <div
-          className={cn(
-            "flex size-10 items-center justify-center rounded-lg text-[13px] shrink-0",
-            SEVERITY_STYLE[alert.severity],
-          )}
-        >
-          <WarningIcon className="size-4" weight="bold" />
-        </div>
-      }
-      title={
-        <div className="text-foreground leading-relaxed flex flex-wrap items-center gap-x-2">
-          {alert.title}
-          <span className={cn("text-[10px] font-semibold uppercase tracking-wide", TONE_TEXT[tone])}>
-            {alert.category}
-          </span>
-        </div>
-      }
-      description={<p className="text-xs text-muted-foreground mt-1 italic">{alert.detail}</p>}
-    />
-  );
-}
-
-function AlertRowSkeleton() {
-  return (
-    <div className="flex items-center gap-3 rounded-xl bg-tertiary p-3">
-      <Skeleton className="size-10 shrink-0 rounded-lg" />
-      <div className="flex-1 space-y-2">
-        <Skeleton className="h-3.5 w-2/3" />
-        <Skeleton className="h-3 w-full" />
-      </div>
-    </div>
-  );
-}
-
 /* ─── Impact pill ─────────────────────────────────────────── */
 
 function ImpactPill({ lost, weakened }: { lost: number; weakened: number }) {
@@ -198,9 +143,8 @@ export default function ProjectOverviewTab({ projectId }: ProjectOverviewTabProp
   const { data: stats, isLoading: statsLoading } = useGetProjectStats(projectId);
   const { data: metrics, isLoading: metricsLoading } = useGetProjectMetrics(projectId);
   const { data: coverage, isLoading: coverageLoading } = useGetProjectKnowledgeCoverage(projectId);
-  const { data: alerts = [], isLoading: alertsLoading } = useGetProjectFragilityAlerts(projectId);
 
-  const heroLoading = statsLoading || metricsLoading || alertsLoading;
+  const heroLoading = statsLoading || metricsLoading;
 
   const members = useMemo(() => buildMembers(coverage ?? []), [coverage]);
   const onLeaveMembers = useMemo(() => members.filter((m) => m.onLeaveToday), [members]);
@@ -208,8 +152,6 @@ export default function ProjectOverviewTab({ projectId }: ProjectOverviewTabProp
   const fragilityRaw = Number(stats?.fragility.value_raw ?? 0);
   const health = Math.max(0, Math.min(100, 100 - fragilityRaw));
   const coveragePct = Number(stats?.knowledge_coverage.value_raw ?? 0);
-  const criticalCount = alerts.filter((a) => a.severity === "critical").length;
-  const warningCount = alerts.filter((a) => a.severity === "warning").length;
 
   const deadlineTone: Tone | "neutral" =
     stats?.deadline_countdown.severity === "critical"
@@ -226,38 +168,7 @@ export default function ProjectOverviewTab({ projectId }: ProjectOverviewTabProp
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
       {/* ── Left: alerts + current absence impact ─────────── */}
       <div className="lg:col-span-3 space-y-4">
-        <ComposedCard
-          title="Fragility Alerts"
-          action={
-            <div className="flex items-center gap-2">
-              {criticalCount > 0 && (
-                <Badge className={cn("text-white border-transparent", TONE_BG.danger)}>{criticalCount} critical</Badge>
-              )}
-              {warningCount > 0 && (
-                <Badge className={cn("text-white border-transparent", TONE_BG.warning)}>{warningCount} warning</Badge>
-              )}
-            </div>
-          }
-        >
-          <div className="space-y-2.5 mt-2">
-            {alertsLoading ? (
-              <>
-                <AlertRowSkeleton />
-                <AlertRowSkeleton />
-                <AlertRowSkeleton />
-              </>
-            ) : alerts.length === 0 ? (
-              <Feedback
-                variant="success"
-                title="No active fragility alerts"
-                description="This project is in good shape — no critical risks detected."
-                className="py-10"
-              />
-            ) : (
-              alerts.map((alert) => <AlertRow key={alert.id} alert={alert} />)
-            )}
-          </div>
-        </ComposedCard>
+        <ProjectFragilityAlertsCard projectId={projectId} />
 
         <ComposedCard
           title={
@@ -324,18 +235,14 @@ export default function ProjectOverviewTab({ projectId }: ProjectOverviewTabProp
 
       {/* ── Right: health + snapshot + key people ─────────── */}
       <div className="lg:col-span-2 space-y-4">
-        {heroLoading ? (
-          <ProjectHealthCard.Skeleton />
-        ) : (
-          <ProjectHealthCard
-            health={health}
-            busFactor={metrics?.bus_factor ?? 0}
-            coveragePct={coveragePct}
-            deadlineLabel={stats?.deadline_countdown.value ?? "—"}
-            deadlineTone={deadlineTone}
-            criticalCount={criticalCount}
-          />
-        )}
+        <ProjectHealthCard
+          isLoading={heroLoading}
+          health={health}
+          busFactor={metrics?.bus_factor ?? 0}
+          coveragePct={coveragePct}
+          deadlineLabel={stats?.deadline_countdown.value ?? "—"}
+          deadlineTone={deadlineTone}
+        />
 
         <ProjectTodaySnapshot
           isLoading={coverageLoading}
@@ -344,7 +251,6 @@ export default function ProjectOverviewTab({ projectId }: ProjectOverviewTabProp
           onLeave={onLeaveMembers.length}
           silos={silos}
           uncovered={uncovered}
-          warnings={warningCount}
         />
       </div>
     </div>

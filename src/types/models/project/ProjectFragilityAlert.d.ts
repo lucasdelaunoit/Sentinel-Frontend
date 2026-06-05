@@ -1,8 +1,6 @@
-type ProjectFragilityAlertSeverity = "critical" | "warning" | "info";
-
 interface ProjectFragilityAlert {
   id: string;
-  severity: ProjectFragilityAlertSeverity;
+  severity: Severity;
   category: string;
   title: string;
   detail: string;
