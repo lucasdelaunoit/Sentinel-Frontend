@@ -2,8 +2,6 @@ import { Badge } from "@/components/ui/badge.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
-import { TONE_BG } from "@/lib/scoring.ts";
-import { cn } from "@/lib/utils.ts";
 import useGetProjectFragilityAlerts from "@/api/projects/useGetProjectFragilityAlerts.ts";
 import MediumAlertRow from "@/components/specified/models/alert/datas/MediumAlertRow.tsx";
 
@@ -24,12 +22,8 @@ export default function ProjectFragilityAlertsCard({ projectId }: ProjectFragili
       title="Fragility Alerts"
       action={
         <div className="flex items-center gap-2">
-          {criticalCount > 0 && (
-            <Badge className={cn("text-white border-transparent", TONE_BG.danger)}>{criticalCount} critical</Badge>
-          )}
-          {warningCount > 0 && (
-            <Badge className={cn("text-white border-transparent", TONE_BG.warning)}>{warningCount} warning</Badge>
-          )}
+          {criticalCount > 0 && <Badge className="text-card bg-danger">{criticalCount} critical</Badge>}
+          {warningCount > 0 && <Badge className="text-card bg-warning">{warningCount} warning</Badge>}
         </div>
       }
     >
@@ -51,9 +45,17 @@ export default function ProjectFragilityAlertsCard({ projectId }: ProjectFragili
 
 ProjectFragilityAlertsCard.Skeleton = function ProjectFragilityAlertsCardSkeleton() {
   return (
-    <ComposedCard title="Fragility Alerts" action={<Skeleton className="h-5 w-20 rounded-full" />}>
+    <ComposedCard
+      title="Fragility Alerts"
+      action={
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-5 w-16 rounded-full" />
+          <Skeleton className="h-5 w-16 rounded-full" />
+        </div>
+      }
+    >
       <div className="space-y-2.5">
-        {Array.from({ length: 3 }).map((_, i) => (
+        {Array.from({ length: 6 }).map((_, i) => (
           <MediumAlertRow.Skeleton key={i} />
         ))}
       </div>
