@@ -4,14 +4,11 @@ import MetricRow, { type MetricTone } from "@/components/common/displays/MetricR
 import { CalendarIcon, type Icon, ShieldWarningIcon, UsersIcon } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Card } from "@/components/ui/card.tsx";
+import useGetProjectStats from "@/api/projects/useGetProjectStats";
+import useGetProjectMetrics from "@/api/projects/useGetProjectMetrics";
 
 interface ProjectHealthCardProps {
-  health: number;
-  busFactor: number;
-  coveragePct: number;
-  deadlineLabel: string;
-  deadlineTone: MetricTone;
-  isLoading?: boolean;
+  projectId: string | undefined;
 }
 
 type HealthLevel = { label: string; tone: Tone; caption: string };
@@ -22,17 +19,28 @@ function healthLevel(health: number): HealthLevel {
   return { label: "Healthy", tone: "success", caption: "Operating normally" };
 }
 
-export default function ProjectHealthCard({
-  health,
-  busFactor,
-  coveragePct,
-  deadlineLabel,
-  deadlineTone,
-  isLoading = false,
-}: ProjectHealthCardProps) {
+function deadlineToneFor(severity: string | undefined): MetricTone {
+  if (severity === "critical") return "danger";
+  if (severity === "warning") return "warning";
+  return "neutral";
+}
+
+export default function ProjectHealthCard({ projectId }: ProjectHealthCardProps) {
+  const { data: stats, isLoading: statsLoading } = useGetProjectStats(projectId);
+  const { data: metrics, isLoading: metricsLoading } = useGetProjectMetrics(projectId);
+
+  if (statsLoading || metricsLoading) return <ProjectHealthCard.Skeleton />;
+
+  const fragilityRaw = Number(stats?.fragility.value_raw ?? 0);
+  const health = Math.max(0, Math.min(100, 100 - fragilityRaw));
+  const busFactor = metrics?.bus_factor ?? 0;
+  const coveragePct = Number(stats?.knowledge_coverage.value_raw ?? 0);
+  const deadlineLabel = stats?.deadline_countdown.value ?? "—";
+  const deadlineTone = deadlineToneFor(stats?.deadline_countdown.severity);
+
   const level = healthLevel(health);
 
-  const metrics: { icon: Icon; label: string; value: string; tone: MetricTone }[] = [
+  const metricsData: { icon: Icon; label: string; value: string; tone: MetricTone }[] = [
     {
       icon: ShieldWarningIcon,
       label: "Bus Factor",
@@ -48,8 +56,6 @@ export default function ProjectHealthCard({
     { icon: CalendarIcon, label: "Deadline", value: deadlineLabel, tone: deadlineTone },
   ];
 
-  if (isLoading) return <ProjectHealthCard.Skeleton />;
-
   return (
     <Card>
       <div className="space-y-4 mt-2">
@@ -62,12 +68,12 @@ export default function ProjectHealthCard({
             <span className={cn("text-[28px] font-bold tabular-nums leading-none", TONE_TEXT[level.tone])}>
               {health}
             </span>
-            <span className="text-[11px] text-muted-foreground font-medium">/100</span>
+            <span className="text-xs text-muted-foreground font-medium">/100</span>
           </div>
         </div>
 
         <MetricRow.List>
-          {metrics.map((m) => (
+          {metricsData.map((m) => (
             <MetricRow key={m.label} icon={m.icon} label={m.label} value={m.value} tone={m.tone} />
           ))}
         </MetricRow.List>
@@ -87,7 +93,7 @@ ProjectHealthCard.Skeleton = function ProjectHealthCardSkeleton() {
           </div>
           <div className="flex items-baseline gap-0.5 shrink-0">
             <Skeleton className="h-9 w-12" />
-            <Skeleton className="h-3 w-7" />
+            <Skeleton className="h-3 w-8" />
           </div>
         </div>
         <MetricRow.List>

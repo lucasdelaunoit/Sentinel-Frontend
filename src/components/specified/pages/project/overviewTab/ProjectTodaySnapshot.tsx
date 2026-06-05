@@ -1,31 +1,39 @@
 import MetricRow, { type MetricTone } from "@/components/common/displays/MetricRow.tsx";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
+import useGetProjectKnowledgeCoverage from "@/api/projects/useGetProjectKnowledgeCoverage";
 
 interface ProjectTodaySnapshotProps {
-  teamSize: number;
-  requiredSkills: number;
-  onLeave: number;
-  silos: number;
-  uncovered: number;
-  isLoading?: boolean;
+  projectId: string | undefined;
 }
 
-export default function ProjectTodaySnapshot({
-  teamSize,
-  requiredSkills,
-  onLeave,
-  silos,
-  uncovered,
-  isLoading = false,
-}: ProjectTodaySnapshotProps) {
+/** Count unique team members currently on leave. */
+function countOnLeave(coverage: ProjectKnowledgeCoverageItem[]): number {
+  const ids = new Set<string>();
+  for (const row of coverage) {
+    for (const holder of row.holders) {
+      if (holder.on_leave_today) ids.add(holder.id);
+    }
+  }
+  return ids.size;
+}
+
+export default function ProjectTodaySnapshot({ projectId }: ProjectTodaySnapshotProps) {
+  const { data: coverage = [], isLoading } = useGetProjectKnowledgeCoverage(projectId);
+
+  if (isLoading) return <ProjectTodaySnapshot.Skeleton />;
+
+  const teamSize = coverage[0]?.team_size ?? 0;
+  const requiredSkills = coverage.length;
+  const onLeave = countOnLeave(coverage);
+  const silos = coverage.filter((c) => c.status === "silo").length;
+  const uncovered = coverage.filter((c) => c.status === "uncovered").length;
+
   const rows: { label: string; value: number; tone: MetricTone }[] = [
     { label: "On leave today", value: onLeave, tone: onLeave > 0 ? "warning" : "neutral" },
     { label: "Knowledge silos", value: silos, tone: silos > 0 ? "warning" : "neutral" },
     { label: "Uncovered skills", value: uncovered, tone: uncovered > 0 ? "danger" : "neutral" },
   ];
-
-  if (isLoading) return <ProjectTodaySnapshot.Skeleton />;
 
   return (
     <ComposedCard
