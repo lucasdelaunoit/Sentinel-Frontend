@@ -1,17 +1,25 @@
+import { useState } from "react";
+import { PlusIcon, UserPlusIcon } from "@phosphor-icons/react";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import CoverageRadar, { type CoverageRadarDatum } from "@/components/common/charts/CoverageRadar";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar";
+import AddProjectSkillSheet from "@/components/specified/models/projects/sheets/AddProjectSkillSheet";
+import AddSkillHolderSheet, {
+  type HolderSheetSkill,
+} from "@/components/specified/models/projects/sheets/AddSkillHolderSheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import useGetProjectKnowledgeCoverage from "@/api/projects/useGetProjectKnowledgeCoverage";
 import useGetProjectCompetencyRadar from "@/api/projects/useGetProjectCompetencyRadar";
 import { cn } from "@/lib/utils";
 import { TONE_TEXT, TONE_BG, type Tone } from "@/lib/scoring";
+import ProjectCoverageSummary from "@/components/specified/pages/project/knowledgeTab/ProjectCoverageSummary.tsx";
 
 const LEVEL_LABELS = ["", "Beginner", "Elementary", "Intermediate", "Advanced", "Expert"] as const;
 const SAFE_REDUNDANCY = 2;
-const COLUMN_COUNT = 5;
+const COLUMN_COUNT = 6;
 const SKELETON_ROWS = 5;
 
 const STATUS_TONE: Record<ProjectKnowledgeCoverageStatus, Tone> = {
@@ -35,16 +43,15 @@ const STATUS_BADGE: Record<ProjectKnowledgeCoverageStatus, string> = {
 /* ─── Holder avatars ──────────────────────────────────────── */
 
 function HolderAvatars({ holders }: { holders: ProjectKnowledgeCoverageHolder[] }) {
-  if (holders.length === 0) {
-    return <span className="text-[13px] text-muted-foreground">—</span>;
-  }
+  if (holders.length === 0) return <span className="text-[13px] text-muted-foreground">—</span>;
+
   return (
     <div className="flex items-center -space-x-1.5">
       {holders.map((h) => (
         <div
           key={h.id}
           title={`${h.firstname} ${h.lastname}${h.on_leave_today ? " (on leave)" : ""} — level ${h.level}/5`}
-          className={cn("rounded-md ring-2 ring-card shadow-sm", h.on_leave_today && "opacity-40")}
+          className={cn("rounded-md ring-2 ring-white shadow-sm")}
         >
           <UserAvatar firstname={h.firstname} lastname={h.lastname} variant={h.status} />
         </div>
@@ -53,89 +60,36 @@ function HolderAvatars({ holders }: { holders: ProjectKnowledgeCoverageHolder[] 
   );
 }
 
-/* ─── Coverage summary side card ──────────────────────────── */
-
-interface CoverageSummaryProps {
-  coverage: ProjectKnowledgeCoverageItem[];
-}
-
-function CoverageSummary({ coverage }: CoverageSummaryProps) {
-  const rows: { label: string; count: number; tone: Tone }[] = [
-    {
-      label: "Fully covered (2+ holders)",
-      count: coverage.filter((c) => c.status === "covered").length,
-      tone: "success",
-    },
-    {
-      label: "Knowledge silos (1 holder)",
-      count: coverage.filter((c) => c.status === "silo").length,
-      tone: "warning",
-    },
-    {
-      label: "Uncovered (0 holders)",
-      count: coverage.filter((c) => c.status === "uncovered").length,
-      tone: "danger",
-    },
-  ];
-
-  return (
-    <ComposedCard title="Coverage Summary">
-      <div className="space-y-3">
-        {rows.map(({ label, count, tone }) => (
-          <div key={label} className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className={cn("size-2 rounded-full shrink-0", TONE_BG[tone])} />
-              <span className="text-[12px] text-muted-foreground">{label}</span>
-            </div>
-            <span className="text-[14px] font-bold text-foreground tabular-nums">{count}</span>
-          </div>
-        ))}
-      </div>
-    </ComposedCard>
-  );
-}
-
-CoverageSummary.Skeleton = function CoverageSummarySkeleton() {
-  return (
-    <ComposedCard title="Coverage Summary">
-      <div className="space-y-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Skeleton className="size-2 rounded-full" />
-              <Skeleton className="h-3 w-40" />
-            </div>
-            <Skeleton className="h-4 w-6" />
-          </div>
-        ))}
-      </div>
-    </ComposedCard>
-  );
-};
-
 /* ─── Coverage table ──────────────────────────────────────── */
 
 interface CoverageTableProps {
+  projectId: string | undefined;
   coverage: ProjectKnowledgeCoverageItem[];
 }
 
-function CoverageTable({ coverage }: CoverageTableProps) {
+function CoverageTable({ projectId, coverage }: CoverageTableProps) {
+  const [addSkillOpen, setAddSkillOpen] = useState(false);
+  const [holderSkill, setHolderSkill] = useState<HolderSheetSkill | null>(null);
+
   const totalSkills = coverage.length;
   const atRisk = coverage.filter((c) => c.active_holders_count < SAFE_REDUNDANCY).length;
-
-  const toolbarAction = (
-    <>
-      <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
-        {atRisk}/{totalSkills} at risk
-      </span>
-      <div className="flex-1" />
-    </>
-  );
+  const existingSkillIds = coverage.map((c) => Number(c.skill.id));
 
   return (
     <ComposedCard
       title="Required Skills Coverage"
-      action={toolbarAction}
+      action={
+        <>
+          <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
+            {atRisk}/{totalSkills} at risk
+          </span>
+          <div className="flex-1" />
+          <Button size="sm" className="h-7 gap-1.5 text-[12px]" onClick={() => setAddSkillOpen(true)}>
+            <PlusIcon className="size-3.5" weight="bold" />
+            Add skill
+          </Button>
+        </>
+      }
       className="col-span-3 p-0 overflow-hidden"
       headerClassName="px-6 pt-4 flex-wrap gap-3"
     >
@@ -150,6 +104,9 @@ function CoverageTable({ coverage }: CoverageTableProps) {
                 {label}
               </TableHead>
             ))}
+            <TableHead className="px-5 py-3.5 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+              <span className="sr-only">Actions</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody className="[&_tr]:border-border/40">
@@ -164,8 +121,7 @@ function CoverageTable({ coverage }: CoverageTableProps) {
               const tone = STATUS_TONE[c.status];
               const levelLabel = c.max_level > 0 ? LEVEL_LABELS[c.max_level] : "—";
               const levelGap = c.required_level > 0 && c.max_level > 0 && c.max_level < c.required_level;
-              const widthPct =
-                c.team_size > 0 ? Math.min(100, (c.active_holders_count / c.team_size) * 100) : 0;
+              const widthPct = c.team_size > 0 ? Math.min(100, (c.active_holders_count / c.team_size) * 100) : 0;
 
               return (
                 <TableRow key={c.skill.id} className="hover:bg-muted/20 transition-colors border-border/40">
@@ -184,10 +140,7 @@ function CoverageTable({ coverage }: CoverageTableProps) {
                   <TableCell className="px-5 py-4">
                     <div className="flex items-center gap-2">
                       <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className={cn("h-full rounded-full", TONE_BG[tone])}
-                          style={{ width: `${widthPct}%` }}
-                        />
+                        <div className={cn("h-full rounded-full", TONE_BG[tone])} style={{ width: `${widthPct}%` }} />
                       </div>
                       <span className="text-[11px] text-muted-foreground tabular-nums whitespace-nowrap">
                         {c.active_holders_count}/{c.team_size}
@@ -213,12 +166,45 @@ function CoverageTable({ coverage }: CoverageTableProps) {
                       <span className="text-[13px] text-muted-foreground">—</span>
                     )}
                   </TableCell>
+                  <TableCell className="px-5 py-4 text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-7 text-muted-foreground hover:text-foreground"
+                      title="Add someone with this skill"
+                      aria-label={`Add someone with ${c.skill.name}`}
+                      onClick={() =>
+                        setHolderSkill({
+                          id: Number(c.skill.id),
+                          name: c.skill.name,
+                          category: c.skill.category,
+                        })
+                      }
+                    >
+                      <UserPlusIcon className="size-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               );
             })
           )}
         </TableBody>
       </Table>
+
+      <AddProjectSkillSheet
+        projectId={projectId}
+        existingSkillIds={existingSkillIds}
+        open={addSkillOpen}
+        onOpenChange={setAddSkillOpen}
+      />
+      <AddSkillHolderSheet
+        projectId={projectId}
+        skill={holderSkill}
+        open={holderSkill !== null}
+        onOpenChange={(v) => {
+          if (!v) setHolderSkill(null);
+        }}
+      />
     </ComposedCard>
   );
 }
@@ -242,6 +228,7 @@ CoverageTable.Skeleton = function CoverageTableSkeleton() {
                 {label}
               </TableHead>
             ))}
+            <TableHead className="px-5 py-3.5" />
           </TableRow>
         </TableHeader>
         <TableBody className="[&_tr]:border-border/40">
@@ -274,6 +261,9 @@ CoverageTable.Skeleton = function CoverageTableSkeleton() {
               <TableCell className="px-5 py-4">
                 <Skeleton className="h-3.5 w-24" />
               </TableCell>
+              <TableCell className="px-5 py-4 text-right">
+                <Skeleton className="size-7 rounded-md ml-auto" />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -297,9 +287,7 @@ function RadarCard({ radar }: RadarCardProps) {
 
   return (
     <ComposedCard title="Team Competency Radar">
-      <p className="text-[11px] text-muted-foreground mb-2">
-        Average skill level per category across the team
-      </p>
+      <p className="text-[11px] text-muted-foreground mb-2">Average skill level per category across the team</p>
       <CoverageRadar data={data} valueLabel="Team level" targetLabel="Target" />
     </ComposedCard>
   );
@@ -308,9 +296,7 @@ function RadarCard({ radar }: RadarCardProps) {
 RadarCard.Skeleton = function RadarCardSkeleton() {
   return (
     <ComposedCard title="Team Competency Radar">
-      <p className="text-[11px] text-muted-foreground mb-2">
-        Average skill level per category across the team
-      </p>
+      <p className="text-[11px] text-muted-foreground mb-2">Average skill level per category across the team</p>
       <CoverageRadar.Skeleton />
     </ComposedCard>
   );
@@ -328,11 +314,7 @@ export default function ProjectKnowledgeTab({ projectId }: ProjectKnowledgeTabPr
     isLoading: isCoverageLoading,
     isError: isCoverageError,
   } = useGetProjectKnowledgeCoverage(projectId);
-  const {
-    data: radar,
-    isLoading: isRadarLoading,
-    isError: isRadarError,
-  } = useGetProjectCompetencyRadar(projectId);
+  const { data: radar, isLoading: isRadarLoading, isError: isRadarError } = useGetProjectCompetencyRadar(projectId);
 
   return (
     <div className="grid grid-cols-5 gap-4">
@@ -349,7 +331,7 @@ export default function ProjectKnowledgeTab({ projectId }: ProjectKnowledgeTabPr
           </div>
         </ComposedCard>
       ) : (
-        <CoverageTable coverage={coverage} />
+        <CoverageTable projectId={projectId} coverage={coverage} />
       )}
 
       <div className="col-span-2 space-y-4">
@@ -363,7 +345,7 @@ export default function ProjectKnowledgeTab({ projectId }: ProjectKnowledgeTabPr
           <RadarCard radar={radar} />
         )}
 
-        {isCoverageLoading || !coverage ? <CoverageSummary.Skeleton /> : <CoverageSummary coverage={coverage} />}
+        <ProjectCoverageSummary isLoading={isCoverageLoading || !coverage} coverage={coverage} />
       </div>
     </div>
   );
