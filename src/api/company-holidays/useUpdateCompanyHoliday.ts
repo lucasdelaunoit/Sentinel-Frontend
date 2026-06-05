@@ -5,6 +5,7 @@ import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
 
 interface UpdateCompanyHolidayArgs extends CompanyHolidayRequest {
   id: number;
+  freeze_absence_ids?: number[];
 }
 
 export default function useUpdateCompanyHoliday() {

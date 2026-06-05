@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Controller, type Control, type FieldErrors, type UseFormSetValue, type UseFormWatch } from "react-hook-form";
 import { WarningIcon } from "@phosphor-icons/react";
-import { Input } from "@/components/ui/input";
+import DatePicker from "@/components/ui/date-picker";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
+import { useClosedDates } from "@/hooks/useClosedDates";
 import { cn } from "@/lib/utils";
 import { ABSENCE_TYPE_LABEL, ABSENCE_TYPE_VALUES } from "@/utils/absence/absenceType.ts";
 import { ABSENCE_HALF_LABEL, ABSENCE_HALF_VALUES } from "@/utils/absence/halfDay.ts";
@@ -96,6 +97,7 @@ export default function AbsenceFormFields({
   const startDate = watch("start_date");
   const startHalf = watch("start_half");
   const endHalf = watch("end_half");
+  const { isClosedDate } = useClosedDates();
 
   // Re-sync the single/period mode when the record/session changes (render-phase
   // adjustment — no effect needed).
@@ -177,12 +179,11 @@ export default function AbsenceFormFields({
             control={control}
             render={({ field }) => (
               <Field>
-                <Input
-                  type="date"
+                <DatePicker
                   value={field.value}
-                  onBlur={field.onBlur}
-                  onChange={(e) => setSingleDate(e.target.value)}
-                  aria-invalid={!!errors.start_date}
+                  onChange={setSingleDate}
+                  disabled={isClosedDate}
+                  ariaInvalid={!!errors.start_date}
                 />
                 <div className="mt-1.5 grid grid-cols-3 gap-1.5">
                   {SINGLE_OPTIONS.map((option) => (
@@ -208,7 +209,12 @@ export default function AbsenceFormFields({
               render={({ field }) => (
                 <Field>
                   <FieldLabel className="text-[11px] text-muted-foreground">Start date</FieldLabel>
-                  <Input {...field} type="date" aria-invalid={!!errors.start_date} />
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isClosedDate}
+                    ariaInvalid={!!errors.start_date}
+                  />
                   <div className="mt-1.5 grid grid-cols-2 gap-1.5">
                     {ABSENCE_HALF_VALUES.map((half) => (
                       <SegButton key={half} active={startHalf === half} onClick={() => setHalf("start_half", half)}>
@@ -227,7 +233,12 @@ export default function AbsenceFormFields({
               render={({ field }) => (
                 <Field>
                   <FieldLabel className="text-[11px] text-muted-foreground">End date</FieldLabel>
-                  <Input {...field} type="date" aria-invalid={!!errors.end_date} />
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isClosedDate}
+                    ariaInvalid={!!errors.end_date}
+                  />
                   <div className="mt-1.5 grid grid-cols-2 gap-1.5">
                     {ABSENCE_HALF_VALUES.map((half) => (
                       <SegButton key={half} active={endHalf === half} onClick={() => setHalf("end_half", half)}>

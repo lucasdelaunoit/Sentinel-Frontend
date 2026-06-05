@@ -14,3 +14,8 @@ Real source of truth (same as Settings → CalendarTab):
 Closed-day = working_days[iso]!==1 OR date falls in a holiday range. JS dow→ISO: `(jsDow + 6) % 7`.
 
 Closed days render as a light hatch BEHIND blocks; absence blocks **split into working-only segments** so gaps fall on closed columns (one logical absence, rendered multi-segment). See [[absence-normalized-count-policy]].
+
+**Closed-only absences are forbidden** (both layers):
+- Frontend: `useClosedDates()` (working_days + all holidays, recurring-projected) feeds a shadcn radix DatePicker (`ui/date-picker.tsx` = Popover + `ui/calendar.tsx` react-day-picker v9) via its `disabled` matcher, in `AbsenceFormFields` (Create/Edit) and planning `AddAbsenceSheet`. Closed days are non-selectable.
+- Backend: `StoreAbsenceRequest` + `UpdateAbsenceRequest` reject when `CalendarService::countWorkingHalfDays(...) <= 0` ("covers only weekends and/or holidays"). Postman/API can't bypass.
+Deps added: `react-day-picker@9`, `date-fns`.

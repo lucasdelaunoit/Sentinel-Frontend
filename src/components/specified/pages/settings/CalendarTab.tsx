@@ -13,6 +13,8 @@ import useGetWorkingDays from "@/api/organization/useGetWorkingDays";
 import useGetCompanyHolidays from "@/api/company-holidays/useGetCompanyHolidays";
 import useGetCompanyHolidaysForMonth from "@/api/company-holidays/useGetCompanyHolidaysForMonth";
 import CreateCompanyHolidaySheet from "@/components/specified/models/companyHoliday/sheets/CreateCompanyHolidaySheet";
+import CalendarImpactDialog from "@/components/specified/pages/settings/CalendarImpactDialog";
+import { useCalendarChangeGuard } from "@/hooks/useCalendarChangeGuard";
 import CompanyHolidayDetailSheet from "@/components/specified/models/companyHoliday/sheets/CompanyHolidayDetailSheet";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 import DataPagination from "@/components/common/pagination/DataPagination";
@@ -29,6 +31,7 @@ interface HolidayEvent {
 export default function CalendarTab() {
   const { data: workdays, isLoading: workdaysLoading } = useGetWorkingDays();
   const updateSettings = useUpdateCalendarSettings();
+  const workdayGuard = useCalendarChangeGuard();
 
   const [holidaySheetOpen, setHolidaySheetOpen] = useState(false);
   const [detailHoliday, setDetailHoliday] = useState<CompanyHoliday | null>(null);
@@ -72,7 +75,10 @@ export default function CalendarTab() {
   function toggleWorkingDay(isoIndex: number) {
     if (!workingDays) return;
     const next = workingDays.map((bit, i) => (i === isoIndex ? (bit ? 0 : 1) : bit));
-    updateSettings.mutate({ working_days: next });
+    // Guard: if future absences would be recounted, confirm what to do before applying.
+    workdayGuard.run({ type: "working_days", working_days: next }, (freezeIds) =>
+      updateSettings.mutate({ working_days: next, freeze_absence_ids: freezeIds }),
+    );
   }
 
   function dayClassName(date: Date): string | undefined {
@@ -214,7 +220,7 @@ export default function CalendarTab() {
                 key={label}
                 type="button"
                 onClick={() => toggleWorkingDay(i)}
-                disabled={updateSettings.isPending}
+                disabled={updateSettings.isPending || workdayGuard.isChecking}
                 className={cn(
                   "h-8 px-3 rounded-lg text-[12px] font-semibold transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed",
                   active
@@ -235,6 +241,8 @@ export default function CalendarTab() {
       </ComposedCard>
 
       <CreateCompanyHolidaySheet open={holidaySheetOpen} onOpenChange={setHolidaySheetOpen} />
+
+      <CalendarImpactDialog {...workdayGuard.dialog} isApplying={updateSettings.isPending} />
       {detailHoliday ? (
         <CompanyHolidayDetailSheet
           holiday={detailHoliday}

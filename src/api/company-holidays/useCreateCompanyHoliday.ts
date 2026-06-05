@@ -8,7 +8,8 @@ export default function useCreateCompanyHoliday() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CompanyHolidayRequest) => privateApi.post<CompanyHoliday>("/api/settings/holidays", payload),
+    mutationFn: (payload: CompanyHolidayRequest & { freeze_absence_ids?: number[] }) =>
+      privateApi.post<CompanyHoliday>("/api/settings/holidays", payload),
     onSuccess: (_, { name }) => {
       queryClient.invalidateQueries({ queryKey: ["company-holidays"] });
       queryClient.invalidateQueries({ queryKey: ["calendar-summary"] });

@@ -9,6 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useCreateCompanyHoliday from "@/api/company-holidays/useCreateCompanyHoliday";
+import CalendarImpactDialog from "@/components/specified/pages/settings/CalendarImpactDialog";
+import { useCalendarChangeGuard } from "@/hooks/useCalendarChangeGuard";
 
 const MAX_NAME_LENGTH = 64;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -82,6 +84,7 @@ export default function CreateCompanyHolidaySheet({
   }, [startWatch, endWatch, setValue]);
 
   const { mutate: createHoliday, isPending } = useCreateCompanyHoliday();
+  const guard = useCalendarChangeGuard();
 
   function handleClose() {
     reset();
@@ -89,10 +92,15 @@ export default function CreateCompanyHolidaySheet({
   }
 
   function onSubmit({ name, start_date, end_date, recurring }: FormValues) {
-    createHoliday({ name: name.trim(), start_date, end_date, recurring }, { onSuccess: handleClose });
+    const holiday = { name: name.trim(), start_date, end_date, recurring };
+    // Guard: confirm impact on future absences before creating the holiday.
+    guard.run({ type: "holiday_create", holiday }, (freezeIds) =>
+      createHoliday({ ...holiday, freeze_absence_ids: freezeIds }, { onSuccess: handleClose }),
+    );
   }
 
   return (
+    <>
     <ComposedSheet
       open={open}
       onOpenChange={(v) => {
@@ -108,11 +116,11 @@ export default function CreateCompanyHolidaySheet({
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
-            disabled={!isDirty || !isValid || isPending}
+            disabled={!isDirty || !isValid || isPending || guard.isChecking}
             className="flex-1"
             size="lg"
           >
-            {isPending ? "Adding…" : "Create the holiday"}
+            {isPending ? "Adding…" : guard.isChecking ? "Checking…" : "Create the holiday"}
           </Button>
         </>
       }
@@ -207,5 +215,8 @@ export default function CreateCompanyHolidaySheet({
         />
       </div>
     </ComposedSheet>
+
+    <CalendarImpactDialog {...guard.dialog} isApplying={isPending} />
+    </>
   );
 }

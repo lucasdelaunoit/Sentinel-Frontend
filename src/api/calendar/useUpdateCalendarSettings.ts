@@ -8,7 +8,8 @@ export default function useUpdateCalendarSettings() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: UpdateCalendarSettingsRequest) => privateApi.patch("/api/settings/working-days", payload),
+    mutationFn: (payload: UpdateCalendarSettingsRequest & { freeze_absence_ids?: number[] }) =>
+      privateApi.patch("/api/settings/working-days", payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["working-days"] });
     },

@@ -9,6 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useUpdateCompanyHoliday from "@/api/company-holidays/useUpdateCompanyHoliday";
+import CalendarImpactDialog from "@/components/specified/pages/settings/CalendarImpactDialog";
+import { useCalendarChangeGuard } from "@/hooks/useCalendarChangeGuard";
 
 const MAX_NAME_LENGTH = 64;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -77,6 +79,7 @@ export default function EditCompanyHolidaySheet({ holiday, open, onOpenChange }:
   }, [startWatch, endWatch, setValue]);
 
   const { mutate: updateHoliday, isPending } = useUpdateCompanyHoliday();
+  const guard = useCalendarChangeGuard();
 
   function handleClose() {
     reset();
@@ -84,10 +87,15 @@ export default function EditCompanyHolidaySheet({ holiday, open, onOpenChange }:
   }
 
   function onSubmit({ name, start_date, end_date, recurring }: FormValues) {
-    updateHoliday({ id: holiday.id, name: name.trim(), start_date, end_date, recurring }, { onSuccess: handleClose });
+    const next = { name: name.trim(), start_date, end_date, recurring };
+    // Guard: confirm impact on future absences before saving the holiday edit.
+    guard.run({ type: "holiday_update", holiday_id: holiday.id, holiday: next }, (freezeIds) =>
+      updateHoliday({ id: holiday.id, ...next, freeze_absence_ids: freezeIds }, { onSuccess: handleClose }),
+    );
   }
 
   return (
+    <>
     <ComposedSheet
       open={open}
       onOpenChange={(v) => {
@@ -103,11 +111,11 @@ export default function EditCompanyHolidaySheet({ holiday, open, onOpenChange }:
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
-            disabled={!isDirty || !isValid || isPending}
+            disabled={!isDirty || !isValid || isPending || guard.isChecking}
             className="flex-1"
             size="lg"
           >
-            {isPending ? "Saving…" : "Save changes"}
+            {isPending ? "Saving…" : guard.isChecking ? "Checking…" : "Save changes"}
           </Button>
         </>
       }
@@ -202,5 +210,8 @@ export default function EditCompanyHolidaySheet({ holiday, open, onOpenChange }:
         />
       </div>
     </ComposedSheet>
+
+    <CalendarImpactDialog {...guard.dialog} isApplying={isPending} />
+    </>
   );
 }

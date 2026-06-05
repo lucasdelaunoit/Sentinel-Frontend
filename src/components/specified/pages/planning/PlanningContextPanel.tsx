@@ -32,9 +32,8 @@ import type {
   SimulateResponse,
   SkillImpact,
 } from "@/types/planning";
-import { MONTH_NAMES, blockDurationLabel, formatHalfDate } from "@/utils/planning/calendar";
-import { getViewLeaves, isOnRealLeave } from "@/utils/planning/leaves";
-import { absenceTheme, simColor } from "@/utils/planning/theme";
+import { blockDurationLabel, formatHalfDate } from "@/utils/planning/calendar";
+import { simColor } from "@/utils/planning/theme";
 import ImpactBadge from "./badges/ImpactBadge";
 
 type PanelLayout = "side" | "below";
@@ -54,11 +53,8 @@ interface PlanningContextPanelProps {
 }
 
 export default function PlanningContextPanel({
-  mode,
   users,
   simBlocks,
-  viewYear,
-  viewMonth,
   onOpenAddSheet,
   onSelectBlock,
   onRemoveBlock,

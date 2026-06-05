@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import DatePicker from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
+import { useClosedDates } from "@/hooks/useClosedDates";
 import type { Half, PlanningUser } from "@/types/planning";
 import {
   getDayOfWeekForDay,
@@ -30,6 +31,8 @@ export default function AddAbsenceSheet({
   onAdd,
 }: AddAbsenceSheetProps) {
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
+  const { isClosedDate } = useClosedDates();
+  const viewMonthDate = new Date(viewYear, viewMonth - 1, 1);
 
   function nextWorkingDay(from: number): number {
     const firstDayOfWeek = getFirstDayOfWeek(viewYear, viewMonth);
@@ -130,8 +133,24 @@ export default function AddAbsenceSheet({
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <DateField label="Start date" date={startDate} half={startHalf} onDateChange={setStartDate} onHalfChange={setStartHalf} />
-        <DateField label="End date" date={endDate} half={endHalf} onDateChange={setEndDate} onHalfChange={setEndHalf} />
+        <DateField
+          label="Start date"
+          date={startDate}
+          half={startHalf}
+          onDateChange={setStartDate}
+          onHalfChange={setStartHalf}
+          disabled={isClosedDate}
+          defaultMonth={viewMonthDate}
+        />
+        <DateField
+          label="End date"
+          date={endDate}
+          half={endHalf}
+          onDateChange={setEndDate}
+          onHalfChange={setEndHalf}
+          disabled={isClosedDate}
+          defaultMonth={viewMonthDate}
+        />
       </div>
 
       <div
@@ -159,13 +178,15 @@ interface DateFieldProps {
   half: Half;
   onDateChange: (v: string) => void;
   onHalfChange: (v: Half) => void;
+  disabled?: import("react-day-picker").Matcher | import("react-day-picker").Matcher[];
+  defaultMonth?: Date;
 }
 
-function DateField({ label, date, half, onDateChange, onHalfChange }: DateFieldProps) {
+function DateField({ label, date, half, onDateChange, onHalfChange, disabled, defaultMonth }: DateFieldProps) {
   return (
     <div className="space-y-2">
       <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{label}</label>
-      <Input type="date" value={date} onChange={(e) => onDateChange(e.target.value)} className="rounded-xl text-[13px]" />
+      <DatePicker value={date} onChange={onDateChange} disabled={disabled} defaultMonth={defaultMonth} />
       <div className="flex rounded-xl border border-border overflow-hidden">
         {(["AM", "PM"] as const).map((label, idx) => {
           const value = idx as Half;
