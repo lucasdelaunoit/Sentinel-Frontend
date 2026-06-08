@@ -43,6 +43,8 @@ interface DataTableProps<T, S extends string, F> {
   errorMessage?: string;
   rowClassName?: (row: T) => string | undefined;
   headerAction?: ReactNode;
+  searchable?: boolean;
+  className?: string;
 }
 
 export default function DataTable<T extends { id: string | number }, S extends string, F = string>({
@@ -61,6 +63,8 @@ export default function DataTable<T extends { id: string | number }, S extends s
   errorMessage = "Failed to load data. Check API connection.",
   rowClassName,
   headerAction,
+  searchable = false,
+  className,
 }: DataTableProps<T, S, F>) {
   const [search, setSearch] = useState("");
   const [filterValue, setFilterValue] = useState<F | null>(null);
@@ -103,11 +107,11 @@ export default function DataTable<T extends { id: string | number }, S extends s
       action={
         <div className="flex gap-2 items-center">
           {filter && <FilterPillGroup options={filter.options} value={filterValue} onChange={setFilterValue} />}
-          <SearchBar value={search} onChange={setSearch} placeholder={searchPlaceholder} />
+          {searchable && <SearchBar value={search} onChange={setSearch} placeholder={searchPlaceholder} />}
           {headerAction}
         </div>
       }
-      className="p-0 overflow-hidden"
+      className={cn("p-0 overflow-hidden", className)}
       headerClassName="px-6 pt-4 flex-wrap gap-3"
     >
       <Table className="text-sm">

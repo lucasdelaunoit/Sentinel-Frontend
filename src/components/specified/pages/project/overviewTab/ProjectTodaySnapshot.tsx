@@ -1,7 +1,7 @@
 import MetricRow, { type MetricTone } from "@/components/common/displays/MetricRow.tsx";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import useGetProjectKnowledgeCoverage from "@/api/projects/useGetProjectKnowledgeCoverage";
+import useGetProjectKnowledgeMatrix from "@/api/projects/useGetProjectKnowledgeMatrix";
 
 interface ProjectTodaySnapshotProps {
   projectId: string | undefined;
@@ -19,7 +19,7 @@ function countOnLeave(coverage: ProjectKnowledgeCoverageItem[]): number {
 }
 
 export default function ProjectTodaySnapshot({ projectId }: ProjectTodaySnapshotProps) {
-  const { data: coverage = [], isLoading } = useGetProjectKnowledgeCoverage(projectId);
+  const { data: coverage = [], isLoading } = useGetProjectKnowledgeMatrix(projectId);
 
   if (isLoading) return <ProjectTodaySnapshot.Skeleton />;
 

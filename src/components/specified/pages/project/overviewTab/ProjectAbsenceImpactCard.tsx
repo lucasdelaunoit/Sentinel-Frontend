@@ -1,6 +1,6 @@
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
-import useGetProjectKnowledgeCoverage from "@/api/projects/useGetProjectKnowledgeCoverage.ts";
+import useGetProjectKnowledgeMatrix from "@/api/projects/useGetProjectKnowledgeMatrix.ts";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 import MediumAbsenceImpactRow from "@/components/specified/models/absence/datas/MediumAbsenceImpactRow.tsx";
 
@@ -46,7 +46,7 @@ function currentAbsenceImpact(memberId: string, coverage: ProjectKnowledgeCovera
 }
 
 export default function ProjectAbsenceImpactCard({ projectId }: ProjectAbsenceImpactCardProps) {
-  const { data: coverage = [], isLoading } = useGetProjectKnowledgeCoverage(projectId);
+  const { data: coverage = [], isLoading } = useGetProjectKnowledgeMatrix(projectId);
 
   if (isLoading) return <ProjectAbsenceImpactCard.Skeleton />;
 
