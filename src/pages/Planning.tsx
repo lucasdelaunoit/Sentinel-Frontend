@@ -22,7 +22,7 @@ import PlanningContextPanel from "@/components/specified/pages/planning/Planning
 import AddAbsenceSheet from "@/components/specified/pages/planning/sheets/AddAbsenceSheet";
 import SimBlockDetailSheet from "@/components/specified/pages/planning/sheets/SimBlockDetailSheet";
 import SaveStatusIndicator from "@/components/specified/pages/planning/SaveStatusIndicator.tsx";
-import PlanningStatStrip from "@/components/specified/pages/planning/PlanningStatStrip";
+import PlanningStatsSection from "@/components/specified/pages/planning/PlanningStatsSection";
 import { SIM_COLORS } from "@/utils/planning/theme";
 import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
 
@@ -114,7 +114,11 @@ export default function Planning() {
   );
 
   const allBlocksValid = simBlocks.every((b) => b.endDate >= b.startDate);
-  const simulation = useSimulatePlanning(simAbsences, allBlocksValid);
+  const {
+    isLoading: simulationIsLoading,
+    status: simulationStatus,
+    data: simulationData,
+  } = useSimulatePlanning(simAbsences, allBlocksValid);
 
   const selectedBlock = simBlocks.find((b) => b.id === selectedBlockId);
   const selectedUser = selectedBlock ? users.find((u) => u.id === selectedBlock.userId) : undefined;
@@ -127,7 +131,7 @@ export default function Planning() {
         actions={
           <div className="flex items-center gap-3">
             {mode === "simulate" && simBlocks.length > 0 && (
-              <SaveStatusIndicator status={simulation.status} className="mr-1" />
+              <SaveStatusIndicator status={simulationStatus} className="mr-1" />
             )}
 
             <div className="flex items-center text-muted-foreground">
@@ -156,7 +160,7 @@ export default function Planning() {
                 <Button
                   size="lg"
                   onClick={() => setShowApplyConfirm(true)}
-                  disabled={simBlocks.length === 0 || !allBlocksValid || simulation.status === "pending"}
+                  disabled={simBlocks.length === 0 || !allBlocksValid || simulationStatus === "pending"}
                   className="bg-planned hover:bg-planned/90"
                 >
                   <Check className="size-3.5" />
@@ -174,7 +178,9 @@ export default function Planning() {
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
-        {mode === "simulate" && simBlocks.length > 0 && <PlanningStatStrip data={simulation.data} />}
+        {mode === "simulate" && simBlocks.length > 0 && (
+          <PlanningStatsSection data={simulationData} isLoading={simulationIsLoading} />
+        )}
         {planningQuery.isLoading ? (
           <PlanningGantt.Skeleton viewYear={viewYear} viewMonth={viewMonth} />
         ) : (
@@ -188,8 +194,8 @@ export default function Planning() {
             selectedBlockId={selectedBlockId}
             setSelectedBlockId={setSelectedBlockId}
             onCreateBlock={addBlock}
-            perUserImpact={simulation.data.per_user_impact}
-            perDayLoad={simulation.data.per_day_load}
+            perUserImpact={simulationData.per_user_impact}
+            perDayLoad={simulationData.per_day_load}
           />
         )}
 
@@ -208,7 +214,7 @@ export default function Planning() {
               onSelectBlock={setSelectedBlockId}
               onRemoveBlock={removeBlock}
               onClearAll={clearAll}
-              combined={simulation.data}
+              combined={simulationData}
             />
           )}
         </div>
@@ -218,7 +224,7 @@ export default function Planning() {
         <SimBlockDetailSheet
           block={selectedBlock}
           user={selectedUser}
-          combined={simulation.data}
+          combined={simulationData}
           onClose={() => setSelectedBlockId(null)}
           onDelete={() => removeBlock(selectedBlock.id)}
         />

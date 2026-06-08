@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import usePrivateApi from "@/api/privateApi";
 
 export type SimulateStatus = "idle" | "pending" | "saved" | "error";
@@ -46,6 +47,10 @@ function buildEmpty(month: string): SimulateResponse {
   };
 }
 
+/**
+ * Debounced live simulation of pending absences. Re-fires on every change to the
+ * absence set and reflects the latest result — never call the mutation by hand.
+ */
 export default function useSimulatePlanning(
   absences: SimulateAbsenceInput[],
   isValid: boolean,
@@ -55,43 +60,58 @@ export default function useSimulatePlanning(
   const privateApi = usePrivateApi();
   const month = absences[0]?.start_date.slice(0, 7) ?? "1970-01";
   const emptyResult = useMemo(() => buildEmpty(month), [month]);
-  const [data, setData] = useState<SimulateResponse>(emptyResult);
-  const [status, setStatus] = useState<SimulateStatus>("idle");
-  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
-  const reqIdRef = useRef(0);
 
+  const mutation = useMutation({
+    mutationFn: async (input: SimulateAbsenceInput[]) => {
+      const { data } = await privateApi.post<SimulateResponse>("/api/planning/simulate", { absences: input });
+      return data;
+    },
+  });
+
+  const { mutate, reset } = mutation;
   const signature = JSON.stringify(absences);
 
+  // True from the instant the absence set changes (debounce start) until its
+  // request settles — not just while the request is in flight. `genRef` guards
+  // against a stale in-flight request clearing the loading state of a newer one.
+  const [isLoading, setIsLoading] = useState(false);
+  const genRef = useRef(0);
+
   useEffect(() => {
-    if (absences.length === 0) {
-      setData(emptyResult);
-      setStatus("idle");
+    if (absences.length === 0 || !isValid) {
+      reset();
+      setIsLoading(false);
       return;
     }
-    if (!isValid) {
-      setStatus("error");
-      return;
-    }
-
-    setStatus("pending");
-    const myReqId = ++reqIdRef.current;
-
-    const timer = window.setTimeout(async () => {
-      try {
-        const result = (await privateApi.post<SimulateResponse>("/api/planning/simulate", { absences })).data;
-        if (myReqId !== reqIdRef.current) return;
-        setData(result);
-        setStatus("saved");
-        setLastSavedAt(Date.now());
-      } catch {
-        if (myReqId !== reqIdRef.current) return;
-        setStatus("error");
-      }
+    const gen = ++genRef.current;
+    setIsLoading(true);
+    const timer = window.setTimeout(() => {
+      mutate(absences, {
+        onSettled: () => {
+          if (genRef.current === gen) setIsLoading(false);
+        },
+      });
     }, debounceMs);
-
     return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signature, isValid, debounceMs]);
 
-  return { data, status, lastSavedAt };
+  const status: SimulateStatus =
+    !isValid && absences.length > 0
+      ? "error"
+      : isLoading
+        ? "pending"
+        : mutation.isError
+          ? "error"
+          : mutation.isSuccess
+            ? "saved"
+            : "idle";
+
+  return {
+    data: mutation.data ?? emptyResult,
+    status,
+    isLoading,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }
