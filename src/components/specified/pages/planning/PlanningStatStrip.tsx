@@ -1,11 +1,11 @@
-import { Activity, AlertOctagon, Clock, Shield, TrendingDown, TrendingUp, Users } from "lucide-react";
+import { Activity, ArrowRight, Gauge, Shield, TrendingDown, TrendingUp, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { Severity, SimulateTotals } from "@/types/planning";
+import type { Severity, SimulateResponse } from "@/types/planning";
 
 interface PlanningStatStripProps {
-  totals: SimulateTotals;
+  data: SimulateResponse;
   blockCount: number;
 }
 
@@ -25,81 +25,123 @@ const SEV_TEXT: Record<Severity, string> = {
   critical: "text-destructive-foreground",
 };
 
-export default function PlanningStatStrip({ totals, blockCount }: PlanningStatStripProps) {
+export default function PlanningStatStrip({ data, blockCount }: PlanningStatStripProps) {
   if (blockCount === 0) return null;
 
+  const cmp = data.comparison_vs_baseline;
+  const { totals } = data;
+
   return (
-    <Card className={cn("p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 gap-y-4", SEV_RING[totals.severity])}>
-      <Stat
-        icon={AlertOctagon}
-        label="Risk score"
-        value={totals.risk_score}
-        delta={totals.risk_score_delta}
+    <Card className={cn("p-4 grid grid-cols-2 lg:grid-cols-4 gap-3 gap-y-4", SEV_RING[totals.severity])}>
+      {/* Fragility — composite org risk. Higher = more fragile. Lower is better. */}
+      <DeltaStat
+        icon={Gauge}
+        label="Fragility"
+        before={cmp.risk_score.before}
+        after={cmp.risk_score.after}
         invertGood
         severity={totals.severity}
       />
-      <Stat icon={Shield} label="Bus factor" value={totals.bus_factor} delta={totals.bus_factor_delta} />
-      <Stat icon={Activity} label="Coverage" value={totals.coverage_pct} delta={totals.coverage_delta_pct} suffix="%" />
-      <Stat icon={Clock} label="FTE days" value={totals.absent_fte_days} delta={null} />
-      <Stat
+      <DeltaStat
+        icon={Activity}
+        label="Coverage"
+        before={cmp.coverage_pct.before}
+        after={cmp.coverage_pct.after}
+        suffix="%"
+      />
+      <DeltaStat icon={Shield} label="Bus factor" before={cmp.bus_factor.before} after={cmp.bus_factor.after} />
+      <SingleStat
         icon={Users}
         label="Peak overlap"
         value={totals.absent_headcount_peak}
-        delta={null}
         sub={totals.absent_headcount_peak_date ?? undefined}
         warn={totals.absent_headcount_peak >= 4}
-      />
-      <Stat
-        icon={AlertOctagon}
-        label="Projects @ risk"
-        value={totals.projects_at_risk_count}
-        delta={null}
-        sub={totals.projects_blocked_count > 0 ? `${totals.projects_blocked_count} blocked` : undefined}
-        warn={totals.projects_at_risk_count > 0}
       />
     </Card>
   );
 }
 
-interface StatProps {
+interface DeltaStatProps {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  value: number;
-  delta: number | null;
+  before: number;
+  after: number;
   suffix?: string;
   invertGood?: boolean;
-  sub?: string;
-  warn?: boolean;
   severity?: Severity;
 }
 
-function Stat({ icon: Icon, label, value, delta, suffix = "", invertGood = false, sub, warn, severity }: StatProps) {
-  const improved = delta !== null && delta !== 0 && (invertGood ? delta < 0 : delta > 0);
-  const worse = delta !== null && delta !== 0 && (invertGood ? delta > 0 : delta < 0);
+function DeltaStat({ icon: Icon, label, before, after, suffix = "", invertGood = false, severity }: DeltaStatProps) {
+  const delta = after - before;
+  const improved = delta !== 0 && (invertGood ? delta < 0 : delta > 0);
+  const worse = delta !== 0 && (invertGood ? delta > 0 : delta < 0);
+
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        <Icon className={cn("size-3", severity && SEV_TEXT[severity], warn && "text-warning")} />
-        {label}
-      </div>
+      <StatLabel icon={Icon} label={label} className={cn(severity && SEV_TEXT[severity])} />
       <div className="flex items-baseline gap-1.5">
-        <span className={cn("text-[20px] font-bold leading-none text-foreground", worse && "text-destructive-foreground", improved && "text-success")}>
-          {value}
+        <span className="text-[15px] font-semibold leading-none text-muted-foreground/70">
+          {before}
           {suffix}
         </span>
-        {delta !== null && delta !== 0 && (
+        <ArrowRight className="size-3 text-muted-foreground/40 shrink-0" />
+        <span
+          className={cn(
+            "text-[20px] font-bold leading-none text-foreground",
+            worse && "text-destructive-foreground",
+            improved && "text-success",
+          )}
+        >
+          {after}
+          {suffix}
+        </span>
+        {delta !== 0 && (
           <Badge
             variant={worse ? "destructive" : "secondary"}
             className={cn("h-4 px-1.5 text-[10px] font-semibold gap-0.5", improved && "bg-success/15 text-success")}
           >
-            {delta > 0 ? <TrendingUp /> : <TrendingDown />}
+            {(invertGood ? delta < 0 : delta > 0) ? <TrendingUp /> : <TrendingDown />}
             {delta > 0 ? "+" : ""}
             {delta}
             {suffix}
           </Badge>
         )}
       </div>
+    </div>
+  );
+}
+
+interface SingleStatProps {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number;
+  sub?: string;
+  warn?: boolean;
+}
+
+function SingleStat({ icon: Icon, label, value, sub, warn }: SingleStatProps) {
+  return (
+    <div className="flex flex-col gap-1">
+      <StatLabel icon={Icon} label={label} className={cn(warn && "text-warning")} />
+      <span className={cn("text-[20px] font-bold leading-none text-foreground", warn && "text-warning")}>{value}</span>
       {sub && <p className="text-[10px] text-muted-foreground">{sub}</p>}
+    </div>
+  );
+}
+
+function StatLabel({
+  icon: Icon,
+  label,
+  className,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  className?: string;
+}) {
+  return (
+    <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <Icon className={cn("size-3", className)} />
+      {label}
     </div>
   );
 }

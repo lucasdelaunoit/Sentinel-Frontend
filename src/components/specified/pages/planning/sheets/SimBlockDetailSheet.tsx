@@ -5,15 +5,16 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SecondaryCard from "@/components/common/cards/SecondaryCard";
-import type { PlanningUser, ProjectImpact, Severity, SimBlock } from "@/types/planning";
+import type { PlanningUser, ProjectImpact, Severity, SimBlock, SimulateResponse } from "@/types/planning";
 import { blockDurationLabel, formatHalfDate } from "@/utils/planning/calendar";
 import { IMPACT_THEME, simColor } from "@/utils/planning/theme";
 import ImpactBadge from "../badges/ImpactBadge";
-import useSimulatePlanning from "@/api/planning/useSimulatePlanning";
 
 interface SimBlockDetailSheetProps {
   block: SimBlock;
   user: PlanningUser;
+  /** Combined scenario simulation already computed by the parent — no refetch on open. */
+  combined: SimulateResponse;
   onClose: () => void;
   onDelete: () => void;
 }
@@ -41,25 +42,15 @@ const COST_CLASS: Record<string, string> = {
   overloaded: "",
 };
 
-export default function SimBlockDetailSheet({ block, user, onClose, onDelete }: SimBlockDetailSheetProps) {
+export default function SimBlockDetailSheet({ block, user, combined, onClose, onDelete }: SimBlockDetailSheetProps) {
   const color = simColor(block.colorIdx);
 
-  const absences = useMemo(
-    () => [
-      {
-        user_id: block.userId,
-        start_date: block.startDate,
-        start_half: block.startHalf,
-        end_date: block.endDate,
-        end_half: block.endHalf,
-      },
-    ],
-    [block],
-  );
-  const { data } = useSimulatePlanning(absences, block.endDate >= block.startDate, { debounceMs: 0 });
-  const projects = data.per_project_impact;
-  const userImpact = data.per_user_impact[block.userId];
-  const cascading = data.cascading_risks.filter((c) => c.trigger_user_id === block.userId);
+  const userImpact = combined.per_user_impact[block.userId];
+  const projects = useMemo(() => {
+    const affected = new Set((userImpact?.projects_affected ?? []).map((p) => p.project_id));
+    return combined.per_project_impact.filter((p) => affected.has(p.project_id));
+  }, [combined.per_project_impact, userImpact]);
+  const cascading = combined.cascading_risks.filter((c) => c.trigger_user_id === block.userId);
 
   return (
     <ComposedSheet

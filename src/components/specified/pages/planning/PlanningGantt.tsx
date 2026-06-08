@@ -410,6 +410,8 @@ export default function PlanningGantt({
                   ))}
 
                   {viewLeaves.map((lr, i) => {
+                    // In simulate mode, confirmed leaves are greyed so user-added sim blocks stand out.
+                    const simulating = mode === "simulate";
                     const theme = absenceTheme(lr.type);
                     const segs = workingSegments(lr.start, 0, lr.end, 1, daysInMonth, isClosedDay);
                     const list = segs.length ? segs : [{ startDay: lr.start, startHalf: 0 as Half, endDay: lr.end, endHalf: 1 as Half }];
@@ -420,15 +422,12 @@ export default function PlanningGantt({
                         <div
                           key={`${i}-${j}`}
                           className={cn(
-                            "absolute rounded-lg flex items-center justify-center border",
-                            theme.bg,
-                            theme.border,
+                            "absolute rounded-lg border",
+                            simulating ? "bg-muted/50 border-border/60 opacity-60" : cn(theme.bg, theme.border),
                             !segs.length && "opacity-50",
                           )}
                           style={{ left: left + 2, width: width - 4, top: 10, height: 34 }}
-                        >
-                          {j === 0 && <div className={cn("size-1.5 rounded-full", theme.dot)} />}
-                        </div>
+                        />
                       );
                     });
                   })}

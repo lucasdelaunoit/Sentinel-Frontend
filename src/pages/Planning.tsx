@@ -180,7 +180,7 @@ export default function Planning() {
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
-        {mode === "simulate" && <PlanningStatStrip totals={simulation.data.totals} blockCount={simBlocks.length} />}
+        {mode === "simulate" && <PlanningStatStrip data={simulation.data} blockCount={simBlocks.length} />}
         {planningQuery.isLoading ? (
           <PlanningGantt.Skeleton viewYear={viewYear} viewMonth={viewMonth} />
         ) : (
@@ -224,6 +224,7 @@ export default function Planning() {
         <SimBlockDetailSheet
           block={selectedBlock}
           user={selectedUser}
+          combined={simulation.data}
           onClose={() => setSelectedBlockId(null)}
           onDelete={() => removeBlock(selectedBlock.id)}
         />

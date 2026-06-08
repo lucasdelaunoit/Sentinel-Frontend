@@ -26,15 +26,22 @@ export default function PlanningLegend({
         className,
       )}
     >
-      {ABSENCE_TYPE_VALUES.map((t) => {
-        const meta = ABSENCE_THEME[t];
-        return (
-          <div key={t} className="flex items-center gap-2">
-            <span className={cn("size-2 rounded-full", meta.dot)} />
-            <span className="text-[11px] text-muted-foreground">{meta.label}</span>
-          </div>
-        );
-      })}
+      {showSimulation ? (
+        <div className="flex items-center gap-1.5">
+          <div className="size-3 rounded border border-border/60 bg-muted/50 opacity-60" />
+          <span className="text-[11px] text-muted-foreground">Confirmed leave · excluded from sim</span>
+        </div>
+      ) : (
+        ABSENCE_TYPE_VALUES.map((t) => {
+          const meta = ABSENCE_THEME[t];
+          return (
+            <div key={t} className="flex items-center gap-2">
+              <span className={cn("size-2 rounded-full", meta.dot)} />
+              <span className="text-[11px] text-muted-foreground">{meta.label}</span>
+            </div>
+          );
+        })
+      )}
       {showSimulation && (
         <div className="flex items-center gap-1.5">
           <div className="size-3 rounded border-2 border-dashed border-planned bg-planned/15" />
