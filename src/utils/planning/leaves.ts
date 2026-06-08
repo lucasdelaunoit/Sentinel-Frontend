@@ -46,8 +46,13 @@ export function clampDrawEnd(
   viewYear: number,
   viewMonth: number,
   daysInMonth: number,
+  occupied: { start: number; end: number }[] = [],
 ): { day: number; half: Half } {
-  const leaves = getViewLeaves(user, viewYear, viewMonth);
+  // Treat real leaves AND existing sim blocks as occupied so a draw can't extend over either.
+  const leaves = [
+    ...getViewLeaves(user, viewYear, viewMonth).map((l) => ({ start: l.start, end: l.end })),
+    ...occupied,
+  ];
   const anchorH = toHalves(anchorDay, anchorHalf);
   const targetH = toHalves(targetDay, targetHalf);
   if (anchorH <= targetH) {
@@ -77,4 +82,34 @@ export function isOnSimLeave(
     if (!range) return false;
     return day >= range.startDay && day <= range.endDay;
   });
+}
+
+/** Day ranges occupied by a user's sim blocks, optionally excluding one (the block being dragged). */
+export function simBlockRanges(
+  userId: string,
+  blocks: SimBlock[],
+  viewYear: number,
+  viewMonth: number,
+  excludeId?: string,
+): { start: number; end: number }[] {
+  return blocks
+    .filter((b) => b.userId === userId && b.id !== excludeId)
+    .map((b) => getBlockDisplayRange(b, viewYear, viewMonth))
+    .filter((r): r is NonNullable<typeof r> => r !== null)
+    .map((r) => ({ start: r.startDay, end: r.endDay }));
+}
+
+/** True when [startDay, endDay] overlaps any of the user's other sim blocks. */
+export function hasSimOverlap(
+  userId: string,
+  startDay: number,
+  endDay: number,
+  blocks: SimBlock[],
+  viewYear: number,
+  viewMonth: number,
+  excludeId?: string,
+): boolean {
+  return simBlockRanges(userId, blocks, viewYear, viewMonth, excludeId).some(
+    (r) => r.start <= endDay && r.end >= startDay,
+  );
 }

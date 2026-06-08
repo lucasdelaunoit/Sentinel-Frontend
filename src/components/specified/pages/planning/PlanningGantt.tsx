@@ -20,7 +20,14 @@ import {
   toX,
   workingSegments,
 } from "@/utils/planning/calendar";
-import { clampDrawEnd, getViewLeaves, hasLeaveOverlap, isOnRealLeave } from "@/utils/planning/leaves";
+import {
+  clampDrawEnd,
+  getViewLeaves,
+  hasLeaveOverlap,
+  hasSimOverlap,
+  isOnRealLeave,
+  simBlockRanges,
+} from "@/utils/planning/leaves";
 import { absenceTheme, simColor } from "@/utils/planning/theme";
 import PlanningCapacityStrip from "./PlanningCapacityStrip";
 import PlanningLegend from "./PlanningLegend";
@@ -131,10 +138,22 @@ export default function PlanningGantt({
   const [drawState, setDrawState] = useState<DrawState | null>(null);
   const drawStateRef = useRef<DrawState | null>(null);
   const onCreateBlockRef = useRef(onCreateBlock);
+  // Latest sim blocks for the global mouse handlers, which don't list simBlocks in deps.
+  const simBlocksRef = useRef(simBlocks);
 
   useEffect(() => {
     onCreateBlockRef.current = onCreateBlock;
   }, [onCreateBlock]);
+
+  useEffect(() => {
+    simBlocksRef.current = simBlocks;
+  }, [simBlocks]);
+
+  // Fresh selected id for the global mouseup, which resolves click-to-select for move drags.
+  const selectedBlockIdRef = useRef(selectedBlockId);
+  useEffect(() => {
+    selectedBlockIdRef.current = selectedBlockId;
+  }, [selectedBlockId]);
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const firstDayOfWeek = getFirstDayOfWeek(viewYear, viewMonth);
@@ -179,6 +198,7 @@ export default function PlanningGantt({
               const { day: sd, half: sh } = fromHalves(ns, daysInMonth);
               const { day: ed, half: eh } = fromHalves(ns + span, daysInMonth);
               if (hasLeaveOverlap(user, sd, ed, viewYear, viewMonth)) return b;
+              if (hasSimOverlap(b.userId, sd, ed, prev, viewYear, viewMonth, b.id)) return b;
               return {
                 ...b,
                 startDate: makeDateStr(viewYear, viewMonth, sd),
@@ -195,6 +215,7 @@ export default function PlanningGantt({
               );
               const { day: sd, half: sh } = fromHalves(ns, daysInMonth);
               if (hasLeaveOverlap(user, sd, drag.origEndDay, viewYear, viewMonth)) return b;
+              if (hasSimOverlap(b.userId, sd, drag.origEndDay, prev, viewYear, viewMonth, b.id)) return b;
               return { ...b, startDate: makeDateStr(viewYear, viewMonth, sd), startHalf: sh };
             }
             const os = toHalves(drag.origStartDay, drag.origStartHalf);
@@ -204,6 +225,7 @@ export default function PlanningGantt({
             );
             const { day: ed, half: eh } = fromHalves(ne, daysInMonth);
             if (hasLeaveOverlap(user, drag.origStartDay, ed, viewYear, viewMonth)) return b;
+            if (hasSimOverlap(b.userId, drag.origStartDay, ed, prev, viewYear, viewMonth, b.id)) return b;
             return { ...b, endDate: makeDateStr(viewYear, viewMonth, ed), endHalf: eh };
           }),
         );
@@ -219,6 +241,7 @@ export default function PlanningGantt({
         const minHalfIdx = toHalves(firstFutureDay, 0);
         const halfIdx = Math.max(minHalfIdx, Math.min(daysInMonth * 2 - 1, Math.floor(relX / (DAY_COL_WIDTH / 2))));
         const { day, half } = fromHalves(halfIdx, daysInMonth);
+        const occupied = simBlockRanges(draw.userId, simBlocksRef.current, viewYear, viewMonth);
         const clamped = clampDrawEnd(
           user,
           draw.anchorDay,
@@ -228,6 +251,7 @@ export default function PlanningGantt({
           viewYear,
           viewMonth,
           daysInMonth,
+          occupied,
         );
         const updated = { ...draw, currentDay: clamped.day, currentHalf: clamped.half };
         drawStateRef.current = updated;
@@ -239,8 +263,13 @@ export default function PlanningGantt({
       const draw = drawStateRef.current;
       if (draw) {
         const { startDay, startHalf, endDay, endHalf } = drawDisplayRange(draw);
-        // Defensive: never commit a block that starts on today or in the past.
-        if (startDay >= firstFutureDay) {
+        // Defensive: commit only a future, non-overlapping block. The per-move clamp already
+        // stops the draw at the border of any block in its path — this is the hard backstop so
+        // an overlapping block can never be created even if a clamp edge is missed.
+        if (
+          startDay >= firstFutureDay &&
+          !hasSimOverlap(draw.userId, startDay, endDay, simBlocksRef.current, viewYear, viewMonth)
+        ) {
           onCreateBlockRef.current(
             draw.userId,
             makeDateStr(viewYear, viewMonth, startDay),
@@ -251,6 +280,13 @@ export default function PlanningGantt({
         }
         drawStateRef.current = null;
         setDrawState(null);
+      }
+      // A move drag that never actually moved is a click → toggle selection (open/close sheet).
+      // Lives here (not on the block) so it also fires when the grab started in the row gap
+      // above/below the shorter visual pill.
+      const drag = dragStateRef.current;
+      if (drag && drag.mode === "move" && !didMoveRef.current) {
+        setSelectedBlockId(selectedBlockIdRef.current === drag.blockId ? null : drag.blockId);
       }
       dragStateRef.current = null;
       setDragState(null);
@@ -294,6 +330,18 @@ export default function PlanningGantt({
     const { day, half } = fromHalves(halfIdx, daysInMonth);
     if (day < firstFutureDay) return; // future-only: can't start on today or in the past
     if (isOnRealLeave(user, day, viewYear, viewMonth)) return;
+    // A mousedown anywhere in an existing block's COLUMN (incl. the row gap above/below its
+    // shorter visual pill) grabs that block — never spawns an overlapping new draw. This makes
+    // the whole row height of a block interactive, and a clean click toggles its detail sheet.
+    const hitBlock = simBlocks.find((b) => {
+      if (b.userId !== user.id) return false;
+      const r = getBlockDisplayRange(b, viewYear, viewMonth);
+      return r != null && day >= r.startDay && day <= r.endDay;
+    });
+    if (hitBlock) {
+      startDrag(e, hitBlock, "move");
+      return;
+    }
     const draw: DrawState = {
       userId: user.id,
       anchorDay: day,
@@ -608,11 +656,6 @@ export default function PlanningGantt({
                     );
                     const label = halvesLabel(workingHalves);
 
-                    const onSelect = () => {
-                      if (!didMoveRef.current) setSelectedBlockId(block.id === selectedBlockId ? null : block.id);
-                      didMoveRef.current = false;
-                    };
-
                     return list.map((s, i) => {
                       const isFirst = i === 0;
                       const isLast = i === list.length - 1;
@@ -648,7 +691,6 @@ export default function PlanningGantt({
                             // @ts-expect-error -- CSS var passthrough for ring color
                             "--tw-ring-color": color.border,
                           }}
-                          onMouseUp={onSelect}
                         >
                           {clipLeft ? (
                             <div
