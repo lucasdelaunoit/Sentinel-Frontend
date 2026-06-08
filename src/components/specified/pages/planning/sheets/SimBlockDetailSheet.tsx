@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SecondaryCard from "@/components/common/cards/SecondaryCard";
-import type { PlanningUser, ProjectImpact, Severity, SimBlock, SimulateResponse } from "@/types/planning";
 import { blockDurationLabel, formatHalfDate } from "@/utils/planning/calendar";
 import { IMPACT_THEME, simColor } from "@/utils/planning/theme";
 import ImpactBadge from "../badges/ImpactBadge";
@@ -19,13 +18,13 @@ interface SimBlockDetailSheetProps {
   onDelete: () => void;
 }
 
-function severityBadgeVariant(sev: Severity): "default" | "secondary" | "destructive" | "outline" {
+function severityBadgeVariant(sev: PlanningSeverity): "default" | "secondary" | "destructive" | "outline" {
   if (sev === "critical" || sev === "high") return "destructive";
   if (sev === "medium") return "outline";
   return "secondary";
 }
 
-function severityClass(sev: Severity): string {
+function severityClass(sev: PlanningSeverity): string {
   if (sev === "medium") return "border-warning/40 text-warning";
   return "";
 }

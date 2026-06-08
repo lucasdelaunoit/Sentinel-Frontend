@@ -1,4 +1,3 @@
-import type { Half, PlanningUser, SimBlock, ViewLeave } from "@/types/planning";
 import {
   fromHalves,
   getBlockDisplayRange,

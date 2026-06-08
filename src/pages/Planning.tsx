@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, Loader2, X, Zap } from "lucide-react";
+import { Check, Loader2, X, Zap } from "lucide-react";
 import TopBar from "@/components/layout/topbar/TopBar";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,13 +16,12 @@ import { cn } from "@/lib/utils";
 import useGetPlanning from "@/api/planning/useGetPlanning";
 import useSimulatePlanning from "@/api/planning/useSimulatePlanning";
 import useApplyPlanningSimulation from "@/api/planning/useApplyPlanningSimulation";
-import type { Half, PlanningMode, SimBlock } from "@/types/planning";
 import { MONTH_NAMES } from "@/utils/planning/calendar";
 import PlanningGantt from "@/components/specified/pages/planning/PlanningGantt";
 import PlanningContextPanel from "@/components/specified/pages/planning/PlanningContextPanel";
 import AddAbsenceSheet from "@/components/specified/pages/planning/sheets/AddAbsenceSheet";
 import SimBlockDetailSheet from "@/components/specified/pages/planning/sheets/SimBlockDetailSheet";
-import SaveStatusIndicator from "@/components/specified/pages/planning/badges/SaveStatusIndicator";
+import SaveStatusIndicator from "@/components/specified/pages/planning/SaveStatusIndicator.tsx";
 import PlanningStatStrip from "@/components/specified/pages/planning/PlanningStatStrip";
 import { SIM_COLORS } from "@/utils/planning/theme";
 import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
@@ -135,7 +134,7 @@ export default function Planning() {
               <Button size="icon" variant="ghost" onClick={() => navigateMonth(-1)}>
                 <CaretLeftIcon className="size-4" />
               </Button>
-              <span className="text-[13px] font-semibold text-foreground min-w-[90px] text-center">
+              <span className="text-[13px] font-semibold text-foreground min-w-[85px] text-center">
                 {MONTH_NAMES[viewMonth - 1]} {viewYear}
               </span>
               <Button size="icon" variant="ghost" onClick={() => navigateMonth(1)}>
@@ -150,25 +149,20 @@ export default function Planning() {
               </Button>
             ) : (
               <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={discardSimulation}
-                  className="gap-1.5 rounded-xl h-8 px-3 text-[12px] font-semibold text-muted-foreground hover:text-destructive-foreground hover:bg-destructive"
-                >
+                <Button size="lg" variant="secondary" onClick={discardSimulation} className="bg-background">
                   <X className="size-3.5" />
                   Discard
                 </Button>
                 <Button
-                  size="sm"
+                  size="lg"
                   onClick={() => setShowApplyConfirm(true)}
                   disabled={simBlocks.length === 0 || !allBlocksValid || simulation.status === "pending"}
-                  className="gap-1.5 rounded-xl h-8 px-3.5 text-[12px] font-semibold bg-planned hover:bg-planned/90 text-planned-foreground"
+                  className="bg-planned hover:bg-planned/90"
                 >
                   <Check className="size-3.5" />
                   Save scenario
                   {simBlocks.length > 0 && (
-                    <span className="flex size-4 items-center justify-center rounded-full bg-white/25 text-[9px] font-bold">
+                    <span className="flex size-[17px] items-center justify-center rounded-full bg-white/25 text-[9px] font-bold">
                       {simBlocks.length}
                     </span>
                   )}
@@ -180,7 +174,7 @@ export default function Planning() {
       />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
-        {mode === "simulate" && <PlanningStatStrip data={simulation.data} blockCount={simBlocks.length} />}
+        {mode === "simulate" && simBlocks.length > 0 && <PlanningStatStrip data={simulation.data} />}
         {planningQuery.isLoading ? (
           <PlanningGantt.Skeleton viewYear={viewYear} viewMonth={viewMonth} />
         ) : (

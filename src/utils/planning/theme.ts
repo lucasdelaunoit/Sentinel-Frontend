@@ -1,5 +1,3 @@
-import type { ImpactLevel } from "@/types/planning";
-
 export interface SimColor {
   bg: string;
   border: string;

@@ -5,7 +5,6 @@ import DatePicker from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import { useClosedDates } from "@/hooks/useClosedDates";
-import type { Half, PlanningUser } from "@/types/planning";
 import {
   getDayOfWeekForDay,
   getDaysInMonth,

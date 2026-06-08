@@ -20,18 +20,6 @@ import ComposedCard from "@/components/common/cards/ComposedCard";
 import SecondaryCard from "@/components/common/cards/SecondaryCard";
 import Feedback from "@/components/common/feedbacks/Feedback";
 import { cn } from "@/lib/utils";
-import type {
-  Hotspot,
-  PlanningMode,
-  PlanningUser,
-  ProjectImpact,
-  Recommendation,
-  Severity,
-  SimBlock,
-  SimWarning,
-  SimulateResponse,
-  SkillImpact,
-} from "@/types/planning";
 import { blockDurationLabel, formatHalfDate } from "@/utils/planning/calendar";
 import { simColor } from "@/utils/planning/theme";
 import ImpactBadge from "./badges/ImpactBadge";
@@ -105,13 +93,13 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
   return <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{children}</p>;
 }
 
-function severityBadgeVariant(sev: Severity): "default" | "secondary" | "destructive" | "outline" {
+function severityBadgeVariant(sev: PlanningSeverity): "default" | "secondary" | "destructive" | "outline" {
   if (sev === "critical" || sev === "high") return "destructive";
   if (sev === "medium") return "outline";
   return "secondary";
 }
 
-function severityClass(sev: Severity): string {
+function severityClass(sev: PlanningSeverity): string {
   if (sev === "medium") return "border-warning/40 text-warning";
   return "";
 }
@@ -335,7 +323,7 @@ function ProjectsTab({ projects }: { projects: ProjectImpact[] }) {
 }
 
 function ProjectImpactRow({ project }: { project: ProjectImpact }) {
-  const sev: Severity =
+  const sev: PlanningSeverity =
     project.status_after === "blocked" ? "critical" : project.status_after === "at_risk" ? "high" : "safe";
   return (
     <div className="px-5 py-3.5 space-y-2">
@@ -433,7 +421,7 @@ function MetricMini({
 
 function SkillsTab({ skills }: { skills: SkillImpact[] }) {
   if (skills.length === 0) return <EmptyTab title="No skill impact" />;
-  const order: Severity[] = ["critical", "high", "medium", "low", "safe"];
+  const order: PlanningSeverity[] = ["critical", "high", "medium", "low", "safe"];
   const sorted = [...skills].sort((a, b) => order.indexOf(a.severity) - order.indexOf(b.severity));
   return (
     <div className="divide-y divide-border/40">

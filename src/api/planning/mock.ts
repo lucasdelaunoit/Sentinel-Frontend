@@ -1,24 +1,5 @@
 import { USER_DETAILS, USERS_LIST } from "@/data/users";
 import { PROJECTS } from "@/data/projects";
-import type {
-  PlanningResponse,
-  PlanningUser,
-  PlanningAbsence,
-  PlanningCapacityResponse,
-  SimulateAbsenceInput,
-  SimulateResponse,
-  ProjectImpact,
-  SkillImpact,
-  DayLoad,
-  Hotspot,
-  Severity,
-  ImpactLevel,
-  UserImpact,
-  Recommendation,
-  SimWarning,
-  SkillConcentrationShift,
-  CascadingRisk,
-} from "@/types/planning";
 
 export const PLANNING_MOCK_ENABLED = false;
 
@@ -31,7 +12,7 @@ function skillMatch(required: string, empSkill: string): boolean {
   return r === e || r.includes(e) || e.includes(r);
 }
 
-function severityFromImpact(level: ImpactLevel): Severity {
+function severityFromImpact(level: ImpactLevel): PlanningSeverity {
   return level === "critical" ? "critical" : level === "warning" ? "medium" : "safe";
 }
 
@@ -229,7 +210,7 @@ export async function simulatePlanningMock(absences: SimulateAbsenceInput[]): Pr
 
       const cBefore = ownersBefore.length;
       const cAfter = ownersAfter.length;
-      let sev: Severity = "safe";
+      let sev: PlanningSeverity = "safe";
       if (cAfter === 0) {
         uncovered.push(skillName);
         sev = "critical";
@@ -376,7 +357,7 @@ export async function simulatePlanningMock(absences: SimulateAbsenceInput[]): Pr
     const ownersLeft = Math.max(0, ownersTotal - agg.ownersAbsent.size);
     const covBefore = ownersTotal === 0 ? 100 : 100;
     const covAfter = ownersTotal === 0 ? 100 : Math.round((ownersLeft / ownersTotal) * 100);
-    const severity: Severity = ownersLeft === 0 ? "critical" : ownersLeft === 1 ? "high" : ownersLeft <= 2 ? "medium" : "low";
+    const severity: PlanningSeverity = ownersLeft === 0 ? "critical" : ownersLeft === 1 ? "high" : ownersLeft <= 2 ? "medium" : "low";
     return {
       skill_id: agg.id,
       name: agg.name,
@@ -415,7 +396,7 @@ export async function simulatePlanningMock(absences: SimulateAbsenceInput[]): Pr
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, info]) => {
       const ratio = info.absents.size / total;
-      const sev: Severity = ratio >= 0.4 ? "critical" : ratio >= 0.25 ? "high" : ratio >= 0.15 ? "medium" : ratio > 0 ? "low" : "safe";
+      const sev: PlanningSeverity = ratio >= 0.4 ? "critical" : ratio >= 0.25 ? "high" : ratio >= 0.15 ? "medium" : ratio > 0 ? "low" : "safe";
       return {
         date,
         is_weekend: isWeekend(date),
@@ -556,7 +537,7 @@ export async function simulatePlanningMock(absences: SimulateAbsenceInput[]): Pr
   const coverageAfter = Math.max(0, BASELINE.coverage_pct - projectsAtRisk * 3 - criticalSkillsCount * 4);
   const busAfter = Math.max(1, BASELINE.bus_factor - shifts.length);
 
-  const severity: Severity =
+  const severity: PlanningSeverity =
     criticalSkillsCount > 0 || projectsBlocked > 0 ? "critical" : projectsAtRisk > 0 ? "high" : "low";
   const overall_level: ImpactLevel = severity === "critical" ? "critical" : severity === "high" ? "warning" : "safe";
 

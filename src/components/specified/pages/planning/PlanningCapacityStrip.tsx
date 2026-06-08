@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import type { DayLoad, PlanningUser, Severity, SimBlock } from "@/types/planning";
 import { CAPACITY_ROW_HEIGHT, DAY_COL_WIDTH, NAME_COL_WIDTH, makeDateStr } from "@/utils/planning/calendar";
 import { isOnRealLeave, isOnSimLeave } from "@/utils/planning/leaves";
 import { capacityToneClass } from "@/utils/planning/theme";
@@ -14,7 +13,7 @@ interface PlanningCapacityStripProps {
   perDayLoad?: DayLoad[];
 }
 
-const SEV_TINT: Record<Severity, string> = {
+const SEV_TINT: Record<PlanningSeverity, string> = {
   safe: "",
   low: "",
   medium: "bg-warning/10",

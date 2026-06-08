@@ -1,5 +1,3 @@
-import type { BlockDisplayRange, Half, SimBlock } from "@/types/planning";
-
 export const DAY_COL_WIDTH = 44;
 export const ROW_HEIGHT = 56;
 export const NAME_COL_WIDTH = 192;

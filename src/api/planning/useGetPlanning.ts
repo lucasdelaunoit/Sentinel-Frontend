@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import usePrivateApi from "@/api/privateApi";
-import type { PlanningResponse } from "@/types/planning";
 import { PLANNING_MOCK_ENABLED, fetchPlanningMock } from "./mock";
 
 export default function useGetPlanning(month: string) {

@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import usePrivateApi from "@/api/privateApi";
 import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
-import type { SimulateAbsenceInput } from "@/types/planning";
 import { PLANNING_MOCK_ENABLED } from "./mock";
 
 interface ApplyPayload {

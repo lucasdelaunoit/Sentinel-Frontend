@@ -1,11 +1,9 @@
 import { Activity, Gauge, Shield, Users } from "lucide-react";
 import StatCard from "@/components/common/cards/StatCard";
 import type { StatCardData } from "@/types/dashboard";
-import type { Severity as PlanningSeverity, SimulateResponse } from "@/types/planning";
 
 interface PlanningStatStripProps {
   data: SimulateResponse;
-  blockCount: number;
 }
 
 type StatSeverity = StatCardData["severity"];
@@ -27,13 +25,15 @@ function card(value: string, severity: StatSeverity, insight: string | null): St
   return { value, severity, change: "", hint: null, raw: null, insight };
 }
 
-export default function PlanningStatStrip({ data, blockCount }: PlanningStatStripProps) {
-  if (blockCount === 0) return null;
-
+export default function PlanningStatStrip({ data }: PlanningStatStripProps) {
   const cmp = data.comparison_vs_baseline;
   const { totals } = data;
 
-  const fragility = card(String(cmp.risk_score.after), mapSeverity(totals.severity), deltaInsight(cmp.risk_score.before, cmp.risk_score.after));
+  const fragility = card(
+    String(cmp.risk_score.after),
+    mapSeverity(totals.severity),
+    deltaInsight(cmp.risk_score.before, cmp.risk_score.after),
+  );
 
   const covAfter = cmp.coverage_pct.after;
   const coverage = card(

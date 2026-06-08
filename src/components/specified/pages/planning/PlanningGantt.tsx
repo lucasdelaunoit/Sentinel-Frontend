@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
 import { AlertTriangle, ArrowLeft, ArrowRight, GripVertical, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlanningCalendar } from "@/hooks/usePlanningCalendar";
-import type { DayLoad, Half, PlanningMode, PlanningUser, SimBlock, UserImpact } from "@/types/planning";
 import {
   CAPACITY_ROW_HEIGHT,
   DAY_COL_WIDTH,
@@ -56,7 +55,7 @@ interface PlanningGanttProps {
   simBlocks: SimBlock[];
   viewYear: number;
   viewMonth: number;
-  setSimBlocks: React.Dispatch<React.SetStateAction<SimBlock[]>>;
+  setSimBlocks: Dispatch<SetStateAction<SimBlock[]>>;
   selectedBlockId: string | null;
   setSelectedBlockId: (id: string | null) => void;
   onCreateBlock: (empId: string, startDate: string, startHalf: Half, endDate: string, endHalf: Half) => void;
@@ -84,6 +83,7 @@ export default function PlanningGantt({
   const [drawState, setDrawState] = useState<DrawState | null>(null);
   const drawStateRef = useRef<DrawState | null>(null);
   const onCreateBlockRef = useRef(onCreateBlock);
+
   useEffect(() => {
     onCreateBlockRef.current = onCreateBlock;
   }, [onCreateBlock]);
@@ -414,7 +414,9 @@ export default function PlanningGantt({
                     const simulating = mode === "simulate";
                     const theme = absenceTheme(lr.type);
                     const segs = workingSegments(lr.start, 0, lr.end, 1, daysInMonth, isClosedDay);
-                    const list = segs.length ? segs : [{ startDay: lr.start, startHalf: 0 as Half, endDay: lr.end, endHalf: 1 as Half }];
+                    const list = segs.length
+                      ? segs
+                      : [{ startDay: lr.start, startHalf: 0 as Half, endDay: lr.end, endHalf: 1 as Half }];
                     return list.map((s, j) => {
                       const left = toX(s.startDay, s.startHalf);
                       const width = toX(s.endDay, s.endHalf) + DAY_COL_WIDTH / 2 - left;
@@ -423,7 +425,9 @@ export default function PlanningGantt({
                           key={`${i}-${j}`}
                           className={cn(
                             "absolute rounded-lg border",
-                            simulating ? "bg-muted-foreground/15 border-muted-foreground/30" : cn(theme.bg, theme.border),
+                            simulating
+                              ? "bg-muted-foreground/15 border-muted-foreground/30"
+                              : cn(theme.bg, theme.border),
                             !segs.length && "opacity-50",
                           )}
                           style={{ left: left + 2, width: width - 4, top: 10, height: 34 }}
@@ -468,7 +472,14 @@ export default function PlanningGantt({
                     );
                     const ghost = segs.length === 0;
                     const list = ghost
-                      ? [{ startDay: range.startDay, startHalf: range.startHalf, endDay: range.endDay, endHalf: range.endHalf }]
+                      ? [
+                          {
+                            startDay: range.startDay,
+                            startHalf: range.startHalf,
+                            endDay: range.endDay,
+                            endHalf: range.endHalf,
+                          },
+                        ]
                       : segs;
                     const workingHalves = countWorkingHalves(
                       range.startDay,
@@ -689,11 +700,7 @@ PlanningGantt.Skeleton = function PlanningGanttSkeleton({
             const barStart = 1 + ((r * 5) % Math.max(1, daysInMonth - 6));
             const barDays = 2 + (r % 4);
             return (
-              <div
-                key={r}
-                className="flex border-b border-border/40 last:border-b-0"
-                style={{ minHeight: ROW_HEIGHT }}
-              >
+              <div key={r} className="flex border-b border-border/40 last:border-b-0" style={{ minHeight: ROW_HEIGHT }}>
                 <div
                   className="shrink-0 sticky left-0 z-10 bg-card border-r border-border/40 flex items-center px-5 gap-2.5"
                   style={{ width: NAME_COL_WIDTH }}

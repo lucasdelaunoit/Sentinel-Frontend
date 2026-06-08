@@ -1,6 +1,5 @@
 import { AlertTriangle, CheckCircle2, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ImpactLevel } from "@/types/planning";
 
 const META: Record<ImpactLevel, { label: string; Icon: typeof ShieldAlert; cls: string }> = {
   critical: {

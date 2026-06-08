@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import usePrivateApi from "@/api/privateApi";
-import type { SimulateAbsenceInput, SimulateResponse } from "@/types/planning";
 import { PLANNING_MOCK_ENABLED, simulatePlanningMock } from "./mock";
 
 export type SimulateStatus = "idle" | "pending" | "saved" | "error";

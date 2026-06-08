@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import usePrivateApi from "@/api/privateApi";
-import type { PlanningCapacityResponse } from "@/types/planning";
 import { PLANNING_MOCK_ENABLED, fetchPlanningCapacityMock } from "./mock";
 
 export default function useGetPlanningCapacity(month: string) {
