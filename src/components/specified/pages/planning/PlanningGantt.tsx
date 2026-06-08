@@ -27,6 +27,12 @@ import PlanningCapacityStrip from "./PlanningCapacityStrip";
 import PlanningLegend from "./PlanningLegend";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
 import { Skeleton } from "@/components/ui/skeleton";
+import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
+import { Button } from "@/components/ui/button";
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
+import FilterPillGroup from "@/components/common/filters/FilterPillGroup.tsx";
+import SearchBar from "@/components/common/inputs/SearchBar.tsx";
+import { PlusIcon } from "@phosphor-icons/react";
 
 type DragMode = "move" | "resize-left" | "resize-right";
 
@@ -59,8 +65,48 @@ interface PlanningGanttProps {
   selectedBlockId: string | null;
   setSelectedBlockId: (id: string | null) => void;
   onCreateBlock: (empId: string, startDate: string, startHalf: Half, endDate: string, endHalf: Half) => void;
+  onOpenAddSheet: () => void;
+  navigateMonth: (delta: number) => void;
   perUserImpact: Record<string, UserImpact>;
   perDayLoad?: DayLoad[];
+}
+
+/** Title-bar action shared by the live card and its skeleton, so month nav + Add absence
+ *  stay visible (and usable) while a new month loads. */
+function PlanningCardAction({
+  mode,
+  viewYear,
+  viewMonth,
+  navigateMonth,
+  onOpenAddSheet,
+}: {
+  mode: PlanningMode;
+  viewYear: number;
+  viewMonth: number;
+  navigateMonth: (delta: number) => void;
+  onOpenAddSheet: () => void;
+}) {
+  return (
+    <div className="flex gap-2 items-center">
+      <div className="flex items-center text-muted-foreground">
+        <Button size="icon" variant="ghost" onClick={() => navigateMonth(-1)}>
+          <CaretLeftIcon className="size-4" />
+        </Button>
+        <span className="text-[13px] font-semibold text-foreground min-w-[85px] text-center">
+          {MONTH_NAMES[viewMonth - 1]} {viewYear}
+        </span>
+        <Button size="icon" variant="ghost" onClick={() => navigateMonth(1)}>
+          <CaretRightIcon className="size-4" />
+        </Button>
+      </div>
+      {mode === "simulate" && (
+        <Button className="bg-planned hover:bg-planned/80" onClick={onOpenAddSheet}>
+          <PlusIcon weight="bold" />
+          Add absence
+        </Button>
+      )}
+    </div>
+  );
 }
 
 export default function PlanningGantt({
@@ -73,6 +119,8 @@ export default function PlanningGantt({
   selectedBlockId,
   setSelectedBlockId,
   onCreateBlock,
+  onOpenAddSheet,
+  navigateMonth,
   perUserImpact,
   perDayLoad,
 }: PlanningGanttProps) {
@@ -243,7 +291,20 @@ export default function PlanningGantt({
     : undefined;
 
   return (
-    <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm">
+    <ComposedCard
+      title="Planning"
+      action={
+        <PlanningCardAction
+          mode={mode}
+          viewYear={viewYear}
+          viewMonth={viewMonth}
+          navigateMonth={navigateMonth}
+          onOpenAddSheet={onOpenAddSheet}
+        />
+      }
+      className="p-0"
+      headerClassName="px-6 pt-4"
+    >
       <div
         className="overflow-x-auto select-none"
         style={{ cursor: dragState ? "grabbing" : drawState ? "crosshair" : "default" }}
@@ -592,7 +653,7 @@ export default function PlanningGantt({
         showToday={todayDay !== null}
         holidayText={holidayText}
       />
-    </div>
+    </ComposedCard>
   );
 }
 
@@ -603,12 +664,18 @@ const CLOSED_DAY_STYLE = {
 } as const;
 
 PlanningGantt.Skeleton = function PlanningGanttSkeleton({
+  mode,
   viewYear,
   viewMonth,
+  navigateMonth,
+  onOpenAddSheet,
   rows = 6,
 }: {
+  mode: PlanningMode;
   viewYear: number;
   viewMonth: number;
+  navigateMonth: (delta: number) => void;
+  onOpenAddSheet: () => void;
   rows?: number;
 }) {
   const { isClosedDay } = usePlanningCalendar(viewYear, viewMonth);
@@ -618,7 +685,20 @@ PlanningGantt.Skeleton = function PlanningGanttSkeleton({
   const totalDaysWidth = daysInMonth * DAY_COL_WIDTH;
 
   return (
-    <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-sm">
+    <ComposedCard
+      title="Planning"
+      action={
+        <PlanningCardAction
+          mode={mode}
+          viewYear={viewYear}
+          viewMonth={viewMonth}
+          navigateMonth={navigateMonth}
+          onOpenAddSheet={onOpenAddSheet}
+        />
+      }
+      className="p-0"
+      headerClassName="px-6 pt-4"
+    >
       <div className="overflow-x-auto">
         <div style={{ minWidth: NAME_COL_WIDTH + totalDaysWidth }}>
           {/* Header — real dates, frame is known before data loads */}
@@ -738,6 +818,6 @@ PlanningGantt.Skeleton = function PlanningGanttSkeleton({
           })}
         </div>
       </div>
-    </div>
+    </ComposedCard>
   );
 };

@@ -16,7 +16,6 @@ import { cn } from "@/lib/utils";
 import useGetPlanning from "@/api/planning/useGetPlanning";
 import useSimulatePlanning from "@/api/planning/useSimulatePlanning";
 import useApplyPlanningSimulation from "@/api/planning/useApplyPlanningSimulation";
-import { MONTH_NAMES } from "@/utils/planning/calendar";
 import PlanningGantt from "@/components/specified/pages/planning/PlanningGantt";
 import PlanningContextPanel from "@/components/specified/pages/planning/PlanningContextPanel";
 import AddAbsenceSheet from "@/components/specified/pages/planning/sheets/AddAbsenceSheet";
@@ -24,7 +23,6 @@ import SimBlockDetailSheet from "@/components/specified/pages/planning/sheets/Si
 import SaveStatusIndicator from "@/components/specified/pages/planning/SaveStatusIndicator.tsx";
 import PlanningStatsSection from "@/components/specified/pages/planning/PlanningStatsSection";
 import { SIM_COLORS } from "@/utils/planning/theme";
-import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
 
 export default function Planning() {
   const today = new Date();
@@ -134,18 +132,6 @@ export default function Planning() {
               <SaveStatusIndicator status={simulationStatus} className="mr-1" />
             )}
 
-            <div className="flex items-center text-muted-foreground">
-              <Button size="icon" variant="ghost" onClick={() => navigateMonth(-1)}>
-                <CaretLeftIcon className="size-4" />
-              </Button>
-              <span className="text-[13px] font-semibold text-foreground min-w-[85px] text-center">
-                {MONTH_NAMES[viewMonth - 1]} {viewYear}
-              </span>
-              <Button size="icon" variant="ghost" onClick={() => navigateMonth(1)}>
-                <CaretRightIcon className="size-4" />
-              </Button>
-            </div>
-
             {mode === "view" ? (
               <Button size="lg" onClick={() => setMode("simulate")}>
                 <Zap className="size-3.5" />
@@ -182,7 +168,13 @@ export default function Planning() {
           <PlanningStatsSection data={simulationData} isLoading={simulationIsLoading} />
         )}
         {planningQuery.isLoading ? (
-          <PlanningGantt.Skeleton viewYear={viewYear} viewMonth={viewMonth} />
+          <PlanningGantt.Skeleton
+            mode={mode}
+            viewYear={viewYear}
+            viewMonth={viewMonth}
+            navigateMonth={navigateMonth}
+            onOpenAddSheet={() => setShowAddSheet(true)}
+          />
         ) : (
           <PlanningGantt
             mode={mode}
@@ -194,30 +186,33 @@ export default function Planning() {
             selectedBlockId={selectedBlockId}
             setSelectedBlockId={setSelectedBlockId}
             onCreateBlock={addBlock}
+            onOpenAddSheet={() => setShowAddSheet(true)}
+            navigateMonth={navigateMonth}
             perUserImpact={simulationData.per_user_impact}
             perDayLoad={simulationData.per_day_load}
           />
         )}
 
-        <div>
-          {planningQuery.isLoading ? (
-            <PlanningContextPanel.Skeleton layout="below" />
-          ) : (
-            <PlanningContextPanel
-              layout="below"
-              mode={mode}
-              users={users}
-              simBlocks={simBlocks}
-              viewYear={viewYear}
-              viewMonth={viewMonth}
-              onOpenAddSheet={() => setShowAddSheet(true)}
-              onSelectBlock={setSelectedBlockId}
-              onRemoveBlock={removeBlock}
-              onClearAll={clearAll}
-              combined={simulationData}
-            />
-          )}
-        </div>
+        {mode === "simulate" && simBlocks.length > 0 && (
+          <div>
+            {planningQuery.isLoading ? (
+              <PlanningContextPanel.Skeleton layout="below" />
+            ) : (
+              <PlanningContextPanel
+                layout="below"
+                mode={mode}
+                users={users}
+                simBlocks={simBlocks}
+                viewYear={viewYear}
+                viewMonth={viewMonth}
+                onSelectBlock={setSelectedBlockId}
+                onRemoveBlock={removeBlock}
+                onClearAll={clearAll}
+                combined={simulationData}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {selectedBlock && selectedUser && (

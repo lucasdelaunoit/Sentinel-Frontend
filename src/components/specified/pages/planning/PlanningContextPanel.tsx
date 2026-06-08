@@ -3,14 +3,12 @@ import {
   Flame,
   Lightbulb,
   Play,
-  Plus,
   ShieldAlert,
   Sparkles,
   TrendingDown,
   TrendingUp,
   Users,
   X,
-  Zap,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,7 +30,6 @@ interface PlanningContextPanelProps {
   simBlocks: SimBlock[];
   viewYear: number;
   viewMonth: number;
-  onOpenAddSheet: () => void;
   onSelectBlock: (id: string) => void;
   onRemoveBlock: (id: string) => void;
   onClearAll: () => void;
@@ -43,7 +40,6 @@ interface PlanningContextPanelProps {
 export default function PlanningContextPanel({
   users,
   simBlocks,
-  onOpenAddSheet,
   onSelectBlock,
   onRemoveBlock,
   onClearAll,
@@ -54,7 +50,6 @@ export default function PlanningContextPanel({
     <SimulatePanel
       users={users}
       simBlocks={simBlocks}
-      onOpenAddSheet={onOpenAddSheet}
       onSelectBlock={onSelectBlock}
       onRemoveBlock={onRemoveBlock}
       onClearAll={onClearAll}
@@ -108,7 +103,6 @@ function severityClass(sev: PlanningSeverity): string {
 function SimulatePanel({
   users,
   simBlocks,
-  onOpenAddSheet,
   onSelectBlock,
   onRemoveBlock,
   onClearAll,
@@ -117,7 +111,6 @@ function SimulatePanel({
 }: {
   users: PlanningUser[];
   simBlocks: SimBlock[];
-  onOpenAddSheet: () => void;
   onSelectBlock: (id: string) => void;
   onRemoveBlock: (id: string) => void;
   onClearAll: () => void;
@@ -130,10 +123,8 @@ function SimulatePanel({
   return (
     <div className={panelContainerClass(layout)}>
       <ComposedCard
-        className="border-planned/30 bg-planned/5 gap-0"
         title={
           <span className="flex items-center gap-2">
-            <Zap className="size-4 text-planned" />
             <span className="text-planned">Scenario</span>
             {hasData && (
               <Badge variant="secondary" className="bg-planned/20 text-planned h-4 px-1.5 text-[10px]">
@@ -156,16 +147,6 @@ function SimulatePanel({
         }
       >
         <div className="space-y-3 pt-3">
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-full gap-1.5 rounded-xl h-8 px-3 text-[12px] font-semibold border-planned/30 text-planned hover:bg-planned/10 bg-card"
-            onClick={onOpenAddSheet}
-          >
-            <Plus className="size-3.5" />
-            Add absence
-          </Button>
-
           {hasData ? (
             <div className="max-h-64 overflow-y-auto space-y-1.5 -mr-2 pr-2">
               {simBlocks.map((block) => {
