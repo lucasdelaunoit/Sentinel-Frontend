@@ -423,7 +423,7 @@ export default function PlanningGantt({
                           key={`${i}-${j}`}
                           className={cn(
                             "absolute rounded-lg border",
-                            simulating ? "bg-muted/50 border-border/60 opacity-60" : cn(theme.bg, theme.border),
+                            simulating ? "bg-muted-foreground/15 border-muted-foreground/30" : cn(theme.bg, theme.border),
                             !segs.length && "opacity-50",
                           )}
                           style={{ left: left + 2, width: width - 4, top: 10, height: 34 }}

@@ -28,7 +28,7 @@ export default function PlanningLegend({
     >
       {showSimulation ? (
         <div className="flex items-center gap-1.5">
-          <div className="size-3 rounded border border-border/60 bg-muted/50 opacity-60" />
+          <div className="size-3 rounded border border-muted-foreground/30 bg-muted-foreground/15" />
           <span className="text-[11px] text-muted-foreground">Confirmed leave · excluded from sim</span>
         </div>
       ) : (

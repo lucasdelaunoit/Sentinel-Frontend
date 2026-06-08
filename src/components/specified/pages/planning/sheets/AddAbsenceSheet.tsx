@@ -82,7 +82,7 @@ export default function AddAbsenceSheet({
         if (!v) onClose();
       }}
       title="Add Absence"
-      description="Simulate an upcoming team absence"
+      description="Simulate a team absence — past or future"
       maxWidth="sm:max-w-[420px]"
       footer={
         <>
