@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import usePrivateApi from "@/api/privateApi";
-import { PLANNING_MOCK_ENABLED, simulatePlanningMock } from "./mock";
 
 export type SimulateStatus = "idle" | "pending" | "saved" | "error";
 
@@ -79,9 +78,7 @@ export default function useSimulatePlanning(
 
     const timer = window.setTimeout(async () => {
       try {
-        const result = PLANNING_MOCK_ENABLED
-          ? await simulatePlanningMock(absences)
-          : (await privateApi.post<SimulateResponse>("/api/planning/simulate", { absences })).data;
+        const result = (await privateApi.post<SimulateResponse>("/api/planning/simulate", { absences })).data;
         if (myReqId !== reqIdRef.current) return;
         setData(result);
         setStatus("saved");

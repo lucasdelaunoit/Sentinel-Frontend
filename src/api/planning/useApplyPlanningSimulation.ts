@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import usePrivateApi from "@/api/privateApi";
 import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
-import { PLANNING_MOCK_ENABLED } from "./mock";
 
 interface ApplyPayload {
   absences: SimulateAbsenceInput[];
@@ -14,10 +13,6 @@ export default function useApplyPlanningSimulation() {
 
   return useMutation({
     mutationFn: async (payload: ApplyPayload) => {
-      if (PLANNING_MOCK_ENABLED) {
-        await new Promise((r) => setTimeout(r, 400));
-        return { applied: payload.absences.length };
-      }
       const { data } = await privateApi.post<{ applied: number }>("/api/planning/apply", payload);
       return data;
     },
