@@ -14,9 +14,9 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ComposedCard from "@/components/common/cards/ComposedCard";
 import SecondaryCard from "@/components/common/cards/SecondaryCard";
 import Feedback from "@/components/common/feedbacks/Feedback";
 import { cn } from "@/lib/utils";
@@ -83,20 +83,20 @@ function panelContainerClass(layout: PanelLayout): string {
 PlanningContextPanel.Skeleton = function PlanningContextPanelSkeleton({ layout = "below" }: { layout?: PanelLayout }) {
   return (
     <div className={panelContainerClass(layout)}>
-      <Card className="p-0 gap-0 overflow-hidden">
-        <CardHeader className="px-5 py-4 border-b border-border/60 flex flex-row items-center justify-between">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-4 w-12" />
-        </CardHeader>
-        <CardContent className="px-5 py-3">
+      <ComposedCard
+        title={<Skeleton className="h-4 w-24" />}
+        action={<Skeleton className="h-4 w-12" />}
+        className="gap-0"
+      >
+        <div className="space-y-3 pt-3">
           <Skeleton className="h-8 w-full rounded-xl" />
-        </CardContent>
-        <div className="border-t border-border/40 p-2 space-y-1.5">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full rounded-lg" />
-          ))}
+          <div className="space-y-1.5">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full rounded-lg" />
+            ))}
+          </div>
         </div>
-      </Card>
+      </ComposedCard>
     </div>
   );
 };
@@ -141,18 +141,21 @@ function SimulatePanel({
 
   return (
     <div className={panelContainerClass(layout)}>
-      <Card className="p-0 gap-0 overflow-hidden border-planned/30 bg-planned/5">
-        <CardHeader className="px-5 py-4 border-b border-planned/20 flex flex-row items-center justify-between">
-          <div className="flex items-center gap-2">
+      <ComposedCard
+        className="border-planned/30 bg-planned/5 gap-0"
+        title={
+          <span className="flex items-center gap-2">
             <Zap className="size-4 text-planned" />
-            <p className="text-[13px] font-bold text-planned">Scenario</p>
+            <span className="text-planned">Scenario</span>
             {hasData && (
               <Badge variant="secondary" className="bg-planned/20 text-planned h-4 px-1.5 text-[10px]">
                 {simBlocks.length}
               </Badge>
             )}
-          </div>
-          {hasData && (
+          </span>
+        }
+        action={
+          hasData ? (
             <Button
               variant="ghost"
               size="sm"
@@ -161,10 +164,10 @@ function SimulatePanel({
             >
               Clear all
             </Button>
-          )}
-        </CardHeader>
-
-        <CardContent className="px-5 py-3">
+          ) : undefined
+        }
+      >
+        <div className="space-y-3 pt-3">
           <Button
             size="sm"
             variant="outline"
@@ -174,70 +177,73 @@ function SimulatePanel({
             <Plus className="size-3.5" />
             Add absence
           </Button>
-        </CardContent>
 
-        {hasData ? (
-          <div className="border-t border-planned/20 max-h-64 overflow-y-auto p-2 space-y-1.5">
-            {simBlocks.map((block) => {
-              const user = usersById.get(block.userId);
-              const color = simColor(block.colorIdx);
-              const impact = combined.per_user_impact[block.userId];
-              return (
-                <SecondaryCard
-                  key={block.id}
-                  onClick={() => onSelectBlock(block.id)}
-                  before={
-                    <div className="flex items-center gap-2">
-                      <div className="size-2 rounded-full shrink-0" style={{ background: color.border }} />
-                      <div
-                        className={cn(
-                          "flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white",
-                          user?.color ?? "bg-muted",
-                        )}
-                      >
-                        {user?.initials}
+          {hasData ? (
+            <div className="max-h-64 overflow-y-auto space-y-1.5 -mr-2 pr-2">
+              {simBlocks.map((block) => {
+                const user = usersById.get(block.userId);
+                const color = simColor(block.colorIdx);
+                const impact = combined.per_user_impact[block.userId];
+                return (
+                  <SecondaryCard
+                    key={block.id}
+                    onClick={() => onSelectBlock(block.id)}
+                    before={
+                      <div className="flex items-center gap-2">
+                        <div className="size-2 rounded-full shrink-0" style={{ background: color.border }} />
+                        <div
+                          className={cn(
+                            "flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white",
+                            user?.color ?? "bg-muted",
+                          )}
+                        >
+                          {user?.initials}
+                        </div>
                       </div>
-                    </div>
-                  }
-                  title={user ? `${user.firstname} ${user.lastname}` : "Unknown"}
-                  description={`${formatHalfDate(block.startDate, block.startHalf)} – ${formatHalfDate(block.endDate, block.endHalf)} · ${blockDurationLabel(block)}`}
-                  action={
-                    <div className="flex items-center gap-1.5">
-                      {impact && <ImpactBadge level={impact.level} />}
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="size-6"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRemoveBlock(block.id);
-                        }}
-                      >
-                        <X className="size-3.5" />
-                      </Button>
-                    </div>
-                  }
-                  className="bg-card/60 hover:bg-card"
-                />
-              );
-            })}
-          </div>
-        ) : (
-          <CardContent className="px-5 py-6">
+                    }
+                    title={user ? `${user.firstname} ${user.lastname}` : "Unknown"}
+                    description={`${formatHalfDate(block.startDate, block.startHalf)} – ${formatHalfDate(block.endDate, block.endHalf)} · ${blockDurationLabel(block)}`}
+                    action={
+                      <div className="flex items-center gap-1.5">
+                        {impact && <ImpactBadge level={impact.level} />}
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-6"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onRemoveBlock(block.id);
+                          }}
+                        >
+                          <X className="size-3.5" />
+                        </Button>
+                      </div>
+                    }
+                    className="bg-card/60 hover:bg-card"
+                  />
+                );
+              })}
+            </div>
+          ) : (
             <Feedback variant="info" title="No absences simulated" description="Add employees above to begin." />
-          </CardContent>
-        )}
-      </Card>
+          )}
+        </div>
+      </ComposedCard>
 
       {hasData && (
-        <Card className={cn("p-0 gap-0 overflow-hidden", layout === "below" && "lg:col-span-2")}>
-          <CardHeader className="px-5 py-3.5 border-b border-border/60 bg-muted/20 flex flex-row items-center gap-2">
-            <Play className="size-3.5 text-primary" />
-            <SectionHeader>Combined impact</SectionHeader>
-            <ImpactBadge level={combined.overall_level} className="ml-auto" />
-          </CardHeader>
+        <ComposedCard
+          className={cn("p-0 gap-0", layout === "below" && "lg:col-span-2")}
+          headerClassName="px-5 py-3.5 border-b border-border/60 bg-muted/20"
+          title={
+            <span className="flex items-center gap-2">
+              <Play className="size-3.5 text-primary" />
+              <SectionHeader>Combined impact</SectionHeader>
+            </span>
+          }
+          action={<ImpactBadge level={combined.overall_level} />}
+        >
           <ImpactTabs combined={combined} usersById={usersById} />
-        </Card>
+        </ComposedCard>
       )}
     </div>
   );
