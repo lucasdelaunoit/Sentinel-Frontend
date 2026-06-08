@@ -19,7 +19,7 @@ export function getViewLeaves(user: PlanningUser, viewYear: number, viewMonth: n
       const endParsed = parseDateStr(l.end_date);
       const start = l.start_date < viewStart ? 1 : (startParsed?.day ?? 1);
       const end = l.end_date > viewEnd ? daysInMonth : (endParsed?.day ?? daysInMonth);
-      return { start, end, type: l.type };
+      return { id: l.id, start, end, type: l.type };
     });
 }
 

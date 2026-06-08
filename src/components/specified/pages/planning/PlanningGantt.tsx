@@ -1,5 +1,4 @@
 import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
-import { AlertTriangle, ArrowLeft, ArrowRight, GripVertical, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlanningCalendar } from "@/hooks/usePlanningCalendar";
 import {
@@ -29,10 +28,9 @@ import UserAvatar from "@/components/specified/models/employees/avatars/UserAvat
 import { Skeleton } from "@/components/ui/skeleton";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import { Button } from "@/components/ui/button";
-import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
-import FilterPillGroup from "@/components/common/filters/FilterPillGroup.tsx";
-import SearchBar from "@/components/common/inputs/SearchBar.tsx";
+import { CaretLeftIcon, CaretRightIcon, ShieldWarningIcon, WarningIcon } from "@phosphor-icons/react";
 import { PlusIcon } from "@phosphor-icons/react";
+import { GripVertical } from "lucide-react";
 
 type DragMode = "move" | "resize-left" | "resize-right";
 
@@ -67,6 +65,7 @@ interface PlanningGanttProps {
   onCreateBlock: (empId: string, startDate: string, startHalf: Half, endDate: string, endHalf: Half) => void;
   onOpenAddSheet: () => void;
   navigateMonth: (delta: number) => void;
+  onSelectAbsence: (userId: string, absenceId: number) => void;
   perUserImpact: Record<string, UserImpact>;
   perDayLoad?: DayLoad[];
 }
@@ -121,6 +120,7 @@ export default function PlanningGantt({
   onCreateBlock,
   onOpenAddSheet,
   navigateMonth,
+  onSelectAbsence,
   perUserImpact,
   perDayLoad,
 }: PlanningGanttProps) {
@@ -145,6 +145,17 @@ export default function PlanningGantt({
   const todayInView = today.getFullYear() === viewYear && today.getMonth() + 1 === viewMonth;
   const todayDay = todayInView ? today.getDate() : null;
 
+  // Simulated absences are future-only: first day in this view strictly after today.
+  // Equals daysInMonth + 1 when the whole month is today-or-past (nothing drawable).
+  const todayStr = makeDateStr(today.getFullYear(), today.getMonth() + 1, today.getDate());
+  let firstFutureDay = daysInMonth + 1;
+  for (let d = 1; d <= daysInMonth; d++) {
+    if (makeDateStr(viewYear, viewMonth, d) > todayStr) {
+      firstFutureDay = d;
+      break;
+    }
+  }
+
   const usersById = new Map(users.map((u) => [u.id, u]));
 
   useEffect(() => {
@@ -164,7 +175,7 @@ export default function PlanningGantt({
               const os = toHalves(drag.origStartDay, drag.origStartHalf);
               const oe = toHalves(drag.origEndDay, drag.origEndHalf);
               const span = oe - os;
-              const ns = Math.max(0, Math.min(daysInMonth * 2 - 1 - span, os + dH));
+              const ns = Math.max(toHalves(firstFutureDay, 0), Math.min(daysInMonth * 2 - 1 - span, os + dH));
               const { day: sd, half: sh } = fromHalves(ns, daysInMonth);
               const { day: ed, half: eh } = fromHalves(ns + span, daysInMonth);
               if (hasLeaveOverlap(user, sd, ed, viewYear, viewMonth)) return b;
@@ -178,7 +189,10 @@ export default function PlanningGantt({
             }
             if (drag.mode === "resize-left") {
               const oe = toHalves(drag.origEndDay, drag.origEndHalf);
-              const ns = Math.max(0, Math.min(oe - 1, toHalves(drag.origStartDay, drag.origStartHalf) + dH));
+              const ns = Math.max(
+                toHalves(firstFutureDay, 0),
+                Math.min(oe - 1, toHalves(drag.origStartDay, drag.origStartHalf) + dH),
+              );
               const { day: sd, half: sh } = fromHalves(ns, daysInMonth);
               if (hasLeaveOverlap(user, sd, drag.origEndDay, viewYear, viewMonth)) return b;
               return { ...b, startDate: makeDateStr(viewYear, viewMonth, sd), startHalf: sh };
@@ -201,7 +215,9 @@ export default function PlanningGantt({
         const user = usersById.get(draw.userId);
         if (!user) return;
         const relX = Math.max(0, e.clientX - draw.containerLeft);
-        const halfIdx = Math.max(0, Math.min(daysInMonth * 2 - 1, Math.floor(relX / (DAY_COL_WIDTH / 2))));
+        // Floor at the first future day so the block can't be dragged onto today/past.
+        const minHalfIdx = toHalves(firstFutureDay, 0);
+        const halfIdx = Math.max(minHalfIdx, Math.min(daysInMonth * 2 - 1, Math.floor(relX / (DAY_COL_WIDTH / 2))));
         const { day, half } = fromHalves(halfIdx, daysInMonth);
         const clamped = clampDrawEnd(
           user,
@@ -223,13 +239,16 @@ export default function PlanningGantt({
       const draw = drawStateRef.current;
       if (draw) {
         const { startDay, startHalf, endDay, endHalf } = drawDisplayRange(draw);
-        onCreateBlockRef.current(
-          draw.userId,
-          makeDateStr(viewYear, viewMonth, startDay),
-          startHalf,
-          makeDateStr(viewYear, viewMonth, endDay),
-          endHalf,
-        );
+        // Defensive: never commit a block that starts on today or in the past.
+        if (startDay >= firstFutureDay) {
+          onCreateBlockRef.current(
+            draw.userId,
+            makeDateStr(viewYear, viewMonth, startDay),
+            startHalf,
+            makeDateStr(viewYear, viewMonth, endDay),
+            endHalf,
+          );
+        }
         drawStateRef.current = null;
         setDrawState(null);
       }
@@ -245,7 +264,7 @@ export default function PlanningGantt({
       document.removeEventListener("mouseup", onUp);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setSimBlocks, viewYear, viewMonth, daysInMonth, users]);
+  }, [setSimBlocks, viewYear, viewMonth, daysInMonth, users, firstFutureDay]);
 
   function startDrag(e: React.MouseEvent, block: SimBlock, dragMode: DragMode) {
     e.preventDefault();
@@ -273,6 +292,7 @@ export default function PlanningGantt({
     const relX = Math.max(0, e.clientX - rect.left);
     const halfIdx = Math.max(0, Math.min(daysInMonth * 2 - 1, Math.floor(relX / (DAY_COL_WIDTH / 2))));
     const { day, half } = fromHalves(halfIdx, daysInMonth);
+    if (day < firstFutureDay) return; // future-only: can't start on today or in the past
     if (isOnRealLeave(user, day, viewYear, viewMonth)) return;
     const draw: DrawState = {
       userId: user.id,
@@ -305,6 +325,12 @@ export default function PlanningGantt({
       className="p-0"
       headerClassName="px-6 pt-4"
     >
+      {mode === "simulate" && (
+        <div className="flex items-center gap-1.5 px-6 py-2 text-[11px] font-medium text-planned border-b border-border/40 bg-planned/5">
+          <PlusIcon weight="bold" className="size-3" />
+          <span>Drag across future days on a person&apos;s row to simulate an absence. Today and past days are locked.</span>
+        </div>
+      )}
       <div
         className="overflow-x-auto select-none"
         style={{ cursor: dragState ? "grabbing" : drawState ? "crosshair" : "default" }}
@@ -414,9 +440,9 @@ export default function PlanningGantt({
                       )}
                     >
                       {impact === "critical" ? (
-                        <ShieldAlert className="size-3" />
+                        <ShieldWarningIcon className="size-3" />
                       ) : (
-                        <AlertTriangle className="size-3" />
+                        <WarningIcon className="size-3" />
                       )}
                     </div>
                   )}
@@ -431,6 +457,24 @@ export default function PlanningGantt({
                   }}
                   onMouseDown={(e) => startDraw(e, emp)}
                 >
+                  {/* Future-only: one hatched band locks today + past. Sits at the base layer so
+                      absences render on top of it. */}
+                  {mode === "simulate" && firstFutureDay > 1 && (
+                    <div
+                      className="absolute inset-y-0 border-r border-border/60"
+                      style={{
+                        left: 0,
+                        width: Math.min(firstFutureDay - 1, daysInMonth) * DAY_COL_WIDTH,
+                        cursor: "not-allowed",
+                        backgroundColor: "color-mix(in srgb, var(--muted) 30%, transparent)",
+                        backgroundImage:
+                          "repeating-linear-gradient(45deg, transparent 0 6px, color-mix(in srgb, var(--muted-foreground) 10%, transparent) 6px 7px)",
+                      }}
+                      title="Absences can only be simulated in the future"
+                      onMouseDown={(e) => e.stopPropagation()}
+                    />
+                  )}
+
                   {todayDay !== null && (
                     <div
                       className="absolute inset-y-0 pointer-events-none bg-primary/5"
@@ -439,7 +483,8 @@ export default function PlanningGantt({
                   )}
 
                   {days.map((d) =>
-                    isClosedDay(d) ? (
+                    // Skip closed-day hatch under the locked past tint to avoid a busy double layer.
+                    isClosedDay(d) && !(mode === "simulate" && d < firstFutureDay) ? (
                       <div
                         key={d}
                         className="absolute inset-y-0 pointer-events-none"
@@ -487,11 +532,22 @@ export default function PlanningGantt({
                           className={cn(
                             "absolute rounded-lg border",
                             simulating
-                              ? "bg-muted-foreground/15 border-muted-foreground/30"
-                              : cn(theme.bg, theme.border),
+                              ? "border-muted-foreground/30"
+                              : cn(theme.bg, theme.border, "cursor-pointer transition hover:brightness-95"),
                             !segs.length && "opacity-50",
                           )}
-                          style={{ left: left + 2, width: width - 4, top: 10, height: 34 }}
+                          style={{
+                            left: left + 2,
+                            width: width - 4,
+                            top: 10,
+                            height: 34,
+                            // Opaque so the locked-past hatch can't show through greyed leaves.
+                            ...(simulating
+                              ? { background: "color-mix(in srgb, var(--muted-foreground) 15%, var(--card))" }
+                              : {}),
+                          }}
+                          onMouseDown={simulating ? undefined : (e) => e.stopPropagation()}
+                          onClick={simulating ? undefined : () => onSelectAbsence(emp.id, lr.id)}
                         />
                       );
                     });
@@ -599,7 +655,7 @@ export default function PlanningGantt({
                               className="absolute left-0 inset-y-0 w-5 flex items-center justify-center opacity-60"
                               style={{ color: color.fg }}
                             >
-                              <ArrowLeft className="size-3" />
+                              <CaretLeftIcon className="size-3" />
                             </div>
                           ) : showLeftHandle ? (
                             <div
@@ -625,7 +681,7 @@ export default function PlanningGantt({
                               className="absolute right-0 inset-y-0 w-5 flex items-center justify-center opacity-60"
                               style={{ color: color.fg }}
                             >
-                              <ArrowRight className="size-3" />
+                              <CaretRightIcon className="size-3" />
                             </div>
                           ) : showRightHandle ? (
                             <div

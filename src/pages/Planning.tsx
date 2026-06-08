@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import useGetPlanning from "@/api/planning/useGetPlanning";
 import useSimulatePlanning from "@/api/planning/useSimulatePlanning";
 import useApplyPlanningSimulation from "@/api/planning/useApplyPlanningSimulation";
+import useGetAbsencesForUser from "@/api/absences/useGetAbsencesForUser";
+import AbsenceDetailSheet from "@/components/specified/models/absence/sheets/AbsenceDetailSheet";
 import PlanningGantt from "@/components/specified/pages/planning/PlanningGantt";
 import PlanningContextPanel from "@/components/specified/pages/planning/PlanningContextPanel";
 import AddAbsenceSheet from "@/components/specified/pages/planning/sheets/AddAbsenceSheet";
@@ -33,12 +35,25 @@ export default function Planning() {
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [showApplyConfirm, setShowApplyConfirm] = useState(false);
+  const [detailUserId, setDetailUserId] = useState<string | null>(null);
+  const [detailAbsenceId, setDetailAbsenceId] = useState<number | null>(null);
+  const [absenceDetailOpen, setAbsenceDetailOpen] = useState(false);
   const colorCounterRef = useRef(0);
   const applyMutation = useApplyPlanningSimulation();
 
   const month = `${viewYear}-${String(viewMonth).padStart(2, "0")}`;
   const planningQuery = useGetPlanning(month);
   const users = useMemo(() => planningQuery.data?.users ?? [], [planningQuery.data]);
+
+  const { data: detailUserAbsences } = useGetAbsencesForUser(detailUserId ?? undefined, { per_page: 100 });
+  const detailAbsence =
+    detailAbsenceId != null ? ((detailUserAbsences ?? []).find((a) => a.id === detailAbsenceId) ?? null) : null;
+
+  function openAbsenceDetail(userId: string, absenceId: number) {
+    setDetailUserId(userId);
+    setDetailAbsenceId(absenceId);
+    setAbsenceDetailOpen(true);
+  }
 
   function navigateMonth(delta: number) {
     let m = viewMonth + delta;
@@ -188,6 +203,7 @@ export default function Planning() {
             onCreateBlock={addBlock}
             onOpenAddSheet={() => setShowAddSheet(true)}
             navigateMonth={navigateMonth}
+            onSelectAbsence={openAbsenceDetail}
             perUserImpact={simulationData.per_user_impact}
             perDayLoad={simulationData.per_day_load}
           />
@@ -232,6 +248,15 @@ export default function Planning() {
         open={showAddSheet}
         onClose={() => setShowAddSheet(false)}
         onAdd={addBlock}
+      />
+
+      {/* One mounted sheet: opens immediately with a skeleton body, then swaps in the
+          record once loaded — no remount, so no close/reopen flash. */}
+      <AbsenceDetailSheet
+        absence={detailAbsence}
+        open={absenceDetailOpen}
+        onOpenChange={setAbsenceDetailOpen}
+        userId={detailUserId ?? ""}
       />
 
       <AlertDialog open={showApplyConfirm} onOpenChange={setShowApplyConfirm}>

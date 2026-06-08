@@ -33,6 +33,14 @@ export default function AddAbsenceSheet({
   const { isClosedDate } = useClosedDates();
   const viewMonthDate = new Date(viewYear, viewMonth - 1, 1);
 
+  // Future-only: absences can't be simulated on today or in the past.
+  const today = new Date();
+  const todayStr = makeDateStr(today.getFullYear(), today.getMonth() + 1, today.getDate());
+  const tomorrow = new Date(today);
+  tomorrow.setHours(0, 0, 0, 0);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const disabledDates = [isClosedDate, { before: tomorrow }];
+
   function nextWorkingDay(from: number): number {
     const firstDayOfWeek = getFirstDayOfWeek(viewYear, viewMonth);
     let d = from;
@@ -53,7 +61,7 @@ export default function AddAbsenceSheet({
   const [endDate, setEndDate] = useState(makeDateStr(viewYear, viewMonth, defaultEnd));
   const [endHalf, setEndHalf] = useState<Half>(1);
 
-  const isValid = endDate >= startDate && selectedEmpId !== "";
+  const isValid = endDate >= startDate && selectedEmpId !== "" && startDate > todayStr;
 
   const durationLabel = useMemo(() => {
     if (!isValid) return "Invalid range";
@@ -81,7 +89,7 @@ export default function AddAbsenceSheet({
         if (!v) onClose();
       }}
       title="Add Absence"
-      description="Simulate a team absence — past or future"
+      description="Simulate a future team absence"
       maxWidth="sm:max-w-[420px]"
       footer={
         <>
@@ -138,7 +146,7 @@ export default function AddAbsenceSheet({
           half={startHalf}
           onDateChange={setStartDate}
           onHalfChange={setStartHalf}
-          disabled={isClosedDate}
+          disabled={disabledDates}
           defaultMonth={viewMonthDate}
         />
         <DateField
@@ -147,7 +155,7 @@ export default function AddAbsenceSheet({
           half={endHalf}
           onDateChange={setEndDate}
           onHalfChange={setEndHalf}
-          disabled={isClosedDate}
+          disabled={disabledDates}
           defaultMonth={viewMonthDate}
         />
       </div>
@@ -166,6 +174,9 @@ export default function AddAbsenceSheet({
 
       {!isValid && endDate < startDate && (
         <p className="text-[11px] text-destructive-foreground">End date must be on or after start date.</p>
+      )}
+      {!isValid && startDate <= todayStr && endDate >= startDate && (
+        <p className="text-[11px] text-destructive-foreground">Absences can only be simulated in the future.</p>
       )}
     </ComposedSheet>
   );

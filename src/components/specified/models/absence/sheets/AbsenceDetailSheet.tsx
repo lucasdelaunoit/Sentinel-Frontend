@@ -22,7 +22,8 @@ import { formatDate } from "@/utils/formatters/date";
 import { capitalize } from "@/utils/formatters/string.ts";
 
 interface AbsenceDetailSheetProps {
-  absence: Absence;
+  /** Null while the record is still loading — the sheet opens with a skeleton body and fills in on arrival. */
+  absence: Absence | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   userId: string;
@@ -32,12 +33,8 @@ export default function AbsenceDetailSheet({ absence, open, onOpenChange, userId
   const [deleteOpen, setDeleteOpen] = useState(false);
   const { deleteAbsence, isLoading: isDeleting } = useDeleteAbsence();
 
-  const lk = lifecycleKey(absence.start_date, absence.end_date);
-  const days = halfRangeDuration(absence);
-  const anchorDate = lk === "past" ? absence.end_date : absence.start_date;
-  const relLabel = dateRelativeLabel(anchorDate, lk);
-
   async function confirmDelete() {
+    if (!absence) return;
     try {
       await deleteAbsence({ id: absence.id, userId });
       setDeleteOpen(false);
@@ -46,6 +43,25 @@ export default function AbsenceDetailSheet({ absence, open, onOpenChange, userId
       /* hook toasts */
     }
   }
+
+  // Keep the sheet mounted and swap only the body: skeleton → data, no remount/flash.
+  if (!absence) {
+    return (
+      <ComposedSheet
+        open={open}
+        onOpenChange={onOpenChange}
+        title="Absence details"
+        description="Timing, type and notes at a glance."
+      >
+        <AbsenceDetailBodySkeleton />
+      </ComposedSheet>
+    );
+  }
+
+  const lk = lifecycleKey(absence.start_date, absence.end_date);
+  const days = halfRangeDuration(absence);
+  const anchorDate = lk === "past" ? absence.end_date : absence.start_date;
+  const relLabel = dateRelativeLabel(anchorDate, lk);
 
   return (
     <ComposedSheet
@@ -126,17 +142,10 @@ export default function AbsenceDetailSheet({ absence, open, onOpenChange, userId
   );
 }
 
-AbsenceDetailSheet.Skeleton = function AbsenceDetailSheetSkeleton({
-  open,
-  onOpenChange,
-}: Pick<AbsenceDetailSheetProps, "open" | "onOpenChange">) {
+/** Body-only skeleton, shared by the loading sheet and the standalone `.Skeleton`. */
+function AbsenceDetailBodySkeleton() {
   return (
-    <ComposedSheet
-      open={open}
-      onOpenChange={onOpenChange}
-      title="Absence details"
-      description="Timing, type and notes at a glance."
-    >
+    <>
       <div className="rounded-2xl border border-border/60 bg-tertiary p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-2">
@@ -171,6 +180,22 @@ AbsenceDetailSheet.Skeleton = function AbsenceDetailSheetSkeleton({
         <DataDisplay.Skeleton icon={CalendarDays} label="Created" />
         <DataDisplay.Skeleton icon={CalendarDays} label="Last updated" />
       </div>
+    </>
+  );
+}
+
+AbsenceDetailSheet.Skeleton = function AbsenceDetailSheetSkeleton({
+  open,
+  onOpenChange,
+}: Pick<AbsenceDetailSheetProps, "open" | "onOpenChange">) {
+  return (
+    <ComposedSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Absence details"
+      description="Timing, type and notes at a glance."
+    >
+      <AbsenceDetailBodySkeleton />
     </ComposedSheet>
   );
 };
