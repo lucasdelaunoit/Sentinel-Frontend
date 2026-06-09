@@ -1,3 +1,4 @@
+/** --------- STYLING ---------- */
 interface SeverityColor {
   foregroundColor: string;
   backgroundColor: string;
@@ -15,3 +16,10 @@ export const SEVERITY_COLORS_CLASSNAMES = Object.fromEntries(
     `text-${color.foregroundColor} bg-${color.backgroundColor}`,
   ]),
 ) as Record<Severity, string>;
+
+/** --------- STYLING ---------- */
+export const SEVERITY_LABELS: Record<Severity, string> = {
+  ok: "Safe",
+  warning: "Warning",
+  critical: "Critical",
+};
