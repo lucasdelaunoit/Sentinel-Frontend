@@ -19,8 +19,8 @@ import SecondaryCard from "@/components/common/cards/SecondaryCard";
 import Feedback from "@/components/common/feedbacks/Feedback";
 import { cn } from "@/lib/utils";
 import { blockDurationLabel, formatHalfDate } from "@/utils/planning/calendar";
-import { simColor } from "@/utils/planning/theme";
 import ImpactBadge from "./badges/ImpactBadge";
+import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
 
 type PanelLayout = "side" | "below";
 
@@ -127,7 +127,7 @@ function SimulatePanel({
           <span className="flex items-center gap-2">
             <span className="text-planned">Scenario</span>
             {hasData && (
-              <Badge variant="secondary" className="bg-planned/20 text-planned h-4 px-1.5 text-[10px]">
+              <Badge variant="secondary" className="bg-planned/20 text-planned">
                 {simBlocks.length}
               </Badge>
             )}
@@ -146,28 +146,21 @@ function SimulatePanel({
           ) : undefined
         }
       >
-        <div className="space-y-3 pt-3">
+        <div className="space-y-3">
           {hasData ? (
             <div className="max-h-64 overflow-y-auto space-y-1.5 -mr-2 pr-2">
               {simBlocks.map((block) => {
                 const user = usersById.get(block.userId);
-                const color = simColor(block.colorIdx);
                 const impact = combined.per_user_impact[block.userId];
+
                 return (
                   <SecondaryCard
                     key={block.id}
                     onClick={() => onSelectBlock(block.id)}
                     before={
                       <div className="flex items-center gap-2">
-                        <div className="size-2 rounded-full shrink-0" style={{ background: color.border }} />
-                        <div
-                          className={cn(
-                            "flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white",
-                            user?.color ?? "bg-muted",
-                          )}
-                        >
-                          {user?.initials}
-                        </div>
+                        <div className="size-2 rounded-full shrink-0 bg-planned" />
+                        <UserAvatar firstname={user?.firstname} lastname={user?.lastname} variant={user.status} />
                       </div>
                     }
                     title={user ? `${user.firstname} ${user.lastname}` : "Unknown"}
@@ -188,7 +181,7 @@ function SimulatePanel({
                         </Button>
                       </div>
                     }
-                    className="bg-card/60 hover:bg-card"
+                    className="bg-tertiary"
                   />
                 );
               })}
@@ -203,12 +196,7 @@ function SimulatePanel({
         <ComposedCard
           className={cn("p-0 gap-0", layout === "below" && "lg:col-span-2")}
           headerClassName="px-5 py-3.5 border-b border-border/60 bg-muted/20"
-          title={
-            <span className="flex items-center gap-2">
-              <Play className="size-3.5 text-primary" />
-              <SectionHeader>Combined impact</SectionHeader>
-            </span>
-          }
+          title={<span className="flex items-center gap-2">Combined impact</span>}
           action={<ImpactBadge level={combined.overall_level} />}
         >
           <ImpactTabs combined={combined} usersById={usersById} />
@@ -318,6 +306,7 @@ function ProjectImpactRow({ project }: { project: ProjectImpact }) {
           />
           <span className="text-[12px] font-semibold text-foreground truncate">{project.name}</span>
         </div>
+        s
         <ImpactBadge level={project.level} />
       </div>
 

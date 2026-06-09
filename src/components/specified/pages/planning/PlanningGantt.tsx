@@ -113,8 +113,6 @@ export default function PlanningGantt({
   const todayInView = today.getFullYear() === viewYear && today.getMonth() + 1 === viewMonth;
   const todayDay = todayInView ? today.getDate() : null;
 
-  // Simulated absences are future-only: first day in this view strictly after today.
-  // Equals daysInMonth + 1 when the whole month is today-or-past (nothing drawable).
   const todayStr = makeDateStr(today.getFullYear(), today.getMonth() + 1, today.getDate());
   let firstFutureDay = daysInMonth + 1;
   for (let d = 1; d <= daysInMonth; d++) {
