@@ -6,7 +6,7 @@ import ComposedCard from "@/components/common/cards/ComposedCard";
 import SecondaryCard from "@/components/common/cards/SecondaryCard";
 import Feedback from "@/components/common/feedbacks/Feedback";
 import { blockDurationLabel, formatHalfDate } from "@/utils/planning/calendar";
-import ImpactBadge from "./badges/ImpactBadge";
+import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
 import ProjectsImpactCard from "@/components/specified/pages/planning/impact/ProjectsImpactCard.tsx";
 import SkillImpactCard from "@/components/specified/pages/planning/impact/SkillImpactCard.tsx";
@@ -151,7 +151,7 @@ function SimulatePanel({
                     description={`${formatHalfDate(block.startDate, block.startHalf)} – ${formatHalfDate(block.endDate, block.endHalf)} · ${blockDurationLabel(block)}`}
                     action={
                       <div className="flex items-center gap-1.5">
-                        {impact && <ImpactBadge level={impact.level} />}
+                        {impact && <SeverityBadge severity={impact.severity} />}
                         <Button
                           size="icon"
                           variant="ghost"

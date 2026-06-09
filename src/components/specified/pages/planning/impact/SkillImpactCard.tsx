@@ -8,19 +8,8 @@ interface SkillImpactCardProps {
   skills: SkillImpact[];
 }
 
-function severityBadgeVariant(sev: PlanningSeverity): "default" | "secondary" | "destructive" | "outline" {
-  if (sev === "critical" || sev === "high") return "destructive";
-  if (sev === "medium") return "outline";
-  return "secondary";
-}
-
-function severityClass(sev: PlanningSeverity): string {
-  if (sev === "medium") return "border-warning/40 text-warning";
-  return "";
-}
-
 export default function SkillImpactCard({ skills }: SkillImpactCardProps) {
-  const order: PlanningSeverity[] = ["critical", "high", "medium", "low", "safe"];
+  const order: Severity[] = ["critical", "warning", "ok"];
   const sorted = [...skills].sort((a, b) => order.indexOf(a.severity) - order.indexOf(b.severity));
 
   return (
@@ -40,18 +29,7 @@ export default function SkillImpactCard({ skills }: SkillImpactCardProps) {
             <div key={s.skill_id} className="px-5 py-3 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span
-                    className={cn(
-                      "size-2 rounded-full shrink-0",
-                      s.severity === "critical"
-                        ? "bg-destructive-foreground"
-                        : s.severity === "high"
-                          ? "bg-warning"
-                          : s.severity === "medium"
-                            ? "bg-warning"
-                            : "bg-success",
-                    )}
-                  />
+                  <span className={cn("size-2 rounded-full shrink-0" /*, SEVERITY_SURFACE[s.severity].dot*/)} />
                   <span className="text-[12px] font-semibold text-foreground truncate">{s.name}</span>
                   {s.is_critical_for_org && (
                     <Badge variant="destructive" className="h-4 px-1.5 text-[9px]">
@@ -60,8 +38,10 @@ export default function SkillImpactCard({ skills }: SkillImpactCardProps) {
                   )}
                 </div>
                 <Badge
-                  variant={severityBadgeVariant(s.severity)}
-                  className={cn("text-[10px]", severityClass(s.severity))}
+                  variant="outline"
+                  className={cn(
+                    "text-[10px]" /*, SEVERITY_SURFACE[s.severity].text, SEVERITY_SURFACE[s.severity].border*/,
+                  )}
                 >
                   {s.owners_left}/{s.owners_total} owners
                 </Badge>

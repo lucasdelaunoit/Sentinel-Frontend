@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import SeveredSkillBadge from "@/components/specified/models/skill/badges/SeveredSkillBadge.tsx";
-import ImpactBadge from "@/components/specified/pages/planning/badges/ImpactBadge.tsx";
+import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
 import { TONE_BG } from "@/lib/scoring.ts";
 import { cn } from "@/lib/utils.ts";
 
@@ -19,12 +19,6 @@ function statusTone(status: ProjectImpact["status_after"]): "success" | "warning
   return "success";
 }
 
-function skillSeverity(sev: PlanningSeverity): Severity {
-  if (sev === "critical" || sev === "high") return "critical";
-  if (sev === "medium" || sev === "low") return "warning";
-  return "ok";
-}
-
 export default function MediumProjectImpactRow({ project, className, onClick }: MediumProjectImpactRowProps) {
   const tone = statusTone(project.status_after);
 
@@ -36,7 +30,7 @@ export default function MediumProjectImpactRow({ project, className, onClick }: 
       title={
         <span className="flex items-center justify-between gap-2">
           <span className="truncate">{project.name}</span>
-          <ImpactBadge level={project.level} />
+          <SeverityBadge severity={project.severity} />
         </span>
       }
       description={
@@ -60,7 +54,7 @@ export default function MediumProjectImpactRow({ project, className, onClick }: 
           {project.skills_at_risk.length > 0 && (
             <span className="flex flex-wrap gap-1.5">
               {project.skills_at_risk.map((s) => (
-                <SeveredSkillBadge key={s.skill_id} name={`${s.name} · ${s.owners_left} left`} severity={skillSeverity(s.severity)} />
+                <SeveredSkillBadge key={s.skill_id} name={`${s.name} · ${s.owners_left} left`} severity={s.severity} />
               ))}
             </span>
           )}

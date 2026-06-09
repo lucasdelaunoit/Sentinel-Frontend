@@ -6,8 +6,9 @@ import { cn } from "@/lib/utils";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SecondaryCard from "@/components/common/cards/SecondaryCard";
 import { blockDurationLabel, formatHalfDate } from "@/utils/planning/calendar";
-import { IMPACT_THEME, simColor } from "@/utils/planning/theme";
-import ImpactBadge from "../badges/ImpactBadge";
+import { simColor } from "@/utils/planning/theme";
+import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
+import SeveredSkillBadge from "@/components/specified/models/skill/badges/SeveredSkillBadge";
 
 interface SimBlockDetailSheetProps {
   block: SimBlock;
@@ -16,17 +17,6 @@ interface SimBlockDetailSheetProps {
   combined: SimulateResponse;
   onClose: () => void;
   onDelete: () => void;
-}
-
-function severityBadgeVariant(sev: PlanningSeverity): "default" | "secondary" | "destructive" | "outline" {
-  if (sev === "critical" || sev === "high") return "destructive";
-  if (sev === "medium") return "outline";
-  return "secondary";
-}
-
-function severityClass(sev: PlanningSeverity): string {
-  if (sev === "medium") return "border-warning/40 text-warning";
-  return "";
 }
 
 const COST_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -91,12 +81,18 @@ export default function SimBlockDetailSheet({ block, user, combined, onClose, on
       </div>
 
       {userImpact && (
-        <div className={cn("flex items-center gap-3 rounded-xl border p-3.5", IMPACT_THEME[userImpact.level].bg, IMPACT_THEME[userImpact.level].border)}>
-          <ImpactBadge level={userImpact.level} size="md" />
+        <div
+          className={cn(
+            "flex items-center gap-3 rounded-xl border p-3.5",
+            /*SEVERITY_SURFACE[userImpact.severity].bg,
+            SEVERITY_SURFACE[userImpact.severity].border,*/
+          )}
+        >
+          <SeverityBadge severity={userImpact.severity} size="md" />
           <div className="flex-1 text-[12px] text-muted-foreground">
-            {userImpact.level === "critical"
+            {userImpact.severity === "critical"
               ? "Key skills will be uncovered."
-              : userImpact.level === "warning"
+              : userImpact.severity === "warning"
                 ? "Some skills may be at risk."
                 : "All required skills are covered."}
             {userImpact.is_critical_employee && (
@@ -144,12 +140,19 @@ export default function SimBlockDetailSheet({ block, user, combined, onClose, on
                       variant="secondary"
                       className={cn(
                         "text-[11px]",
-                        c.skill_match_pct >= 70 ? "bg-success/15 text-success" : c.skill_match_pct >= 40 ? "bg-warning/15 text-warning" : "",
+                        c.skill_match_pct >= 70
+                          ? "bg-success/15 text-success"
+                          : c.skill_match_pct >= 40
+                            ? "bg-warning/15 text-warning"
+                            : "",
                       )}
                     >
                       {c.skill_match_pct}%
                     </Badge>
-                    <Badge variant={COST_VARIANT[c.cost_signal] ?? "secondary"} className={cn("text-[9px] uppercase", COST_CLASS[c.cost_signal] ?? "")}>
+                    <Badge
+                      variant={COST_VARIANT[c.cost_signal] ?? "secondary"}
+                      className={cn("text-[9px] uppercase", COST_CLASS[c.cost_signal] ?? "")}
+                    >
                       {c.cost_signal}
                     </Badge>
                   </div>
@@ -205,34 +208,36 @@ function Section({
 }
 
 function ProjectImpactCard({ project }: { project: ProjectImpact }) {
-  const theme = IMPACT_THEME[project.level];
+  //const theme = SEVERITY_SURFACE[project.severity];
   return (
-    <div className={cn("rounded-xl border p-3 space-y-2", theme.bg, theme.border)}>
+    <div className={cn("rounded-xl border p-3 space-y-2" /*, theme.bg, theme.border*/)}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span className={cn("size-2 rounded-full shrink-0", theme.dot)} />
+          <span className={cn("size-2 rounded-full shrink-0" /*, theme.dot*/)} />
           <span className="text-[12px] font-semibold text-foreground truncate">{project.name}</span>
         </div>
-        <ImpactBadge level={project.level} />
+        <SeverityBadge severity={project.severity} />
       </div>
 
       <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
         <span>
           BF {project.bus_factor_before} <ArrowRight className="size-2.5 inline" />{" "}
-          <span className={cn(project.bus_factor_delta < 0 && "text-destructive-foreground font-semibold")}>{project.bus_factor_after}</span>
+          <span className={cn(project.bus_factor_delta < 0 && "text-destructive-foreground font-semibold")}>
+            {project.bus_factor_after}
+          </span>
         </span>
         <span>
           Cov {project.coverage_pct_before}% <ArrowRight className="size-2.5 inline" />{" "}
-          <span className={cn(project.coverage_delta_pct < 0 && "text-destructive-foreground font-semibold")}>{project.coverage_pct_after}%</span>
+          <span className={cn(project.coverage_delta_pct < 0 && "text-destructive-foreground font-semibold")}>
+            {project.coverage_pct_after}%
+          </span>
         </span>
       </div>
 
       {project.skills_at_risk.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {project.skills_at_risk.map((s) => (
-            <Badge key={s.skill_id} variant={severityBadgeVariant(s.severity)} className={cn("text-[10px]", severityClass(s.severity))}>
-              {s.name} · {s.owners_left}
-            </Badge>
+            <SeveredSkillBadge key={s.skill_id} name={`${s.name} · ${s.owners_left}`} severity={s.severity} />
           ))}
         </div>
       )}

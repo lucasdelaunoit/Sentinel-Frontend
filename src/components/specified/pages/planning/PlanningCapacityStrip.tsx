@@ -13,11 +13,9 @@ interface PlanningCapacityStripProps {
   perDayLoad?: DayLoad[];
 }
 
-const SEV_TINT: Record<PlanningSeverity, string> = {
-  safe: "",
-  low: "",
-  medium: "bg-warning/10",
-  high: "bg-warning/20",
+const SEV_TINT: Record<Severity, string> = {
+  ok: "",
+  warning: "bg-warning/10",
   critical: "bg-danger/20",
 };
 

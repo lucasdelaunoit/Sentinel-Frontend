@@ -2,15 +2,9 @@ import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
+import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
 import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
-import { Badge } from "@/components/ui/badge.tsx";
-
-function severityBadgeVariant(sev: PlanningSeverity): "default" | "secondary" | "destructive" | "outline" {
-  if (sev === "critical" || sev === "high") return "destructive";
-  if (sev === "medium") return "outline";
-  return "secondary";
-}
 
 export default function HotspotsImpactCard({
   hotspots,
@@ -35,18 +29,12 @@ export default function HotspotsImpactCard({
           {hotspots.map((h, i) => (
             <SecondaryCard
               key={i}
-              before={
-                <Flame
-                  className={cn("size-4", h.severity === "critical" ? "text-destructive-foreground" : "text-warning")}
-                />
-              }
+              before={<Flame className={cn("size-4" /*, SEVERITY_SURFACE[h.severity].text*/)} />}
               title={`${h.date_range[0]} → ${h.date_range[1]}`}
               description={h.reason}
               action={
                 <div className="flex flex-col items-end gap-1.5">
-                  <Badge variant={severityBadgeVariant(h.severity)} className="text-[10px] uppercase">
-                    {h.severity}
-                  </Badge>
+                  <SeverityBadge severity={h.severity} />
                   <div className="flex flex-wrap gap-1 justify-end">
                     {h.absent_user_ids.slice(0, 6).map((uid) => {
                       const u = usersById.get(uid);

@@ -1,9 +1,20 @@
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
-import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
-import { Lightbulb } from "lucide-react";
-import { Badge } from "@/components/ui/badge.tsx";
+import MediumRecommendationRow from "@/components/specified/models/recommendation/datas/MediumRecommendationRow.tsx";
+import { Lightbulb } from "@phosphor-icons/react";
+
+function priorityLevel(priority: number): "high" | "medium" | "low" {
+  if (priority <= 1) return "high";
+  if (priority === 2) return "medium";
+  return "low";
+}
+
+function prioritySeverity(priority: number): Severity {
+  if (priority <= 1) return "critical";
+  if (priority === 2) return "warning";
+  return "ok";
+}
 
 export default function RecommandationsImpactCard({ recs }: { recs: Recommendation[] }) {
   const sorted = [...recs].sort((a, b) => a.priority - b.priority);
@@ -18,22 +29,17 @@ export default function RecommandationsImpactCard({ recs }: { recs: Recommendati
       }
     >
       {recs.length === 0 ? (
-        <Feedback variant="success" title="No project impact" description="All skills remain covered." />
+        <Feedback variant="success" title="No actions needed" description="No recommendations for this scenario." />
       ) : (
         <div className="space-y-2">
           {sorted.map((r) => (
-            <SecondaryCard
+            <MediumRecommendationRow
               key={r.id}
-              before={<Lightbulb className="size-4 text-primary" />}
-              title={
-                <span className="flex items-center gap-2">
-                  <Badge variant="default" className="h-4 px-1.5 text-[9px] uppercase">
-                    {r.type}
-                  </Badge>
-                  {r.title}
-                </span>
-              }
-              description={<span>{r.detail}</span>}
+              icon={Lightbulb}
+              title={r.title}
+              recommendation={r.detail}
+              severity={prioritySeverity(r.priority)}
+              priority={priorityLevel(r.priority)}
             />
           ))}
         </div>

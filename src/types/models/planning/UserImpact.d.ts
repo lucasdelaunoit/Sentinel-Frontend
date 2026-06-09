@@ -1,6 +1,6 @@
 interface UserImpact {
   user_id: string;
-  level: ImpactLevel;
+  severity: Severity;
   days_off: number;
   working_days_in_month: number;
   absence_ratio_pct: number;

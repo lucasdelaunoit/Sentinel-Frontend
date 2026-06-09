@@ -17,34 +17,6 @@ export function simColor(idx: number): SimColor {
   return SIM_COLORS[idx % SIM_COLORS.length];
 }
 
-export interface ImpactTheme {
-  text: string;
-  bg: string;
-  border: string;
-  dot: string;
-}
-
-export const IMPACT_THEME: Record<ImpactLevel, ImpactTheme> = {
-  critical: {
-    text: "text-danger-foreground",
-    bg: "bg-danger/10",
-    border: "border-danger/30",
-    dot: "bg-danger",
-  },
-  warning: {
-    text: "text-warning",
-    bg: "bg-warning/10",
-    border: "border-warning/30",
-    dot: "bg-warning",
-  },
-  safe: {
-    text: "text-success",
-    bg: "bg-success/10",
-    border: "border-success/30",
-    dot: "bg-success",
-  },
-};
-
 export interface AbsenceTheme {
   label: string;
   bg: string;

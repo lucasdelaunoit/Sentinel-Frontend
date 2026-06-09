@@ -18,5 +18,5 @@ interface ProjectImpact {
   effective_team_size_before: number;
   effective_team_size_after: number;
   recommendation: string | null;
-  level: ImpactLevel;
+  severity: Severity;
 }

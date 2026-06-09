@@ -3,5 +3,5 @@ interface Hotspot {
   reason: string;
   absent_user_ids: string[];
   projects_impacted: number[];
-  severity: PlanningSeverity;
+  severity: Severity;
 }

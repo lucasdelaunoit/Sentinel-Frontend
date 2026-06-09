@@ -4,6 +4,6 @@ interface SkillAtRisk {
   required_level: number;
   owners_left: number;
   owners_lost: string[];
-  severity: PlanningSeverity;
+  severity: Severity;
   dates_affected: string[];
 }

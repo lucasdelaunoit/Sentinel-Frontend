@@ -244,7 +244,7 @@ export default function PlanningGantt({
               block: SimBlock;
               range: NonNullable<ReturnType<typeof getBlockDisplayRange>>;
             }[];
-            const impact = mode === "simulate" ? perUserImpact[emp.id]?.level : undefined;
+            const impact = mode === "simulate" ? perUserImpact[emp.id]?.severity : undefined;
 
             return (
               <div
@@ -263,7 +263,7 @@ export default function PlanningGantt({
                     </p>
                     <p className="text-[10px] text-muted-foreground truncate">{emp.department?.name ?? emp.title}</p>
                   </div>
-                  {impact && impact !== "safe" && (
+                  {impact && impact !== "ok" && (
                     <div
                       className={cn(
                         "flex shrink-0 size-5 items-center justify-center rounded-full",

@@ -12,5 +12,5 @@ interface SkillImpact {
   redundancy_after: number;
   dates_uncovered: string[];
   projects_impacted: number[];
-  severity: PlanningSeverity;
+  severity: Severity;
 }

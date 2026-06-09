@@ -8,5 +8,5 @@ interface DayLoad {
   coverage_pct: number;
   capacity_pct: number;
   critical_skills_uncovered: number[];
-  severity: PlanningSeverity;
+  severity: Severity;
 }

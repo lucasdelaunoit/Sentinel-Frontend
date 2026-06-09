@@ -24,7 +24,7 @@ function buildEmpty(month: string): SimulateResponse {
       projects_at_risk_count: 0,
       projects_blocked_count: 0,
       critical_skills_uncovered_count: 0,
-      severity: "safe",
+      severity: "ok",
     },
     per_user_impact: {},
     per_project_impact: [],
@@ -42,7 +42,7 @@ function buildEmpty(month: string): SimulateResponse {
       projects_healthy_count: { before: 0, after: 0 },
     },
     meta: { computed_at: new Date(0).toISOString(), computation_ms: 0, absences_evaluated: 0, month },
-    overall_level: "safe",
+    overall_severity: "ok",
   };
 }
 

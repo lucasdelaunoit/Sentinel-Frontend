@@ -9,13 +9,6 @@ interface PlanningStatsSectionProps {
 
 type StatSeverity = StatCardData["severity"];
 
-/** Map the planning 5-tier severity onto the shared 3-tier StatCard severity. */
-function mapSeverity(sev: PlanningSeverity): StatSeverity {
-  if (sev === "critical") return "critical";
-  if (sev === "medium" || sev === "high") return "warning";
-  return "ok";
-}
-
 function deltaInsight(before: number, after: number, suffix = ""): string {
   const delta = after - before;
   const sign = delta > 0 ? "+" : "";
@@ -32,7 +25,7 @@ export default function PlanningStatsSection({ data, isLoading = false }: Planni
 
   const fragility = card(
     String(cmp.risk_score.after),
-    mapSeverity(totals.severity),
+    totals.severity,
     deltaInsight(cmp.risk_score.before, cmp.risk_score.after),
   );
 

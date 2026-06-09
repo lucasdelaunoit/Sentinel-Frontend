@@ -12,5 +12,5 @@ interface SimulateTotals {
   projects_at_risk_count: number;
   projects_blocked_count: number;
   critical_skills_uncovered_count: number;
-  severity: PlanningSeverity;
+  severity: Severity;
 }

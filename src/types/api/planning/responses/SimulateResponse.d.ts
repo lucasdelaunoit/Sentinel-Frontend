@@ -11,6 +11,6 @@ interface SimulateResponse {
   recommendations: Recommendation[];
   comparison_vs_baseline: ComparisonBaseline;
   meta: SimulateMeta;
-  /** Legacy alias derived from totals.severity. */
-  overall_level: ImpactLevel;
+  /** Worst-case severity across the scenario, mirrors totals.severity. */
+  overall_severity: Severity;
 }
