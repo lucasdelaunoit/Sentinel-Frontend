@@ -1,6 +1,7 @@
-import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
+import { type Dispatch, type SetStateAction } from "react";
 import { cn } from "@/lib/utils";
 import { usePlanningCalendar } from "@/hooks/usePlanningCalendar";
+import { useGanttGestures } from "@/hooks/useGanttGestures";
 import {
   CAPACITY_ROW_HEIGHT,
   DAY_COL_WIDTH,
@@ -9,25 +10,16 @@ import {
   ROW_HEIGHT,
   countWorkingHalves,
   drawDisplayRange,
-  fromHalves,
   getBlockDisplayRange,
   getDayLabel,
   getDaysInMonth,
   getFirstDayOfWeek,
   halvesLabel,
   makeDateStr,
-  toHalves,
   toX,
   workingSegments,
 } from "@/utils/planning/calendar";
-import {
-  clampDrawEnd,
-  getViewLeaves,
-  hasLeaveOverlap,
-  hasSimOverlap,
-  isOnRealLeave,
-  simBlockRanges,
-} from "@/utils/planning/leaves";
+import { getViewLeaves } from "@/utils/planning/leaves";
 import { absenceTheme, simColor } from "@/utils/planning/theme";
 import PlanningCapacityStrip from "./PlanningCapacityStrip";
 import PlanningLegend from "./PlanningLegend";
@@ -38,27 +30,6 @@ import { Button } from "@/components/ui/button";
 import { CaretLeftIcon, CaretRightIcon, ShieldWarningIcon, WarningIcon } from "@phosphor-icons/react";
 import { PlusIcon } from "@phosphor-icons/react";
 import { GripVertical } from "lucide-react";
-
-type DragMode = "move" | "resize-left" | "resize-right";
-
-interface DragState {
-  blockId: string;
-  mode: DragMode;
-  startMouseX: number;
-  origStartDay: number;
-  origStartHalf: Half;
-  origEndDay: number;
-  origEndHalf: Half;
-}
-
-interface DrawState {
-  userId: string;
-  anchorDay: number;
-  anchorHalf: Half;
-  currentDay: number;
-  currentHalf: Half;
-  containerLeft: number;
-}
 
 interface PlanningGanttProps {
   mode: PlanningMode;
@@ -132,28 +103,6 @@ export default function PlanningGantt({
   perDayLoad,
 }: PlanningGanttProps) {
   const { isClosedDay, holidays, holidayByDay } = usePlanningCalendar(viewYear, viewMonth);
-  const [dragState, setDragState] = useState<DragState | null>(null);
-  const dragStateRef = useRef<DragState | null>(null);
-  const didMoveRef = useRef(false);
-  const [drawState, setDrawState] = useState<DrawState | null>(null);
-  const drawStateRef = useRef<DrawState | null>(null);
-  const onCreateBlockRef = useRef(onCreateBlock);
-  // Latest sim blocks for the global mouse handlers, which don't list simBlocks in deps.
-  const simBlocksRef = useRef(simBlocks);
-
-  useEffect(() => {
-    onCreateBlockRef.current = onCreateBlock;
-  }, [onCreateBlock]);
-
-  useEffect(() => {
-    simBlocksRef.current = simBlocks;
-  }, [simBlocks]);
-
-  // Fresh selected id for the global mouseup, which resolves click-to-select for move drags.
-  const selectedBlockIdRef = useRef(selectedBlockId);
-  useEffect(() => {
-    selectedBlockIdRef.current = selectedBlockId;
-  }, [selectedBlockId]);
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const firstDayOfWeek = getFirstDayOfWeek(viewYear, viewMonth);
@@ -175,184 +124,20 @@ export default function PlanningGantt({
     }
   }
 
-  const usersById = new Map(users.map((u) => [u.id, u]));
-
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      const drag = dragStateRef.current;
-      if (drag) {
-        const deltaX = e.clientX - drag.startMouseX;
-        if (Math.abs(deltaX) > 4) didMoveRef.current = true;
-        if (!didMoveRef.current) return;
-        const dH = Math.round(deltaX / (DAY_COL_WIDTH / 2));
-        setSimBlocks((prev) =>
-          prev.map((b) => {
-            if (b.id !== drag.blockId) return b;
-            const user = usersById.get(b.userId);
-            if (!user) return b;
-            if (drag.mode === "move") {
-              const os = toHalves(drag.origStartDay, drag.origStartHalf);
-              const oe = toHalves(drag.origEndDay, drag.origEndHalf);
-              const span = oe - os;
-              const ns = Math.max(toHalves(firstFutureDay, 0), Math.min(daysInMonth * 2 - 1 - span, os + dH));
-              const { day: sd, half: sh } = fromHalves(ns, daysInMonth);
-              const { day: ed, half: eh } = fromHalves(ns + span, daysInMonth);
-              if (hasLeaveOverlap(user, sd, ed, viewYear, viewMonth)) return b;
-              if (hasSimOverlap(b.userId, sd, ed, prev, viewYear, viewMonth, b.id)) return b;
-              return {
-                ...b,
-                startDate: makeDateStr(viewYear, viewMonth, sd),
-                startHalf: sh,
-                endDate: makeDateStr(viewYear, viewMonth, ed),
-                endHalf: eh,
-              };
-            }
-            if (drag.mode === "resize-left") {
-              const oe = toHalves(drag.origEndDay, drag.origEndHalf);
-              const ns = Math.max(
-                toHalves(firstFutureDay, 0),
-                Math.min(oe - 1, toHalves(drag.origStartDay, drag.origStartHalf) + dH),
-              );
-              const { day: sd, half: sh } = fromHalves(ns, daysInMonth);
-              if (hasLeaveOverlap(user, sd, drag.origEndDay, viewYear, viewMonth)) return b;
-              if (hasSimOverlap(b.userId, sd, drag.origEndDay, prev, viewYear, viewMonth, b.id)) return b;
-              return { ...b, startDate: makeDateStr(viewYear, viewMonth, sd), startHalf: sh };
-            }
-            const os = toHalves(drag.origStartDay, drag.origStartHalf);
-            const ne = Math.max(
-              os + 1,
-              Math.min(daysInMonth * 2 - 1, toHalves(drag.origEndDay, drag.origEndHalf) + dH),
-            );
-            const { day: ed, half: eh } = fromHalves(ne, daysInMonth);
-            if (hasLeaveOverlap(user, drag.origStartDay, ed, viewYear, viewMonth)) return b;
-            if (hasSimOverlap(b.userId, drag.origStartDay, ed, prev, viewYear, viewMonth, b.id)) return b;
-            return { ...b, endDate: makeDateStr(viewYear, viewMonth, ed), endHalf: eh };
-          }),
-        );
-        return;
-      }
-
-      const draw = drawStateRef.current;
-      if (draw) {
-        const user = usersById.get(draw.userId);
-        if (!user) return;
-        const relX = Math.max(0, e.clientX - draw.containerLeft);
-        // Floor at the first future day so the block can't be dragged onto today/past.
-        const minHalfIdx = toHalves(firstFutureDay, 0);
-        const halfIdx = Math.max(minHalfIdx, Math.min(daysInMonth * 2 - 1, Math.floor(relX / (DAY_COL_WIDTH / 2))));
-        const { day, half } = fromHalves(halfIdx, daysInMonth);
-        const occupied = simBlockRanges(draw.userId, simBlocksRef.current, viewYear, viewMonth);
-        const clamped = clampDrawEnd(
-          user,
-          draw.anchorDay,
-          draw.anchorHalf,
-          day,
-          half,
-          viewYear,
-          viewMonth,
-          daysInMonth,
-          occupied,
-        );
-        const updated = { ...draw, currentDay: clamped.day, currentHalf: clamped.half };
-        drawStateRef.current = updated;
-        setDrawState(updated);
-      }
-    };
-
-    const onUp = () => {
-      const draw = drawStateRef.current;
-      if (draw) {
-        const { startDay, startHalf, endDay, endHalf } = drawDisplayRange(draw);
-        // Defensive: commit only a future, non-overlapping block. The per-move clamp already
-        // stops the draw at the border of any block in its path — this is the hard backstop so
-        // an overlapping block can never be created even if a clamp edge is missed.
-        if (
-          startDay >= firstFutureDay &&
-          !hasSimOverlap(draw.userId, startDay, endDay, simBlocksRef.current, viewYear, viewMonth)
-        ) {
-          onCreateBlockRef.current(
-            draw.userId,
-            makeDateStr(viewYear, viewMonth, startDay),
-            startHalf,
-            makeDateStr(viewYear, viewMonth, endDay),
-            endHalf,
-          );
-        }
-        drawStateRef.current = null;
-        setDrawState(null);
-      }
-      // A move drag that never actually moved is a click → toggle selection (open/close sheet).
-      // Lives here (not on the block) so it also fires when the grab started in the row gap
-      // above/below the shorter visual pill.
-      const drag = dragStateRef.current;
-      if (drag && drag.mode === "move" && !didMoveRef.current) {
-        setSelectedBlockId(selectedBlockIdRef.current === drag.blockId ? null : drag.blockId);
-      }
-      dragStateRef.current = null;
-      setDragState(null);
-      didMoveRef.current = false;
-    };
-
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
-    return () => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [setSimBlocks, viewYear, viewMonth, daysInMonth, users, firstFutureDay]);
-
-  function startDrag(e: React.MouseEvent, block: SimBlock, dragMode: DragMode) {
-    e.preventDefault();
-    e.stopPropagation();
-    didMoveRef.current = false;
-    const range = getBlockDisplayRange(block, viewYear, viewMonth);
-    if (!range) return;
-    const drag: DragState = {
-      blockId: block.id,
-      mode: dragMode,
-      startMouseX: e.clientX,
-      origStartDay: range.startDay,
-      origStartHalf: range.startHalf,
-      origEndDay: range.endDay,
-      origEndHalf: range.endHalf,
-    };
-    dragStateRef.current = drag;
-    setDragState(drag);
-  }
-
-  function startDraw(e: React.MouseEvent<HTMLDivElement>, user: PlanningUser) {
-    if (mode !== "simulate") return;
-    e.preventDefault();
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relX = Math.max(0, e.clientX - rect.left);
-    const halfIdx = Math.max(0, Math.min(daysInMonth * 2 - 1, Math.floor(relX / (DAY_COL_WIDTH / 2))));
-    const { day, half } = fromHalves(halfIdx, daysInMonth);
-    if (day < firstFutureDay) return; // future-only: can't start on today or in the past
-    if (isOnRealLeave(user, day, viewYear, viewMonth)) return;
-    // A mousedown anywhere in an existing block's COLUMN (incl. the row gap above/below its
-    // shorter visual pill) grabs that block — never spawns an overlapping new draw. This makes
-    // the whole row height of a block interactive, and a clean click toggles its detail sheet.
-    const hitBlock = simBlocks.find((b) => {
-      if (b.userId !== user.id) return false;
-      const r = getBlockDisplayRange(b, viewYear, viewMonth);
-      return r != null && day >= r.startDay && day <= r.endDay;
-    });
-    if (hitBlock) {
-      startDrag(e, hitBlock, "move");
-      return;
-    }
-    const draw: DrawState = {
-      userId: user.id,
-      anchorDay: day,
-      anchorHalf: half,
-      currentDay: day,
-      currentHalf: half,
-      containerLeft: rect.left,
-    };
-    drawStateRef.current = draw;
-    setDrawState(draw);
-  }
+  const { dragState, drawState, startDrag, startDraw } = useGanttGestures({
+    mode,
+    users,
+    simBlocks,
+    setSimBlocks,
+    selectedBlockId,
+    setSelectedBlockId,
+    onCreateBlock,
+    viewYear,
+    viewMonth,
+    daysInMonth,
+    firstFutureDay,
+    isClosedDay,
+  });
 
   const holidayText = holidays.length
     ? holidays.map((h) => `${MONTH_NAMES[viewMonth - 1].slice(0, 3)} ${h.day} (${h.label})`).join(" · ")
@@ -376,7 +161,9 @@ export default function PlanningGantt({
       {mode === "simulate" && (
         <div className="flex items-center gap-1.5 px-6 py-2 text-[11px] font-medium text-planned border-b border-border/40 bg-planned/5">
           <PlusIcon weight="bold" className="size-3" />
-          <span>Drag across future days on a person&apos;s row to simulate an absence. Today and past days are locked.</span>
+          <span>
+            Drag across future days on a person&apos;s row to simulate an absence. Today and past days are locked.
+          </span>
         </div>
       )}
       <div
@@ -505,8 +292,6 @@ export default function PlanningGantt({
                   }}
                   onMouseDown={(e) => startDraw(e, emp)}
                 >
-                  {/* Future-only: one hatched band locks today + past. Sits at the base layer so
-                      absences render on top of it. */}
                   {mode === "simulate" && firstFutureDay > 1 && (
                     <div
                       className="absolute inset-y-0 border-r border-border/60"
@@ -531,7 +316,6 @@ export default function PlanningGantt({
                   )}
 
                   {days.map((d) =>
-                    // Skip closed-day hatch under the locked past tint to avoid a busy double layer.
                     isClosedDay(d) && !(mode === "simulate" && d < firstFutureDay) ? (
                       <div
                         key={d}
