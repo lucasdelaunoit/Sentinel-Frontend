@@ -13,6 +13,4 @@ interface SimulateResponse {
   meta: SimulateMeta;
   /** Legacy alias derived from totals.severity. */
   overall_level: ImpactLevel;
-  /** Legacy alias of per_project_impact. */
-  projects: ProjectImpact[];
 }

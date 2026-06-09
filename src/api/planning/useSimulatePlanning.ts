@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import usePrivateApi from "@/api/privateApi";
 
 export type SimulateStatus = "idle" | "pending" | "saved" | "error";
@@ -43,13 +43,14 @@ function buildEmpty(month: string): SimulateResponse {
     },
     meta: { computed_at: new Date(0).toISOString(), computation_ms: 0, absences_evaluated: 0, month },
     overall_level: "safe",
-    projects: [],
   };
 }
 
 /**
- * Debounced live simulation of pending absences. Re-fires on every change to the
- * absence set and reflects the latest result — never call the mutation by hand.
+ * Debounced live simulation of pending absences. Modeled as a query: POST /simulate is a pure
+ * read (computes risk from an absence set, no side effect), so identical sets dedupe and cache.
+ * The query key is the debounced absence signature — drag a block back to a prior position and the
+ * cached result returns instantly. Never call this by hand; it tracks the latest set automatically.
  */
 export default function useSimulatePlanning(
   absences: SimulateAbsenceInput[],
@@ -58,60 +59,49 @@ export default function useSimulatePlanning(
 ) {
   const { debounceMs = 300 } = options;
   const privateApi = usePrivateApi();
-  const month = absences[0]?.start_date.slice(0, 7) ?? "1970-01";
+
+  const signature = JSON.stringify(absences);
+  const [debounced, setDebounced] = useState(absences);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebounced(absences), debounceMs);
+    return () => window.clearTimeout(timer);
+  }, [signature, debounceMs]);
+
+  const debouncedSignature = JSON.stringify(debounced);
+  const enabled = isValid && debounced.length > 0;
+  const month = debounced[0]?.start_date.slice(0, 7) ?? "1970-01";
   const emptyResult = useMemo(() => buildEmpty(month), [month]);
 
-  const mutation = useMutation({
-    mutationFn: async (input: SimulateAbsenceInput[]) => {
-      const { data } = await privateApi.post<SimulateResponse>("/api/planning/simulate", { absences: input });
+  const query = useQuery({
+    queryKey: ["planning-simulate", debouncedSignature],
+    queryFn: async () => {
+      const { data } = await privateApi.post<SimulateResponse>("/api/planning/simulate", { absences: debounced });
       return data;
     },
+    enabled,
+    staleTime: Infinity,
   });
 
-  const { mutate, reset } = mutation;
-  const signature = JSON.stringify(absences);
-
-  // True from the instant the absence set changes (debounce start) until its
-  // request settles — not just while the request is in flight. `genRef` guards
-  // against a stale in-flight request clearing the loading state of a newer one.
-  const [isLoading, setIsLoading] = useState(false);
-  const genRef = useRef(0);
-
-  useEffect(() => {
-    if (absences.length === 0 || !isValid) {
-      reset();
-      setIsLoading(false);
-      return;
-    }
-    const gen = ++genRef.current;
-    setIsLoading(true);
-    const timer = window.setTimeout(() => {
-      mutate(absences, {
-        onSettled: () => {
-          if (genRef.current === gen) setIsLoading(false);
-        },
-      });
-    }, debounceMs);
-    return () => window.clearTimeout(timer);
-  }, [signature, isValid, debounceMs]);
+  const pendingDebounce = enabled && signature !== debouncedSignature;
+  const isLoading = pendingDebounce || (enabled && query.isFetching);
 
   const status: SimulateStatus =
     !isValid && absences.length > 0
       ? "error"
       : isLoading
         ? "pending"
-        : mutation.isError
+        : query.isError
           ? "error"
-          : mutation.isSuccess
+          : query.isSuccess
             ? "saved"
             : "idle";
 
   return {
-    data: mutation.data ?? emptyResult,
+    data: enabled ? (query.data ?? emptyResult) : emptyResult,
     status,
     isLoading,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
+    isError: query.isError,
+    error: query.error,
+    isSuccess: query.isSuccess,
   };
 }
