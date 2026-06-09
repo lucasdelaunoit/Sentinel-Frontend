@@ -517,48 +517,7 @@ function RecommendationsTab({ recs }: { recs: Recommendation[] }) {
               {r.title}
             </span>
           }
-          description={
-            <span>
-              {r.detail}
-              {r.impact_preview && (
-                <span className="flex gap-2 mt-1">
-                  {r.impact_preview.risk_score_delta !== undefined && (
-                    <Badge
-                      variant="secondary"
-                      className={cn(
-                        "h-4 px-1.5 text-[9px]",
-                        r.impact_preview.risk_score_delta < 0
-                          ? "bg-success/15 text-success"
-                          : "bg-destructive/10 text-destructive-foreground",
-                      )}
-                    >
-                      Risk {r.impact_preview.risk_score_delta > 0 ? "+" : ""}
-                      {r.impact_preview.risk_score_delta}
-                    </Badge>
-                  )}
-                  {r.impact_preview.coverage_delta_pct !== undefined && (
-                    <Badge
-                      variant="secondary"
-                      className={cn(
-                        "h-4 px-1.5 text-[9px]",
-                        r.impact_preview.coverage_delta_pct > 0
-                          ? "bg-success/15 text-success"
-                          : "bg-destructive/10 text-destructive-foreground",
-                      )}
-                    >
-                      Coverage {r.impact_preview.coverage_delta_pct > 0 ? "+" : ""}
-                      {r.impact_preview.coverage_delta_pct}%
-                    </Badge>
-                  )}
-                  {r.impact_preview.absent_headcount_peak !== undefined && (
-                    <Badge variant="outline" className="h-4 px-1.5 text-[9px]">
-                      Peak → {r.impact_preview.absent_headcount_peak}
-                    </Badge>
-                  )}
-                </span>
-              )}
-            </span>
-          }
+          description={<span>{r.detail}</span>}
         />
       ))}
     </div>

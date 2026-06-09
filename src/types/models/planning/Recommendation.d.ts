@@ -4,5 +4,4 @@ interface Recommendation {
   priority: number;
   title: string;
   detail: string;
-  impact_preview?: RecommendationImpactPreview;
 }
