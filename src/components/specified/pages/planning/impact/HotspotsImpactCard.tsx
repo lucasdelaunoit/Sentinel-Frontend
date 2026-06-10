@@ -67,7 +67,7 @@ HotspotsImpactCard.Skeleton = function HotspotsImpactCardSkeleton() {
       title={
         <div className="flex items-center gap-2">
           <span>Hotspots</span>
-          <CountDisplay isLoading count={0} />
+          <CountDisplay.Skeleton />
         </div>
       }
     >

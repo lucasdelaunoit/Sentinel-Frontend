@@ -20,6 +20,17 @@ function card(value: string, severity: StatSeverity, insight: string | null): St
 }
 
 export default function PlanningStatsSection({ data, isLoading = false }: PlanningStatsSectionProps) {
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard.Skeleton title="Fragility" icon={Gauge} />
+        <StatCard.Skeleton title="Coverage" icon={Activity} />
+        <StatCard.Skeleton title="Bus factor" icon={Shield} />
+        <StatCard.Skeleton title="Peak overlap" icon={Users} />
+      </div>
+    );
+  }
+
   const cmp = data.comparison_vs_baseline;
   const { totals } = data;
 
@@ -51,10 +62,10 @@ export default function PlanningStatsSection({ data, isLoading = false }: Planni
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard title="Fragility" icon={Gauge} card={fragility} isLoading={isLoading} />
-      <StatCard title="Coverage" icon={Activity} card={coverage} isLoading={isLoading} />
-      <StatCard title="Bus factor" icon={Shield} card={busFactor} isLoading={isLoading} />
-      <StatCard title="Peak overlap" icon={Users} card={peak} isLoading={isLoading} />
+      <StatCard title="Fragility" icon={Gauge} card={fragility} />
+      <StatCard title="Coverage" icon={Activity} card={coverage} />
+      <StatCard title="Bus factor" icon={Shield} card={busFactor} />
+      <StatCard title="Peak overlap" icon={Users} card={peak} />
     </div>
   );
 }

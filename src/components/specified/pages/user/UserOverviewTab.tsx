@@ -144,7 +144,7 @@ export default function UserOverviewTab({ userId, onViewAbsences }: UserOverview
         title={
           <div className="flex items-center gap-2">
             <span>Absences</span>
-            <CountDisplay isLoading={absencesLoading} count={upcomingTotal} />
+            {absencesLoading ? <CountDisplay.Skeleton /> : <CountDisplay count={upcomingTotal} />}
           </div>
         }
         className="flex flex-col"

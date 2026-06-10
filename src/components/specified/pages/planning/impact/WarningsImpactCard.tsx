@@ -39,7 +39,7 @@ WarningsImpactCard.Skeleton = function WarningsImpactCardSkeleton() {
       title={
         <div className="flex items-center gap-2">
           <span>Warnings</span>
-          <CountDisplay isLoading count={0} />
+          <CountDisplay.Skeleton />
         </div>
       }
     >

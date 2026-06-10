@@ -11,13 +11,12 @@ import EditUserSheet from "@/components/specified/models/employees/sheets/EditUs
 
 interface UserProfileCardProps {
   user: User | undefined;
-  isLoading?: boolean;
 }
 
-export default function UserProfileCard({ user, isLoading = false }: UserProfileCardProps) {
+export default function UserProfileCard({ user }: UserProfileCardProps) {
   const [editOpen, setEditOpen] = useState(false);
 
-  if (isLoading || !user) return <UserProfileCard.Skeleton />;
+  if (!user) return <UserProfileCard.Skeleton />;
 
   return (
     <Card className="p-6">

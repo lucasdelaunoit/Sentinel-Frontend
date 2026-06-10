@@ -18,20 +18,10 @@ export default function UsersStatCardsSection() {
 
   return (
     <div className="grid grid-cols-4 gap-4">
-      <StatCard title="Total Employees" icon={UsersIcon} card={stats.total} isLoading={isLoading || !stats} />
-      <StatCard title="Available" icon={CalendarCheckIcon} card={stats.available} isLoading={isLoading || !stats} />
-      <StatCard
-        title="Critical Employees"
-        icon={ShieldWarningIcon}
-        card={stats.critical_users}
-        isLoading={isLoading || !stats}
-      />
-      <StatCard
-        title="Unique Skill Holders"
-        icon={UserCircleIcon}
-        card={stats.unique_skill_holders}
-        isLoading={isLoading || !stats}
-      />
+      <StatCard title="Total Employees" icon={UsersIcon} card={stats.total} />
+      <StatCard title="Available" icon={CalendarCheckIcon} card={stats.available} />
+      <StatCard title="Critical Employees" icon={ShieldWarningIcon} card={stats.critical_users} />
+      <StatCard title="Unique Skill Holders" icon={UserCircleIcon} card={stats.unique_skill_holders} />
     </div>
   );
 }

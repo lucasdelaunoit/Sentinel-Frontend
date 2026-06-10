@@ -67,7 +67,7 @@ export default function UserDetail() {
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         {/* ── Hero ─────────────────────────────────────────────── */}
-        <UserProfileCard user={user} isLoading={isLoading} />
+        <UserProfileCard user={user} />
 
         {/* ── Stats ─────────────────────────────────────────────── */}
         {isLoadingStats || !stats ? <UserStatsSection.Skeleton /> : <UserStatsSection stats={stats} />}

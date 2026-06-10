@@ -99,7 +99,7 @@ export default function CalendarTab() {
             title={
               <div className="flex items-center gap-2">
                 <span>Company Holidays</span>
-                <CountDisplay isLoading count={0} />
+                <CountDisplay.Skeleton />
               </div>
             }
             action={
@@ -163,7 +163,7 @@ export default function CalendarTab() {
           title={
             <div className="flex items-center gap-2">
               <span>Company Holidays</span>
-              <CountDisplay isLoading={holidaysLoading} count={holidaysTotal} />
+              {holidaysLoading ? <CountDisplay.Skeleton /> : <CountDisplay count={holidaysTotal} />}
             </div>
           }
           action={

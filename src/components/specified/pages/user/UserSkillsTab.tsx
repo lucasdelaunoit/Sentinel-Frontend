@@ -57,7 +57,7 @@ export default function UserSkillsTab({ userId }: UserSkillsTabProps) {
           title={
             <div className="flex items-center gap-2">
               <span>Skills & Proficiency</span>
-              <CountDisplay isLoading={isLoading} count={skillsTotal} />
+              {isLoading ? <CountDisplay.Skeleton /> : <CountDisplay count={skillsTotal} />}
             </div>
           }
           action={

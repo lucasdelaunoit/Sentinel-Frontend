@@ -22,14 +22,11 @@ interface StatCardProps {
   icon: ElementType;
   card?: StatCardValue;
   onClick?: () => void;
-  isLoading?: boolean;
   className?: string;
 }
 
-export default function StatCard({ title, icon: Icon, card, onClick, isLoading = false, className }: StatCardProps) {
+export default function StatCard({ title, icon: Icon, card, onClick, className }: StatCardProps) {
   const color = (card && SEVERITY_COLOR[card.severity]) || "text-foreground";
-
-  if (isLoading) return <StatCard.Skeleton title={title} icon={Icon} className={className} />;
 
   return (
     <Card

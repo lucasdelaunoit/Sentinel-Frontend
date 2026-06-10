@@ -39,7 +39,7 @@ SkillImpactCard.Skeleton = function SkillImpactCardSkeleton() {
       title={
         <div className="flex items-center gap-2">
           <span>Impacted Skills</span>
-          <CountDisplay isLoading count={0} />
+          <CountDisplay.Skeleton />
         </div>
       }
     >

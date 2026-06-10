@@ -24,7 +24,6 @@ interface DeadlineCountdownCardProps {
   title?: string;
   card?: DeadlineCardValue;
   onClick?: () => void;
-  isLoading?: boolean;
 }
 
 function useCountUp(target: number, durationMs = 900) {
@@ -55,13 +54,10 @@ export default function DeadlineCountdownCard({
   title = "Deadline",
   card,
   onClick,
-  isLoading = false,
 }: DeadlineCountdownCardProps) {
   const days = Math.max(Number(card?.value_raw ?? card?.raw ?? 0), 0);
   const animatedDays = useCountUp(days);
   const color = (card && SEVERITY_COLOR[card.severity]) || "text-foreground";
-
-  if (isLoading) return <DeadlineCountdownCard.Skeleton title={title} />;
 
   return (
     <Card

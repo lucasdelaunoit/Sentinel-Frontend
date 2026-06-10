@@ -51,27 +51,24 @@ export default function UserAbsencesTab({ userId }: UserAbsencesTabProps) {
       {/* ── Top row: stats column + calendar ──────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(240px,300px)_1fr] gap-4 items-stretch">
         <div className="flex flex-col gap-3 h-full">
-          <StatCard
-            title="Total absences"
-            icon={CalendarBlankIcon}
-            card={stats?.total_absences}
-            isLoading={isStatsLoading}
-            className="flex-1"
-          />
-          <StatCard
-            title={`Days off — ${new Date().getFullYear()}`}
-            icon={SunHorizonIcon}
-            card={stats?.days_off}
-            isLoading={isStatsLoading}
-            className="flex-1"
-          />
-          <StatCard
-            title="Upcoming"
-            icon={ClockCountdownIcon}
-            card={stats?.upcoming}
-            isLoading={isStatsLoading}
-            className="flex-1"
-          />
+          {isStatsLoading || !stats ? (
+            <>
+              <StatCard.Skeleton title="Total absences" icon={CalendarBlankIcon} className="flex-1" />
+              <StatCard.Skeleton title={`Days off — ${new Date().getFullYear()}`} icon={SunHorizonIcon} className="flex-1" />
+              <StatCard.Skeleton title="Upcoming" icon={ClockCountdownIcon} className="flex-1" />
+            </>
+          ) : (
+            <>
+              <StatCard title="Total absences" icon={CalendarBlankIcon} card={stats.total_absences} className="flex-1" />
+              <StatCard
+                title={`Days off — ${new Date().getFullYear()}`}
+                icon={SunHorizonIcon}
+                card={stats.days_off}
+                className="flex-1"
+              />
+              <StatCard title="Upcoming" icon={ClockCountdownIcon} card={stats.upcoming} className="flex-1" />
+            </>
+          )}
         </div>
 
         {isLoading ? (
@@ -92,7 +89,7 @@ export default function UserAbsencesTab({ userId }: UserAbsencesTabProps) {
         title={
           <div className="flex items-center gap-2">
             <span>All absences</span>
-            <CountDisplay isLoading={isLoading} count={allAbsences.length} />
+            {isLoading ? <CountDisplay.Skeleton /> : <CountDisplay count={allAbsences.length} />}
           </div>
         }
         action={
