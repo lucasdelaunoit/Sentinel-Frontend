@@ -3,6 +3,7 @@ import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
 import RiskBadge from "@/components/specified/pages/home/_shared/RiskBadge.tsx";
 import { cn } from "@/lib/utils.ts";
+import { formatDelta } from "@/utils/formatters/number.ts";
 import type { UpcomingRiskEvent } from "@/types/others/UpcomingRiskEvent";
 import { ArrowElbowDownRightIcon } from "@phosphor-icons/react";
 
@@ -19,8 +20,6 @@ function formatWhen(iso: string): { date: string; relative: string } {
   const date = start.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
   return { date, relative };
 }
-
-const fmtDelta = (delta: number) => (delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : "±0");
 
 function deltaChipTone(delta: number, worseWhen: "up" | "down"): string {
   const worse = worseWhen === "up" ? delta > 0 : delta < 0;
@@ -82,7 +81,7 @@ export default function MediumUpcomingRiskCard({ event }: MediumUpcomingRiskCard
                     deltaChipTone(affected.fragility.delta, "up"),
                   )}
                 >
-                  {fmtDelta(affected.fragility.delta)}
+                  {formatDelta(affected.fragility.delta)}
                 </span>
               </span>
             </span>

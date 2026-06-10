@@ -7,13 +7,13 @@ import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.ts
 import { SEVERITY_COLORS } from "@/lib/severity.ts";
 import { cn } from "@/lib/utils.ts";
 
-interface SkillImpactRowProps {
+interface MediumSkillImpactRowProps {
   skill: SkillImpact;
   className?: string;
   onClick?: () => void;
 }
 
-export default function SkillImpactRow({ skill, className, onClick }: SkillImpactRowProps) {
+export default function MediumSkillImpactRow({ skill, className, onClick }: MediumSkillImpactRowProps) {
   const projectCount = skill.projects_impacted.length;
   const extraDates = Math.max(0, skill.dates_uncovered.length - 4);
 
@@ -40,8 +40,13 @@ export default function SkillImpactRow({ skill, className, onClick }: SkillImpac
       }
       description={
         <span className="mt-3 block space-y-2.5">
-          <span className="grid grid-cols-2 gap-2">
-            <MetricBox label="Coverage" before={skill.coverage_pct_before} after={skill.coverage_pct_after} suffix="%" />
+          <span className="grid grid-cols-2 gap-4">
+            <MetricBox
+              label="Coverage"
+              before={skill.coverage_pct_before}
+              after={skill.coverage_pct_after}
+              suffix="%"
+            />
             <MetricBox label="Owners" before={skill.owners_total} after={skill.owners_left} />
           </span>
 
@@ -70,7 +75,7 @@ export default function SkillImpactRow({ skill, className, onClick }: SkillImpac
   );
 }
 
-SkillImpactRow.Skeleton = function SkillImpactRowSkeleton() {
+MediumSkillImpactRow.Skeleton = function MediumSkillImpactRowSkeleton() {
   return (
     <div className="flex items-start gap-4 rounded-xl bg-tertiary p-4">
       <div className="min-w-0 flex-1 space-y-2.5">

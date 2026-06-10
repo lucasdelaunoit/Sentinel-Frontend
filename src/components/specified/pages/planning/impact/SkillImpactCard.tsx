@@ -1,7 +1,7 @@
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
-import SkillImpactRow from "@/components/specified/models/skill/datas/items/SkillImpactRow.tsx";
+import MediumSkillImpactRow from "@/components/specified/models/skill/datas/items/MediumSkillImpactRow.tsx";
 
 interface SkillImpactCardProps {
   skills: SkillImpact[];
@@ -25,7 +25,7 @@ export default function SkillImpactCard({ skills }: SkillImpactCardProps) {
       ) : (
         <div className="space-y-2">
           {sorted.map((s) => (
-            <SkillImpactRow key={s.skill_id} skill={s} />
+            <MediumSkillImpactRow key={s.skill_id} skill={s} />
           ))}
         </div>
       )}
@@ -45,7 +45,7 @@ SkillImpactCard.Skeleton = function SkillImpactCardSkeleton() {
     >
       <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <SkillImpactRow.Skeleton key={i} />
+          <MediumSkillImpactRow.Skeleton key={i} />
         ))}
       </div>
     </ComposedCard>
