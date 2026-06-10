@@ -308,6 +308,7 @@ export default function Users() {
     <>
       <TopBar
         title="All Employees"
+        breadcrumb={[{ label: "Employees" }]}
         actions={
           <div className="flex gap-2">
             <Button size="lg" onClick={() => setSheetOpen(true)}>

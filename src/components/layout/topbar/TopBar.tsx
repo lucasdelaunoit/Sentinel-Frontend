@@ -1,16 +1,26 @@
 import { Button } from "@/components/ui/button.tsx";
 import { usePage } from "@/context/PageContext.tsx";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { CaretRightIcon, SidebarIcon, SidebarSimpleIcon } from "@phosphor-icons/react";
 
+export interface Crumb {
+  label: string;
+  to?: string;
+}
+
 interface TopBarProps {
-  title: string;
-  breadcrumb?: string;
+  title: ReactNode;
+  breadcrumb?: Crumb[];
   actions?: ReactNode;
 }
 
-export default function TopBar({ title, breadcrumb = "ssss", actions }: TopBarProps): ReactNode {
+const ROOT_CRUMB: Crumb = { label: "Sentinel", to: "/dashboard" };
+
+export default function TopBar({ title, breadcrumb = [], actions }: TopBarProps): ReactNode {
   const { sidebarCollapsed, toggleSidebar } = usePage();
+
+  const crumbs: Crumb[] = [ROOT_CRUMB, ...breadcrumb];
 
   return (
     <header className="flex h-[60px] shrink-0 items-center justify-between border-b border-border bg-card/80 backdrop-blur-sm px-6">
@@ -26,9 +36,21 @@ export default function TopBar({ title, breadcrumb = "ssss", actions }: TopBarPr
         </Button>
         <div>
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70">
-            <span className="font-medium">Sentinel</span>
-            <CaretRightIcon className="size-2.5 mb-0.5 text-muted-foreground" />
-            <span className="font-medium text-foreground/60">{breadcrumb}</span>
+            {crumbs.map((crumb, index) => {
+              const isLast = index === crumbs.length - 1;
+              return (
+                <Fragment key={`${crumb.label}-${index}`}>
+                  {index > 0 && <CaretRightIcon className="size-2.5 mb-0.5 text-muted-foreground" />}
+                  {crumb.to && !isLast ? (
+                    <Link to={crumb.to} className="font-medium transition-colors hover:text-foreground">
+                      {crumb.label}
+                    </Link>
+                  ) : (
+                    <span className={isLast ? "font-medium text-foreground/60" : "font-medium"}>{crumb.label}</span>
+                  )}
+                </Fragment>
+              );
+            })}
           </div>
           <h1 className="text-xl font-bold text-foreground leading-tight tracking-tight mt-0.5">{title}</h1>
         </div>

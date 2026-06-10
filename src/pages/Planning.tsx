@@ -141,7 +141,7 @@ export default function Planning() {
     <>
       <TopBar
         title="Team Planning"
-        breadcrumb="Planning"
+        breadcrumb={[{ label: "Planning" }]}
         actions={
           <div className="flex items-center gap-3">
             {mode === "simulate" && simBlocks.length > 0 && (

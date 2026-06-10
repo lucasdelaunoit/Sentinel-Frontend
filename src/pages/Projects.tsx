@@ -450,6 +450,7 @@ export default function Projects() {
     <>
       <TopBar
         title="All Projects"
+        breadcrumb={[{ label: "Projects" }]}
         actions={
           <Button onClick={() => setSheetOpen(true)} size="lg">
             <PlusIcon className="size-3.5" weight="bold" />

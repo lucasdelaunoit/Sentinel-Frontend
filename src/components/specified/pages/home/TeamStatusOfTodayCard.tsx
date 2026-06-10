@@ -47,7 +47,7 @@ export default function TeamStatusOfTodayCard() {
         className="flex flex-col"
       >
         <div className="flex flex-col justify-between h-full">
-          <div className="flex-1 flex flex-col justify-center mb-4">
+          <div className="flex-1 flex flex-col mb-4">
             {isError ? (
               <Feedback variant="danger" title="Failed to load team" description="Check API connection." />
             ) : awayUsers.length === 0 ? (

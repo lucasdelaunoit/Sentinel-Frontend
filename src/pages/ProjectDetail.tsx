@@ -56,7 +56,13 @@ export default function ProjectDetail() {
 
   return (
     <>
-      <TopBar title={isLoading ? "Loading…" : (apiProject?.name ?? "Project")} />
+      <TopBar
+        title={isLoading ? "Loading…" : (apiProject?.name ?? "Project")}
+        breadcrumb={[
+          { label: "Projects", to: "/projects" },
+          { label: isLoading ? "Loading…" : (apiProject?.name ?? "Project") },
+        ]}
+      />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         {/* ── Hero ─────────────────────────────────────────────── */}
         {isLoading || !apiProject ? <ProjectProfileCard.Skeleton /> : <ProjectProfileCard project={apiProject} />}

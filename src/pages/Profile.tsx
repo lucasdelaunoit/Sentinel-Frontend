@@ -84,6 +84,7 @@ export default function ProfilePage() {
     <>
       <TopBar
         title="Profile"
+        breadcrumb={[{ label: "Profile" }]}
         actions={
           <Button
             variant="outline"

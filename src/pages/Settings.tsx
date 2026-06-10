@@ -41,6 +41,7 @@ export default function Settings() {
     <>
       <TopBar
         title="Settings"
+        breadcrumb={[{ label: "Settings" }]}
         actions={
           activeTab === "organization" && (
             <Label

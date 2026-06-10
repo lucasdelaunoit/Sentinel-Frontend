@@ -1,10 +1,13 @@
 import { useEffect } from "react";
 import { useTabParam } from "@/hooks/useTabParam";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { usePage } from "@/context/PageContext";
 import { SquaresFourIcon, FolderIcon, CertificateIcon, CalendarDotsIcon } from "@phosphor-icons/react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import useGetUser from "@/api/users/useGetUser";
 import useGetUserStats from "@/api/users/useGetUserStats";
 import UserProfileCard from "@/components/specified/pages/user/UserProfileCard.tsx";
@@ -18,6 +21,7 @@ const USER_TABS = ["overview", "projects", "skills", "absences"] as const;
 
 export default function UserDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { setTitle, setBreadcrumb } = usePage();
   const [activeTab, setActiveTab] = useTabParam("overview", USER_TABS);
 
@@ -37,11 +41,17 @@ export default function UserDetail() {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <p className="text-[16px] font-semibold text-foreground">Employee not found</p>
-        <Link to="/users" className="text-[13px] text-primary hover:underline underline-offset-4">
-          Back to employees
-        </Link>
+      <div className="flex flex-1 items-center justify-center p-6">
+        <Feedback
+          variant="danger"
+          title="Employee not found"
+          description="This employee doesn't exist or was removed."
+          action={
+            <Button variant="link" size="sm" onClick={() => navigate("/users")}>
+              Back to employees
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -49,8 +59,11 @@ export default function UserDetail() {
   return (
     <>
       <TopBar
-        title={isLoading ? "Loading…" : user ? `${user.firstname} ${user.lastname}` : "Employee"}
-        breadcrumb="Employee"
+        title={isLoading ? <Skeleton className="h-6 w-48" /> : user ? `${user.firstname} ${user.lastname}` : "Employee"}
+        breadcrumb={[
+          { label: "Employees", to: "/users" },
+          ...(isLoading ? [] : [{ label: user ? `${user.firstname} ${user.lastname}` : "Employee" }]),
+        ]}
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         {/* ── Hero ─────────────────────────────────────────────── */}

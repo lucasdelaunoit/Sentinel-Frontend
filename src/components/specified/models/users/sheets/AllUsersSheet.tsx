@@ -89,7 +89,9 @@ export default function AllUsersSheet({
       }
       footer={
         !isLoading && !isError && total > 0 ? (
-          <DataPagination page={page} totalPages={lastPage} onPageChange={setPage} />
+          <div className="flex justify-center">
+            <DataPagination page={page} totalPages={lastPage} onPageChange={setPage} />
+          </div>
         ) : null
       }
     >
