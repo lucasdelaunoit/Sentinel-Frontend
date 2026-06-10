@@ -1,14 +1,27 @@
 import { useMemo } from "react";
-import { ArrowRight, Lightbulb, ShieldAlert, Trash2, Users } from "lucide-react";
+import { Lightbulb, ShieldAlert, Trash2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SecondaryCard from "@/components/common/cards/SecondaryCard";
-import { blockDurationLabel, formatHalfDate } from "@/utils/planning/calendar";
+import { blockDurationLabel, formatHalfDate, MONTH_NAMES, parseDateStr } from "@/utils/planning/calendar";
 import { simColor } from "@/utils/planning/theme";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
-import SeveredSkillBadge from "@/components/specified/models/skill/badges/SeveredSkillBadge";
+import MediumProjectImpactRow from "@/components/specified/models/projects/datas/items/MediumProjectImpactRow.tsx";
+import MediumSkillImpactRow from "@/components/specified/models/skill/datas/items/MediumSkillImpactRow.tsx";
+
+const mon = (m: number) => MONTH_NAMES[m - 1].slice(0, 3);
+
+/** "12 Jun" | "12–18 Jun" | "28 Jun – 2 Jul" from a start/end YYYY-MM-DD pair. */
+function formatRange(start: string, end: string): string | null {
+  const a = parseDateStr(start);
+  const b = parseDateStr(end);
+  if (!a || !b) return null;
+  if (start === end) return `${a.day} ${mon(a.month)}`;
+  if (a.month === b.month) return `${a.day}–${b.day} ${mon(b.month)}`;
+  return `${a.day} ${mon(a.month)} – ${b.day} ${mon(b.month)}`;
+}
 
 interface SimBlockDetailSheetProps {
   block: SimBlock;
@@ -39,7 +52,14 @@ export default function SimBlockDetailSheet({ block, user, combined, onClose, on
     const affected = new Set((userImpact?.projects_affected ?? []).map((p) => p.project_id));
     return combined.per_project_impact.filter((p) => affected.has(p.project_id));
   }, [combined.per_project_impact, userImpact]);
+  const skills = useMemo(() => {
+    const uncovered = new Set((userImpact?.skills_uncovered ?? []).map((s) => s.skill_id));
+    return combined.per_skill_impact.filter((s) => uncovered.has(s.skill_id));
+  }, [combined.per_skill_impact, userImpact]);
   const cascading = combined.cascading_risks.filter((c) => c.trigger_user_id === block.userId);
+
+  const window = formatRange(block.startDate, block.endDate);
+  const drivers = `${user.firstname} ${user.lastname}`;
 
   return (
     <ComposedSheet
@@ -104,13 +124,11 @@ export default function SimBlockDetailSheet({ block, user, combined, onClose, on
         </div>
       )}
 
-      {userImpact && userImpact.skills_uncovered.length > 0 && (
-        <Section icon={ShieldAlert} title="Skills uncovered">
-          <div className="flex flex-wrap gap-1.5">
-            {userImpact.skills_uncovered.map((s) => (
-              <Badge key={s.skill_id} variant="destructive" className="text-[11px]">
-                {s.name} · {s.owners_left} left
-              </Badge>
+      {skills.length > 0 && (
+        <Section icon={ShieldAlert} title={`Impacted Skills (${skills.length})`}>
+          <div className="space-y-2">
+            {skills.map((s) => (
+              <MediumSkillImpactRow key={s.skill_id} skill={s} />
             ))}
           </div>
         </Section>
@@ -120,7 +138,7 @@ export default function SimBlockDetailSheet({ block, user, combined, onClose, on
         <Section title={`Project Impact (${projects.length})`}>
           <div className="space-y-2">
             {projects.map((p) => (
-              <ProjectImpactCard key={p.project_id} project={p} />
+              <MediumProjectImpactRow key={p.project_id} project={p} window={window} drivers={drivers} />
             ))}
           </div>
         </Section>
@@ -203,51 +221,6 @@ function Section({
         {title}
       </p>
       {children}
-    </div>
-  );
-}
-
-function ProjectImpactCard({ project }: { project: ProjectImpact }) {
-  //const theme = SEVERITY_SURFACE[project.severity];
-  return (
-    <div className={cn("rounded-xl border p-3 space-y-2" /*, theme.bg, theme.border*/)}>
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className={cn("size-2 rounded-full shrink-0" /*, theme.dot*/)} />
-          <span className="text-[12px] font-semibold text-foreground truncate">{project.name}</span>
-        </div>
-        <SeverityBadge severity={project.severity} />
-      </div>
-
-      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-        <span>
-          BF {project.bus_factor_before} <ArrowRight className="size-2.5 inline" />{" "}
-          <span className={cn(project.bus_factor_delta < 0 && "text-destructive-foreground font-semibold")}>
-            {project.bus_factor_after}
-          </span>
-        </span>
-        <span>
-          Cov {project.coverage_pct_before}% <ArrowRight className="size-2.5 inline" />{" "}
-          <span className={cn(project.coverage_delta_pct < 0 && "text-destructive-foreground font-semibold")}>
-            {project.coverage_pct_after}%
-          </span>
-        </span>
-      </div>
-
-      {project.skills_at_risk.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {project.skills_at_risk.map((s) => (
-            <SeveredSkillBadge key={s.skill_id} name={`${s.name} · ${s.owners_left}`} severity={s.severity} />
-          ))}
-        </div>
-      )}
-
-      {project.recommendation && (
-        <p className="text-[10px] text-muted-foreground italic flex items-start gap-1">
-          <Lightbulb className="size-2.5 mt-0.5 shrink-0" />
-          {project.recommendation}
-        </p>
-      )}
     </div>
   );
 }

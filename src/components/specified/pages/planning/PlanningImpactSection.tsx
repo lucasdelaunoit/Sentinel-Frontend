@@ -76,7 +76,7 @@ export default function PlanningImpactSection({
                     before={
                       <div className="flex items-center gap-2">
                         <div className="size-2 rounded-full shrink-0 bg-planned" />
-                        <UserAvatar firstname={user?.firstname} lastname={user?.lastname} variant={user.status} />
+                        <UserAvatar firstname={user?.firstname ?? ""} lastname={user?.lastname ?? ""} variant={user?.status} />
                       </div>
                     }
                     title={user ? `${user.firstname} ${user.lastname}` : "Unknown"}
