@@ -3,7 +3,6 @@ import { QuestionIcon } from "@phosphor-icons/react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip.tsx";
 import type { OrgFormFields } from "../types.ts";
 import ScenarioBlock from "@/components/specified/pages/settings/organizationTab/scenarioCard/ScenarioBlock.tsx";
-import type { Scenario, ScenarioMember, ScenarioProject } from "@/services/scenarioMetricsService.ts";
 
 const TEAM: ScenarioMember[] = [
   { name: "Alice", role: "Lead Backend", skills: { React: 4, Node: 5, TypeScript: 4 } },

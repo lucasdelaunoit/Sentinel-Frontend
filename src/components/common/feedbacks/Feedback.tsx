@@ -25,7 +25,7 @@ export default function Feedback({
   title,
   description,
   variant = "neutral",
-  icon: Icon,
+  icon,
   className,
   action,
 }: FeedbackProps) {
@@ -34,7 +34,7 @@ export default function Feedback({
   return (
     <div className={cn("flex flex-col items-center justify-center gap-3 text-center", className)}>
       <div className={cn("flex items-center justify-center rounded-full mb-1")}>
-        <span>{Icon ? <Icon /> : <VariantIcon className={cn(VARIANTS[variant].foreground, "size-6")} />}</span>
+        <span>{icon ?? <VariantIcon className={cn(VARIANTS[variant].foreground, "size-6")} />}</span>
       </div>
       <div className="mb-1">
         <p className={cn("text-sm font-semibold", VARIANTS[variant].foreground)}>{title}</p>

@@ -104,7 +104,7 @@ export default function MediumUpcomingRiskCard({ event }: MediumUpcomingRiskCard
                 <span className="flex">
                   <ArrowElbowDownRightIcon className="mt-0.5" />
                   <span className="flex flex-wrap items-center gap-1">
-                    {visibleSkills.map((skill) => (
+                    {visibleSkills.map((skill: string) => (
                       <span
                         key={skill}
                         className="rounded bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground"

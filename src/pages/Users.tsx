@@ -121,7 +121,7 @@ function UserList() {
     to,
     isLoading,
     isError,
-  } = useGetUsers({
+  } = useGetUsers<UserListItem>({
     page,
     per_page: perPage,
     search: search || undefined,

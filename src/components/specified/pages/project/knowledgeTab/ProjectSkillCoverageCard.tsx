@@ -89,7 +89,7 @@ export default function ProjectSkillCoverageCard({ projectId }: ProjectSkillCove
       key: "status",
       header: "Status",
       sortKey: "status",
-      cell: (c) => <SkillCoverageStatusBadge skillCoverage={c} />,
+      cell: (c) => <SkillCoverageStatusBadge status={c.status} />,
       skeleton: <Skeleton className="h-5 w-24 rounded-full" />,
     },
     {

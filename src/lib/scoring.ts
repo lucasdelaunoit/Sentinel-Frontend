@@ -55,6 +55,12 @@ export const TONE_BG: Record<Tone, string> = {
   danger: "bg-danger",
 };
 
+export const TONE_SOFT_BG: Record<Tone, string> = {
+  success: "bg-success/10",
+  warning: "bg-warning/10",
+  danger: "bg-danger/10",
+};
+
 export const TONE_SOFT_BORDER: Record<Tone, string> = {
   success: "border-success/40",
   warning: "border-warning/40",

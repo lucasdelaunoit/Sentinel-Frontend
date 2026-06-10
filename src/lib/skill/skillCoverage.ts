@@ -16,8 +16,8 @@ export const COVERAGE_COLORS: Record<ProjectKnowledgeCoverageStatus, CoverageCol
 };
 
 export const COVERAGE_COLORS_CLASSNAMES = Object.fromEntries(
-  Object.entries(COVERAGE_COLORS).map(([severity, color]) => [
-    severity,
+  Object.entries(COVERAGE_COLORS).map(([status, color]) => [
+    status,
     `text-${color.foregroundColor} bg-${color.backgroundColor}`,
   ]),
-) as Record<Severity, string>;
+) as Record<ProjectKnowledgeCoverageStatus, string>;

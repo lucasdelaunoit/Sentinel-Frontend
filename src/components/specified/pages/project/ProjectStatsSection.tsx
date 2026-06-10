@@ -1,7 +1,6 @@
-import { ShieldAlert, Users, BookOpen, CalendarClock } from "lucide-react";
+import { ShieldAlert, Users, BookOpen } from "lucide-react";
 import StatCard from "@/components/common/cards/StatCard";
 import DeadlineCountdownCard from "@/components/common/cards/DeadlineCountdownCard";
-import type { ProjectStats } from "@/types/dashboard";
 
 interface ProjectStatsSectionProps {
   stats: ProjectStats;

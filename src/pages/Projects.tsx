@@ -27,7 +27,6 @@ import { useTableSort } from "@/hooks/useTableSort";
 import { useTablePagination } from "@/hooks/useTablePagination";
 import { HighlightMatch } from "@/utils/useHighlightableText";
 import ProjectStatusBadge from "@/components/specified/models/projects/badges/ProjectStatusBadge.tsx";
-import type { StatCardData } from "@/types/dashboard";
 import FilterPillGroup, { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import {
   DropdownMenu,
@@ -63,10 +62,10 @@ const SEVERITY_DOT: Record<Severity, string> = {
   critical: "bg-danger",
 };
 
-function severityText(card: StatCardData) {
+function severityText(card: { severity: Severity }) {
   return SEVERITY_TEXT[card.severity];
 }
-function severityDot(card: StatCardData) {
+function severityDot(card: { severity: Severity }) {
   return SEVERITY_DOT[card.severity];
 }
 
@@ -337,10 +336,10 @@ function ProjectList() {
                           className={cn("text-[13px] font-semibold whitespace-nowrap", severityText(project.fragility))}
                         >
                           {project.fragility.value}
-                          {(project.fragility.value_raw ?? project.fragility.raw) !== null &&
-                            (project.fragility.value_raw ?? project.fragility.raw) !== undefined && (
+                          {(project.fragility.value_raw) !== null &&
+                            (project.fragility.value_raw) !== undefined && (
                               <span className="ml-1 tabular-nums opacity-70">
-                                {project.fragility.value_raw ?? project.fragility.raw}
+                                {project.fragility.value_raw}
                               </span>
                             )}
                         </span>

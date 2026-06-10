@@ -10,14 +10,14 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import EditUserSheet from "@/components/specified/models/employees/sheets/EditUserSheet.tsx";
 
 interface UserProfileCardProps {
-  user: User;
+  user: User | undefined;
   isLoading?: boolean;
 }
 
 export default function UserProfileCard({ user, isLoading = false }: UserProfileCardProps) {
   const [editOpen, setEditOpen] = useState(false);
 
-  if (isLoading) return <UserProfileCard.Skeleton />;
+  if (isLoading || !user) return <UserProfileCard.Skeleton />;
 
   return (
     <Card className="p-6">

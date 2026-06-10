@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import type { AbsenceType } from "@/types/absence";
 import { absenceTheme } from "@/utils/planning/theme";
 
 interface AbsenceTypeBadgeProps {

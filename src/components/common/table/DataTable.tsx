@@ -27,7 +27,7 @@ export interface DataTableFilter<F> {
   field: string;
 }
 
-interface DataTableProps<T, S extends string, F> {
+interface DataTableProps<T, S extends string, F extends string | number> {
   title: string;
   hook: (params: QueryParams) => PaginatedQuery<T>;
   columns: DataTableColumn<T, S>[];
@@ -47,7 +47,7 @@ interface DataTableProps<T, S extends string, F> {
   className?: string;
 }
 
-export default function DataTable<T extends { id: string | number }, S extends string, F = string>({
+export default function DataTable<T extends { id: string | number }, S extends string, F extends string | number = string>({
   title,
   hook,
   columns,

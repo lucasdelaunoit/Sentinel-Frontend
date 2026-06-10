@@ -26,7 +26,7 @@ export default function AddUserSkillSheet({
   initialCategoryId = null,
 }: AddUserSkillSheetProps) {
   const [search, setSearch] = useState("");
-  const [picked, setPicked] = useState<number | null>(null);
+  const [picked, setPicked] = useState<string | null>(null);
   const [level, setLevel] = useState<number | null>(null);
   const [categoryId, setCategoryId] = useState<number | null>(initialCategoryId);
 
@@ -59,14 +59,14 @@ export default function AddUserSkillSheet({
     onOpenChange(false);
   }
 
-  function select(id: number) {
+  function select(id: string) {
     setPicked((prev) => (prev === id ? null : id));
   }
 
   async function submit() {
     if (!userId || picked === null || level === null) return;
     try {
-      await attachSkillToUser({ userId, skillId: picked, level });
+      await attachSkillToUser({ userId, skillId: Number(picked), level });
       toast.success("Skill added.");
       close();
     } catch {

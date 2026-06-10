@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge.tsx";
 import { cn } from "@/lib/utils.ts";
 
 interface SkillCategoryBadgeProps {
-  category: SkillCategory;
+  category: Pick<SkillCategory, "name">;
   className?: string;
 }
 

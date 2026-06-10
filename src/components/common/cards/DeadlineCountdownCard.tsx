@@ -4,7 +4,6 @@ import { CalendarBlankIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils.ts";
 import { Card } from "@/components/ui/card.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import type { StatCardData } from "@/types/dashboard";
 
 const SEVERITY_COLOR: Record<Severity, string> = {
   critical: "text-destructive-foreground",
@@ -12,9 +11,18 @@ const SEVERITY_COLOR: Record<Severity, string> = {
   ok: "text-emerald-600",
 };
 
+/** Minimal metric shape rendered by the card — satisfied by both StatCardData and MetricResult. */
+interface DeadlineCardValue {
+  value: string;
+  severity: Severity;
+  value_raw?: number | string | null;
+  raw?: number | null;
+  insight?: string | null;
+}
+
 interface DeadlineCountdownCardProps {
   title?: string;
-  card?: StatCardData & { value_raw?: number | null };
+  card?: DeadlineCardValue;
   onClick?: () => void;
   isLoading?: boolean;
 }
@@ -49,7 +57,7 @@ export default function DeadlineCountdownCard({
   onClick,
   isLoading = false,
 }: DeadlineCountdownCardProps) {
-  const days = Math.max(card?.value_raw ?? card?.raw ?? 0, 0);
+  const days = Math.max(Number(card?.value_raw ?? card?.raw ?? 0), 0);
   const animatedDays = useCountUp(days);
   const color = (card && SEVERITY_COLOR[card.severity]) || "text-foreground";
 

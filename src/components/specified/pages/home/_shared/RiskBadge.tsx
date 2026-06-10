@@ -23,7 +23,7 @@ const TONE_SOFT_BG: Record<Tone, string> = {
   danger: "bg-danger",
 };
 
-export default function RiskBadge({ level, score, size = "md" }: RiskBadgeProps) {
+export default function RiskBadge({ level }: RiskBadgeProps) {
   const tone = RISK_TONE[level];
   return (
     <Badge className={cn(TONE_SOFT_BG[tone], TONE_SOFT_BORDER[tone], "text-background")}>{RISK_LABEL[level]}</Badge>

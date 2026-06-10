@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { type ReactNode } from "react";
 
 export default function useHighlightableText(text: string, highlightedPart: string) {
   function escapeRegExp(str: string) {
