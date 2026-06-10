@@ -37,6 +37,17 @@ export function parseDateStr(dateStr: string): { year: number; month: number; da
   return { year: parseInt(m[1], 10), month: parseInt(m[2], 10), day: parseInt(m[3], 10) };
 }
 
+/** "12 Jun" | "12–18 Jun" | "28 Jun – 2 Jul" from a start/end YYYY-MM-DD pair. */
+export function formatRange(start: string, end: string): string | null {
+  const a = parseDateStr(start);
+  const b = parseDateStr(end);
+  if (!a || !b) return null;
+  const mon = (m: number) => MONTH_NAMES[m - 1].slice(0, 3);
+  if (start === end) return `${a.day} ${mon(a.month)}`;
+  if (a.month === b.month) return `${a.day}–${b.day} ${mon(b.month)}`;
+  return `${a.day} ${mon(a.month)} – ${b.day} ${mon(b.month)}`;
+}
+
 export function getDayOfWeekForDay(day: number, firstDayOfWeek: number): number {
   return (firstDayOfWeek + day - 1) % 7;
 }

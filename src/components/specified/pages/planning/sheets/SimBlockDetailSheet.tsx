@@ -5,23 +5,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SecondaryCard from "@/components/common/cards/SecondaryCard";
-import { blockDurationLabel, formatHalfDate, MONTH_NAMES, parseDateStr } from "@/utils/planning/calendar";
+import { blockDurationLabel, formatHalfDate, formatRange } from "@/utils/planning/calendar";
 import { simColor } from "@/utils/planning/theme";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
 import MediumProjectImpactRow from "@/components/specified/models/projects/datas/items/MediumProjectImpactRow.tsx";
 import MediumSkillImpactRow from "@/components/specified/models/skill/datas/items/MediumSkillImpactRow.tsx";
-
-const mon = (m: number) => MONTH_NAMES[m - 1].slice(0, 3);
-
-/** "12 Jun" | "12–18 Jun" | "28 Jun – 2 Jul" from a start/end YYYY-MM-DD pair. */
-function formatRange(start: string, end: string): string | null {
-  const a = parseDateStr(start);
-  const b = parseDateStr(end);
-  if (!a || !b) return null;
-  if (start === end) return `${a.day} ${mon(a.month)}`;
-  if (a.month === b.month) return `${a.day}–${b.day} ${mon(b.month)}`;
-  return `${a.day} ${mon(a.month)} – ${b.day} ${mon(b.month)}`;
-}
 
 interface SimBlockDetailSheetProps {
   block: SimBlock;
@@ -101,13 +89,7 @@ export default function SimBlockDetailSheet({ block, user, combined, onClose, on
       </div>
 
       {userImpact && (
-        <div
-          className={cn(
-            "flex items-center gap-3 rounded-xl border p-3.5",
-            /*SEVERITY_SURFACE[userImpact.severity].bg,
-            SEVERITY_SURFACE[userImpact.severity].border,*/
-          )}
-        >
+        <div className="flex items-center gap-3 rounded-xl border p-3.5">
           <SeverityBadge severity={userImpact.severity} size="md" />
           <div className="flex-1 text-[12px] text-muted-foreground">
             {userImpact.severity === "critical"

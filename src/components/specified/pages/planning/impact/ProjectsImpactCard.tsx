@@ -2,25 +2,13 @@ import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 import MediumProjectImpactRow from "@/components/specified/models/projects/datas/items/MediumProjectImpactRow.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
-import { MONTH_NAMES, parseDateStr } from "@/utils/planning/calendar.ts";
+import { formatRange } from "@/utils/planning/calendar.ts";
 
 interface ProjectsImpactCardProps {
   projects: ProjectImpact[];
   perUserImpact: Record<string, UserImpact>;
   simBlocks: SimBlock[];
   usersById: Map<string, PlanningUser>;
-}
-
-const mon = (m: number) => MONTH_NAMES[m - 1].slice(0, 3);
-
-/** "12 Jun" | "12–18 Jun" | "28 Jun – 2 Jul" from a start/end YYYY-MM-DD pair. */
-function formatRange(start: string, end: string): string | null {
-  const a = parseDateStr(start);
-  const b = parseDateStr(end);
-  if (!a || !b) return null;
-  if (start === end) return `${a.day} ${mon(a.month)}`;
-  if (a.month === b.month) return `${a.day}–${b.day} ${mon(b.month)}`;
-  return `${a.day} ${mon(a.month)} – ${b.day} ${mon(b.month)}`;
 }
 
 /**
