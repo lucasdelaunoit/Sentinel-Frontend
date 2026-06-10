@@ -12,7 +12,7 @@ export default function useResumeProject() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ id }: ResumeProjectArgs) => privateApi.post(`/api/projects/${id}/resume`),
     onSuccess: (_, { id, name }) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -24,4 +24,12 @@ export default function useResumeProject() {
       toast.error(extractApiErrorMessage(error, "Failed to resume project."));
     },
   });
+
+  return {
+    resumeProject: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

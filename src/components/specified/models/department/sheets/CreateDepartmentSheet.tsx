@@ -44,7 +44,7 @@ export default function CreateDepartmentSheet({ open, onOpenChange }: CreateDepa
     if (open) reset({ name: "" });
   }, [open, reset]);
 
-  const { mutate: createDepartment, isPending } = useCreateDepartment();
+  const { createDepartment, isLoading: isPending } = useCreateDepartment();
 
   function handleClose() {
     reset();

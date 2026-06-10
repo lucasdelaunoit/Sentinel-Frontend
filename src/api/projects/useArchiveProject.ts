@@ -12,7 +12,7 @@ export default function useArchiveProject() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ id }: ArchiveProjectArgs) => privateApi.post(`/api/projects/${id}/archive`),
     onSuccess: (_, { id, name }) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -24,4 +24,12 @@ export default function useArchiveProject() {
       toast.error(extractApiErrorMessage(error, "Failed to archive project."));
     },
   });
+
+  return {
+    archiveProject: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

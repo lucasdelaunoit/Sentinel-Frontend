@@ -19,7 +19,7 @@ interface MediumSkillCardProps {
 export default function MediumSkillCard({ skill, searchTerm = "", onDeleted }: MediumSkillCardProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const { mutate: deleteSkill, isPending: isDeleting } = useDeleteSkill();
+  const { deleteSkill, isLoading: isDeleting } = useDeleteSkill();
   const { data: categories = [] } = useGetSkillCategories();
 
   return (

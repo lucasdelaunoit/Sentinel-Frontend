@@ -12,7 +12,7 @@ export default function usePauseProject() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ id }: PauseProjectArgs) => privateApi.post(`/api/projects/${id}/pause`),
     onSuccess: (_, { id, name }) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -24,4 +24,12 @@ export default function usePauseProject() {
       toast.error(extractApiErrorMessage(error, "Failed to pause project."));
     },
   });
+
+  return {
+    pauseProject: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

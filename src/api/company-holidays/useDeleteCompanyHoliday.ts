@@ -7,7 +7,7 @@ export default function useDeleteCompanyHoliday() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (id: number) => privateApi.delete(`/api/settings/holidays/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["company-holidays"] });
@@ -18,4 +18,12 @@ export default function useDeleteCompanyHoliday() {
       toast.error(extractApiErrorMessage(error, "Failed to delete holiday."));
     },
   });
+
+  return {
+    deleteCompanyHoliday: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

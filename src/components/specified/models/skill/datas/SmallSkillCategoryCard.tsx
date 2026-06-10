@@ -25,8 +25,8 @@ export default function SmallSkillCategoryCard({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { mutate: deleteCategory, isPending: isDeleting } = useDeleteSkillCategory();
-  const { mutate: updateCategory, isPending: isUpdating } = useUpdateSkillCategory();
+  const { deleteSkillCategory: deleteCategory, isLoading: isDeleting } = useDeleteSkillCategory();
+  const { updateSkillCategory: updateCategory, isLoading: isUpdating } = useUpdateSkillCategory();
 
   function handleStartEdit(e: React.MouseEvent<HTMLButtonElement>) {
     e.stopPropagation();

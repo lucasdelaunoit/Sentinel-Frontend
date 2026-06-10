@@ -77,7 +77,7 @@ export default function CalendarTab() {
     const next = workingDays.map((bit, i) => (i === isoIndex ? (bit ? 0 : 1) : bit));
     // Guard: if future absences would be recounted, confirm what to do before applying.
     workdayGuard.run({ type: "working_days", working_days: next }, (freezeIds) =>
-      updateSettings.mutate({ working_days: next, freeze_absence_ids: freezeIds }),
+      updateSettings.updateCalendarSettings({ working_days: next, freeze_absence_ids: freezeIds }),
     );
   }
 
@@ -220,7 +220,7 @@ export default function CalendarTab() {
                 key={label}
                 type="button"
                 onClick={() => toggleWorkingDay(i)}
-                disabled={updateSettings.isPending || workdayGuard.isChecking}
+                disabled={updateSettings.isLoading || workdayGuard.isChecking}
                 className={cn(
                   "h-8 px-3 rounded-lg text-[12px] font-semibold transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed",
                   active
@@ -242,7 +242,7 @@ export default function CalendarTab() {
 
       <CreateCompanyHolidaySheet open={holidaySheetOpen} onOpenChange={setHolidaySheetOpen} />
 
-      <CalendarImpactDialog {...workdayGuard.dialog} isApplying={updateSettings.isPending} />
+      <CalendarImpactDialog {...workdayGuard.dialog} isApplying={updateSettings.isLoading} />
       {detailHoliday ? (
         <CompanyHolidayDetailSheet
           holiday={detailHoliday}

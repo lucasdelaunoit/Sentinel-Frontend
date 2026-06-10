@@ -12,7 +12,7 @@ export default function useReopenProject() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ id }: ReopenProjectArgs) => privateApi.post(`/api/projects/${id}/reopen`),
     onSuccess: (_, { id, name }) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -24,4 +24,12 @@ export default function useReopenProject() {
       toast.error(extractApiErrorMessage(error, "Failed to reopen project."));
     },
   });
+
+  return {
+    reopenProject: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

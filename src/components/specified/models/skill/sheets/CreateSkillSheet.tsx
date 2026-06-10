@@ -56,7 +56,7 @@ export default function CreateSkillSheet({ open, onOpenChange, categories, prese
     }
   }, [open, presetCategory, categories, reset]);
 
-  const { mutate: createSkill, isPending } = useCreateSkill();
+  const { createSkill, isLoading: isPending } = useCreateSkill();
   const selectedCategoryId = watch("skill_category_id");
 
   function handleClose() {

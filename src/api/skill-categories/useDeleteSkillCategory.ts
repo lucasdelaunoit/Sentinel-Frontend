@@ -7,7 +7,7 @@ export default function useDeleteSkillCategory() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (id: number) => privateApi.delete(`/api/settings/skill-categories/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["skill-categories"] });
@@ -18,4 +18,12 @@ export default function useDeleteSkillCategory() {
       toast.error(extractApiErrorMessage(error, "Failed to delete category."));
     },
   });
+
+  return {
+    deleteSkillCategory: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

@@ -7,7 +7,7 @@ export default function useUpdateDepartment() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ id, name }: UpdateDepartmentRequest) =>
       privateApi.patch(`/api/settings/departments/${id}`, { name }),
     onSuccess: (_, { name }) => {
@@ -18,4 +18,12 @@ export default function useUpdateDepartment() {
       toast.error(extractApiErrorMessage(error, "Failed to update department."));
     },
   });
+
+  return {
+    updateDepartment: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

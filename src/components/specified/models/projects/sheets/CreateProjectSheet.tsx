@@ -104,7 +104,7 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
     }
   }, [open, reset]);
 
-  const { mutate: createProject, isPending } = useCreateProject();
+  const { createProject, isLoading: isPending } = useCreateProject();
 
   const userIds = watch("user_ids");
   const skillReqs = watch("skill_requirements");

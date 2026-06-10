@@ -7,9 +7,7 @@ interface MetricBoxProps {
   label: string;
   before: number;
   after: number;
-  /** Override the computed `after − before` delta — e.g. a server-provided delta. */
   delta?: number;
-  /** Which direction counts as a regression. Defaults to `"down"`. */
   worseWhen?: "up" | "down";
   suffix?: string;
 }
@@ -19,9 +17,9 @@ export default function MetricBox({ label, before, after, delta, worseWhen = "do
   const worse = worseWhen === "up" ? resolvedDelta > 0 : resolvedDelta < 0;
   const better = worseWhen === "up" ? resolvedDelta < 0 : resolvedDelta > 0;
   const chipTone = worse
-    ? "bg-danger/10 text-danger"
+    ? "bg-danger text-background"
     : better
-      ? "bg-success/10 text-success"
+      ? "bg-success text-background"
       : "bg-muted text-muted-foreground";
 
   return (

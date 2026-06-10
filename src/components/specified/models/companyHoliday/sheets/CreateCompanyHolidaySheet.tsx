@@ -83,7 +83,7 @@ export default function CreateCompanyHolidaySheet({
     }
   }, [startWatch, endWatch, setValue]);
 
-  const { mutate: createHoliday, isPending } = useCreateCompanyHoliday();
+  const { createCompanyHoliday: createHoliday, isLoading: isPending } = useCreateCompanyHoliday();
   const guard = useCalendarChangeGuard();
 
   function handleClose() {

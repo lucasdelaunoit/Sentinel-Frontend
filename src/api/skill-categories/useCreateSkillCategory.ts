@@ -11,7 +11,7 @@ export default function useCreateSkillCategory() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ name }: CreateSkillCategoryPayload) => privateApi.post("/api/settings/skill-categories", { name }),
     onSuccess: (_, { name }) => {
       queryClient.invalidateQueries({ queryKey: ["skill-categories"] });
@@ -21,4 +21,12 @@ export default function useCreateSkillCategory() {
       toast.error(extractApiErrorMessage(error, "Failed to create category."));
     },
   });
+
+  return {
+    createSkillCategory: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

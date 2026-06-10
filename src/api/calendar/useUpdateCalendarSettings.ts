@@ -7,7 +7,7 @@ export default function useUpdateCalendarSettings() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (payload: UpdateCalendarSettingsRequest & { freeze_absence_ids?: number[] }) =>
       privateApi.patch("/api/settings/working-days", payload),
     onSuccess: () => {
@@ -17,4 +17,12 @@ export default function useUpdateCalendarSettings() {
       toast.error(extractApiErrorMessage(error, "Failed to save calendar settings."));
     },
   });
+
+  return {
+    updateCalendarSettings: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

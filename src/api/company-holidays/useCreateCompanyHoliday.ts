@@ -7,7 +7,7 @@ export default function useCreateCompanyHoliday() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (payload: CompanyHolidayRequest & { freeze_absence_ids?: number[] }) =>
       privateApi.post<CompanyHoliday>("/api/settings/holidays", payload),
     onSuccess: (_, { name }) => {
@@ -19,4 +19,12 @@ export default function useCreateCompanyHoliday() {
       toast.error(extractApiErrorMessage(error, "Failed to add holiday."));
     },
   });
+
+  return {
+    createCompanyHoliday: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

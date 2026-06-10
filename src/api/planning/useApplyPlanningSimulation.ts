@@ -11,7 +11,7 @@ export default function useApplyPlanningSimulation() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async (payload: ApplyPayload) => {
       const { data } = await privateApi.post<{ applied: number }>("/api/planning/apply", payload);
       return data;
@@ -25,4 +25,12 @@ export default function useApplyPlanningSimulation() {
       toast.error(extractApiErrorMessage(error, "Failed to save scenario."));
     },
   });
+
+  return {
+    applyPlanningSimulation: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

@@ -17,7 +17,7 @@ interface MediumDepartmentCardProps {
 export default function MediumDepartmentCard({ department, searchTerm = "", onDeleted }: MediumDepartmentCardProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const { mutate: deleteDepartment, isPending: isDeleting } = useDeleteDepartment();
+  const { deleteDepartment, isLoading: isDeleting } = useDeleteDepartment();
 
   const usersCount = department.users_count ?? 0;
   const hasUsers = usersCount > 0;

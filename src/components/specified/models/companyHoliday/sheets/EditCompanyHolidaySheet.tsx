@@ -78,7 +78,7 @@ export default function EditCompanyHolidaySheet({ holiday, open, onOpenChange }:
     }
   }, [startWatch, endWatch, setValue]);
 
-  const { mutate: updateHoliday, isPending } = useUpdateCompanyHoliday();
+  const { updateCompanyHoliday: updateHoliday, isLoading: isPending } = useUpdateCompanyHoliday();
   const guard = useCalendarChangeGuard();
 
   function handleClose() {

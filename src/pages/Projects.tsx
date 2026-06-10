@@ -88,13 +88,13 @@ function ProjectActionsCell({ project }: { project: Project }) {
   const args = { id: project.id, name: project.name };
 
   const confirmPending =
-    confirm === "complete" ? complete.isPending : confirm === "archive" ? archive.isPending : false;
+    confirm === "complete" ? complete.isLoading : confirm === "archive" ? archive.isLoading : false;
 
   const handleConfirm = () => {
     if (confirm === "complete") {
-      complete.mutate(args, { onSuccess: () => setConfirm(null) });
+      complete.completeProject(args, { onSuccess: () => setConfirm(null) });
     } else if (confirm === "archive") {
-      archive.mutate(args, { onSuccess: () => setConfirm(null) });
+      archive.archiveProject(args, { onSuccess: () => setConfirm(null) });
     }
   };
 
@@ -122,25 +122,25 @@ function ProjectActionsCell({ project }: { project: Project }) {
         <DropdownMenuContent align="end" sideOffset={4} className="min-w-[170px]">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           {project.status === "archived" && (
-            <DropdownMenuItem onSelect={() => unarchive.mutate(args)}>
+            <DropdownMenuItem onSelect={() => unarchive.unarchiveProject(args)}>
               <ArchiveBoxIcon weight="bold" />
               Unarchive
             </DropdownMenuItem>
           )}
           {(project.status === "active" || project.status === "planned") && (
-            <DropdownMenuItem onSelect={() => pause.mutate(args)}>
+            <DropdownMenuItem onSelect={() => pause.pauseProject(args)}>
               <PauseIcon weight="bold" />
               Pause
             </DropdownMenuItem>
           )}
           {project.status === "paused" && (
-            <DropdownMenuItem onSelect={() => resume.mutate(args)}>
+            <DropdownMenuItem onSelect={() => resume.resumeProject(args)}>
               <PlayIcon weight="bold" />
               Resume
             </DropdownMenuItem>
           )}
           {project.status === "completed" && (
-            <DropdownMenuItem onSelect={() => reopen.mutate(args)}>
+            <DropdownMenuItem onSelect={() => reopen.reopenProject(args)}>
               <ArrowUUpLeftIcon weight="bold" />
               Reopen
             </DropdownMenuItem>

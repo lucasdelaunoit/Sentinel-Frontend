@@ -7,7 +7,7 @@ export default function useDeleteSkill() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (id: string) => privateApi.delete(`/api/settings/skills/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["skills"] });
@@ -18,4 +18,12 @@ export default function useDeleteSkill() {
       toast.error(extractApiErrorMessage(error, "Failed to delete skill."));
     },
   });
+
+  return {
+    deleteSkill: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

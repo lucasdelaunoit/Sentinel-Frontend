@@ -12,7 +12,7 @@ export default function useUpdateCompanyHoliday() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ id, ...payload }: UpdateCompanyHolidayArgs) =>
       privateApi.patch<CompanyHoliday>(`/api/settings/holidays/${id}`, payload),
     onSuccess: () => {
@@ -24,4 +24,12 @@ export default function useUpdateCompanyHoliday() {
       toast.error(extractApiErrorMessage(error, "Failed to update holiday."));
     },
   });
+
+  return {
+    updateCompanyHoliday: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

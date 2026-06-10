@@ -7,7 +7,7 @@ export default function useUpdateSkill() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ id, name, skill_category_id }: UpdateSkillRequest) =>
       privateApi.patch(`/api/settings/skills/${id}`, { name, skill_category_id }),
     onSuccess: (_, { name }) => {
@@ -19,4 +19,12 @@ export default function useUpdateSkill() {
       toast.error(extractApiErrorMessage(error, "Failed to update skill."));
     },
   });
+
+  return {
+    updateSkill: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

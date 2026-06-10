@@ -7,7 +7,7 @@ export default function useDeleteDepartment() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (id: number) => privateApi.delete(`/api/settings/departments/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["departments"] });
@@ -19,4 +19,12 @@ export default function useDeleteDepartment() {
       toast.error(extractApiErrorMessage(error, "Failed to delete department."));
     },
   });
+
+  return {
+    deleteDepartment: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

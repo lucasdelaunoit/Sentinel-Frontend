@@ -54,7 +54,7 @@ export default function UpdateSkillSheet({ open, onOpenChange, skill, categories
     }
   }, [open, skill, reset]);
 
-  const { mutate: updateSkill, isPending } = useUpdateSkill();
+  const { updateSkill, isLoading: isPending } = useUpdateSkill();
   const selectedCategoryId = watch("skill_category_id");
 
   function handleClose() {

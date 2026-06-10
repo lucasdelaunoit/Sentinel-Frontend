@@ -7,7 +7,7 @@ export default function useCreateSkill() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ name, skill_category_id }: CreateSkillRequest) =>
       privateApi.post("/api/settings/skills", { name, skill_category_id }),
     onSuccess: (_, { name }) => {
@@ -19,4 +19,12 @@ export default function useCreateSkill() {
       toast.error(extractApiErrorMessage(error, "Failed to create skill."));
     },
   });
+
+  return {
+    createSkill: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

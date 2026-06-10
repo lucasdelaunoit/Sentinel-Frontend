@@ -569,9 +569,10 @@ RuleCard.Skeleton = function RuleCardSkeleton() {
 export default function RulesTab() {
   const { data: rules, isLoading } = useGetRules();
   const { data: violations } = useGetRuleViolations();
-  const createRule = useCreateRule();
-  const updateRule = useUpdateRule();
-  const deleteRule = useDeleteRule();
+  const { createRule, isLoading: isCreatingRule } = useCreateRule();
+  const { updateRule, isLoading: isUpdatingRule } = useUpdateRule();
+  const { deleteRule } = useDeleteRule();
+  const [deletingRuleId, setDeletingRuleId] = useState<number | null>(null);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Rule | null>(null);
@@ -614,7 +615,7 @@ export default function RulesTab() {
   const scopeTitle = filter === "ALL" ? "Custom extra rules" : GROUP_META[filter].label;
 
   function handleCreate(s: RuleEditorState) {
-    createRule.mutate(
+    createRule(
       {
         name: s.name,
         type: s.type,
@@ -629,7 +630,7 @@ export default function RulesTab() {
 
   function handleEdit(s: RuleEditorState) {
     if (!editTarget) return;
-    updateRule.mutate(
+    updateRule(
       {
         id: editTarget.id,
         payload: {
@@ -646,7 +647,7 @@ export default function RulesTab() {
   }
 
   function toggleEnabled(rule: Rule) {
-    updateRule.mutate({ id: rule.id, payload: { enabled: !rule.enabled } });
+    updateRule({ id: rule.id, payload: { enabled: !rule.enabled } });
   }
 
   const isEmpty = !isLoading && list.length === 0;
@@ -762,8 +763,11 @@ export default function RulesTab() {
                     violationCount={violationCountByRule.get(rule.id) ?? 0}
                     onToggle={() => toggleEnabled(rule)}
                     onEdit={() => setEditTarget(rule)}
-                    onDelete={() => deleteRule.mutate(rule.id)}
-                    isDeleting={deleteRule.isPending && deleteRule.variables === rule.id}
+                    onDelete={() => {
+                      setDeletingRuleId(rule.id);
+                      deleteRule(rule.id).finally(() => setDeletingRuleId(null));
+                    }}
+                    isDeleting={deletingRuleId === rule.id}
                   />
                 ))}
               </div>
@@ -777,7 +781,7 @@ export default function RulesTab() {
         onOpenChange={setCreateOpen}
         initial={emptyEditor()}
         onSubmit={handleCreate}
-        isPending={createRule.isPending}
+        isPending={isCreatingRule}
         title="Create Rule"
       />
 
@@ -786,7 +790,7 @@ export default function RulesTab() {
         onOpenChange={(v) => !v && setEditTarget(null)}
         initial={editTarget ? fromRule(editTarget) : emptyEditor()}
         onSubmit={handleEdit}
-        isPending={updateRule.isPending}
+        isPending={isUpdatingRule}
         title="Edit Rule"
       />
     </div>

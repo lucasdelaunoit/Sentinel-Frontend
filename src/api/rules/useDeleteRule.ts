@@ -7,7 +7,7 @@ export default function useDeleteRule() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (id: number) => privateApi.delete(`/api/settings/rules/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rules"] });
@@ -18,4 +18,12 @@ export default function useDeleteRule() {
       toast.error(extractApiErrorMessage(error, "Failed to delete rule."));
     },
   });
+
+  return {
+    deleteRule: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

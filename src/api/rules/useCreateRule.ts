@@ -7,7 +7,7 @@ export default function useCreateRule() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (payload: CreateRuleRequest) => privateApi.post<Rule>("/api/settings/rules", payload),
     onSuccess: (_, { name }) => {
       queryClient.invalidateQueries({ queryKey: ["rules"] });
@@ -18,4 +18,12 @@ export default function useCreateRule() {
       toast.error(extractApiErrorMessage(error, "Failed to create rule."));
     },
   });
+
+  return {
+    createRule: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

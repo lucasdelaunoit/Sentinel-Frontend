@@ -56,7 +56,7 @@ export default function CreateSkillCategorySheet({
     mode: "onChange",
   });
 
-  const { mutate: createCategory, isPending } = useCreateSkillCategory();
+  const { createSkillCategory: createCategory, isLoading: isPending } = useCreateSkillCategory();
 
   function handleClose() {
     reset();

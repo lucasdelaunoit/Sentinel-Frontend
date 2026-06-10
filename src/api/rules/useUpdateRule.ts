@@ -12,7 +12,7 @@ export default function useUpdateRule() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ id, payload }: UpdateRuleArgs) => privateApi.patch<Rule>(`/api/settings/rules/${id}`, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rules"] });
@@ -23,4 +23,12 @@ export default function useUpdateRule() {
       toast.error(extractApiErrorMessage(error, "Failed to update rule."));
     },
   });
+
+  return {
+    updateRule: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

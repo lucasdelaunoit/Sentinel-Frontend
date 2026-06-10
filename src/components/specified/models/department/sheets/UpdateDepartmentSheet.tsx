@@ -45,7 +45,7 @@ export default function UpdateDepartmentSheet({ open, onOpenChange, department }
     if (open) reset({ name: department.name });
   }, [open, department, reset]);
 
-  const { mutate: updateDepartment, isPending } = useUpdateDepartment();
+  const { updateDepartment, isLoading: isPending } = useUpdateDepartment();
 
   function handleClose() {
     reset();

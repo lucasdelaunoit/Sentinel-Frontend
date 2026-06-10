@@ -7,7 +7,7 @@ export default function useCreateDepartment() {
   const privateApi = usePrivateApi();
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: ({ name }: CreateDepartmentRequest) =>
       privateApi.post("/api/settings/departments", { name }),
     onSuccess: (_, { name }) => {
@@ -18,4 +18,12 @@ export default function useCreateDepartment() {
       toast.error(extractApiErrorMessage(error, "Failed to create department."));
     },
   });
+
+  return {
+    createDepartment: mutation.mutateAsync,
+    isLoading: mutation.isPending,
+    isError: mutation.isError,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess,
+  };
 }

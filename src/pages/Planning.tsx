@@ -40,7 +40,7 @@ export default function Planning() {
   const [detailAbsenceId, setDetailAbsenceId] = useState<number | null>(null);
   const [absenceDetailOpen, setAbsenceDetailOpen] = useState(false);
   const colorCounterRef = useRef(simBlocks.length);
-  const applyMutation = useApplyPlanningSimulation();
+  const { applyPlanningSimulation, isLoading: isApplying } = useApplyPlanningSimulation();
 
   const month = `${viewYear}-${String(viewMonth).padStart(2, "0")}`;
   const planningQuery = useGetPlanning(month);
@@ -103,7 +103,7 @@ export default function Planning() {
   }
 
   function confirmApplySimulation() {
-    applyMutation.mutate(
+    void applyPlanningSimulation(
       { absences: simAbsences },
       {
         onSuccess: () => {
@@ -267,16 +267,16 @@ export default function Planning() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={applyMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isApplying}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={(e) => {
                 e.preventDefault();
                 confirmApplySimulation();
               }}
-              disabled={applyMutation.isPending}
+              disabled={isApplying}
               className={cn("bg-planned hover:bg-planned/90 text-planned-foreground gap-1.5")}
             >
-              {applyMutation.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+              {isApplying ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
               Save scenario
             </AlertDialogAction>
           </AlertDialogFooter>

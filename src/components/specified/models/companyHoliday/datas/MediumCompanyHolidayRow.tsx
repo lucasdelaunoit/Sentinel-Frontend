@@ -26,7 +26,7 @@ export default function MediumCompanyHolidayRow({
   onClick,
 }: MediumCompanyHolidayRowProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const { mutate: deleteHoliday, isPending: isDeleting } = useDeleteCompanyHoliday();
+  const { deleteCompanyHoliday: deleteHoliday, isLoading: isDeleting } = useDeleteCompanyHoliday();
 
   const start = new Date(holiday.start_date);
   const end = new Date(holiday.end_date);
