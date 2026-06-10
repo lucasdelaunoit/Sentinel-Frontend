@@ -8,8 +8,6 @@ interface SkillImpact {
   owners_left: number;
   coverage_pct_before: number;
   coverage_pct_after: number;
-  redundancy_before: number;
-  redundancy_after: number;
   dates_uncovered: string[];
   projects_impacted: number[];
   severity: Severity;

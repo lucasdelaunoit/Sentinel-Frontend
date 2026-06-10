@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import usePrivateApi from "@/api/privateApi";
 
@@ -8,9 +8,9 @@ interface UseSimulatePlanningOptions {
   debounceMs?: number;
 }
 
-function buildEmpty(month: string): SimulateResponse {
-  return {
-    totals: {
+/** Read-only zero-state returned before any simulation runs. */
+const EMPTY_SIMULATION: SimulateResponse = {
+  totals: {
       risk_score: 0,
       risk_score_delta: 0,
       bus_factor: 0,
@@ -31,7 +31,6 @@ function buildEmpty(month: string): SimulateResponse {
     per_skill_impact: [],
     per_day_load: [],
     hotspots: [],
-    skill_concentration_shifts: [],
     cascading_risks: [],
     warnings: [],
     comparison_vs_baseline: {
@@ -40,10 +39,7 @@ function buildEmpty(month: string): SimulateResponse {
       coverage_pct: { before: 100, after: 100 },
       projects_healthy_count: { before: 0, after: 0 },
     },
-    meta: { computed_at: new Date(0).toISOString(), computation_ms: 0, absences_evaluated: 0, month },
-    overall_severity: "ok",
-  };
-}
+};
 
 /**
  * Debounced live simulation of pending absences. Modeled as a query: POST /simulate is a pure
@@ -68,8 +64,6 @@ export default function useSimulatePlanning(
 
   const debouncedSignature = JSON.stringify(debounced);
   const enabled = isValid && debounced.length > 0;
-  const month = debounced[0]?.start_date.slice(0, 7) ?? "1970-01";
-  const emptyResult = useMemo(() => buildEmpty(month), [month]);
 
   const query = useQuery({
     queryKey: ["planning-simulate", debouncedSignature],
@@ -96,7 +90,7 @@ export default function useSimulatePlanning(
             : "idle";
 
   return {
-    data: enabled ? (query.data ?? emptyResult) : emptyResult,
+    data: enabled ? (query.data ?? EMPTY_SIMULATION) : EMPTY_SIMULATION,
     status,
     isLoading,
     isError: query.isError,
