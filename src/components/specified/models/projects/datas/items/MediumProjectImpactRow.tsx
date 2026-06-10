@@ -1,6 +1,7 @@
-import { ArrowRight, CalendarRange, UserMinus } from "lucide-react";
+import { CalendarRange, UserMinus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
+import MetricBox from "@/components/common/data/MetricBox.tsx";
 import SeveredSkillBadge from "@/components/specified/models/skill/badges/SeveredSkillBadge.tsx";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
 import { getFragilityTier, TONE_BG } from "@/lib/scoring.ts";
@@ -15,8 +16,6 @@ interface MediumProjectImpactRowProps {
   className?: string;
   onClick?: () => void;
 }
-
-const fmtDelta = (delta: number) => (delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : "±0");
 
 /**
  * How much this absence actually degrades the project — driven by the *change*, not the
@@ -37,54 +36,6 @@ function impactSeverity(p: ProjectImpact): Severity {
     return "critical";
   }
   return "warning";
-}
-
-/** A labelled before → after metric tile with a coloured delta chip. */
-function MetricBox({
-  label,
-  before,
-  after,
-  delta,
-  worseWhen,
-  suffix = "",
-}: {
-  label: string;
-  before: number;
-  after: number;
-  delta: number;
-  worseWhen: "up" | "down";
-  suffix?: string;
-}) {
-  const worse = worseWhen === "up" ? delta > 0 : delta < 0;
-  const better = worseWhen === "up" ? delta < 0 : delta > 0;
-  const chipTone = worse
-    ? "bg-danger/10 text-danger"
-    : better
-      ? "bg-success/10 text-success"
-      : "bg-muted text-muted-foreground";
-
-  return (
-    <div className="rounded-lg bg-muted/40 px-3 py-2">
-      <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-1 flex items-center gap-1.5 text-[14px] font-bold tabular-nums">
-        <span className="text-muted-foreground">
-          {before}
-          {suffix}
-        </span>
-        <ArrowRight className="size-3 text-muted-foreground/50" />
-        <span className={cn(worse && "text-danger", better && "text-success")}>
-          {after}
-          {suffix}
-        </span>
-        {delta !== 0 && (
-          <span className={cn("ml-auto rounded px-1.5 py-0.5 text-[10px] font-bold", chipTone)}>
-            {fmtDelta(delta)}
-            {suffix}
-          </span>
-        )}
-      </p>
-    </div>
-  );
 }
 
 export default function MediumProjectImpactRow({
