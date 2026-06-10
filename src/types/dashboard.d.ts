@@ -33,16 +33,6 @@ export interface UpcomingRiskEventsResponse {
 
 /* ── Shared building blocks ──────────────────────────────── */
 
-export interface RiskProjectDetail {
-  id: string;
-  name: string;
-  risk_score: number;
-  bus_factor: number;
-  health: number;
-  missing_skills: string[];
-  siloed_skills: string[];
-}
-
 export interface CategoryDetail {
   category_id: number;
   category_name: string;
@@ -54,43 +44,11 @@ export interface CategoryDetail {
   uncovered_skills: string[];
 }
 
-export interface AbsentUserDetail {
-  id: string;
-  firstname: string;
-  lastname: string;
-  criticality: string;
-  is_critical: boolean;
-  projects: string[];
-  skills: string[];
-}
-
-export interface UncoveredSkillDetail {
-  skill_id: string;
-  skill_name: string;
-  required_by_project: string;
-  previously_covered_by: string;
-  before_status: string;
-}
-
 /* ── Detail endpoint responses ───────────────────────────── */
-
-export interface ProjectsAtRiskDetail {
-  critical: RiskProjectDetail[];
-  unstable: RiskProjectDetail[];
-}
 
 export interface KnowledgeCoverageDetail {
   categories: CategoryDetail[];
   most_fragile: string | null;
-}
-
-export interface TeamAvailabilityDetail {
-  absent_users: AbsentUserDetail[];
-  degraded_projects?: string[];
-}
-
-export interface AbsenceImpactDetail {
-  uncovered_skills: UncoveredSkillDetail[];
 }
 
 /* ── Universal stat card shape ───────────────────────────── */
