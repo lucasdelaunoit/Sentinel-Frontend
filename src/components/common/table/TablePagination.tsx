@@ -1,6 +1,5 @@
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 const PER_PAGE_OPTIONS = [10, 15, 25, 50] as const;
 
@@ -56,18 +55,15 @@ export function TablePagination({
           <ChevronLeft className="size-3.5" />
         </Button>
         {pageNumbers.map((p) => (
-          <button
+          <Button
             key={p}
+            variant={page === p ? "default" : "outline"}
+            size="sm"
             onClick={() => onPageChange(p)}
-            className={cn(
-              "h-8 min-w-8 px-2 rounded-lg text-[12px] font-medium transition-all",
-              page === p
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "border border-border/60 bg-card text-foreground hover:bg-muted/50",
-            )}
+            className="h-8 min-w-8 px-2 rounded-lg text-[12px] font-medium"
           >
             {p}
-          </button>
+          </Button>
         ))}
         <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg" disabled={page >= lastPage} onClick={() => onPageChange(page + 1)}>
           <ChevronRight className="size-3.5" />

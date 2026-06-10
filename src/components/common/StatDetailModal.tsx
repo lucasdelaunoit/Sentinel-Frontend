@@ -1,5 +1,6 @@
 import { X } from "lucide-react"
 import type { ReactNode } from "react"
+import { Button } from "@/components/ui/button"
 
 interface StatDetailModalProps {
   title: string
@@ -14,12 +15,14 @@ export default function StatDetailModal({ title, onClose, children }: StatDetail
       <div className="relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg max-h-[82vh] flex flex-col z-10">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
           <h2 className="font-semibold text-sm">{title}</h2>
-          <button
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-lg hover:bg-muted"
+            className="text-muted-foreground rounded-lg"
           >
             <X className="size-4" />
-          </button>
+          </Button>
         </div>
         <div className="overflow-y-auto p-6 space-y-4">{children}</div>
       </div>

@@ -8,6 +8,7 @@ import {
   SheetFooter,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
@@ -75,12 +76,14 @@ export default function ComposedSheet({
                 {description && <SheetDescription className="mt-0.5">{description}</SheetDescription>}
               </div>
             </div>
-            <button
+            <Button
+              variant="ghost"
+              size="icon-sm"
               onClick={handleClose}
-              className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg cursor-pointer text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              className="mt-0.5 shrink-0 rounded-lg text-muted-foreground"
             >
               <X className="size-4" />
-            </button>
+            </Button>
           </div>
         </SheetHeader>
 

@@ -107,13 +107,15 @@ export default function ProfilePage() {
                 <div className="flex size-20 items-center justify-center rounded-2xl bg-secondary-foreground text-xl font-bold text-primary-foreground shadow-md">
                   {profile.initials}
                 </div>
-                <button
+                <Button
                   type="button"
-                  className="absolute -right-1 -bottom-1 grid size-7 place-content-center rounded-full bg-card border border-border text-muted-foreground hover:text-foreground transition-colors shadow-sm"
+                  variant="outline"
+                  size="icon-sm"
+                  className="absolute -right-1 -bottom-1 rounded-full bg-card text-muted-foreground shadow-sm"
                   title="Change avatar"
                 >
                   <Camera className="size-3.5" />
-                </button>
+                </Button>
               </div>
               <div>
                 <h2 className="text-xl font-bold tracking-tight text-foreground">{fullName}</h2>
