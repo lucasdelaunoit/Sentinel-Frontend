@@ -1,132 +1,201 @@
-import { Lightbulb, TrendingDown, TrendingUp } from "lucide-react";
-import { Badge } from "@/components/ui/badge.tsx";
+import { ArrowRight, CalendarRange, UserMinus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import SeveredSkillBadge from "@/components/specified/models/skill/badges/SeveredSkillBadge.tsx";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
-import { TONE_BG } from "@/lib/scoring.ts";
+import { getFragilityTier, TONE_BG } from "@/lib/scoring.ts";
 import { cn } from "@/lib/utils.ts";
 
 interface MediumProjectImpactRowProps {
   project: ProjectImpact;
+  /** Scenario window driving this project's impact, e.g. "12–18 Jun". */
+  window?: string | null;
+  /** People away in the scenario who staff this project, e.g. "Blair Hauck +1". */
+  drivers?: string | null;
   className?: string;
   onClick?: () => void;
 }
 
-function statusTone(status: ProjectImpact["status_after"]): "success" | "warning" | "danger" {
-  if (status === "blocked") return "danger";
-  if (status === "at_risk") return "warning";
-  return "success";
+const fmtDelta = (delta: number) => (delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : "±0");
+
+/**
+ * How much this absence actually degrades the project — driven by the *change*, not the
+ * project's baseline state. A scenario that moves nothing reads "Safe", even on a project
+ * that is fragile to begin with.
+ */
+function impactSeverity(p: ProjectImpact): Severity {
+  const fragilityUp = p.risk_score_after - p.risk_score_before > 0;
+  const busDropped = p.bus_factor_after < p.bus_factor_before;
+  const coverageDropped = p.coverage_pct_after < p.coverage_pct_before;
+  const worsened = fragilityUp || busDropped || coverageDropped || p.skills_at_risk.length > 0;
+
+  if (!worsened) return "ok";
+
+  const lostLastOwner = p.bus_factor_after === 0 && p.bus_factor_before > 0;
+  const criticalSkillUncovered = p.skills_at_risk.some((s) => s.severity === "critical");
+  if (lostLastOwner || criticalSkillUncovered || getFragilityTier(p.risk_score_after).tone === "danger") {
+    return "critical";
+  }
+  return "warning";
 }
 
-export default function MediumProjectImpactRow({ project, className, onClick }: MediumProjectImpactRowProps) {
-  const tone = statusTone(project.status_after);
+/** A labelled before → after metric tile with a coloured delta chip. */
+function MetricBox({
+  label,
+  before,
+  after,
+  delta,
+  worseWhen,
+  suffix = "",
+}: {
+  label: string;
+  before: number;
+  after: number;
+  delta: number;
+  worseWhen: "up" | "down";
+  suffix?: string;
+}) {
+  const worse = worseWhen === "up" ? delta > 0 : delta < 0;
+  const better = worseWhen === "up" ? delta < 0 : delta > 0;
+  const chipTone = worse
+    ? "bg-danger/10 text-danger"
+    : better
+      ? "bg-success/10 text-success"
+      : "bg-muted text-muted-foreground";
+
+  return (
+    <div className="rounded-lg bg-muted/40 px-3 py-2">
+      <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="mt-1 flex items-center gap-1.5 text-[14px] font-bold tabular-nums">
+        <span className="text-muted-foreground">
+          {before}
+          {suffix}
+        </span>
+        <ArrowRight className="size-3 text-muted-foreground/50" />
+        <span className={cn(worse && "text-danger", better && "text-success")}>
+          {after}
+          {suffix}
+        </span>
+        {delta !== 0 && (
+          <span className={cn("ml-auto rounded px-1.5 py-0.5 text-[10px] font-bold", chipTone)}>
+            {fmtDelta(delta)}
+            {suffix}
+          </span>
+        )}
+      </p>
+    </div>
+  );
+}
+
+export default function MediumProjectImpactRow({
+  project,
+  window,
+  drivers,
+  className,
+  onClick,
+}: MediumProjectImpactRowProps) {
+  const fragilityTier = getFragilityTier(project.risk_score_after);
+
+  const skills = project.skills_at_risk;
+  const visibleSkills = skills.slice(0, 4);
+  const extraSkills = Math.max(0, skills.length - visibleSkills.length);
 
   return (
     <SecondaryCard
-      className={cn("items-start", className)}
+      className={cn("items-center gap-4 p-4", className)}
       onClick={onClick}
-      before={<span className={cn("mt-1.5 size-2 rounded-full shrink-0", TONE_BG[tone])} />}
+      before={
+        <div className="flex w-16 shrink-0 flex-col items-center gap-1">
+          <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Fragility</span>
+          <span
+            className={cn(
+              "rounded-md px-2.5 py-1 text-[15px] font-bold tabular-nums text-background",
+              TONE_BG[fragilityTier.tone],
+            )}
+          >
+            {project.risk_score_after}
+          </span>
+          <span className="text-[10px] font-medium tabular-nums text-muted-foreground">
+            from {project.risk_score_before}
+          </span>
+        </div>
+      }
       title={
-        <span className="flex items-center justify-between gap-2">
-          <span className="truncate">{project.name}</span>
-          <SeverityBadge severity={project.severity} />
+        <span className="flex min-w-0 flex-col gap-1.5">
+          <span className="truncate text-[15px] font-semibold leading-tight text-foreground">{project.name}</span>
+
+          {(window || drivers) && (
+            <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-medium text-muted-foreground">
+              {window && (
+                <span className="flex items-center gap-1.5">
+                  <CalendarRange className="size-3.5 text-muted-foreground/70" />
+                  {window}
+                </span>
+              )}
+              {drivers && (
+                <span className="flex items-center gap-1.5 text-danger">
+                  <UserMinus className="size-3.5" />
+                  {drivers} away
+                </span>
+              )}
+            </span>
+          )}
         </span>
       }
       description={
-        <span className="mt-2 flex flex-col gap-2">
-          <span className="grid grid-cols-3 gap-2">
-            <MetricMini
+        <span className="mt-3 block space-y-2.5">
+          <span className="grid grid-cols-2 gap-2">
+            <MetricBox
               label="Bus factor"
               before={project.bus_factor_before}
               after={project.bus_factor_after}
-              invertGood
+              delta={project.bus_factor_delta}
+              worseWhen="down"
             />
-            <MetricMini
+            <MetricBox
               label="Coverage"
               before={project.coverage_pct_before}
               after={project.coverage_pct_after}
+              delta={project.coverage_delta_pct}
+              worseWhen="down"
               suffix="%"
             />
-            <MetricMini label="Risk" before={project.risk_score_before} after={project.risk_score_after} invertGood />
           </span>
 
-          {project.skills_at_risk.length > 0 && (
-            <span className="flex flex-wrap gap-1.5">
-              {project.skills_at_risk.map((s) => (
+          {visibleSkills.length > 0 && (
+            <span className="flex flex-wrap items-center gap-1.5">
+              {visibleSkills.map((s) => (
                 <SeveredSkillBadge key={s.skill_id} name={`${s.name} · ${s.owners_left} left`} severity={s.severity} />
               ))}
-            </span>
-          )}
-
-          {project.recommendation && (
-            <span className="flex items-start gap-1.5 text-[11px] italic text-muted-foreground">
-              <Lightbulb className="mt-0.5 size-3 shrink-0" />
-              {project.recommendation}
+              {extraSkills > 0 && (
+                <span className="text-[11px] font-medium text-muted-foreground">+{extraSkills} more</span>
+              )}
             </span>
           )}
         </span>
       }
+      action={<SeverityBadge severity={impactSeverity(project)} size="md" />}
     />
   );
 }
 
 MediumProjectImpactRow.Skeleton = function MediumProjectImpactRowSkeleton() {
   return (
-    <div className="flex items-start gap-3 rounded-xl bg-tertiary p-3">
-      <Skeleton className="mt-1.5 size-2 rounded-full" />
-      <div className="flex-1 min-w-0 space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <Skeleton className="h-3.5 w-32" />
-          <Skeleton className="h-4 w-16 rounded-full" />
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-10 w-full rounded-md" />
-          ))}
+    <div className="flex items-center gap-4 rounded-xl bg-tertiary p-4">
+      <div className="flex w-16 shrink-0 flex-col items-center gap-1">
+        <Skeleton className="h-2.5 w-12" />
+        <Skeleton className="h-7 w-10 rounded-md" />
+        <Skeleton className="h-2.5 w-10" />
+      </div>
+      <div className="flex-1 min-w-0 space-y-2.5">
+        <Skeleton className="h-4 w-44" />
+        <Skeleton className="h-3 w-52" />
+        <div className="grid grid-cols-2 gap-2">
+          <Skeleton className="h-12 w-full rounded-lg" />
+          <Skeleton className="h-12 w-full rounded-lg" />
         </div>
       </div>
+      <Skeleton className="h-5 w-16 rounded-full" />
     </div>
   );
 };
-
-interface MetricMiniProps {
-  label: string;
-  before: number;
-  after: number;
-  suffix?: string;
-  invertGood?: boolean;
-}
-
-function MetricMini({ label, before, after, suffix = "", invertGood = false }: MetricMiniProps) {
-  const delta = after - before;
-  const improved = invertGood ? delta < 0 : delta > 0;
-  const worse = invertGood ? delta > 0 : delta < 0;
-
-  return (
-    <span className="block rounded-md bg-muted/30 px-2 py-1.5">
-      <span className="block text-[9px] uppercase tracking-wider text-muted-foreground/70">{label}</span>
-      <span className="flex items-center gap-1 text-[11px] font-bold">
-        <span className="text-muted-foreground">
-          {before}
-          {suffix}
-        </span>
-        <span className="text-muted-foreground/40">→</span>
-        <span className={cn(worse && "text-destructive-foreground", improved && "text-success")}>
-          {after}
-          {suffix}
-        </span>
-        {delta !== 0 && (
-          <Badge
-            variant={worse ? "destructive" : "secondary"}
-            className={cn("ml-auto h-4 px-1 text-[9px] gap-0", improved && "bg-success/15 text-success")}
-          >
-            {delta > 0 ? <TrendingUp /> : <TrendingDown />}
-            {Math.abs(delta)}
-            {suffix}
-          </Badge>
-        )}
-      </span>
-    </span>
-  );
-}

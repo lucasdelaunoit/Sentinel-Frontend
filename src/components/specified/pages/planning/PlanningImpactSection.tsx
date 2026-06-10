@@ -120,7 +120,12 @@ export default function PlanningImpactSection({
             </>
           ) : (
             <>
-              <ProjectsImpactCard projects={combined.per_project_impact} />
+              <ProjectsImpactCard
+                projects={combined.per_project_impact}
+                perUserImpact={combined.per_user_impact}
+                simBlocks={simBlocks}
+                usersById={usersById}
+              />
               <SkillImpactCard skills={combined.per_skill_impact} />
               <HotspotsImpactCard hotspots={combined.hotspots} usersById={usersById} />
               <RecommandationsImpactCard recs={combined.recommendations} />

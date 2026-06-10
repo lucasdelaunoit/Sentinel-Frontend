@@ -8,7 +8,7 @@ interface SeverityBadgeProps {
   size?: "sm" | "md";
 }
 
-export default function SeverityBadge({ severity, label, className, size = "sm" }: SeverityBadgeProps) {
+export default function SeverityBadge({ severity, className, size = "sm" }: SeverityBadgeProps) {
   return (
     <span
       className={cn(
