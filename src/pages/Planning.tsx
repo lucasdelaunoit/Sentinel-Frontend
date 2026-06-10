@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import { Check, Loader2, X, Zap } from "lucide-react";
 import TopBar from "@/components/layout/topbar/TopBar";
 import { Button } from "@/components/ui/button";
@@ -28,17 +29,17 @@ import { SIM_COLORS } from "@/utils/planning/theme";
 
 export default function Planning() {
   const today = new Date();
-  const [mode, setMode] = useState<PlanningMode>("view");
+  const [mode, setMode] = useLocalStorageState<PlanningMode>("sentinel_planning_mode", "view");
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth() + 1);
-  const [simBlocks, setSimBlocks] = useState<SimBlock[]>([]);
+  const [simBlocks, setSimBlocks] = useLocalStorageState<SimBlock[]>("sentinel_planning_sim_blocks", []);
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [showApplyConfirm, setShowApplyConfirm] = useState(false);
   const [detailUserId, setDetailUserId] = useState<string | null>(null);
   const [detailAbsenceId, setDetailAbsenceId] = useState<number | null>(null);
   const [absenceDetailOpen, setAbsenceDetailOpen] = useState(false);
-  const colorCounterRef = useRef(0);
+  const colorCounterRef = useRef(simBlocks.length);
   const applyMutation = useApplyPlanningSimulation();
 
   const month = `${viewYear}-${String(viewMonth).padStart(2, "0")}`;
