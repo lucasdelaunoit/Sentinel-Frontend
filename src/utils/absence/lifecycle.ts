@@ -1,14 +1,5 @@
 export type AbsenceLifecycle = "upcoming" | "ongoing" | "past";
 
-export function lifecycleKey(start: string, end: string): AbsenceLifecycle {
-  const today = new Date().setHours(0, 0, 0, 0);
-  const s = new Date(start).setHours(0, 0, 0, 0);
-  const e = new Date(end).setHours(0, 0, 0, 0);
-  if (today < s) return "upcoming";
-  if (today > e) return "past";
-  return "ongoing";
-}
-
 export function fmtDate(date: string) {
   return new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }

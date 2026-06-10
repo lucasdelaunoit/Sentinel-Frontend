@@ -4,7 +4,7 @@ import usePrivateApi from "@/api/privateApi.ts";
 export default function useGetProjectCompetencyRadar(projectId: string | undefined) {
   const privateApi = usePrivateApi();
 
-  return useQuery<ProjectCompetencyRadarItem[]>({
+  return useQuery<CompetencyRadarItem[]>({
     queryKey: ["projects", projectId, "competency-radar"],
     queryFn: async () => {
       const { data } = await privateApi.get<ProjectCompetencyRadarResponse>(

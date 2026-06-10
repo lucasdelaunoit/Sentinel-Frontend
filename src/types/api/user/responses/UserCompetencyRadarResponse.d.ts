@@ -1,3 +1,3 @@
 interface UserCompetencyRadarResponse {
-  data: UserCompetencyRadarItem[];
+  data: CompetencyRadarItem[];
 }

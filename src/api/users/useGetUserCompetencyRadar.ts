@@ -4,7 +4,7 @@ import usePrivateApi from "@/api/privateApi.ts";
 export default function useGetUserCompetencyRadar(userId: string | undefined) {
   const privateApi = usePrivateApi();
 
-  return useQuery<UserCompetencyRadarItem[]>({
+  return useQuery<CompetencyRadarItem[]>({
     queryKey: ["users", userId, "competency-radar"],
     queryFn: async () => {
       const { data } = await privateApi.get<UserCompetencyRadarResponse>(

@@ -1,7 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { cn } from "@/lib/utils.ts";
-import { TONE_SOFT_BORDER, type Tone } from "@/lib/scoring.ts";
-import { RISK_TONE, type RiskLevel } from "@/data/dashboard.ts";
+import { TONE_SOFT_BORDER, RISK_TONE, type Tone, type RiskLevel } from "@/lib/scoring.ts";
 import { Badge } from "@/components/ui/badge.tsx";
 
 interface RiskBadgeProps {

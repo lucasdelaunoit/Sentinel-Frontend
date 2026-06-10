@@ -16,9 +16,9 @@ import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog
 import DataDisplay from "@/components/common/data/DataDisplay";
 import LifecycleBadge from "@/components/specified/models/absence/badges/LifecycleBadge";
 import useDeleteAbsence from "@/api/absences/useDeleteAbsence.ts";
-import { dateRelativeLabel, lifecycleKey } from "@/utils/absence/lifecycle";
+import { dateRelativeLabel } from "@/utils/absence/lifecycle";
 import { halfRangeDuration, ABSENCE_HALF_LABEL } from "@/utils/absence/halfDay";
-import { formatDate } from "@/utils/formatters/date";
+import { classifyAbsenceLifecycle, formatDate } from "@/utils/formatters/date";
 import { capitalize } from "@/utils/formatters/string.ts";
 
 interface AbsenceDetailSheetProps {
@@ -58,7 +58,7 @@ export default function AbsenceDetailSheet({ absence, open, onOpenChange, userId
     );
   }
 
-  const lk = lifecycleKey(absence.start_date, absence.end_date);
+  const lk = classifyAbsenceLifecycle(absence.start_date, absence.end_date);
   const days = halfRangeDuration(absence);
   const anchorDate = lk === "past" ? absence.end_date : absence.start_date;
   const relLabel = dateRelativeLabel(anchorDate, lk);

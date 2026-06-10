@@ -3,6 +3,16 @@ export type TrajectoryKey = "off_course" | "drifting" | "wobbling" | "on_track" 
 
 export type Tone = "success" | "warning" | "danger";
 
+export type RiskLevel = "critical" | "high" | "medium" | "low";
+
+/** Maps a discrete risk level onto the semantic tone scale. */
+export const RISK_TONE: Record<RiskLevel, Tone> = {
+  critical: "danger",
+  high: "danger",
+  medium: "warning",
+  low: "success",
+};
+
 export interface FragilityTier {
   key: FragilityKey;
   label: string;
