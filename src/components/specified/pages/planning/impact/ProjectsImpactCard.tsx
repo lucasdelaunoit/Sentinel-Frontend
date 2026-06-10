@@ -29,3 +29,22 @@ export default function ProjectsImpactCard({ projects }: ProjectsImpactCardProps
     </ComposedCard>
   );
 }
+
+ProjectsImpactCard.Skeleton = function ProjectsImpactCardSkeleton() {
+  return (
+    <ComposedCard
+      title={
+        <div className="flex items-center gap-2">
+          <span>Impacted Projects</span>
+          <CountDisplay isLoading count={0} />
+        </div>
+      }
+    >
+      <div className="space-y-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <MediumProjectImpactRow.Skeleton key={i} />
+        ))}
+      </div>
+    </ComposedCard>
+  );
+};

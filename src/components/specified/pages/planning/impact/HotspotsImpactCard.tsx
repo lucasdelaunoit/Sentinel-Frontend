@@ -3,6 +3,7 @@ import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 import { getInitials } from "@/utils/formatters/persons.ts";
@@ -59,3 +60,29 @@ export default function HotspotsImpactCard({
     </ComposedCard>
   );
 }
+
+HotspotsImpactCard.Skeleton = function HotspotsImpactCardSkeleton() {
+  return (
+    <ComposedCard
+      title={
+        <div className="flex items-center gap-2">
+          <span>Hotspots</span>
+          <CountDisplay isLoading count={0} />
+        </div>
+      }
+    >
+      <div className="space-y-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3 rounded-xl bg-tertiary p-3">
+            <Skeleton className="size-4 shrink-0 rounded" />
+            <div className="flex-1 min-w-0 space-y-1.5">
+              <Skeleton className="h-3.5 w-40" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+            <Skeleton className="h-5 w-16 rounded-full shrink-0" />
+          </div>
+        ))}
+      </div>
+    </ComposedCard>
+  );
+};

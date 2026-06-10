@@ -1,4 +1,4 @@
-import { CheckCircle2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,98 +14,30 @@ import HotspotsImpactCard from "@/components/specified/pages/planning/impact/Hot
 import RecommandationsImpactCard from "@/components/specified/pages/planning/impact/RecommandationsImpactCard.tsx";
 import WarningsImpactCard from "@/components/specified/pages/planning/impact/WarningsImpactCard.tsx";
 
-type PanelLayout = "side" | "below";
-
-interface PlanningContextPanelProps {
-  mode: PlanningMode;
-  users: PlanningUser[];
-  simBlocks: SimBlock[];
-  viewYear: number;
-  viewMonth: number;
-  onSelectBlock: (id: string) => void;
-  onRemoveBlock: (id: string) => void;
-  onClearAll: () => void;
-  combined: SimulateResponse;
-  layout?: PanelLayout;
-}
-
-export default function PlanningContextPanel({
-  users,
-  simBlocks,
-  onSelectBlock,
-  onRemoveBlock,
-  onClearAll,
-  combined,
-  layout = "side",
-}: PlanningContextPanelProps) {
-  return (
-    <SimulatePanel
-      users={users}
-      simBlocks={simBlocks}
-      onSelectBlock={onSelectBlock}
-      onRemoveBlock={onRemoveBlock}
-      onClearAll={onClearAll}
-      combined={combined}
-      layout={layout}
-    />
-  );
-}
-
-function panelContainerClass(_layout: PanelLayout): string {
-  return "flex flex-col gap-4";
-}
-
-function resultsContainerClass(layout: PanelLayout): string {
-  return layout === "below"
-    ? "columns-1 md:columns-2 2xl:columns-3 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid"
-    : "flex flex-col gap-4";
-}
-
-PlanningContextPanel.Skeleton = function PlanningContextPanelSkeleton({ layout = "below" }: { layout?: PanelLayout }) {
-  return (
-    <div className={panelContainerClass(layout)}>
-      <ComposedCard
-        title={<Skeleton className="h-4 w-24" />}
-        action={<Skeleton className="h-4 w-12" />}
-        className="gap-0"
-      >
-        <div className="space-y-3 pt-3">
-          <Skeleton className="h-8 w-full rounded-xl" />
-          <div className="space-y-1.5">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-lg" />
-            ))}
-          </div>
-        </div>
-      </ComposedCard>
-    </div>
-  );
-};
-
-/* ─────────────────────── Simulate mode ─────────────────────── */
-
-function SimulatePanel({
-  users,
-  simBlocks,
-  onSelectBlock,
-  onRemoveBlock,
-  onClearAll,
-  combined,
-  layout,
-}: {
+interface PlanningImpactSectionProps {
   users: PlanningUser[];
   simBlocks: SimBlock[];
   onSelectBlock: (id: string) => void;
   onRemoveBlock: (id: string) => void;
   onClearAll: () => void;
   combined: SimulateResponse;
-  layout: PanelLayout;
-}) {
+  isLoading?: boolean;
+}
+
+export default function PlanningImpactSection({
+  users,
+  simBlocks,
+  onSelectBlock,
+  onRemoveBlock,
+  onClearAll,
+  combined,
+  isLoading = false,
+}: PlanningImpactSectionProps) {
   const usersById = new Map(users.map((u) => [u.id, u]));
   const hasData = simBlocks.length > 0;
 
   return (
-    <div className={panelContainerClass(layout)}>
+    <div className="flex flex-col gap-4">
       <ComposedCard
         title={
           <span className="flex items-center gap-2">
@@ -177,16 +109,47 @@ function SimulatePanel({
       </ComposedCard>
 
       {hasData && (
-        <div className={resultsContainerClass(layout)}>
-          <ProjectsImpactCard projects={combined.per_project_impact} />
-          <SkillImpactCard skills={combined.per_skill_impact} />
-          <HotspotsImpactCard hotspots={combined.hotspots} usersById={usersById} />
-          <RecommandationsImpactCard recs={combined.recommendations} />
-          <WarningsImpactCard warnings={combined.warnings} />
+        <div className="columns-1 md:columns-2 2xl:columns-3 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
+          {isLoading ? (
+            <>
+              <ProjectsImpactCard.Skeleton />
+              <SkillImpactCard.Skeleton />
+              <HotspotsImpactCard.Skeleton />
+              <RecommandationsImpactCard.Skeleton />
+              <WarningsImpactCard.Skeleton />
+            </>
+          ) : (
+            <>
+              <ProjectsImpactCard projects={combined.per_project_impact} />
+              <SkillImpactCard skills={combined.per_skill_impact} />
+              <HotspotsImpactCard hotspots={combined.hotspots} usersById={usersById} />
+              <RecommandationsImpactCard recs={combined.recommendations} />
+              <WarningsImpactCard warnings={combined.warnings} />
+            </>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-export { CheckCircle2 };
+PlanningImpactSection.Skeleton = function PlanningImpactSectionSkeleton() {
+  return (
+    <div className="columns-1 md:columns-2 2xl:columns-3 gap-4 [&>*]:mb-4 [&>*]:break-inside-avoid">
+      <ComposedCard
+        title={<Skeleton className="h-4 w-24" />}
+        action={<Skeleton className="h-4 w-12" />}
+        className="gap-0"
+      >
+        <div className="space-y-3 pt-3">
+          <Skeleton className="h-8 w-full rounded-xl" />
+          <div className="space-y-1.5">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full rounded-lg" />
+            ))}
+          </div>
+        </div>
+      </ComposedCard>
+    </div>
+  );
+};

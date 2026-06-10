@@ -1,6 +1,7 @@
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { cn } from "@/lib/utils.ts";
 import { Badge } from "@/components/ui/badge.tsx";
 
@@ -71,3 +72,31 @@ export default function SkillImpactCard({ skills }: SkillImpactCardProps) {
     </ComposedCard>
   );
 }
+
+SkillImpactCard.Skeleton = function SkillImpactCardSkeleton() {
+  return (
+    <ComposedCard
+      title={
+        <div className="flex items-center gap-2">
+          <span>Impacted Skills</span>
+          <CountDisplay isLoading count={0} />
+        </div>
+      }
+    >
+      <div className="divide-y divide-border/40">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="px-5 py-3 space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <Skeleton className="size-2 rounded-full shrink-0" />
+                <Skeleton className="h-3 w-28" />
+              </div>
+              <Skeleton className="h-4 w-16 rounded-full" />
+            </div>
+            <Skeleton className="h-2.5 w-40" />
+          </div>
+        ))}
+      </div>
+    </ComposedCard>
+  );
+};

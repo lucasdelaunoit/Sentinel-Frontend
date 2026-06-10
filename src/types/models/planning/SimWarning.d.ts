@@ -1,5 +1,5 @@
 interface SimWarning {
-  code: WarningCode;
+  code: string;
   severity: Severity;
   message?: string;
   skill_id?: number;

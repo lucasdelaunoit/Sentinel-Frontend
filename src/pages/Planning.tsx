@@ -19,7 +19,7 @@ import useApplyPlanningSimulation from "@/api/planning/useApplyPlanningSimulatio
 import useGetAbsencesForUser from "@/api/absences/useGetAbsencesForUser";
 import AbsenceDetailSheet from "@/components/specified/models/absence/sheets/AbsenceDetailSheet";
 import PlanningGantt from "@/components/specified/pages/planning/PlanningGantt";
-import PlanningContextPanel from "@/components/specified/pages/planning/PlanningContextPanel";
+import PlanningImpactSection from "@/components/specified/pages/planning/PlanningImpactSection";
 import AddAbsenceSheet from "@/components/specified/pages/planning/sheets/AddAbsenceSheet";
 import SimBlockDetailSheet from "@/components/specified/pages/planning/sheets/SimBlockDetailSheet";
 import SaveStatusIndicator from "@/components/specified/pages/planning/SaveStatusIndicator.tsx";
@@ -212,19 +212,16 @@ export default function Planning() {
         {mode === "simulate" && simBlocks.length > 0 && (
           <div>
             {planningQuery.isLoading ? (
-              <PlanningContextPanel.Skeleton layout="below" />
+              <PlanningImpactSection.Skeleton />
             ) : (
-              <PlanningContextPanel
-                layout="below"
-                mode={mode}
+              <PlanningImpactSection
                 users={users}
                 simBlocks={simBlocks}
-                viewYear={viewYear}
-                viewMonth={viewMonth}
                 onSelectBlock={setSelectedBlockId}
                 onRemoveBlock={removeBlock}
                 onClearAll={clearAll}
                 combined={simulationData}
+                isLoading={simulationIsLoading}
               />
             )}
           </div>

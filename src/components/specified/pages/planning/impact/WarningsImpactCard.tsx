@@ -32,3 +32,22 @@ export default function WarningsImpactCard({ warnings }: { warnings: SimWarning[
     </ComposedCard>
   );
 }
+
+WarningsImpactCard.Skeleton = function WarningsImpactCardSkeleton() {
+  return (
+    <ComposedCard
+      title={
+        <div className="flex items-center gap-2">
+          <span>Warnings</span>
+          <CountDisplay isLoading count={0} />
+        </div>
+      }
+    >
+      <div className="space-y-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <MediumRecommendationRow.Skeleton key={i} />
+        ))}
+      </div>
+    </ComposedCard>
+  );
+};
