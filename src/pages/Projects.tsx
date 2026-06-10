@@ -11,23 +11,17 @@ import {
   CheckCircleIcon,
   ArrowUUpLeftIcon,
 } from "@phosphor-icons/react";
-import ComposedCard from "@/components/common/cards/ComposedCard";
 import ProjectsStatCardsSection from "@/components/specified/pages/projects/ProjectsStatCardsSection.tsx";
-import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import useGetProjects from "@/api/projects/useGetProjects";
 import CreateProjectSheet from "@/components/specified/models/projects/sheets/CreateProjectSheet.tsx";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SortableTableHead } from "@/components/common/table/SortableTableHead";
-import { TablePagination } from "@/components/common/table/TablePagination";
-import { useTableSort } from "@/hooks/useTableSort";
-import { useTablePagination } from "@/hooks/useTablePagination";
+import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable";
 import { HighlightMatch } from "@/utils/useHighlightableText";
 import ProjectStatusBadge from "@/components/specified/models/projects/badges/ProjectStatusBadge.tsx";
-import FilterPillGroup, { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
+import { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -189,246 +183,110 @@ const STATUS_FILTER_OPTIONS: FilterPillOption<ProjectStatus | null>[] = [
   { value: "archived", label: "Archived" },
 ];
 
+/** Severity dot + value cell for a project metric. `raw`: how to render value_raw alongside value. */
+function StatDotCell({ metric, raw = "none" }: { metric?: MetricResult | null; raw?: "inline" | "paren" | "none" }) {
+  if (!metric) return <span className="text-[13px] text-muted-foreground">—</span>;
+  return (
+    <div className="flex items-center gap-1.5" title={metric.insight ?? undefined}>
+      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", severityDot(metric))} />
+      <span className={cn("text-[13px] font-semibold whitespace-nowrap", severityText(metric))}>
+        {metric.value}
+        {raw === "paren" && ` (${metric.value_raw})`}
+        {raw === "inline" && metric.value_raw != null && (
+          <span className="ml-1 tabular-nums opacity-70">{metric.value_raw}</span>
+        )}
+      </span>
+    </div>
+  );
+}
+
+const PROJECT_COLUMNS: DataTableColumn<Project, ProjSortKey>[] = [
+  {
+    key: "name",
+    header: "Project",
+    sortKey: "name",
+    className: "max-w-[260px]",
+    cell: (project, { search }) => (
+      <>
+        <p className="font-semibold text-foreground text-[14px] truncate">
+          <HighlightMatch text={project.name} searchTerm={search} />
+        </p>
+        <p className="text-[12px] text-muted-foreground mt-0.5 truncate">
+          <HighlightMatch text={project.description} searchTerm={search} />
+        </p>
+      </>
+    ),
+    skeleton: (
+      <div className="space-y-1.5">
+        <Skeleton className="h-3.5 w-40" />
+        <Skeleton className="h-3 w-56" />
+      </div>
+    ),
+  },
+  {
+    key: "status",
+    header: "Status",
+    cell: (project) => <ProjectStatusBadge status={project.status} />,
+    skeleton: <Skeleton className="h-5 w-16 rounded-full" />,
+  },
+  {
+    key: "fragility",
+    header: "Fragility",
+    sortKey: "risk_score",
+    cell: (project) => <StatDotCell metric={project.fragility} raw="inline" />,
+  },
+  {
+    key: "team_availability",
+    header: "Team Availability",
+    sortKey: "team_availability",
+    cell: (project) => <StatDotCell metric={project.team_availability} raw="paren" />,
+  },
+  {
+    key: "knowledge_coverage",
+    header: "Knowledge Coverage",
+    sortKey: "knowledge_coverage",
+    cell: (project) => <StatDotCell metric={project.knowledge_coverage} />,
+  },
+  {
+    key: "deadline",
+    header: "Deadline",
+    cell: (project) => {
+      const overdue = new Date(project.deadline) < new Date() && project.status !== "completed";
+      return (
+        <>
+          <span
+            className={cn("text-[12px] font-medium whitespace-nowrap", overdue ? "text-danger" : "text-foreground")}
+          >
+            {project.deadline ? formatDate(project.deadline) : "-"}
+          </span>
+          {overdue && <p className="text-[10px] text-danger mt-0.5 font-medium">Overdue</p>}
+        </>
+      );
+    },
+  },
+  {
+    key: "actions",
+    header: "Actions",
+    stopPropagation: true,
+    cell: (project) => <ProjectActionsCell project={project} />,
+  },
+];
+
 function ProjectList() {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ProjectStatus | null>(null);
-  const { sort, toggleSort } = useTableSort<ProjSortKey>("name");
-  const { page, setPage, perPage, setPerPage } = useTablePagination(15, [search, statusFilter]);
-
-  const { data: projects, total, lastPage, from, to, isLoading, isError } = useGetProjects({
-    page,
-    per_page: perPage,
-    search: search || undefined,
-    sorts: [{ field: sort.key, direction: sort.dir }],
-    filters: statusFilter !== null ? [{ field: "status", value: statusFilter }] : undefined,
-  });
-
-  const toolbarAction = (
-    <>
-      {!isLoading && (
-        <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
-          {total}
-        </span>
-      )}
-      <div className="flex-1" />
-      <FilterPillGroup options={STATUS_FILTER_OPTIONS} value={statusFilter} onChange={setStatusFilter} />
-      <SearchBar value={search} onChange={setSearch} placeholder="Search projects..." />
-    </>
-  );
-
   return (
-    <ComposedCard
+    <DataTable<Project, ProjSortKey, ProjectStatus>
       title="All Projects"
-      action={toolbarAction}
-      className="p-0 overflow-hidden"
-      headerClassName="px-6 pt-4 flex-wrap gap-3"
-    >
-      <Table className="text-sm">
-        <TableHeader>
-          <TableRow className="border-b border-t border-border/60 bg-muted/30 hover:bg-muted/30">
-            <SortableTableHead label="Project" col="name" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
-            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Status
-            </TableHead>
-            <SortableTableHead
-              label="Fragility"
-              col="risk_score"
-              sortKey={sort.key}
-              sortDir={sort.dir}
-              onSort={toggleSort}
-            />
-            <SortableTableHead
-              label="Team Availability"
-              col="team_availability"
-              sortKey={sort.key}
-              sortDir={sort.dir}
-              onSort={toggleSort}
-            />
-            <SortableTableHead
-              label="Knowledge Coverage"
-              col="knowledge_coverage"
-              sortKey={sort.key}
-              sortDir={sort.dir}
-              onSort={toggleSort}
-            />
-            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Deadline
-            </TableHead>
-            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody className="[&_tr]:border-border/40">
-          {isLoading ? (
-            Array.from({ length: perPage > 10 ? 8 : perPage }).map((_, i) => (
-              <TableRow key={i} className="border-border/40">
-                <TableCell className="px-5 py-4">
-                  <div className="space-y-1.5">
-                    <Skeleton className="h-3.5 w-40" />
-                    <Skeleton className="h-3 w-56" />
-                    <div className="flex gap-1 mt-1">
-                      <Skeleton className="h-4 w-14 rounded-md" />
-                      <Skeleton className="h-4 w-12 rounded-md" />
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-5 w-16 rounded-full" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-4 w-20" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-4 w-20" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-4 w-16" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-3.5 w-20" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-8 w-14 rounded-lg" />
-                </TableCell>
-              </TableRow>
-            ))
-          ) : isError ? (
-            <TableRow className="border-border/40">
-              <TableCell colSpan={9} className="px-6 py-12 text-center text-sm text-muted-foreground">
-                Failed to load projects. Check API connection.
-              </TableCell>
-            </TableRow>
-          ) : projects.length === 0 ? (
-            <TableRow className="border-border/40">
-              <TableCell colSpan={9} className="px-6 py-12 text-center text-sm text-muted-foreground">
-                No projects match your filters.
-              </TableCell>
-            </TableRow>
-          ) : (
-            projects.map((project) => {
-              const overdue = new Date(project.deadline) < new Date() && project.status !== "completed";
-              return (
-                <TableRow
-                  key={project.id}
-                  className="hover:bg-muted/20 transition-colors group cursor-pointer border-border/40"
-                  onClick={() => navigate(`/projects/${project.id}`)}
-                >
-                  <TableCell className="px-5 py-4 max-w-[260px]">
-                    <p className="font-semibold text-foreground text-[14px] truncate">
-                      <HighlightMatch text={project.name} searchTerm={search} />
-                    </p>
-                    <p className="text-[12px] text-muted-foreground mt-0.5 truncate">
-                      <HighlightMatch text={project.description} searchTerm={search} />
-                    </p>
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <ProjectStatusBadge status={project.status} />
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    {project.fragility ? (
-                      <div className="flex items-center gap-1.5">
-                        <div
-                          className={cn("size-1.5 rounded-full shrink-0 shadow-sm", severityDot(project.fragility))}
-                        />
-                        <span
-                          className={cn("text-[13px] font-semibold whitespace-nowrap", severityText(project.fragility))}
-                        >
-                          {project.fragility.value}
-                          {(project.fragility.value_raw) !== null &&
-                            (project.fragility.value_raw) !== undefined && (
-                              <span className="ml-1 tabular-nums opacity-70">
-                                {project.fragility.value_raw}
-                              </span>
-                            )}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-[13px] text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    {project.team_availability ? (
-                      <div className="flex items-center gap-1.5" title={project.team_availability.insight ?? undefined}>
-                        <div
-                          className={cn(
-                            "size-1.5 rounded-full shrink-0 shadow-sm",
-                            severityDot(project.team_availability),
-                          )}
-                        />
-                        <span
-                          className={cn(
-                            "text-[13px] font-semibold whitespace-nowrap",
-                            severityText(project.team_availability),
-                          )}
-                        >
-                          {project.team_availability.value} ({project.team_availability.value_raw})
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-[13px] text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    {project.knowledge_coverage ? (
-                      <div
-                        className="flex items-center gap-1.5"
-                        title={project.knowledge_coverage.insight ?? undefined}
-                      >
-                        <div
-                          className={cn(
-                            "size-1.5 rounded-full shrink-0 shadow-sm",
-                            severityDot(project.knowledge_coverage),
-                          )}
-                        />
-                        <span
-                          className={cn(
-                            "text-[13px] font-semibold whitespace-nowrap",
-                            severityText(project.knowledge_coverage),
-                          )}
-                        >
-                          {project.knowledge_coverage.value}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-[13px] text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <span
-                      className={cn(
-                        "text-[12px] font-medium whitespace-nowrap",
-                        overdue ? "text-danger" : "text-foreground",
-                      )}
-                    >
-                      {project.deadline ? formatDate(project.deadline) : "-"}
-                    </span>
-                    {overdue && <p className="text-[10px] text-danger mt-0.5 font-medium">Overdue</p>}
-                  </TableCell>
-                  <TableCell className="px-5 py-4">
-                    <ProjectActionsCell project={project} />
-                  </TableCell>
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-      </Table>
-
-      {!isLoading && !isError && (
-        <TablePagination
-          page={page}
-          lastPage={lastPage}
-          perPage={perPage}
-          total={total}
-          from={from}
-          to={to}
-          onPageChange={setPage}
-          onPerPageChange={setPerPage}
-        />
-      )}
-    </ComposedCard>
+      hook={(params) => useGetProjects(params)}
+      columns={PROJECT_COLUMNS}
+      defaultSort="name"
+      searchable
+      searchPlaceholder="Search projects..."
+      filter={{ field: "status", options: STATUS_FILTER_OPTIONS }}
+      onRowClick={(project) => navigate(`/projects/${project.id}`)}
+      emptyMessage="No projects match your filters."
+      errorMessage="Failed to load projects. Check API connection."
+    />
   );
 }
 

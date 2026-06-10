@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Eye } from "lucide-react";
-import ComposedCard from "@/components/common/cards/ComposedCard";
-import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import { Button } from "@/components/ui/button";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { PlusIcon, DotsThreeVerticalIcon, CalendarPlusIcon, TrashIcon } from "@phosphor-icons/react";
@@ -16,19 +14,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog";
 import useGetUsers from "@/api/users/useGetUsers";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable";
 import { HighlightMatch } from "@/utils/useHighlightableText";
-import { SortableTableHead } from "@/components/common/table/SortableTableHead";
-import { TablePagination } from "@/components/common/table/TablePagination";
-import { useTableSort } from "@/hooks/useTableSort";
-import { useTablePagination } from "@/hooks/useTablePagination";
 import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
 import UserStatusBadge from "@/components/specified/models/employees/badges/UserStatusBadge.tsx";
 import UsersStatCardsSection from "@/components/specified/pages/employees/UsersStatCardsSection.tsx";
-import FilterPillGroup, { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
+import { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import CreateUserSheet from "@/components/specified/models/employees/sheets/CreateUserSheet";
-import type { UserListItem } from "@/types/dashboard";
+import type { UserListItem, UserSkillItem } from "@/types/dashboard";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
@@ -106,188 +100,115 @@ const USER_STATUS_FILTER_OPTIONS: FilterPillOption<UserStatus | null>[] = [
   { value: "away", label: "Away" },
 ];
 
+function SkillsCell({ skills }: { skills: UserSkillItem[] }) {
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      <span className="font-semibold text-foreground text-[14px]">{skills.length}</span>
+      <span className="text-muted-foreground text-[11px]">skills</span>
+      <div className="flex gap-1 ml-1 flex-wrap">
+        {skills.slice(0, 3).map((s) => (
+          <span
+            key={s.id}
+            className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60"
+          >
+            {s.name}
+          </span>
+        ))}
+        {skills.length > 3 && (
+          <span className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60">
+            +{skills.length - 3}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const USER_COLUMNS: DataTableColumn<UserListItem, EmpSortKey>[] = [
+  {
+    key: "employee",
+    header: "Employee",
+    sortKey: "name",
+    cell: (emp, { search }) => (
+      <div className="flex items-center gap-3">
+        <UserAvatar firstname={emp.firstname} lastname={emp.lastname} variant={emp.status} size="lg" />
+        <div>
+          <p className="font-semibold text-foreground text-[14px]">
+            <HighlightMatch text={`${emp.firstname} ${emp.lastname}`} searchTerm={search} />
+          </p>
+          <p className="text-[12px] text-muted-foreground">
+            <HighlightMatch text={emp.email} searchTerm={search} />
+          </p>
+        </div>
+      </div>
+    ),
+    skeleton: (
+      <div className="flex items-center gap-3">
+        <Skeleton className="size-10 rounded-xl shrink-0" />
+        <div className="space-y-1.5">
+          <Skeleton className="h-3.5 w-32" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+      </div>
+    ),
+  },
+  {
+    key: "department",
+    header: "Department",
+    cell: (emp) => (
+      <span className="inline-flex items-center rounded-md bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-foreground/70">
+        {emp.department?.name ?? "—"}
+      </span>
+    ),
+    skeleton: <Skeleton className="h-5 w-20 rounded-md" />,
+  },
+  {
+    key: "title",
+    header: "Title",
+    sortKey: "title",
+    cell: (emp) => <span className="text-[13px] text-foreground">{emp.title || "—"}</span>,
+  },
+  {
+    key: "status",
+    header: "Work status",
+    cell: (emp) => <UserStatusBadge status={emp.status} />,
+    skeleton: <Skeleton className="h-5 w-16 rounded-full" />,
+  },
+  {
+    key: "skills",
+    header: "Skills",
+    cell: (emp) => <SkillsCell skills={emp.skills} />,
+    skeleton: (
+      <div className="flex gap-1.5">
+        <Skeleton className="h-5 w-16 rounded-md" />
+        <Skeleton className="h-5 w-12 rounded-md" />
+      </div>
+    ),
+  },
+  {
+    key: "actions",
+    header: "Actions",
+    stopPropagation: true,
+    cell: (emp) => <UserActionsCell user={emp} />,
+  },
+];
+
 function UserList() {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<UserStatus | null>(null);
-  const { sort, toggleSort } = useTableSort<EmpSortKey>("name");
-  const { page, setPage, perPage, setPerPage } = useTablePagination(15, [search, statusFilter]);
-
-  const {
-    data: users,
-    total,
-    lastPage,
-    from,
-    to,
-    isLoading,
-    isError,
-  } = useGetUsers<UserListItem>({
-    page,
-    per_page: perPage,
-    search: search || undefined,
-    sorts: [{ field: sort.key, direction: sort.dir }],
-    filters: statusFilter !== null ? [{ field: "status", value: statusFilter }] : undefined,
-    includes: ["department", "skills"],
-  });
-
-  const toolbarAction = (
-    <>
-      {!isLoading && (
-        <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full font-medium">
-          {total}
-        </span>
-      )}
-      <div className="flex-1" />
-      <FilterPillGroup options={USER_STATUS_FILTER_OPTIONS} value={statusFilter} onChange={setStatusFilter} />
-      <SearchBar value={search} onChange={setSearch} placeholder="Search employees..." />
-    </>
-  );
-
   return (
-    <ComposedCard
+    <DataTable<UserListItem, EmpSortKey, UserStatus>
       title="All Employees"
-      action={toolbarAction}
-      className="p-0 overflow-hidden"
-      headerClassName="px-6 pt-4 flex-wrap gap-3"
-    >
-      <Table className="text-sm">
-        <TableHeader>
-          <TableRow className="border-b border-t border-border/60 bg-muted/30 hover:bg-muted/30">
-            <SortableTableHead label="Employee" col="name" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
-            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Department
-            </TableHead>
-            <SortableTableHead label="Title" col="title" sortKey={sort.key} sortDir={sort.dir} onSort={toggleSort} />
-            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Work status
-            </TableHead>
-            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Skills
-            </TableHead>
-            <TableHead className="px-5 py-3.5 text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody className="[&_tr]:border-border/40">
-          {isLoading ? (
-            Array.from({ length: perPage > 10 ? 8 : perPage }).map((_, i) => (
-              <TableRow key={i} className="border-border/40">
-                <TableCell className="px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="size-10 rounded-xl shrink-0" />
-                    <div className="space-y-1.5">
-                      <Skeleton className="h-3.5 w-32" />
-                      <Skeleton className="h-3 w-24" />
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-5 w-20 rounded-md" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-3.5 w-28" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-5 w-16 rounded-full" />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <div className="flex gap-1.5">
-                    <Skeleton className="h-5 w-16 rounded-md" />
-                    <Skeleton className="h-5 w-12 rounded-md" />
-                  </div>
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <Skeleton className="h-8 w-14 rounded-lg" />
-                </TableCell>
-              </TableRow>
-            ))
-          ) : isError ? (
-            <TableRow className="border-border/40">
-              <TableCell colSpan={6} className="px-6 py-12 text-center text-sm text-muted-foreground">
-                Failed to load employees. Check API connection.
-              </TableCell>
-            </TableRow>
-          ) : users.length === 0 ? (
-            <TableRow className="border-border/40">
-              <TableCell colSpan={6} className="px-6 py-12 text-center text-sm text-muted-foreground">
-                No employees match your filters.
-              </TableCell>
-            </TableRow>
-          ) : (
-            users.map((emp) => (
-              <TableRow
-                key={emp.id}
-                className="hover:bg-muted/20 transition-colors group cursor-pointer border-border/40"
-                onClick={() => navigate(`/users/${emp.id}`)}
-              >
-                <TableCell className="px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <UserAvatar firstname={emp.firstname} lastname={emp.lastname} variant={emp.status} size="lg" />
-                    <div>
-                      <p className="font-semibold text-foreground text-[14px]">
-                        <HighlightMatch text={`${emp.firstname} ${emp.lastname}`} searchTerm={search} />
-                      </p>
-                      <p className="text-[12px] text-muted-foreground">
-                        <HighlightMatch text={emp.email} searchTerm={search} />
-                      </p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <span className="inline-flex items-center rounded-md bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-foreground/70">
-                    {emp.department?.name ?? "—"}
-                  </span>
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <span className="text-[13px] text-foreground">{emp.title || "—"}</span>
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <UserStatusBadge status={emp.status} />
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-semibold text-foreground text-[14px]">{emp.skills.length}</span>
-                    <span className="text-muted-foreground text-[11px]">skills</span>
-                    <div className="flex gap-1 ml-1 flex-wrap">
-                      {emp.skills.slice(0, 3).map((s) => (
-                        <span
-                          key={s.id}
-                          className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60"
-                        >
-                          {s.name}
-                        </span>
-                      ))}
-                      {emp.skills.length > 3 && (
-                        <span className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60">
-                          +{emp.skills.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="px-5 py-4">
-                  <UserActionsCell user={emp} />
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-
-      {!isLoading && !isError && (
-        <TablePagination
-          page={page}
-          lastPage={lastPage}
-          perPage={perPage}
-          total={total}
-          from={from}
-          to={to}
-          onPageChange={setPage}
-          onPerPageChange={setPerPage}
-        />
-      )}
-    </ComposedCard>
+      hook={(params) => useGetUsers<UserListItem>(params)}
+      columns={USER_COLUMNS}
+      defaultSort="name"
+      searchable
+      searchPlaceholder="Search employees..."
+      filter={{ field: "status", options: USER_STATUS_FILTER_OPTIONS }}
+      includes={["department", "skills"]}
+      onRowClick={(emp) => navigate(`/users/${emp.id}`)}
+      emptyMessage="No employees match your filters."
+      errorMessage="Failed to load employees. Check API connection."
+    />
   );
 }
 
