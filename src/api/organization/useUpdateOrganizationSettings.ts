@@ -1,29 +1,14 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
-export default function useUpdateOrganizationSettings() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useUpdateOrganizationSettings = createMutationHook(
+  "updateOrganizationSettings",
+  {
+    mutationFn: (api, payload: UpdateOrganizationSettingsRequest) =>
+      api.patch<OrganizationSettings>("/api/settings/general", payload),
+    invalidateKeys: () => [["organization-settings"]],
+    successMessage: "Organization settings saved.",
+    errorMessage: "Failed to save organization settings.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: (payload: UpdateOrganizationSettingsRequest) =>
-      privateApi.patch<OrganizationSettings>("/api/settings/general", payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organization-settings"] });
-      toast.success("Organization settings saved.");
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to save organization settings."));
-    },
-  });
-
-  return {
-    updateOrganizationSettings: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useUpdateOrganizationSettings;

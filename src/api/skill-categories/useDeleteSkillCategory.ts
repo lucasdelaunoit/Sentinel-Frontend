@@ -1,29 +1,13 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
-export default function useDeleteSkillCategory() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useDeleteSkillCategory = createMutationHook(
+  "deleteSkillCategory",
+  {
+    mutationFn: (api, id: number) => api.delete(`/api/settings/skill-categories/${id}`),
+    invalidateKeys: () => [["skill-categories"], ["skills"]],
+    successMessage: "Category deleted.",
+    errorMessage: "Failed to delete category.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: (id: number) => privateApi.delete(`/api/settings/skill-categories/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["skill-categories"] });
-      queryClient.invalidateQueries({ queryKey: ["skills"] });
-      toast.success("Category deleted.");
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to delete category."));
-    },
-  });
-
-  return {
-    deleteSkillCategory: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useDeleteSkillCategory;

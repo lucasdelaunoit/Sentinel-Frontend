@@ -1,30 +1,13 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
-export default function useDeleteDepartment() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useDeleteDepartment = createMutationHook(
+  "deleteDepartment",
+  {
+    mutationFn: (api, id: number) => api.delete(`/api/settings/departments/${id}`),
+    invalidateKeys: () => [["departments"], ["rules"], ["projects"]],
+    successMessage: "Department deleted.",
+    errorMessage: "Failed to delete department.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: (id: number) => privateApi.delete(`/api/settings/departments/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["departments"] });
-      queryClient.invalidateQueries({ queryKey: ["rules"] });
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
-      toast.success("Department deleted.");
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to delete department."));
-    },
-  });
-
-  return {
-    deleteDepartment: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useDeleteDepartment;

@@ -1,30 +1,14 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
-export default function useUpdateSkill() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useUpdateSkill = createMutationHook(
+  "updateSkill",
+  {
+    mutationFn: (api, { id, name, skill_category_id }: UpdateSkillRequest) =>
+      api.patch(`/api/settings/skills/${id}`, { name, skill_category_id }),
+    invalidateKeys: () => [["skills"], ["skill-categories"]],
+    successMessage: ({ name }) => `Skill "${name}" updated.`,
+    errorMessage: "Failed to update skill.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: ({ id, name, skill_category_id }: UpdateSkillRequest) =>
-      privateApi.patch(`/api/settings/skills/${id}`, { name, skill_category_id }),
-    onSuccess: (_, { name }) => {
-      queryClient.invalidateQueries({ queryKey: ["skills"] });
-      queryClient.invalidateQueries({ queryKey: ["skill-categories"] });
-      toast.success(`Skill "${name}" updated.`);
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to update skill."));
-    },
-  });
-
-  return {
-    updateSkill: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useUpdateSkill;

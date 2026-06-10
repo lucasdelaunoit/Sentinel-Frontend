@@ -1,35 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
 interface UnarchiveProjectArgs {
   id: number;
   name?: string;
 }
 
-export default function useUnarchiveProject() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useUnarchiveProject = createMutationHook(
+  "unarchiveProject",
+  {
+    mutationFn: (api, { id }: UnarchiveProjectArgs) => api.post(`/api/projects/${id}/unarchive`),
+    invalidateKeys: ({ id }) => [["projects"], ["projects-stats"], ["project", id]],
+    successMessage: ({ name }) => (name ? `Project "${name}" unarchived.` : "Project unarchived."),
+    errorMessage: "Failed to unarchive project.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: ({ id }: UnarchiveProjectArgs) => privateApi.post(`/api/projects/${id}/unarchive`),
-    onSuccess: (_, { id, name }) => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
-      queryClient.invalidateQueries({ queryKey: ["projects-stats"] });
-      queryClient.invalidateQueries({ queryKey: ["project", id] });
-      toast.success(name ? `Project "${name}" unarchived.` : "Project unarchived.");
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to unarchive project."));
-    },
-  });
-
-  return {
-    unarchiveProject: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useUnarchiveProject;

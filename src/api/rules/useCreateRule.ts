@@ -1,29 +1,13 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
-export default function useCreateRule() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useCreateRule = createMutationHook(
+  "createRule",
+  {
+    mutationFn: (api, payload: CreateRuleRequest) => api.post<Rule>("/api/settings/rules", payload),
+    invalidateKeys: () => [["rules"], ["rule-violations"]],
+    successMessage: ({ name }) => `Rule "${name}" created.`,
+    errorMessage: "Failed to create rule.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: (payload: CreateRuleRequest) => privateApi.post<Rule>("/api/settings/rules", payload),
-    onSuccess: (_, { name }) => {
-      queryClient.invalidateQueries({ queryKey: ["rules"] });
-      queryClient.invalidateQueries({ queryKey: ["rule-violations"] });
-      toast.success(`Rule "${name}" created.`);
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to create rule."));
-    },
-  });
-
-  return {
-    createRule: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useCreateRule;

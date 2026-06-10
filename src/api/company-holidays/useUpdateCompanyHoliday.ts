@@ -1,35 +1,19 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
 interface UpdateCompanyHolidayArgs extends CompanyHolidayRequest {
   id: number;
   freeze_absence_ids?: number[];
 }
 
-export default function useUpdateCompanyHoliday() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useUpdateCompanyHoliday = createMutationHook(
+  "updateCompanyHoliday",
+  {
+    mutationFn: (api, { id, ...payload }: UpdateCompanyHolidayArgs) =>
+      api.patch<CompanyHoliday>(`/api/settings/holidays/${id}`, payload),
+    invalidateKeys: () => [["company-holidays"], ["calendar-summary"]],
+    successMessage: "Holiday updated.",
+    errorMessage: "Failed to update holiday.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: ({ id, ...payload }: UpdateCompanyHolidayArgs) =>
-      privateApi.patch<CompanyHoliday>(`/api/settings/holidays/${id}`, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["company-holidays"] });
-      queryClient.invalidateQueries({ queryKey: ["calendar-summary"] });
-      toast.success("Holiday updated.");
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to update holiday."));
-    },
-  });
-
-  return {
-    updateCompanyHoliday: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useUpdateCompanyHoliday;

@@ -1,34 +1,19 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
 interface UpdateRuleArgs {
   id: number;
   payload: UpdateRuleRequest;
 }
 
-export default function useUpdateRule() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useUpdateRule = createMutationHook(
+  "updateRule",
+  {
+    mutationFn: (api, { id, payload }: UpdateRuleArgs) =>
+      api.patch<Rule>(`/api/settings/rules/${id}`, payload),
+    invalidateKeys: () => [["rules"], ["rule-violations"]],
+    successMessage: "Rule updated.",
+    errorMessage: "Failed to update rule.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: ({ id, payload }: UpdateRuleArgs) => privateApi.patch<Rule>(`/api/settings/rules/${id}`, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["rules"] });
-      queryClient.invalidateQueries({ queryKey: ["rule-violations"] });
-      toast.success("Rule updated.");
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to update rule."));
-    },
-  });
-
-  return {
-    updateRule: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useUpdateRule;

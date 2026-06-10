@@ -1,7 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import usePrivateApi from "@/api/privateApi.ts";
-import { toast } from "sonner";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
 interface CreateAbsencePayload {
   userId: string;
@@ -13,26 +10,15 @@ interface CreateAbsencePayload {
   reason?: string;
 }
 
-export default function useCreateAbsence() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useCreateAbsence = createMutationHook(
+  "createAbsence",
+  {
+    mutationFn: (api, { userId, ...body }: CreateAbsencePayload) =>
+      api.post(`/api/users/${userId}/absences`, body),
+    invalidateKeys: ({ userId }) => [["users", userId, "absences"]],
+    successMessage: "Absence added.",
+    errorMessage: "Failed to add absence.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: ({ userId, ...body }: CreateAbsencePayload) => privateApi.post(`/api/users/${userId}/absences`, body),
-    onSuccess: (_, { userId }) => {
-      queryClient.invalidateQueries({ queryKey: ["users", userId, "absences"] });
-      toast.success("Absence added.");
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to add absence."));
-    },
-  });
-
-  return {
-    createAbsence: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useCreateAbsence;

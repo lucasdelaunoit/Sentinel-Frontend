@@ -1,29 +1,13 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
-export default function useDeleteCompanyHoliday() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useDeleteCompanyHoliday = createMutationHook(
+  "deleteCompanyHoliday",
+  {
+    mutationFn: (api, id: number) => api.delete(`/api/settings/holidays/${id}`),
+    invalidateKeys: () => [["company-holidays"], ["calendar-summary"]],
+    successMessage: "Holiday deleted.",
+    errorMessage: "Failed to delete holiday.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: (id: number) => privateApi.delete(`/api/settings/holidays/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["company-holidays"] });
-      queryClient.invalidateQueries({ queryKey: ["calendar-summary"] });
-      toast.success("Holiday deleted.");
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to delete holiday."));
-    },
-  });
-
-  return {
-    deleteCompanyHoliday: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useDeleteCompanyHoliday;

@@ -1,7 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
 interface UpdateLevelArgs {
   userId: string | number;
@@ -9,29 +6,19 @@ interface UpdateLevelArgs {
   level: number;
 }
 
-export default function useUpdateUserSkillLevel() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useUpdateUserSkillLevel = createMutationHook(
+  "updateUserSkillLevel",
+  {
+    mutationFn: (api, { userId, skillId, level }: UpdateLevelArgs) =>
+      api.patch(`/api/users/${userId}/skills/${skillId}`, { level }),
+    invalidateKeys: ({ userId }) => [
+      ["users", String(userId), "skills"],
+      ["users", String(userId), "competency-radar"],
+      ["users", String(userId)],
+      ["users"],
+    ],
+    errorMessage: "Failed to update skill level.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: ({ userId, skillId, level }: UpdateLevelArgs) =>
-      privateApi.patch(`/api/users/${userId}/skills/${skillId}`, { level }),
-    onSuccess: (_, { userId }) => {
-      queryClient.invalidateQueries({ queryKey: ["users", String(userId), "skills"] });
-      queryClient.invalidateQueries({ queryKey: ["users", String(userId), "competency-radar"] });
-      queryClient.invalidateQueries({ queryKey: ["users", String(userId)] });
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to update skill level."));
-    },
-  });
-
-  return {
-    updateUserSkillLevel: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useUpdateUserSkillLevel;

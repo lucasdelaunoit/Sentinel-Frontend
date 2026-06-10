@@ -1,35 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
 interface UpdateProjectArgs {
   id: string | number;
   payload: UpdateProjectRequest;
 }
 
-export default function useUpdateProject() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useUpdateProject = createMutationHook(
+  "updateProject",
+  {
+    mutationFn: (api, { id, payload }: UpdateProjectArgs) => api.patch(`/api/projects/${id}`, payload),
+    invalidateKeys: ({ id }) => [["projects"], ["projects", String(id)], ["projects-stats"]],
+    successMessage: "Project updated.",
+    errorMessage: "Failed to update project.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: ({ id, payload }: UpdateProjectArgs) => privateApi.patch(`/api/projects/${id}`, payload),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
-      queryClient.invalidateQueries({ queryKey: ["projects", String(id)] });
-      queryClient.invalidateQueries({ queryKey: ["projects-stats"] });
-      toast.success("Project updated.");
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to update project."));
-    },
-  });
-
-  return {
-    updateProject: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useUpdateProject;

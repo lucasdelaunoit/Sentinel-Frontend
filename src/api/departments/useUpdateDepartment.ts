@@ -1,29 +1,14 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
-export default function useUpdateDepartment() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useUpdateDepartment = createMutationHook(
+  "updateDepartment",
+  {
+    mutationFn: (api, { id, name }: UpdateDepartmentRequest) =>
+      api.patch(`/api/settings/departments/${id}`, { name }),
+    invalidateKeys: () => [["departments"]],
+    successMessage: ({ name }) => `Department "${name}" updated.`,
+    errorMessage: "Failed to update department.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: ({ id, name }: UpdateDepartmentRequest) =>
-      privateApi.patch(`/api/settings/departments/${id}`, { name }),
-    onSuccess: (_, { name }) => {
-      queryClient.invalidateQueries({ queryKey: ["departments"] });
-      toast.success(`Department "${name}" updated.`);
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to update department."));
-    },
-  });
-
-  return {
-    updateDepartment: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useUpdateDepartment;

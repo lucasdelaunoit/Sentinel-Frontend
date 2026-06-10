@@ -1,37 +1,24 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
 interface AttachUserArgs {
   projectId: string | number;
   userId: number;
 }
 
-export default function useAttachUserToProject() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useAttachUserToProject = createMutationHook(
+  "attachUserToProject",
+  {
+    mutationFn: (api, { projectId, userId }: AttachUserArgs) =>
+      api.post(`/api/projects/${projectId}/users`, { user_id: userId }),
+    invalidateKeys: ({ projectId, userId }) => [
+      ["projects", projectId, "users"],
+      ["projects", String(projectId)],
+      ["projects-stats"],
+      ["users", String(userId), "projects"],
+      ["users", String(userId), "stats"],
+    ],
+    errorMessage: "Failed to add member.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: ({ projectId, userId }: AttachUserArgs) =>
-      privateApi.post(`/api/projects/${projectId}/users`, { user_id: userId }),
-    onSuccess: (_, { projectId, userId }) => {
-      queryClient.invalidateQueries({ queryKey: ["projects", projectId, "users"] });
-      queryClient.invalidateQueries({ queryKey: ["projects", String(projectId)] });
-      queryClient.invalidateQueries({ queryKey: ["projects-stats"] });
-      queryClient.invalidateQueries({ queryKey: ["users", String(userId), "projects"] });
-      queryClient.invalidateQueries({ queryKey: ["users", String(userId), "stats"] });
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to add member."));
-    },
-  });
-
-  return {
-    attachUserToProject: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useAttachUserToProject;

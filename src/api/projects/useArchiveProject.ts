@@ -1,35 +1,18 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import createMutationHook from "@/api/createMutationHook";
 
 interface ArchiveProjectArgs {
   id: number;
   name?: string;
 }
 
-export default function useArchiveProject() {
-  const privateApi = usePrivateApi();
-  const queryClient = useQueryClient();
+const useArchiveProject = createMutationHook(
+  "archiveProject",
+  {
+    mutationFn: (api, { id }: ArchiveProjectArgs) => api.post(`/api/projects/${id}/archive`),
+    invalidateKeys: ({ id }) => [["projects"], ["projects-stats"], ["project", id]],
+    successMessage: ({ name }) => (name ? `Project "${name}" archived.` : "Project archived."),
+    errorMessage: "Failed to archive project.",
+  },
+);
 
-  const mutation = useMutation({
-    mutationFn: ({ id }: ArchiveProjectArgs) => privateApi.post(`/api/projects/${id}/archive`),
-    onSuccess: (_, { id, name }) => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
-      queryClient.invalidateQueries({ queryKey: ["projects-stats"] });
-      queryClient.invalidateQueries({ queryKey: ["project", id] });
-      toast.success(name ? `Project "${name}" archived.` : "Project archived.");
-    },
-    onError: (error) => {
-      toast.error(extractApiErrorMessage(error, "Failed to archive project."));
-    },
-  });
-
-  return {
-    archiveProject: mutation.mutateAsync,
-    isLoading: mutation.isPending,
-    isError: mutation.isError,
-    error: mutation.error,
-    isSuccess: mutation.isSuccess,
-  };
-}
+export default useArchiveProject;
