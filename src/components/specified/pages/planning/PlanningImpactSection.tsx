@@ -11,7 +11,6 @@ import UserAvatar from "@/components/specified/models/employees/avatars/UserAvat
 import ProjectsImpactCard from "@/components/specified/pages/planning/impact/ProjectsImpactCard.tsx";
 import SkillImpactCard from "@/components/specified/pages/planning/impact/SkillImpactCard.tsx";
 import HotspotsImpactCard from "@/components/specified/pages/planning/impact/HotspotsImpactCard.tsx";
-import RecommandationsImpactCard from "@/components/specified/pages/planning/impact/RecommandationsImpactCard.tsx";
 import WarningsImpactCard from "@/components/specified/pages/planning/impact/WarningsImpactCard.tsx";
 
 interface PlanningImpactSectionProps {
@@ -115,7 +114,6 @@ export default function PlanningImpactSection({
               <ProjectsImpactCard.Skeleton />
               <SkillImpactCard.Skeleton />
               <HotspotsImpactCard.Skeleton />
-              <RecommandationsImpactCard.Skeleton />
               <WarningsImpactCard.Skeleton />
             </>
           ) : (
@@ -128,7 +126,6 @@ export default function PlanningImpactSection({
               />
               <SkillImpactCard skills={combined.per_skill_impact} />
               <HotspotsImpactCard hotspots={combined.hotspots} usersById={usersById} />
-              <RecommandationsImpactCard recs={combined.recommendations} />
               <WarningsImpactCard warnings={combined.warnings} />
             </>
           )}

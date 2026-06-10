@@ -34,7 +34,6 @@ function buildEmpty(month: string): SimulateResponse {
     skill_concentration_shifts: [],
     cascading_risks: [],
     warnings: [],
-    recommendations: [],
     comparison_vs_baseline: {
       risk_score: { before: 0, after: 0, delta_pct: 0 },
       bus_factor: { before: 0, after: 0 },

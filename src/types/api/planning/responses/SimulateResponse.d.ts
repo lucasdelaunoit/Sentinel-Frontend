@@ -8,7 +8,6 @@ interface SimulateResponse {
   skill_concentration_shifts: SkillConcentrationShift[];
   cascading_risks: CascadingRisk[];
   warnings: SimWarning[];
-  recommendations: Recommendation[];
   comparison_vs_baseline: ComparisonBaseline;
   meta: SimulateMeta;
   /** Worst-case severity across the scenario, mirrors totals.severity. */
