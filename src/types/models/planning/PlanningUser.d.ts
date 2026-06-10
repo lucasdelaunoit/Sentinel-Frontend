@@ -1,16 +1,8 @@
 /**
- * Planning-specific projection of a user (skills/projects/absences for a month).
- * Distinct from the org-wide `User` model — different shape and purpose.
+ * Planning projection of a user: shared org identity (from `User`) plus the month's
+ * absences for gantt rendering. Skills/projects/initials/color are NOT planning concerns —
+ * initials are derived client-side (getInitials), status drives the avatar variant.
  */
-interface PlanningUser {
-  id: string;
-  firstname: string;
-  lastname: string;
-  initials: string;
-  title: string;
-  department: { id: number; name: string } | null;
-  color: string;
-  skills: PlanningUserSkill[];
-  projects: PlanningUserProject[];
+type PlanningUser = Pick<User, "id" | "firstname" | "lastname" | "title" | "department" | "status"> & {
   absences: PlanningAbsence[];
-}
+};

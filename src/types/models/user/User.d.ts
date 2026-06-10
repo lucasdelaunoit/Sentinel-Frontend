@@ -9,8 +9,6 @@ interface User {
   criticality: Criticality;
   busFactor: number;
   status: UserStatus;
-  initials: string;
-  color: string;
   leaves: LeaveRange[];
   created_at: string;
   title: string;

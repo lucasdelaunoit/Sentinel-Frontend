@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
+import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
 import { useClosedDates } from "@/hooks/useClosedDates";
 import {
   getDayOfWeekForDay,
@@ -119,14 +120,7 @@ export default function AddAbsenceSheet({
               )}
               onClick={() => setSelectedEmpId(emp.id)}
             >
-              <div
-                className={cn(
-                  "flex size-7 shrink-0 items-center justify-center rounded-lg text-[9px] font-bold text-white shadow-sm",
-                  emp.color,
-                )}
-              >
-                {emp.initials}
-              </div>
+              <UserAvatar firstname={emp.firstname} lastname={emp.lastname} variant={emp.status} />
               <div className="flex-1 min-w-0">
                 <p className="text-[12px] font-medium text-foreground truncate">
                   {emp.firstname} {emp.lastname}

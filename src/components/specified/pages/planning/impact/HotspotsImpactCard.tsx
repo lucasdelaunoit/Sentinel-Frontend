@@ -5,6 +5,7 @@ import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
 import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
+import { getInitials } from "@/utils/formatters/persons.ts";
 
 export default function HotspotsImpactCard({
   hotspots,
@@ -41,12 +42,10 @@ export default function HotspotsImpactCard({
                       return (
                         <span
                           key={uid}
-                          className={cn(
-                            "flex size-5 items-center justify-center rounded-md text-[8px] font-bold text-white",
-                            u?.color ?? "bg-muted",
-                          )}
+                          className="flex size-5 items-center justify-center rounded-md bg-muted-foreground text-[8px] font-bold text-white"
                         >
-                          {u?.initials ?? "?"}
+                          {u?.status}
+                          {u ? getInitials(u.firstname, u.lastname) : "?"}
                         </span>
                       );
                     })}
