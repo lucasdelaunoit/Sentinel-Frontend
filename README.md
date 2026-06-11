@@ -36,7 +36,6 @@
   - [Auth, in one paragraph](#auth-in-one-paragraph)
 - [Architecture](#architecture)
   - [Code layout](#code-layout)
-  - [House rules](#house-rules)
 - [Scope & roadmap](#scope--roadmap)
 
 ## The story
@@ -174,29 +173,6 @@ src/
 ```
 
 Roughly **400 TypeScript files, ~21k lines**. The structure is deliberately boring: if you know which domain you're touching, you know where the file is.
-
-### House rules
-
-Three conventions keep the codebase predictable (full details in `CLAUDE.md`):
-
-1. **Display components never receive `isLoading`.** The caller renders `Component.Skeleton` while loading; the component itself only handles three states — value, empty (`—`), and error. No loading flags leaking down the tree.
-
-   ```tsx
-   {isLoading
-     ? <MyDisplay.Skeleton icon={Mail} label="Email" />
-     : <MyDisplay icon={Mail} label="Email" value={user?.email} />}
-   ```
-
-2. **Mutation hooks return named actions, never raw `useMutation` results.**
-
-   ```ts
-   const { updateOrganizationSettings, isLoading } = useUpdateOrganizationSettings();
-   await updateOrganizationSettings(form);
-   ```
-
-   Toasts and cache invalidation live inside the hook; call sites stay clean and never touch React Query internals.
-
-3. **All status colors come from `src/lib/theme/`.** Severity is one three-level concept (`ok | warning | critical`) shared by the entire UI. No component invents a local color scale, no dynamic Tailwind class strings. Green, yellow, red mean the same thing on every screen.
 
 ## Scope & roadmap
 
