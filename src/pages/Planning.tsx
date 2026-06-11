@@ -102,6 +102,25 @@ export default function Planning() {
     setMode("view");
   }
 
+  function confirmBlock(block: SimBlock, details: { type: AbsenceType; reason?: string }) {
+    void applyPlanningSimulation(
+      {
+        absences: [
+          {
+            user_id: block.userId,
+            start_date: block.startDate,
+            start_half: block.startHalf,
+            end_date: block.endDate,
+            end_half: block.endHalf,
+            type: details.type,
+            reason: details.reason,
+          },
+        ],
+      },
+      { onSuccess: () => removeBlock(block.id) },
+    );
+  }
+
   function confirmApplySimulation() {
     void applyPlanningSimulation(
       { absences: simAbsences },
@@ -231,11 +250,14 @@ export default function Planning() {
 
       {selectedBlock && selectedUser && (
         <SimBlockDetailSheet
+          key={selectedBlock.id}
           block={selectedBlock}
           user={selectedUser}
           combined={simulationData}
           onClose={() => setSelectedBlockId(null)}
           onDelete={() => removeBlock(selectedBlock.id)}
+          onConfirm={(details) => confirmBlock(selectedBlock, details)}
+          isConfirming={isApplying}
         />
       )}
 

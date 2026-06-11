@@ -25,7 +25,7 @@ export default function HotspotsImpactCard({
       }
     >
       {hotspots.length === 0 ? (
-        <Feedback variant="success" title="No project impact" description="All skills remain covered." />
+        <Feedback variant="success" title="No hotspots" description="No high-risk periods in this scenario." className="py-6" />
       ) : (
         <div className="space-y-2">
           {hotspots.map((h, i) => (

@@ -52,7 +52,7 @@ export default function ProjectsImpactCard({ projects, perUserImpact, simBlocks,
       }
     >
       {projects.length === 0 ? (
-        <Feedback variant="success" title="No project impact" description="All skills remain covered." />
+        <Feedback variant="success" title="No project impact" description="No projects are affected by this scenario." className="py-6" />
       ) : (
         <div className="space-y-2">
           {projects.map((p) => {

@@ -102,7 +102,7 @@ export default function PlanningImpactSection({
               })}
             </div>
           ) : (
-            <Feedback variant="info" title="No absences simulated" description="Add employees above to begin." />
+            <Feedback variant="info" title="No absences simulated" description="Add employees above to begin." className="py-6" />
           )}
         </div>
       </ComposedCard>

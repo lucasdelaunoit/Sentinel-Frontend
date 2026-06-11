@@ -1,7 +1,7 @@
 import createMutationHook from "@/api/createMutationHook";
 
 interface ApplyPayload {
-  absences: SimulateAbsenceInput[];
+  absences: ApplyAbsenceInput[];
 }
 
 const useApplyPlanningSimulation = createMutationHook(

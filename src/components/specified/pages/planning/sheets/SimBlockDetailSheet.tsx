@@ -1,10 +1,14 @@
-import { useMemo } from "react";
-import { Lightbulb, ShieldAlert, Trash2, Users } from "lucide-react";
+import { useMemo, useState } from "react";
+import { ArrowLeft, Check, Lightbulb, Loader2, ShieldAlert, Trash2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SecondaryCard from "@/components/common/cards/SecondaryCard";
+import MetricRow from "@/components/common/displays/MetricRow";
+import { SegButton } from "@/components/specified/models/absence/sheets/AbsenceFormFields.tsx";
+import { ABSENCE_TYPE_LABEL, ABSENCE_TYPE_VALUES } from "@/utils/absence/absenceType.ts";
 import { blockDurationLabel, formatHalfDate, formatRange } from "@/utils/planning/calendar";
 import { simColor } from "@/utils/planning/theme";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
@@ -18,22 +22,41 @@ interface SimBlockDetailSheetProps {
   combined: SimulateResponse;
   onClose: () => void;
   onDelete: () => void;
+  /** Persists this block as a real planned absence, with the chosen type and optional note. */
+  onConfirm: (details: { type: AbsenceType; reason?: string }) => void;
+  isConfirming?: boolean;
 }
 
-const COST_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  ok: "secondary",
-  stretch: "outline",
-  overloaded: "destructive",
+const SEVERITY_MESSAGE: Record<Severity, string> = {
+  critical: "Key skills will be uncovered.",
+  warning: "Some skills may be at risk.",
+  ok: "All required skills are covered.",
 };
 
-const COST_CLASS: Record<string, string> = {
+const MATCH_CLASS = (pct: number) =>
+  pct >= 70 ? "bg-success/15 text-success" : pct >= 40 ? "bg-warning/15 text-warning" : "bg-danger/15 text-danger";
+
+const COST_CLASS: Record<ReplacementCandidate["cost_signal"], string> = {
   ok: "bg-success/15 text-success",
-  stretch: "border-warning/40 text-warning",
-  overloaded: "",
+  stretch: "bg-warning/15 text-warning",
+  overloaded: "bg-danger/15 text-danger",
 };
 
-export default function SimBlockDetailSheet({ block, user, combined, onClose, onDelete }: SimBlockDetailSheetProps) {
+export default function SimBlockDetailSheet({
+  block,
+  user,
+  combined,
+  onClose,
+  onDelete,
+  onConfirm,
+  isConfirming = false,
+}: SimBlockDetailSheetProps) {
   const color = simColor(block.colorIdx);
+
+  // Two-step confirm: impact overview first, then leave type + note before persisting.
+  const [step, setStep] = useState<"overview" | "confirm">("overview");
+  const [absenceType, setAbsenceType] = useState<AbsenceType>("vacation");
+  const [reason, setReason] = useState("");
 
   const userImpact = combined.per_user_impact[block.userId];
   const projects = useMemo(() => {
@@ -56,57 +79,109 @@ export default function SimBlockDetailSheet({ block, user, combined, onClose, on
         if (!v) onClose();
       }}
       title={`${user.firstname} ${user.lastname}`}
-      description={`${user.department?.name ?? user.title} · Absence simulation`}
+      description={`${user.department?.name ?? user.title} · ${step === "confirm" ? "Confirm absence" : "Absence simulation"}`}
       maxWidth="sm:max-w-[480px]"
       footer={
-        <Button
-          variant="ghost"
-          onClick={onDelete}
-          className="w-full text-muted-foreground hover:text-destructive-foreground hover:bg-destructive rounded-xl h-9 text-[12px] gap-1.5"
-        >
-          <Trash2 className="size-3.5" /> Remove simulation block
-        </Button>
+        step === "overview" ? (
+          <>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={onDelete}
+              disabled={isConfirming}
+              className="flex-1 text-muted-foreground hover:text-destructive-foreground hover:bg-destructive"
+            >
+              <Trash2 className="size-3.5" /> Remove
+            </Button>
+            <Button size="lg" onClick={() => setStep("confirm")} className="flex-1">
+              <Check className="size-3.5" /> Confirm absence
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setStep("overview")}
+              disabled={isConfirming}
+              className="flex-1"
+            >
+              <ArrowLeft className="size-3.5" /> Back
+            </Button>
+            <Button
+              size="lg"
+              onClick={() => onConfirm({ type: absenceType, reason: reason.trim() || undefined })}
+              disabled={isConfirming}
+              className="flex-1 bg-planned hover:bg-planned/90 text-planned-foreground"
+            >
+              {isConfirming ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+              Confirm absence
+            </Button>
+          </>
+        )
       }
     >
       <div
-        className="rounded-xl border-2 border-dashed p-4 space-y-2.5"
+        className="rounded-xl border-2 border-dashed px-4 py-3"
         style={{ background: color.bg, borderColor: color.border, color: color.fg }}
       >
-        <p className="text-[10px] font-bold uppercase tracking-wider">Simulated Absence Period</p>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[12px]">
-          <span className="opacity-70">From</span>
-          <span className="font-semibold text-right">{formatHalfDate(block.startDate, block.startHalf)}</span>
-          <span className="opacity-70">To</span>
-          <span className="font-semibold text-right">{formatHalfDate(block.endDate, block.endHalf)}</span>
-          <span className="opacity-70">Calendar span</span>
-          <span className="font-semibold text-right">{blockDurationLabel(block)}</span>
-          <span className="opacity-70">Working days off</span>
-          <span className="font-semibold text-right">
-            {userImpact ? `${userImpact.days_off} day${userImpact.days_off === 1 ? "" : "s"}` : "—"}
-          </span>
-        </div>
-        <p className="text-[10px] opacity-60 leading-snug">Weekends &amp; holidays excluded from working days.</p>
+        <p className="text-[10px] font-bold uppercase tracking-wider pt-1">Simulated Absence Period</p>
+        <MetricRow.List>
+          <MetricRow label="From" value={formatHalfDate(block.startDate, block.startHalf)} />
+          <MetricRow label="To" value={formatHalfDate(block.endDate, block.endHalf)} />
+          <MetricRow label="Calendar span" value={blockDurationLabel(block)} />
+          <MetricRow
+            label="Working days off"
+            value={userImpact ? `${userImpact.days_off} day${userImpact.days_off === 1 ? "" : "s"}` : "—"}
+          />
+        </MetricRow.List>
+        <p className="text-[10px] opacity-60 leading-snug pb-1">Weekends &amp; holidays excluded from working days.</p>
       </div>
 
-      {userImpact && (
-        <div className="flex items-center gap-3 rounded-xl border p-3.5">
-          <SeverityBadge severity={userImpact.severity} size="md" />
-          <div className="flex-1 text-[12px] text-muted-foreground">
-            {userImpact.severity === "critical"
-              ? "Key skills will be uncovered."
-              : userImpact.severity === "warning"
-                ? "Some skills may be at risk."
-                : "All required skills are covered."}
-            {userImpact.is_critical_employee && (
-              <span className="block text-[10px] text-destructive-foreground font-semibold mt-0.5">
-                Critical employee — bus factor contribution: {userImpact.bus_factor_contribution}
-              </span>
-            )}
-          </div>
-        </div>
+      {step === "confirm" && (
+        <>
+          <Field>
+            <FieldLabel>
+              Type <span className="text-destructive-foreground">*</span>
+            </FieldLabel>
+            <div className="grid grid-cols-3 gap-2 pt-0.5">
+              {ABSENCE_TYPE_VALUES.map((value) => (
+                <SegButton key={value} active={absenceType === value} onClick={() => setAbsenceType(value)}>
+                  {ABSENCE_TYPE_LABEL[value]}
+                </SegButton>
+              ))}
+            </div>
+          </Field>
+
+          <Field>
+            <FieldLabel>Note</FieldLabel>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={3}
+              placeholder="Optional — e.g. Annual leave, doctor appointment…"
+              maxLength={256}
+              className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all resize-none"
+            />
+            <FieldDescription>Optional context for this absence</FieldDescription>
+          </Field>
+        </>
       )}
 
-      {skills.length > 0 && (
+      {step === "overview" && userImpact && (
+        <SecondaryCard
+          before={<SeverityBadge severity={userImpact.severity} size="md" />}
+          title={SEVERITY_MESSAGE[userImpact.severity]}
+          description={
+            userImpact.is_critical_employee
+              ? `Critical employee — bus factor contribution: ${userImpact.bus_factor_contribution}`
+              : undefined
+          }
+          className="bg-background border"
+        />
+      )}
+
+      {step === "overview" && skills.length > 0 && (
         <Section icon={ShieldAlert} title={`Impacted Skills (${skills.length})`}>
           <div className="space-y-2">
             {skills.map((s) => (
@@ -116,7 +191,7 @@ export default function SimBlockDetailSheet({ block, user, combined, onClose, on
         </Section>
       )}
 
-      {projects.length > 0 && (
+      {step === "overview" && projects.length > 0 && (
         <Section title={`Project Impact (${projects.length})`}>
           <div className="space-y-2">
             {projects.map((p) => (
@@ -126,7 +201,7 @@ export default function SimBlockDetailSheet({ block, user, combined, onClose, on
         </Section>
       )}
 
-      {userImpact && userImpact.replacement_candidates.length > 0 && (
+      {step === "overview" && userImpact && userImpact.replacement_candidates.length > 0 && (
         <Section icon={Users} title="Replacement candidates">
           <div className="space-y-1.5">
             {userImpact.replacement_candidates.map((c) => (
@@ -136,23 +211,10 @@ export default function SimBlockDetailSheet({ block, user, combined, onClose, on
                 description={`${c.available_days}d available`}
                 action={
                   <div className="flex items-center gap-2">
-                    <Badge
-                      variant="secondary"
-                      className={cn(
-                        "text-[11px]",
-                        c.skill_match_pct >= 70
-                          ? "bg-success/15 text-success"
-                          : c.skill_match_pct >= 40
-                            ? "bg-warning/15 text-warning"
-                            : "",
-                      )}
-                    >
+                    <Badge variant="secondary" className={cn("text-[11px]", MATCH_CLASS(c.skill_match_pct))}>
                       {c.skill_match_pct}%
                     </Badge>
-                    <Badge
-                      variant={COST_VARIANT[c.cost_signal] ?? "secondary"}
-                      className={cn("text-[9px] uppercase", COST_CLASS[c.cost_signal] ?? "")}
-                    >
+                    <Badge variant="secondary" className={cn("text-[9px] uppercase", COST_CLASS[c.cost_signal])}>
                       {c.cost_signal}
                     </Badge>
                   </div>
@@ -163,7 +225,7 @@ export default function SimBlockDetailSheet({ block, user, combined, onClose, on
         </Section>
       )}
 
-      {cascading.length > 0 && (
+      {step === "overview" && cascading.length > 0 && (
         <Section icon={Lightbulb} title="Cascading risks">
           <div className="space-y-1.5">
             {cascading.map((c, i) => (

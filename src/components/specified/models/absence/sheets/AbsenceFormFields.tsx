@@ -20,7 +20,7 @@ const SINGLE_OPTIONS: { key: string; label: string; start: AbsenceHalf; end: Abs
 
 /* ─── Uniform segmented button (choices) ─────────────────── */
 
-function SegButton({
+export function SegButton({
   active,
   onClick,
   children,

@@ -15,7 +15,7 @@ export default function WarningsImpactCard({ warnings }: { warnings: SimWarning[
       }
     >
       {warnings.length === 0 ? (
-        <Feedback variant="success" title="No warnings" description="No warnings for this scenario." />
+        <Feedback variant="success" title="No warnings" description="No warnings for this scenario." className="py-6" />
       ) : (
         <div className="space-y-2">
           {warnings.map((w, i) => (

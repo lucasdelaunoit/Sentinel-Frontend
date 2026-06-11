@@ -21,7 +21,7 @@ export default function SkillImpactCard({ skills }: SkillImpactCardProps) {
       }
     >
       {skills.length === 0 ? (
-        <Feedback variant="success" title="No skill impact" description="All skills remain covered." />
+        <Feedback variant="success" title="No skill impact" description="All skills remain covered." className="py-6" />
       ) : (
         <div className="space-y-2">
           {sorted.map((s) => (
