@@ -1,13 +1,8 @@
-/** GET /employees list row. */
-interface UserListItem {
-  id: number;
-  department_id: number;
-  firstname: string;
-  lastname: string;
-  email: string;
-  title: string;
-  is_remote: boolean;
-  status: UserStatus;
-  department: { id: number; name: string };
+/**
+ * List row (GET /users, GET /projects/:id/users) — a `User` whose `department`
+ * and `skills` relations are guaranteed loaded via `includes`.
+ */
+type UserListItem = User & {
+  department: { id: number; name: string } | null;
   skills: UserSkillItem[];
-}
+};

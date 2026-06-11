@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { PlusIcon, DotsThreeVerticalIcon, CalendarPlusIcon, TrashIcon, EyeIcon } from "@phosphor-icons/react";
-import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog";
 import useGetUsers from "@/api/user/useGetUsers";
+import useDeleteUser from "@/api/user/useDeleteUser";
 import { Skeleton } from "@/components/ui/skeleton";
 import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable";
 import { HighlightMatch } from "@/utils/useHighlightableText";
@@ -21,6 +21,7 @@ import UserStatusBadge from "@/components/specified/models/user/badges/UserStatu
 import UsersStatCardsSection from "@/components/specified/pages/employees/UsersStatCardsSection.tsx";
 import { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import CreateUserSheet from "@/components/specified/models/user/sheets/CreateUserSheet";
+import CreateAbsenceSheet from "@/components/specified/models/absence/sheets/CreateAbsenceSheet";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
@@ -31,16 +32,19 @@ type EmpSortKey = "name" | "email" | "title";
 function UserActionsCell({ user }: { user: UserListItem }) {
   const navigate = useNavigate();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [absenceSheetOpen, setAbsenceSheetOpen] = useState(false);
+
+  const { deleteUser, isLoading: isDeleting } = useDeleteUser();
 
   const fullName = `${user.firstname} ${user.lastname}`;
 
-  const handleCreateAbsence = () => {
-    toast.info(`TODO: create absence for "${fullName}"`);
-  };
-
-  const handleDelete = () => {
-    toast.info(`TODO: delete "${fullName}"`);
-    setConfirmDelete(false);
+  const handleDelete = async () => {
+    try {
+      await deleteUser(user.id);
+      setConfirmDelete(false);
+    } catch {
+      console.error();
+    }
   };
 
   return (
@@ -66,7 +70,7 @@ function UserActionsCell({ user }: { user: UserListItem }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" sideOffset={4} className="min-w-[170px]">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onSelect={handleCreateAbsence}>
+          <DropdownMenuItem onSelect={() => setAbsenceSheetOpen(true)}>
             <CalendarPlusIcon weight="bold" />
             Create absence
           </DropdownMenuItem>
@@ -77,12 +81,16 @@ function UserActionsCell({ user }: { user: UserListItem }) {
         </DropdownMenuContent>
       </DropdownMenu>
 
+      <CreateAbsenceSheet open={absenceSheetOpen} onOpenChange={setAbsenceSheetOpen} userId={String(user.id)} />
+
       <ComposedAlertDialog
         open={confirmDelete}
         onOpenChange={setConfirmDelete}
         title={`Delete "${fullName}"?`}
         description="This action cannot be undone. The employee and related data will be permanently removed."
         confirmLabel="Delete"
+        pendingLabel="Deleting…"
+        isPending={isDeleting}
         variant="destructive"
         onConfirm={handleDelete}
       />
@@ -191,28 +199,9 @@ const USER_COLUMNS: DataTableColumn<UserListItem, EmpSortKey>[] = [
   },
 ];
 
-function UserList() {
-  const navigate = useNavigate();
-  return (
-    <DataTable<UserListItem, EmpSortKey, UserStatus>
-      title="All Employees"
-      hook={(params) => useGetUsers<UserListItem>(params)}
-      columns={USER_COLUMNS}
-      defaultSort="name"
-      searchable
-      searchPlaceholder="Search employees..."
-      filter={{ field: "status", options: USER_STATUS_FILTER_OPTIONS }}
-      includes={["department", "skills"]}
-      onRowClick={(emp) => navigate(`/users/${emp.id}`)}
-      emptyMessage="No employees match your filters."
-      errorMessage="Failed to load employees. Check API connection."
-    />
-  );
-}
-
-/* ─── Employees Page ─────────────────────────────────────────── */
-
 export default function Users() {
+  const navigate = useNavigate();
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -239,7 +228,19 @@ export default function Users() {
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         <UsersStatCardsSection />
 
-        <UserList />
+        <DataTable<UserListItem, EmpSortKey, UserStatus>
+          title="All Employees"
+          hook={(params) => useGetUsers<UserListItem>(params)}
+          columns={USER_COLUMNS}
+          defaultSort="name"
+          searchable
+          searchPlaceholder="Search employees..."
+          filter={{ field: "status", options: USER_STATUS_FILTER_OPTIONS }}
+          includes={["department", "skills"]}
+          onRowClick={(emp) => navigate(`/users/${emp.id}`)}
+          emptyMessage="No employees match your filters."
+          errorMessage="Failed to load employees. Check API connection."
+        />
       </div>
 
       <CreateUserSheet open={sheetOpen} onOpenChange={setSheetOpen} />
