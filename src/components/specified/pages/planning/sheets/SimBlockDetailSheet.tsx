@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { ArrowLeftIcon, CheckIcon, CircleNotchIcon, LightbulbIcon, ShieldWarningIcon, TrashIcon, UsersIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, CheckIcon, LightbulbIcon, QuestionIcon, TrashIcon } from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,7 +14,6 @@ import { ABSENCE_TYPE_LABEL, ABSENCE_TYPE_VALUES } from "@/utils/absence/absence
 import { blockDurationLabel, formatHalfDate, formatRange } from "@/utils/planning/calendar";
 import { simColor } from "@/utils/planning/theme";
 import { TONE_SOLID_BADGE } from "@/lib/theme/tone.ts";
-import { capitalize } from "@/utils/formatters/string.ts";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
 import MediumProjectImpactRow from "@/components/specified/models/project/datas/MediumProjectImpactRow.tsx";
 import MediumSkillImpactRow from "@/components/specified/models/skill/datas/items/MediumSkillImpactRow.tsx";
@@ -21,14 +21,11 @@ import MediumSkillImpactRow from "@/components/specified/models/skill/datas/item
 interface SimBlockDetailSheetProps {
   block: SimBlock;
   user: PlanningUser;
-  /** Combined scenario simulation already computed by the parent — no refetch on open. */
   combined: SimulateResponse;
   onClose: () => void;
   onDelete: () => void;
-  /** Persists this block as a real planned absence, with the chosen type and optional note. */
   onConfirm: (details: { type: AbsenceType; reason?: string }) => void;
   isConfirming?: boolean;
-  /** True while the parent is still computing the scenario simulation — impact body shows skeletons. */
   isSimulating?: boolean;
 }
 
@@ -40,11 +37,7 @@ const SEVERITY_MESSAGE: Record<Severity, string> = {
 
 const MATCH_CLASS = (pct: number) => TONE_SOLID_BADGE[pct >= 70 ? "success" : pct >= 40 ? "warning" : "danger"];
 
-const COST_CLASS: Record<ReplacementCandidate["cost_signal"], string> = {
-  ok: TONE_SOLID_BADGE.success,
-  stretch: TONE_SOLID_BADGE.warning,
-  overloaded: TONE_SOLID_BADGE.danger,
-};
+const MATCH_LABEL = (pct: number) => (pct >= 70 ? "Good fit" : pct >= 40 ? "Partial fit" : "Poor fit");
 
 export default function SimBlockDetailSheet({
   block,
@@ -84,18 +77,14 @@ export default function SimBlockDetailSheet({
         if (!v) onClose();
       }}
       title={`${user.firstname} ${user.lastname}`}
-      description={`${user.department?.name ?? user.title} · ${step === "confirm" ? "Confirm absence" : "Absence simulation"}`}
+      description={[user.department?.name ?? user.title, step === "confirm" ? "Confirm absence" : "Absence simulation"]
+        .filter(Boolean)
+        .join(" · ")}
       maxWidth="sm:max-w-[480px]"
       footer={
         step === "overview" ? (
           <>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={onDelete}
-              disabled={isConfirming}
-              className="flex-1 text-muted-foreground hover:text-destructive-foreground hover:bg-destructive"
-            >
+            <Button variant="destructive" size="lg" onClick={onDelete} disabled={isConfirming} className="flex-1">
               <TrashIcon className="size-3.5" /> Remove
             </Button>
             <Button size="lg" onClick={() => setStep("confirm")} className="flex-1">
@@ -116,11 +105,10 @@ export default function SimBlockDetailSheet({
             <Button
               size="lg"
               onClick={() => onConfirm({ type: absenceType, reason: reason.trim() || undefined })}
-              disabled={isConfirming}
-              className="flex-1 bg-planned hover:bg-planned/90 text-planned-foreground"
+              loading={isConfirming}
+              className="flex-1"
             >
-              {isConfirming ? <CircleNotchIcon className="size-3.5 animate-spin" /> : <CheckIcon className="size-3.5" />}
-              Confirm absence
+              {isConfirming ? "Confirming ..." : "Confirm absence"}
             </Button>
           </>
         )
@@ -188,12 +176,11 @@ export default function SimBlockDetailSheet({
               ? `Critical employee — bus factor contribution: ${userImpact.bus_factor_contribution}`
               : undefined
           }
-          className="bg-background border"
         />
       )}
 
       {step === "overview" && !isSimulating && skills.length > 0 && (
-        <Section icon={ShieldWarningIcon} title={`Impacted Skills (${skills.length})`}>
+        <Section title={`Impacted skills (${skills.length})`}>
           <div className="space-y-2">
             {skills.map((s) => (
               <MediumSkillImpactRow key={s.skill_id} skill={s} />
@@ -203,7 +190,7 @@ export default function SimBlockDetailSheet({
       )}
 
       {step === "overview" && !isSimulating && projects.length > 0 && (
-        <Section title={`Project Impact (${projects.length})`}>
+        <Section title={`Impacted projects (${projects.length})`}>
           <div className="space-y-2">
             {projects.map((p) => (
               <MediumProjectImpactRow key={p.project_id} project={p} window={window} drivers={drivers} />
@@ -213,20 +200,20 @@ export default function SimBlockDetailSheet({
       )}
 
       {step === "overview" && !isSimulating && userImpact && userImpact.replacement_candidates.length > 0 && (
-        <Section icon={UsersIcon} title="Replacement candidates">
+        <Section
+          title="Replacement candidates"
+          info={`The percentage is the skill match: how much of ${user.firstname}'s skill set the candidate also covers. 100% means they could stand in for every skill, lower means only part of the role is covered.`}
+        >
           <div className="space-y-1.5">
             {userImpact.replacement_candidates.map((c) => (
               <SecondaryCard
                 key={c.user_id}
                 title={c.name}
-                description={`${c.available_days}d available`}
+                description={`Present ${c.available_days}d this month`}
                 action={
-                  <div className="flex items-center gap-2">
-                    <Badge className={cn("font-semibold", MATCH_CLASS(c.skill_match_pct))}>{c.skill_match_pct}%</Badge>
-                    <Badge className={cn("font-semibold", COST_CLASS[c.cost_signal])}>
-                      {capitalize(c.cost_signal)}
-                    </Badge>
-                  </div>
+                  <Badge className={cn("font-semibold", MATCH_CLASS(c.skill_match_pct))}>
+                    {MATCH_LABEL(c.skill_match_pct)} ({c.skill_match_pct}%)
+                  </Badge>
                 }
               />
             ))}
@@ -235,7 +222,7 @@ export default function SimBlockDetailSheet({
       )}
 
       {step === "overview" && !isSimulating && cascading.length > 0 && (
-        <Section icon={LightbulbIcon} title="Cascading risks">
+        <Section title="Cascading risks">
           <div className="space-y-1.5">
             {cascading.map((c, i) => (
               <SecondaryCard
@@ -282,20 +269,28 @@ function ImpactBodySkeleton() {
 }
 
 function Section({
-  icon: Icon,
   title,
+  info,
   children,
 }: {
-  icon?: React.ComponentType<{ className?: string }>;
   title: string;
+  /** Tooltip content shown behind a question-mark icon next to the title. */
+  info?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-2">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-        {Icon && <Icon className="size-3" />}
+    <div className="space-y-2 pt-1">
+      <FieldLabel className="gap-2">
         {title}
-      </p>
+        {info && (
+          <Tooltip>
+            <TooltipTrigger>
+              <QuestionIcon />
+            </TooltipTrigger>
+            <TooltipContent side="right">{info}</TooltipContent>
+          </Tooltip>
+        )}
+      </FieldLabel>
       {children}
     </div>
   );
