@@ -8,7 +8,8 @@ import {
   PauseIcon,
   PlayIcon,
   CheckCircleIcon,
-  ArrowUUpLeftIcon, EyeIcon,
+  ArrowUUpLeftIcon,
+  EyeIcon,
 } from "@phosphor-icons/react";
 import ProjectsStatCardsSection from "@/components/specified/pages/projects/ProjectsStatCardsSection.tsx";
 import { cn } from "@/lib/utils";
@@ -195,13 +196,13 @@ const PROJECT_COLUMNS: DataTableColumn<Project, ProjSortKey>[] = [
     key: "fragility",
     header: "Fragility",
     sortKey: "risk_score",
-    cell: (project) => <MetricCell metric={project.fragility} raw="inline" />,
+    cell: (project) => <MetricCell metric={project.fragility} renderRaw />,
   },
   {
     key: "team_availability",
     header: "Team Availability",
     sortKey: "team_availability",
-    cell: (project) => <MetricCell metric={project.team_availability} raw="paren" />,
+    cell: (project) => <MetricCell metric={project.team_availability} renderRaw />,
   },
   {
     key: "knowledge_coverage",

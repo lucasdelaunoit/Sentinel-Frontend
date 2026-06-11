@@ -60,14 +60,14 @@ export default function UserProjectsTab({ userId }: { userId: string | undefined
       key: "fragility",
       header: "Fragility",
       sortKey: "risk_score",
-      cell: (proj) => <MetricCell metric={proj.fragility} raw="paren" />,
+      cell: (proj) => <MetricCell metric={proj.fragility} />,
       skeleton: <Skeleton className="h-4 w-20" />,
     },
     {
       key: "team_availability",
       header: "Team Availability",
       sortKey: "team_availability",
-      cell: (proj) => <MetricCell metric={proj.team_availability} raw="paren" />,
+      cell: (proj) => <MetricCell metric={proj.team_availability} />,
       skeleton: <Skeleton className="h-4 w-20" />,
     },
     {

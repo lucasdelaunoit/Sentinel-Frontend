@@ -1,5 +1,7 @@
+import { CircleNotchIcon, TrashIcon } from "@phosphor-icons/react";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
 import { getFullName } from "@/utils/formatters/persons.ts";
@@ -10,9 +12,18 @@ interface MediumSkillHolderRowProps {
   search?: string;
   className?: string;
   onClick?: () => void;
+  onRemove?: () => void;
+  removing?: boolean;
 }
 
-export default function MediumSkillHolderRow({ holder, search = "", className, onClick }: MediumSkillHolderRowProps) {
+export default function MediumSkillHolderRow({
+  holder,
+  search = "",
+  className,
+  onClick,
+  onRemove,
+  removing = false,
+}: MediumSkillHolderRowProps) {
   return (
     <SecondaryCard
       className={className}
@@ -23,9 +34,23 @@ export default function MediumSkillHolderRow({ holder, search = "", className, o
         holder.on_leave_today ? <span className="text-warning font-medium">On leave today</span> : undefined
       }
       action={
-        <span className="text-[12px] font-semibold text-muted-foreground tabular-nums whitespace-nowrap">
-          {skillLevelLabel(holder.level)} ({holder.level}/{SKILL_LEVEL_MAX})
-        </span>
+        <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
+          <span className="text-[12px] font-semibold text-muted-foreground tabular-nums whitespace-nowrap">
+            {skillLevelLabel(holder.level)} ({holder.level}/{SKILL_LEVEL_MAX})
+          </span>
+          {onRemove && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-8 w-8 p-0"
+              disabled={removing}
+              onClick={onRemove}
+              aria-label={`Remove ${getFullName(holder.firstname, holder.lastname)} from this skill`}
+            >
+              {removing ? <CircleNotchIcon className="animate-spin" weight="bold" /> : <TrashIcon className="size-3.5" />}
+            </Button>
+          )}
+        </div>
       }
     />
   );

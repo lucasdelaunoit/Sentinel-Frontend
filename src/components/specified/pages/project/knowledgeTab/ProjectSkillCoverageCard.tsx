@@ -13,7 +13,9 @@ import { skillLevelLabel } from "@/lib/theme/skillLevel.ts";
 import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { DotsThreeIcon, PlusIcon, UserPlusIcon } from "@phosphor-icons/react";
+import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
+import { DotsThreeIcon, PlusIcon, TrashIcon, UserPlusIcon } from "@phosphor-icons/react";
+import useDetachSkillFromProject from "@/api/projects/useDetachSkillFromProject.ts";
 import { AVATAR_SIZE } from "@/lib/theme/avatar.ts";
 import useGetProjectKnowledgeCoverage from "@/api/projects/useGetProjectKnowledgeCoverage.ts";
 import AddProjectSkillSheet from "@/components/specified/models/project/sheets/AddProjectSkillSheet.tsx";
@@ -78,6 +80,18 @@ export default function ProjectSkillCoverageCard({ projectId }: ProjectSkillCove
   const [addSkillOpen, setAddSkillOpen] = useState(false);
   const [holderSkill, setHolderSkill] = useState<HolderSheetSkill | null>(null);
   const [viewHoldersSkill, setViewHoldersSkill] = useState<HoldersSheetSkill | null>(null);
+  const [skillToRemove, setSkillToRemove] = useState<HoldersSheetSkill | null>(null);
+  const { detachSkillFromProject, isLoading: removing } = useDetachSkillFromProject();
+
+  async function confirmRemove() {
+    if (!projectId || !skillToRemove) return;
+    try {
+      await detachSkillFromProject({ projectId, skillId: skillToRemove.id });
+      setSkillToRemove(null);
+    } catch {
+      /* hook toasts */
+    }
+  }
 
   const columns: DataTableColumn<ProjectKnowledgeCoverageItem, CoverageSortField>[] = [
     {
@@ -155,20 +169,34 @@ export default function ProjectSkillCoverageCard({ projectId }: ProjectSkillCove
         const tone = COVERAGE_TONE[c.status];
         const levelLabel = skillLevelLabel(c.max_level);
         const levelGap = c.required_level > 0 && c.max_level > 0 && c.max_level < c.required_level;
-        return c.max_level > 0 ? (
+        return (
           <div className="flex flex-col">
-            <span className={cn("text-[13px] font-semibold whitespace-nowrap", TONE_TEXT[tone])}>
-              {levelLabel} ({c.max_level}/5)
-            </span>
-            {levelGap && (
-              <span className="text-[10px] text-danger font-medium mt-0.5">below required {c.required_level}/5</span>
+            {c.max_level > 0 ? (
+              <span className={cn("text-[13px] font-semibold whitespace-nowrap", TONE_TEXT[tone])}>
+                {levelLabel} ({c.max_level}/5)
+              </span>
+            ) : (
+              <span className="text-[13px] text-muted-foreground">—</span>
+            )}
+            {c.required_level > 0 && (
+              <span
+                className={cn(
+                  "text-[10px] font-medium mt-0.5",
+                  levelGap || c.max_level === 0 ? "text-danger" : "text-muted-foreground",
+                )}
+              >
+                required {skillLevelLabel(c.required_level)} ({c.required_level}/5)
+              </span>
             )}
           </div>
-        ) : (
-          <span className="text-[13px] text-muted-foreground">—</span>
         );
       },
-      skeleton: <Skeleton className="h-3.5 w-24" />,
+      skeleton: (
+        <div className="space-y-1.5">
+          <Skeleton className="h-3.5 w-24" />
+          <Skeleton className="h-2.5 w-20" />
+        </div>
+      ),
     },
     {
       key: "actions",
@@ -176,23 +204,41 @@ export default function ProjectSkillCoverageCard({ projectId }: ProjectSkillCove
       className: "text-right",
       stopPropagation: true,
       cell: (c) => (
-        <Button
-          size="sm"
-          className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press ml-auto"
-          title="Add someone with this skill"
-          aria-label={`Add someone with ${c.skill.name}`}
-          onClick={() =>
-            setHolderSkill({
-              id: Number(c.skill.id),
-              name: c.skill.name,
-              category: c.skill.category,
-            })
-          }
-        >
-          <UserPlusIcon className="size-3.5" /> Add
-        </Button>
+        <div className="flex items-center justify-end gap-1.5">
+          <Button
+            size="sm"
+            className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
+            title="Add someone with this skill"
+            aria-label={`Add someone with ${c.skill.name}`}
+            onClick={() =>
+              setHolderSkill({
+                id: Number(c.skill.id),
+                name: c.skill.name,
+                category: c.skill.category,
+              })
+            }
+          >
+            <UserPlusIcon className="size-3.5" /> Add
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            className="h-8 w-8 p-0 rounded-lg"
+            title="Remove required skill"
+            aria-label={`Remove ${c.skill.name} from required skills`}
+            disabled={removing}
+            onClick={() => setSkillToRemove({ id: Number(c.skill.id), name: c.skill.name })}
+          >
+            <TrashIcon className="size-3.5" />
+          </Button>
+        </div>
       ),
-      skeleton: <Skeleton className="h-8 w-14 rounded-lg ml-auto" />,
+      skeleton: (
+        <div className="flex items-center justify-end gap-1.5">
+          <Skeleton className="h-8 w-14 rounded-lg" />
+          <Skeleton className="h-8 w-8 rounded-lg" />
+        </div>
+      ),
     },
   ];
 
@@ -241,6 +287,20 @@ export default function ProjectSkillCoverageCard({ projectId }: ProjectSkillCove
         onOpenChange={(v) => {
           if (!v) setViewHoldersSkill(null);
         }}
+      />
+      <ComposedAlertDialog
+        open={skillToRemove !== null}
+        onOpenChange={(v) => {
+          if (!v) setSkillToRemove(null);
+        }}
+        title={skillToRemove ? `Remove "${skillToRemove.name}" from required skills?` : ""}
+        description="The skill requirement will be removed from this project. Team members keep the skill on their profiles. This cannot be undone."
+        confirmLabel="Remove"
+        pendingLabel="Removing…"
+        cancelLabel="Cancel"
+        isPending={removing}
+        variant="destructive"
+        onConfirm={confirmRemove}
       />
     </>
   );
