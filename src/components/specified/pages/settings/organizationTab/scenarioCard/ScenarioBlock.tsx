@@ -8,15 +8,17 @@ import { computeScenarioMetrics, TOLERANCE_CEILING } from "@/services/scenarioMe
 export default function ScenarioBlock({
   scenario,
   form,
+  savedForm,
   flash,
   index,
 }: {
   scenario: Scenario;
   form: OrgFormFields;
+  savedForm: OrgFormFields;
   flash: boolean;
   index: number;
 }) {
-  const before = useMemo(() => computeScenarioMetrics(scenario, form), [scenario, form]);
+  const before = useMemo(() => computeScenarioMetrics(scenario, savedForm), [scenario, savedForm]);
   const after = useMemo(() => computeScenarioMetrics(scenario, form, scenario.excludes), [scenario, form]);
   const ceiling = TOLERANCE_CEILING[form.fragility_tolerance];
   const aboveTolerance = after.riskScore > ceiling;

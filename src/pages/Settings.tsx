@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import SkillsTab from "@/components/specified/pages/settings/SkillsTab.tsx";
 import RulesTab from "@/components/specified/pages/settings/RulesTab.tsx";
-import { BookOpenIcon, BuildingsIcon, CalendarIcon, ShieldIcon, SlidersIcon } from "@phosphor-icons/react";
+import { BookOpenIcon, BuildingsIcon, CalendarIcon, EyeIcon, ShieldIcon, SlidersIcon } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
 import CalendarTab from "@/components/specified/pages/settings/CalendarTab.tsx";
 import OrganizationTab from "@/components/specified/pages/settings/OrganizationTab.tsx";
 import DepartmentsTab from "@/components/specified/pages/settings/DepartmentsTab.tsx";
@@ -46,9 +47,17 @@ export default function Settings() {
           activeTab === "organization" && (
             <Label
               htmlFor="preview-toggle"
-              className="flex items-center gap-2 text-sm cursor-pointer border border-border p-3 rounded-md"
+              className={cn(
+                "flex items-center gap-2 text-sm cursor-pointer border p-3 rounded-md transition-colors",
+                previewVisible
+                  ? "border-primary/30 bg-primary/5 text-primary"
+                  : "border-border hover:border-primary/30 hover:bg-primary/5",
+              )}
             >
-              <span className="text-muted-foreground">Live preview</span>
+              <EyeIcon className="size-4" />
+              <span className={previewVisible ? "text-primary font-medium" : "text-muted-foreground"}>
+                Live preview
+              </span>
               <Switch id="preview-toggle" checked={previewVisible} onCheckedChange={setPreviewVisible} />
             </Label>
           )

@@ -102,7 +102,7 @@ export default function OrganizationTab({ previewVisible = false }: { previewVis
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
       <div className="min-w-0">{sections}</div>
       <div className="lg:sticky lg:top-0">
-        <ScenarioPreviewCard form={form} flash />
+        <ScenarioPreviewCard form={form} savedForm={original ?? form} flash />
       </div>
     </div>
   );

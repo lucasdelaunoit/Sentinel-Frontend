@@ -45,7 +45,15 @@ const SCENARIOS: Scenario[] = [
   },
 ];
 
-export default function ScenarioPreviewCard({ form, flash = false }: { form: OrgFormFields; flash?: boolean }) {
+export default function ScenarioPreviewCard({
+  form,
+  savedForm,
+  flash = false,
+}: {
+  form: OrgFormFields;
+  savedForm: OrgFormFields;
+  flash?: boolean;
+}) {
   return (
     <ComposedCard
       title={
@@ -55,8 +63,9 @@ export default function ScenarioPreviewCard({ form, flash = false }: { form: Org
             <TooltipTrigger>
               <QuestionIcon />
             </TooltipTrigger>
-            <TooltipContent side="right">
-              Three what-if scenarios. Tweak settings and watch each verdict shift.
+            <TooltipContent side="right" className="max-w-64">
+              Three what-if scenarios. "Today" reflects your saved settings — what dashboards currently report. The
+              right side shows the scenario as it would be scored with the edits you're making, before you save.
             </TooltipContent>
           </Tooltip>
         </div>
@@ -64,7 +73,7 @@ export default function ScenarioPreviewCard({ form, flash = false }: { form: Org
     >
       <div className="space-y-4">
         {SCENARIOS.map((s, i) => (
-          <ScenarioBlock key={s.id} scenario={s} form={form} flash={flash} index={i} />
+          <ScenarioBlock key={s.id} scenario={s} form={form} savedForm={savedForm} flash={flash} index={i} />
         ))}
       </div>
     </ComposedCard>
