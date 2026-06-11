@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from "react";
 import { CalendarBlankIcon, ArrowRightIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils.ts";
 import { Card } from "@/components/ui/card.tsx";
@@ -20,37 +19,12 @@ interface DeadlineCountdownCardProps {
   onClick?: () => void;
 }
 
-function useCountUp(target: number, durationMs = 900) {
-  const [value, setValue] = useState(0);
-  const startRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    let frame: number;
-    startRef.current = null;
-
-    const tick = (ts: number) => {
-      if (startRef.current === null) startRef.current = ts;
-      const elapsed = ts - startRef.current;
-      const progress = Math.min(elapsed / durationMs, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(eased * target));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [target, durationMs]);
-
-  return value;
-}
-
 export default function DeadlineCountdownCard({
   title = "Deadline",
   card,
   onClick,
 }: DeadlineCountdownCardProps) {
   const days = Math.max(Number(card?.value_raw ?? card?.raw ?? 0), 0);
-  const animatedDays = useCountUp(days);
   const color = (card && SEVERITY_TEXT[card.severity]) || "text-foreground";
 
   return (
@@ -66,7 +40,7 @@ export default function DeadlineCountdownCard({
       </div>
 
       <div className="flex items-baseline gap-1.5">
-        <span className="text-3xl font-semibold tabular-nums">{animatedDays}</span>
+        <span className="text-3xl font-semibold tabular-nums">{days}</span>
         <span className="text-sm text-muted-foreground">days</span>
       </div>
 
