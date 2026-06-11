@@ -2,8 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card.tsx";
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { Mail, Phone, CalendarDays } from "lucide-react";
-import { PencilSimpleIcon, BuildingsIcon } from "@phosphor-icons/react";
+import { PencilSimpleIcon, BuildingsIcon, CalendarDotsIcon, EnvelopeIcon, PhoneIcon } from "@phosphor-icons/react";
 import UserStatusBadge from "@/components/specified/models/user/badges/UserStatusBadge.tsx";
 import DataDisplay from "@/components/common/data/DataDisplay.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
@@ -38,10 +37,10 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
       </div>
 
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-        <DataDisplay icon={Mail} label="Email" value={user.email} />
-        <DataDisplay icon={Phone} label="Phone" value={user.phone} />
+        <DataDisplay icon={EnvelopeIcon} label="Email" value={user.email} />
+        <DataDisplay icon={PhoneIcon} label="Phone" value={user.phone} />
         <DataDisplay icon={BuildingsIcon} label="Department" value={user.department?.name} />
-        <DataDisplay icon={CalendarDays} label="Start Date" value={user.created_at} />
+        <DataDisplay icon={CalendarDotsIcon} label="Start Date" value={user.created_at} />
       </div>
 
       <EditUserSheet open={editOpen} onOpenChange={setEditOpen} user={user} />
@@ -66,10 +65,10 @@ UserProfileCard.Skeleton = function UserProfileCardSkeleton() {
         <Skeleton className="h-9 w-20 rounded-lg" />
       </div>
       <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
-        <DataDisplay.Skeleton icon={Mail} label="Email" />
-        <DataDisplay.Skeleton icon={Phone} label="Phone" />
+        <DataDisplay.Skeleton icon={EnvelopeIcon} label="Email" />
+        <DataDisplay.Skeleton icon={PhoneIcon} label="Phone" />
         <DataDisplay.Skeleton icon={BuildingsIcon} label="Department" />
-        <DataDisplay.Skeleton icon={CalendarDays} label="Start Date" />
+        <DataDisplay.Skeleton icon={CalendarDotsIcon} label="Start Date" />
       </div>
     </Card>
   );

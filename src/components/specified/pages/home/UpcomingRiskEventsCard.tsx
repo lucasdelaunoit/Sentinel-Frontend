@@ -1,4 +1,4 @@
-import { CalendarClock } from "lucide-react";
+import { ClockClockwiseIcon } from "@phosphor-icons/react";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
@@ -44,7 +44,7 @@ UpcomingRiskEventsCard.Skeleton = function UpcomingRiskEventsCardSkeleton() {
     <ComposedCard
       title={
         <span className="flex items-center gap-2">
-          <CalendarClock className="size-4 text-muted-foreground" /> Upcoming Risk Events
+          <ClockClockwiseIcon className="size-4 text-muted-foreground" /> Upcoming Risk Events
         </span>
       }
       action={<Skeleton className="ml-auto h-3.5 w-24" />}

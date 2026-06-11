@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { CalendarDays } from "lucide-react";
 import {
   CalendarCheckIcon,
   CalendarXIcon,
@@ -7,7 +6,7 @@ import {
   NotePencilIcon,
   HourglassIcon,
   TrashIcon,
-  CircleNotchIcon,
+  CircleNotchIcon, CalendarDotsIcon,
 } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -129,8 +128,8 @@ export default function AbsenceDetailSheet({ absence, open, onOpenChange, userId
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <DataDisplay icon={CalendarDays} label="Created" value={formatDate(absence.created_at)} />
-        <DataDisplay icon={CalendarDays} label="Last updated" value={formatDate(absence.updated_at)} />
+        <DataDisplay icon={CalendarDotsIcon} label="Created" value={formatDate(absence.created_at)} />
+        <DataDisplay icon={CalendarDotsIcon} label="Last updated" value={formatDate(absence.updated_at)} />
       </div>
 
       <ComposedAlertDialog
@@ -183,8 +182,8 @@ function AbsenceDetailBodySkeleton() {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <DataDisplay.Skeleton icon={CalendarDays} label="Created" />
-        <DataDisplay.Skeleton icon={CalendarDays} label="Last updated" />
+        <DataDisplay.Skeleton icon={CalendarDotsIcon} label="Created" />
+        <DataDisplay.Skeleton icon={CalendarDotsIcon} label="Last updated" />
       </div>
     </>
   );

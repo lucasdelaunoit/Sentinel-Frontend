@@ -1,19 +1,6 @@
 import React, { useState, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import {
-  Upload,
-  ImageIcon,
-  X,
-  AlertCircle,
-  ChevronDown,
-  ChevronUp,
-  CheckCircle2,
-  Info,
-  Camera,
-  ZoomIn,
-  AlignLeft,
-  LayoutGrid,
-} from "lucide-react"
+import { CameraIcon, CaretDownIcon, CaretUpIcon, CheckCircleIcon, ImageIcon, InfoIcon, MagnifyingGlassPlusIcon, SquaresFourIcon, TextAlignLeftIcon, UploadSimpleIcon, WarningCircleIcon, XIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils"
 import ComposedSheet from "@/components/common/sheets/ComposedSheet"
 
@@ -28,25 +15,25 @@ const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024
 
 const TIPS = [
   {
-    icon: LayoutGrid,
+    icon: SquaresFourIcon,
     color: "text-primary bg-primary/10",
     title: "Show the full grid",
     desc: "Make sure the entire month view is visible — all days and all employees without scrolling.",
   },
   {
-    icon: AlignLeft,
+    icon: TextAlignLeftIcon,
     color: "text-emerald-600 bg-emerald-50",
     title: "Include employee names",
     desc: "The left column with full names must be fully visible and not cut off.",
   },
   {
-    icon: ZoomIn,
+    icon: MagnifyingGlassPlusIcon,
     color: "text-amber-600 bg-amber-50",
     title: "Use a readable zoom level",
     desc: "Zoom in enough so that cell codes (W, S, B…) are clearly legible.",
   },
   {
-    icon: Camera,
+    icon: CameraIcon,
     color: "text-violet-600 bg-violet-50",
     title: "Avoid partial captures",
     desc: "Don't scroll mid-capture. Use a full-page export or full-screen screenshot tool.",
@@ -131,7 +118,7 @@ export default function ImportPlanningSheet({ open, onOpenChange }: ImportPlanni
             Cancel
           </Button>
           <Button className="flex-1" disabled={!file} onClick={handleSubmit}>
-            <Upload className="size-4" />
+            <UploadSimpleIcon className="size-4" />
             Import Planning
           </Button>
         </>
@@ -173,7 +160,7 @@ export default function ImportPlanningSheet({ open, onOpenChange }: ImportPlanni
                 )}
               >
                 {error ? (
-                  <AlertCircle className="size-6 text-destructive" />
+                  <WarningCircleIcon className="size-6 text-destructive" />
                 ) : (
                   <ImageIcon
                     className={cn(
@@ -220,7 +207,7 @@ export default function ImportPlanningSheet({ open, onOpenChange }: ImportPlanni
                   onClick={handleRemove}
                   className="absolute top-2.5 right-2.5 flex size-7 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors backdrop-blur-sm"
                 >
-                  <X className="size-3.5" />
+                  <XIcon className="size-3.5" />
                 </button>
                 <span className="absolute bottom-2.5 left-2.5 text-[10px] font-semibold bg-black/50 text-white px-2.5 py-1 rounded-full backdrop-blur-sm">
                   Preview
@@ -228,7 +215,7 @@ export default function ImportPlanningSheet({ open, onOpenChange }: ImportPlanni
               </div>
               <div className="px-4 py-3 flex items-center gap-3 border-t border-border/40">
                 <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 border border-emerald-200/60">
-                  <CheckCircle2 className="size-4 text-emerald-600" />
+                  <CheckCircleIcon className="size-4 text-emerald-600" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground truncate">{file.name}</p>
@@ -250,7 +237,7 @@ export default function ImportPlanningSheet({ open, onOpenChange }: ImportPlanni
           {/* Error banner */}
           {error && (
             <div className="flex items-start gap-2.5 rounded-xl bg-destructive/10 border border-destructive/20 px-4 py-3">
-              <AlertCircle className="size-4 text-destructive shrink-0 mt-0.5" />
+              <WarningCircleIcon className="size-4 text-destructive shrink-0 mt-0.5" />
               <p className="text-sm text-destructive font-medium">{error}</p>
             </div>
           )}
@@ -262,15 +249,15 @@ export default function ImportPlanningSheet({ open, onOpenChange }: ImportPlanni
               className="w-full flex items-center justify-between gap-2 px-4 py-3.5 hover:bg-muted/30 transition-colors text-left"
             >
               <div className="flex items-center gap-2.5">
-                <Info className="size-4 text-primary/70 shrink-0" />
+                <InfoIcon className="size-4 text-primary/70 shrink-0" />
                 <span className="text-sm font-semibold text-foreground">
                   Tips for best results
                 </span>
               </div>
               {showTips ? (
-                <ChevronUp className="size-4 text-muted-foreground shrink-0" />
+                <CaretUpIcon className="size-4 text-muted-foreground shrink-0" />
               ) : (
-                <ChevronDown className="size-4 text-muted-foreground shrink-0" />
+                <CaretDownIcon className="size-4 text-muted-foreground shrink-0" />
               )}
             </button>
 
@@ -305,7 +292,7 @@ export default function ImportPlanningSheet({ open, onOpenChange }: ImportPlanni
                 {/* Example image */}
                 <div className="mt-2 rounded-xl overflow-hidden border border-border/60">
                   <div className="bg-muted/40 px-3 py-2 border-b border-border/40 flex items-center gap-1.5">
-                    <CheckCircle2 className="size-3 text-emerald-500" />
+                    <CheckCircleIcon className="size-3 text-emerald-500" />
                     <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
                       Example — good screenshot
                     </p>

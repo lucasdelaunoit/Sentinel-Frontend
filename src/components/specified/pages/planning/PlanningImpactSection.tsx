@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { XIcon } from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -96,7 +96,7 @@ export default function PlanningImpactSection({
                             onRemoveBlock(block.id);
                           }}
                         >
-                          <X className="size-3.5" />
+                          <XIcon className="size-3.5" />
                         </Button>
                       </div>
                     }

@@ -1,4 +1,4 @@
-import { Search, X } from "lucide-react";
+import { MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils.ts";
 import { Input } from "@/components/ui/input.tsx";
 
@@ -42,7 +42,7 @@ export default function SearchBar({
   const s = SIZE_STYLES[size];
   return (
     <div className={cn("relative", className)}>
-      <Search
+      <MagnifyingGlassIcon
         className={cn(
           "absolute top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none z-10",
           s.iconLeft,
@@ -64,7 +64,7 @@ export default function SearchBar({
             s.clearRight,
           )}
         >
-          <X className={s.clear} />
+          <XIcon className={s.clear} />
         </button>
       )}
     </div>

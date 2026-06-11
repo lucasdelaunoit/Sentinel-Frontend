@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, Check, Lightbulb, Loader2, ShieldAlert, Trash2, Users } from "lucide-react";
+import { ArrowLeftIcon, CheckIcon, CircleNotchIcon, LightbulbIcon, ShieldWarningIcon, TrashIcon, UsersIcon } from "@phosphor-icons/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
@@ -96,10 +96,10 @@ export default function SimBlockDetailSheet({
               disabled={isConfirming}
               className="flex-1 text-muted-foreground hover:text-destructive-foreground hover:bg-destructive"
             >
-              <Trash2 className="size-3.5" /> Remove
+              <TrashIcon className="size-3.5" /> Remove
             </Button>
             <Button size="lg" onClick={() => setStep("confirm")} className="flex-1">
-              <Check className="size-3.5" /> Confirm absence
+              <CheckIcon className="size-3.5" /> Confirm absence
             </Button>
           </>
         ) : (
@@ -111,7 +111,7 @@ export default function SimBlockDetailSheet({
               disabled={isConfirming}
               className="flex-1"
             >
-              <ArrowLeft className="size-3.5" /> Back
+              <ArrowLeftIcon className="size-3.5" /> Back
             </Button>
             <Button
               size="lg"
@@ -119,7 +119,7 @@ export default function SimBlockDetailSheet({
               disabled={isConfirming}
               className="flex-1 bg-planned hover:bg-planned/90 text-planned-foreground"
             >
-              {isConfirming ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+              {isConfirming ? <CircleNotchIcon className="size-3.5 animate-spin" /> : <CheckIcon className="size-3.5" />}
               Confirm absence
             </Button>
           </>
@@ -193,7 +193,7 @@ export default function SimBlockDetailSheet({
       )}
 
       {step === "overview" && !isSimulating && skills.length > 0 && (
-        <Section icon={ShieldAlert} title={`Impacted Skills (${skills.length})`}>
+        <Section icon={ShieldWarningIcon} title={`Impacted Skills (${skills.length})`}>
           <div className="space-y-2">
             {skills.map((s) => (
               <MediumSkillImpactRow key={s.skill_id} skill={s} />
@@ -213,7 +213,7 @@ export default function SimBlockDetailSheet({
       )}
 
       {step === "overview" && !isSimulating && userImpact && userImpact.replacement_candidates.length > 0 && (
-        <Section icon={Users} title="Replacement candidates">
+        <Section icon={UsersIcon} title="Replacement candidates">
           <div className="space-y-1.5">
             {userImpact.replacement_candidates.map((c) => (
               <SecondaryCard
@@ -235,12 +235,12 @@ export default function SimBlockDetailSheet({
       )}
 
       {step === "overview" && !isSimulating && cascading.length > 0 && (
-        <Section icon={Lightbulb} title="Cascading risks">
+        <Section icon={LightbulbIcon} title="Cascading risks">
           <div className="space-y-1.5">
             {cascading.map((c, i) => (
               <SecondaryCard
                 key={i}
-                before={<Lightbulb className="size-4 text-warning" />}
+                before={<LightbulbIcon className="size-4 text-warning" />}
                 title={c.type}
                 description={
                   <span>

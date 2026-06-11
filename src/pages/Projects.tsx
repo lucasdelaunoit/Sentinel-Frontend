@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Eye } from "lucide-react";
 import {
   PlusIcon,
   DotsThreeVerticalIcon,
@@ -9,7 +8,7 @@ import {
   PauseIcon,
   PlayIcon,
   CheckCircleIcon,
-  ArrowUUpLeftIcon,
+  ArrowUUpLeftIcon, EyeIcon,
 } from "@phosphor-icons/react";
 import ProjectsStatCardsSection from "@/components/specified/pages/projects/ProjectsStatCardsSection.tsx";
 import { cn } from "@/lib/utils";
@@ -78,7 +77,7 @@ function ProjectActionsCell({ project }: { project: Project }) {
         className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
         onClick={() => navigate(`/projects/${project.id}`)}
       >
-        <Eye className="size-3.5" /> View
+        <EyeIcon className="size-3.5" /> View
       </Button>
 
       <DropdownMenu>

@@ -1,4 +1,4 @@
-import { CalendarRange, UserMinus } from "lucide-react";
+import { CalendarDotsIcon, UserMinusIcon } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import MetricBox from "@/components/common/data/MetricBox.tsx";
@@ -80,13 +80,13 @@ export default function MediumProjectImpactRow({
             <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-medium text-muted-foreground">
               {window && (
                 <span className="flex items-center gap-1.5">
-                  <CalendarRange className="size-3.5 text-muted-foreground/70" />
+                  <CalendarDotsIcon className="size-3.5 text-muted-foreground/70" />
                   {window}
                 </span>
               )}
               {drivers && (
                 <span className="flex items-center gap-1.5 text-danger">
-                  <UserMinus className="size-3.5" />
+                  <UserMinusIcon className="size-3.5" />
                   {drivers} away
                 </span>
               )}

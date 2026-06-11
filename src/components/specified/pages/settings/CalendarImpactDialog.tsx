@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarClock, Check } from "lucide-react";
+import { CheckIcon, ClockClockwiseIcon } from "@phosphor-icons/react";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -64,7 +64,7 @@ export default function CalendarImpactDialog({
       <AlertDialogContent className="max-w-[560px]">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <CalendarClock className="size-4 text-warning" />
+            <ClockClockwiseIcon className="size-4 text-warning" />
             {affected.length} future absence{affected.length === 1 ? "" : "s"} affected
           </AlertDialogTitle>
           <AlertDialogDescription>
@@ -136,7 +136,7 @@ export default function CalendarImpactDialog({
             Cancel
           </Button>
           <Button onClick={handleApply} loading={isApplying} className="rounded-xl gap-1.5">
-            {!isApplying && <Check className="size-3.5" />}
+            {!isApplying && <CheckIcon className="size-3.5" />}
             Apply change
           </Button>
         </AlertDialogFooter>

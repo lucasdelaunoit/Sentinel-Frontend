@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { CaretDoubleLeftIcon, CaretDoubleRightIcon, CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
 const PER_PAGE_OPTIONS = [10, 15, 25, 50] as const;
@@ -49,10 +49,10 @@ export function TablePagination({
 
       <div className="flex items-center gap-1">
         <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg" disabled={page <= 1} onClick={() => onPageChange(1)}>
-          <ChevronsLeft className="size-3.5" />
+          <CaretDoubleLeftIcon className="size-3.5" />
         </Button>
         <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
-          <ChevronLeft className="size-3.5" />
+          <CaretLeftIcon className="size-3.5" />
         </Button>
         {pageNumbers.map((p) => (
           <Button
@@ -66,10 +66,10 @@ export function TablePagination({
           </Button>
         ))}
         <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg" disabled={page >= lastPage} onClick={() => onPageChange(page + 1)}>
-          <ChevronRight className="size-3.5" />
+          <CaretRightIcon className="size-3.5" />
         </Button>
         <Button variant="outline" size="sm" className="h-8 w-8 p-0 rounded-lg" disabled={page >= lastPage} onClick={() => onPageChange(lastPage)}>
-          <ChevronsRight className="size-3.5" />
+          <CaretDoubleRightIcon className="size-3.5" />
         </Button>
       </div>
     </div>

@@ -1,10 +1,9 @@
-import { ArrowRight } from "lucide-react";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
 import { cn } from "@/lib/utils.ts";
 import { formatDelta } from "@/utils/formatters/number.ts";
-import { ArrowElbowDownRightIcon } from "@phosphor-icons/react";
+import { ArrowElbowDownRightIcon, ArrowRightIcon } from "@phosphor-icons/react";
 
 interface MediumUpcomingRiskCardProps {
   event: UpcomingRiskEvent;
@@ -70,7 +69,7 @@ export default function MediumUpcomingRiskCard({ event }: MediumUpcomingRiskCard
                 <span className="text-[12px] font-semibold tabular-nums text-foreground">
                   {affected.fragility.before}
                 </span>
-                <ArrowRight className="size-3 text-muted-foreground/60" />
+                <ArrowRightIcon className="size-3 text-muted-foreground/60" />
                 <span className="text-[12px] font-semibold tabular-nums text-foreground">
                   {affected.fragility.after}
                 </span>

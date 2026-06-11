@@ -4,7 +4,7 @@ import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { Flame } from "lucide-react";
+import { FlameIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils.ts";
 import { getInitials } from "@/utils/formatters/persons.ts";
 
@@ -31,7 +31,7 @@ export default function HotspotsImpactCard({
           {hotspots.map((h, i) => (
             <SecondaryCard
               key={i}
-              before={<Flame className={cn("size-4" /*, SEVERITY_SURFACE[h.severity].text*/)} />}
+              before={<FlameIcon className={cn("size-4" /*, SEVERITY_SURFACE[h.severity].text*/)} />}
               title={`${h.date_range[0]} → ${h.date_range[1]}`}
               description={h.reason}
               action={

@@ -1,5 +1,5 @@
 import { type ElementType } from "react";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils.ts";
 import { Card } from "@/components/ui/card.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";

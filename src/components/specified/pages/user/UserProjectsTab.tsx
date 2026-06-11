@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye } from "lucide-react";
-import { FolderPlusIcon } from "@phosphor-icons/react";
+import { FolderPlusIcon, EyeIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -106,7 +105,7 @@ export default function UserProjectsTab({ userId }: { userId: string | undefined
           className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
           onClick={() => navigate(`/projects/${proj.id}`)}
         >
-          <Eye className="size-3.5" /> View
+          <EyeIcon className="size-3.5" /> View
         </Button>
       ),
       skeleton: <Skeleton className="h-8 w-14 rounded-lg" />,

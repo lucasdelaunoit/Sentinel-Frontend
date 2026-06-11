@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FieldDescription } from "@/components/ui/field";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import MediumCalendar from "@/components/common/calendar/MediumCalendar";
-import { Plus } from "lucide-react";
+import { PlusIcon } from "@phosphor-icons/react";
 import Feedback from "@/components/common/feedbacks/Feedback";
 import MediumCompanyHolidayRow from "@/components/specified/models/companyHoliday/datas/MediumCompanyHolidayRow";
 import useUpdateCalendarSettings from "@/api/settings/calendar/useUpdateCalendarSettings";
@@ -104,7 +104,7 @@ export default function CalendarTab() {
             }
             action={
               <Button disabled className="gap-1.5 opacity-60">
-                <Plus className="size-3.5" />
+                <PlusIcon className="size-3.5" />
                 Add Holiday
               </Button>
             }
@@ -168,7 +168,7 @@ export default function CalendarTab() {
           }
           action={
             <Button onClick={() => setHolidaySheetOpen(true)} className="gap-1.5">
-              <Plus className="size-3.5" />
+              <PlusIcon className="size-3.5" />
               Add Holiday
             </Button>
           }

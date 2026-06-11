@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
-import { CircleNotchIcon } from "@phosphor-icons/react";
+import { CircleNotchIcon, TrashIcon } from "@phosphor-icons/react";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
@@ -75,7 +74,7 @@ export default function MediumCompanyHolidayRow({
                   {isDeleting ? (
                     <CircleNotchIcon className="animate-spin" weight="bold" />
                   ) : (
-                    <Trash2 className="size-3.5" />
+                    <TrashIcon className="size-3.5" />
                   )}
                 </Button>
               }

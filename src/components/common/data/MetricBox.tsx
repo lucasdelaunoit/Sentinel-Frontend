@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRightIcon } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { cn } from "@/lib/utils.ts";
 import { formatDelta } from "@/utils/formatters/number.ts";
@@ -31,7 +31,7 @@ export default function MetricBox({ label, before, after, delta, worseWhen = "do
           {before}
           {suffix}
         </span>
-        <ArrowRight className="size-3 text-muted-foreground/50" />
+        <ArrowRightIcon className="size-3 text-muted-foreground/50" />
         <span className={cn(worse && "text-danger", better && "text-success")}>
           {after}
           {suffix}

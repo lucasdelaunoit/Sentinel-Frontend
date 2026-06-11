@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { XIcon } from "@phosphor-icons/react";
 import {
   Sheet,
   SheetContent,
@@ -73,7 +73,7 @@ export default function ComposedSheet({
               onClick={handleClose}
               className="mt-0.5 shrink-0 rounded-lg text-muted-foreground"
             >
-              <X className="size-4" />
+              <XIcon className="size-4" />
             </Button>
           </div>
         </SheetHeader>

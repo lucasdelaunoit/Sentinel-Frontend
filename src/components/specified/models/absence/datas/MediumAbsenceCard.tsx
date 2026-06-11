@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { ArrowRight } from "lucide-react";
-import { PencilSimpleIcon, TrashIcon, CircleNotchIcon } from "@phosphor-icons/react";
+import { PencilSimpleIcon, TrashIcon, CircleNotchIcon, ArrowRightIcon } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
@@ -64,7 +63,7 @@ export default function MediumAbsenceCard({ absence, userId }: MediumAbsenceCard
                   {ABSENCE_HALF_SHORT[absence.start_half ?? "morning"]}
                 </span>
               </span>
-              <ArrowRight className="size-3 text-muted-foreground/60" />
+              <ArrowRightIcon className="size-3 text-muted-foreground/60" />
               <span className="text-[12px] font-semibold tabular-nums text-foreground">
                 {fmtDate(absence.end_date)}
                 <span className="ml-1 text-[10px] font-bold text-muted-foreground/70">

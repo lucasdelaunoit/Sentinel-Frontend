@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { CalendarDays, Trash2 } from "lucide-react";
-import { CalendarCheckIcon, CalendarBlankIcon, CircleNotchIcon } from "@phosphor-icons/react";
+import { CalendarCheckIcon, CalendarBlankIcon, CircleNotchIcon, CalendarDotsIcon, TrashIcon } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
@@ -57,7 +56,7 @@ export default function CompanyHolidayDetailSheet({ holiday, open, onOpenChange 
               {isDeleting ? (
                 <CircleNotchIcon className="size-4 animate-spin" weight="bold" />
               ) : (
-                <Trash2 className="size-4" />
+                <TrashIcon className="size-4" />
               )}
               Delete
             </Button>
@@ -97,7 +96,7 @@ export default function CompanyHolidayDetailSheet({ holiday, open, onOpenChange 
 
       <div className="grid grid-cols-2 gap-3">
         <DataDisplay icon={CalendarBlankIcon} label="Weekday" value={weekdayLabel} />
-        <DataDisplay icon={CalendarDays} label="Length" value={`${dayCount} day${dayCount > 1 ? "s" : ""}`} />
+        <DataDisplay icon={CalendarDotsIcon} label="Length" value={`${dayCount} day${dayCount > 1 ? "s" : ""}`} />
       </div>
     </ComposedSheet>
   );
@@ -134,7 +133,7 @@ CompanyHolidayDetailSheet.Skeleton = function CompanyHolidayDetailSheetSkeleton(
 
       <div className="grid grid-cols-2 gap-3">
         <DataDisplay.Skeleton icon={CalendarBlankIcon} label="Weekday" />
-        <DataDisplay.Skeleton icon={CalendarDays} label="Length" />
+        <DataDisplay.Skeleton icon={CalendarDotsIcon} label="Length" />
       </div>
     </ComposedSheet>
   );

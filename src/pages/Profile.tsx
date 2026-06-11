@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { Mail, Phone, MapPin, Building2, Briefcase, Calendar, LogOut, Camera, Pencil } from "lucide-react";
+import { BriefcaseIcon, BuildingsIcon, CalendarIcon, CameraIcon, EnvelopeIcon, MapPinIcon, PencilSimpleIcon, PhoneIcon, SignOutIcon } from "@phosphor-icons/react";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,7 +93,7 @@ export default function ProfilePage() {
             disabled={loggingOut}
             className="gap-2 text-rose-600 hover:text-rose-600 hover:bg-rose-50 border-rose-200/60"
           >
-            <LogOut className="size-4" />
+            <SignOutIcon className="size-4" />
             Sign out
           </Button>
         }
@@ -114,7 +114,7 @@ export default function ProfilePage() {
                   className="absolute -right-1 -bottom-1 rounded-full bg-card text-muted-foreground shadow-sm"
                   title="Change avatar"
                 >
-                  <Camera className="size-3.5" />
+                  <CameraIcon className="size-3.5" />
                 </Button>
               </div>
               <div>
@@ -134,7 +134,7 @@ export default function ProfilePage() {
                 </>
               ) : (
                 <Button variant="outline" onClick={startEdit} className="gap-2">
-                  <Pencil className="size-4" />
+                  <PencilSimpleIcon className="size-4" />
                   Edit profile
                 </Button>
               )}
@@ -142,11 +142,11 @@ export default function ProfilePage() {
           </div>
 
           <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
-            <InfoChip icon={<Mail className="size-3.5" />} label="Email" value={profile.email} />
-            <InfoChip icon={<Phone className="size-3.5" />} label="Phone" value={profile.phone} />
-            <InfoChip icon={<MapPin className="size-3.5" />} label="Location" value={profile.location} />
+            <InfoChip icon={<EnvelopeIcon className="size-3.5" />} label="Email" value={profile.email} />
+            <InfoChip icon={<PhoneIcon className="size-3.5" />} label="Phone" value={profile.phone} />
+            <InfoChip icon={<MapPinIcon className="size-3.5" />} label="Location" value={profile.location} />
             <InfoChip
-              icon={<Calendar className="size-3.5" />}
+              icon={<CalendarIcon className="size-3.5" />}
               label="Member since"
               value={new Date(profile.joinedAt).toLocaleDateString("en-GB", {
                 month: "short",
@@ -203,14 +203,14 @@ export default function ProfilePage() {
           <ComposedCard title="Work" className="gap-4">
             <p className="text-[12px] text-muted-foreground -mt-1">Role and team affiliation</p>
             <div className="space-y-4 mt-4">
-              <Field label="Role" icon={<Briefcase className="size-3.5" />}>
+              <Field label="Role" icon={<BriefcaseIcon className="size-3.5" />}>
                 <Input
                   disabled={!editing}
                   value={editing ? draft.role : profile.role}
                   onChange={(e) => setDraft({ ...draft, role: e.target.value })}
                 />
               </Field>
-              <Field label="Department" icon={<Building2 className="size-3.5" />}>
+              <Field label="Department" icon={<BuildingsIcon className="size-3.5" />}>
                 <Input
                   disabled={!editing}
                   value={editing ? draft.department : profile.department}

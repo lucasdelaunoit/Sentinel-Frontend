@@ -1,4 +1,4 @@
-import { Activity, Gauge, Shield, Users } from "lucide-react";
+import { GaugeIcon, PulseIcon, ShieldIcon, UsersIcon } from "@phosphor-icons/react";
 import StatCard from "@/components/common/cards/StatCard";
 
 interface PlanningStatsSectionProps {
@@ -22,10 +22,10 @@ export default function PlanningStatsSection({ data, isLoading = false }: Planni
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard.Skeleton title="Fragility" icon={Gauge} />
-        <StatCard.Skeleton title="Coverage" icon={Activity} />
-        <StatCard.Skeleton title="Bus factor" icon={Shield} />
-        <StatCard.Skeleton title="Peak overlap" icon={Users} />
+        <StatCard.Skeleton title="Fragility" icon={GaugeIcon} />
+        <StatCard.Skeleton title="Coverage" icon={PulseIcon} />
+        <StatCard.Skeleton title="Bus factor" icon={ShieldIcon} />
+        <StatCard.Skeleton title="Peak overlap" icon={UsersIcon} />
       </div>
     );
   }
@@ -61,10 +61,10 @@ export default function PlanningStatsSection({ data, isLoading = false }: Planni
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard title="Fragility" icon={Gauge} card={fragility} />
-      <StatCard title="Coverage" icon={Activity} card={coverage} />
-      <StatCard title="Bus factor" icon={Shield} card={busFactor} />
-      <StatCard title="Peak overlap" icon={Users} card={peak} />
+      <StatCard title="Fragility" icon={GaugeIcon} card={fragility} />
+      <StatCard title="Coverage" icon={PulseIcon} card={coverage} />
+      <StatCard title="Bus factor" icon={ShieldIcon} card={busFactor} />
+      <StatCard title="Peak overlap" icon={UsersIcon} card={peak} />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { PlusIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
@@ -85,7 +85,7 @@ export default function AddAbsenceSheet({ users, viewYear, viewMonth, open, onCl
             Cancel
           </Button>
           <Button onClick={handleAdd} disabled={!isValid} className="flex-1 rounded-xl h-9 text-[12px] gap-1.5">
-            <Plus className="size-3.5" /> Add block
+            <PlusIcon className="size-3.5" /> Add block
           </Button>
         </>
       }

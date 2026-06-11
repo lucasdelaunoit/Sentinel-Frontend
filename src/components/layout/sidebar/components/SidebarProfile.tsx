@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { CaretRightIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils.ts";
 import { useAuth } from "@/context/AuthContext";
 import { getInitials } from "@/utils/formatters/persons";
@@ -35,7 +35,7 @@ export default function SidebarProfile({ collapsed }: { collapsed: boolean }) {
         <p className="mt-0.5 truncate text-[11px] text-sidebar-foreground/40">{subtitle}</p>
       </div>
       {!collapsed && (
-        <ChevronRight className="mr-2 size-4 shrink-0 text-sidebar-foreground/40 transition-transform group-hover:translate-x-0.5" />
+        <CaretRightIcon className="mr-2 size-4 shrink-0 text-sidebar-foreground/40 transition-transform group-hover:translate-x-0.5" />
       )}
     </NavLink>
   );

@@ -1,5 +1,5 @@
 import { useState, type ComponentProps } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { EyeIcon, EyeSlashIcon } from "@phosphor-icons/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,7 @@ export default function PasswordInput({ className, ...props }: PasswordInputProp
         className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
         aria-label={visible ? "Hide password" : "Show password"}
       >
-        {visible ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+        {visible ? <EyeSlashIcon className="size-3.5" /> : <EyeIcon className="size-3.5" />}
       </Button>
     </div>
   );

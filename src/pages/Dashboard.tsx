@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarCheck, PlayCircle } from "lucide-react";
+import { CalendarCheckIcon, PlayCircleIcon } from "@phosphor-icons/react";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import HomeStatCardsSection from "@/components/specified/pages/home/HomeStatCardsSection.tsx";
@@ -21,10 +21,10 @@ export default function Dashboard() {
         actions={
           <div className="flex gap-2">
             <Button variant="outline" className="font-semibold" size="lg" onClick={() => setImportSheetOpen(true)}>
-              <CalendarCheck className="size-4" /> Import planning
+              <CalendarCheckIcon className="size-4" /> Import planning
             </Button>
             <Button onClick={() => navigate("/planning")} size="lg">
-              <PlayCircle className="size-4" /> Simulate Leave
+              <PlayCircleIcon className="size-4" /> Simulate Leave
             </Button>
           </div>
         }

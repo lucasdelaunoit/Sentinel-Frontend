@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Check, Loader2, Pencil, Trash2, X } from "lucide-react";
+import { CheckIcon, CircleNotchIcon, PencilSimpleIcon, TrashIcon, XIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -97,7 +97,7 @@ export default function SmallSkillCategoryCard({
             disabled={isUpdating}
             className="text-muted-foreground hover:text-primary hover:bg-primary/10"
           >
-            {isUpdating ? <Loader2 className="animate-spin" /> : <Check />}
+            {isUpdating ? <CircleNotchIcon className="animate-spin" /> : <CheckIcon />}
           </Button>
           <Button
             variant="ghost"
@@ -106,7 +106,7 @@ export default function SmallSkillCategoryCard({
             disabled={isUpdating}
             className="text-muted-foreground hover:text-destructive-foreground hover:bg-destructive"
           >
-            <X />
+            <XIcon />
           </Button>
         </div>
       ) : (
@@ -117,7 +117,7 @@ export default function SmallSkillCategoryCard({
             onClick={handleStartEdit}
             className="text-muted-foreground hover:text-primary hover:bg-primary/10"
           >
-            <Pencil className="size-3.5" />
+            <PencilSimpleIcon className="size-3.5" />
           </Button>
           <ComposedAlertDialog
             open={deleteOpen}
@@ -130,7 +130,7 @@ export default function SmallSkillCategoryCard({
                 disabled={isDeleting}
                 className="text-muted-foreground hover:text-destructive-foreground hover:bg-destructive"
               >
-                <Trash2 className="size-3.5" />
+                <TrashIcon className="size-3.5" />
               </Button>
             }
             title={`Delete category "${category.name}"?`}

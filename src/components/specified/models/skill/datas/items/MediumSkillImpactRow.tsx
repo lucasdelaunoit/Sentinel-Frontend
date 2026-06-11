@@ -1,4 +1,4 @@
-import { CalendarRange, ShieldAlert } from "lucide-react";
+import { CalendarDotsIcon, ShieldWarningIcon } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
@@ -30,7 +30,7 @@ export default function MediumSkillImpactRow({ skill, className, onClick }: Medi
               variant="outline"
               className="h-4 shrink-0 gap-1 border-danger/40 px-1.5 text-[9px] font-semibold text-danger"
             >
-              <ShieldAlert className="size-2.5" />
+              <ShieldWarningIcon className="size-2.5" />
               Org-critical
             </Badge>
           )}
@@ -57,7 +57,7 @@ export default function MediumSkillImpactRow({ skill, className, onClick }: Medi
               )}
               {skill.dates_uncovered.length > 0 && (
                 <span className="flex min-w-0 items-center gap-1.5 text-danger">
-                  <CalendarRange className="size-3.5 shrink-0" />
+                  <CalendarDotsIcon className="size-3.5 shrink-0" />
                   <span className="truncate">
                     Uncovered {skill.dates_uncovered.slice(0, 4).join(", ")}
                     {extraDates > 0 ? ` +${extraDates}` : ""}

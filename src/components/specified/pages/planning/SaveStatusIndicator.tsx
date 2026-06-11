@@ -1,4 +1,4 @@
-import { AlertCircle, Check, Loader2 } from "lucide-react";
+import { CheckIcon, CircleNotchIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils.ts";
 import type { SimulateStatus } from "@/api/planning/useSimulatePlanning.ts";
 
@@ -7,11 +7,11 @@ interface SaveStatusIndicatorProps {
   className?: string;
 }
 
-const META: Record<SimulateStatus, { label: string; Icon: typeof Check; cls: string; spin?: boolean }> = {
-  idle: { label: "Up to date", Icon: Check, cls: "text-muted-foreground" },
-  pending: { label: "Saving …", Icon: Loader2, cls: "text-muted-foreground", spin: true },
-  saved: { label: "Saved", Icon: Check, cls: "text-success" },
-  error: { label: "Invalid range", Icon: AlertCircle, cls: "text-danger" },
+const META: Record<SimulateStatus, { label: string; Icon: typeof CheckIcon; cls: string; spin?: boolean }> = {
+  idle: { label: "Up to date", Icon: CheckIcon, cls: "text-muted-foreground" },
+  pending: { label: "Saving …", Icon: CircleNotchIcon, cls: "text-muted-foreground", spin: true },
+  saved: { label: "Saved", Icon: CheckIcon, cls: "text-success" },
+  error: { label: "Invalid range", Icon: WarningCircleIcon, cls: "text-danger" },
 };
 
 export default function SaveStatusIndicator({ status, className }: SaveStatusIndicatorProps) {

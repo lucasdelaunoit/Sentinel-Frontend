@@ -2,8 +2,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { CalendarDays, Target, Users, Archive } from "lucide-react";
-import { PencilSimpleIcon } from "@phosphor-icons/react";
+import { PencilSimpleIcon, ArchiveIcon, CalendarDotsIcon, TargetIcon, UsersIcon } from "@phosphor-icons/react";
 import DataDisplay from "@/components/common/data/DataDisplay.tsx";
 import EditProjectSheet from "@/components/specified/models/project/sheets/EditProjectSheet.tsx";
 import { formatDate } from "@/utils/formatters/date.ts";
@@ -38,11 +37,11 @@ export default function ProjectProfileCard({ project }: ProjectProfileCardProps)
       </div>
 
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-        <DataDisplay icon={CalendarDays} label="Start Date" value={formatDate(project.started_at)} />
-        <DataDisplay icon={Target} label="Deadline" value={formatDate(project.deadline)} />
-        <DataDisplay icon={Users} label="Team Size" value={teamSize > 0 ? String(teamSize) : null} />
+        <DataDisplay icon={CalendarDotsIcon} label="Start Date" value={formatDate(project.started_at)} />
+        <DataDisplay icon={TargetIcon} label="Deadline" value={formatDate(project.deadline)} />
+        <DataDisplay icon={UsersIcon} label="Team Size" value={teamSize > 0 ? String(teamSize) : null} />
         <DataDisplay
-          icon={Archive}
+          icon={ArchiveIcon}
           label="Archived at"
           value={project.archived_at ? formatDate(project.archived_at) : null}
         />
@@ -70,10 +69,10 @@ ProjectProfileCard.Skeleton = function ProjectProfileCardSkeleton() {
         <Skeleton className="h-9 w-32 rounded-lg" />
       </div>
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-        <DataDisplay.Skeleton icon={CalendarDays} label="Start Date" />
-        <DataDisplay.Skeleton icon={Target} label="Deadline" />
-        <DataDisplay.Skeleton icon={Users} label="Team Size" />
-        <DataDisplay.Skeleton icon={Archive} label="Archived at" />
+        <DataDisplay.Skeleton icon={CalendarDotsIcon} label="Start Date" />
+        <DataDisplay.Skeleton icon={TargetIcon} label="Deadline" />
+        <DataDisplay.Skeleton icon={UsersIcon} label="Team Size" />
+        <DataDisplay.Skeleton icon={ArchiveIcon} label="Archived at" />
       </div>
     </Card>
   );

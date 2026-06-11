@@ -1,4 +1,3 @@
-import { ShieldAlert } from "lucide-react";
 import {
   SunHorizonIcon,
   ClockCountdownIcon,
@@ -60,7 +59,7 @@ function CriticalityHeadline({ card }: CriticalityHeadlineProps) {
     <div className={cn("rounded-xl border px-5 py-4", tone.bg, tone.border)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <ShieldAlert className={cn("size-4 shrink-0", tone.color)} />
+          <ShieldWarningIcon className={cn("size-4 shrink-0", tone.color)} />
           <div>
             <p className={cn("text-[13px] font-semibold", tone.color)}>{tone.label}</p>
             <p className="text-[11px] text-muted-foreground">Composite criticality score</p>

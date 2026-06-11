@@ -15,8 +15,7 @@ import { getViewLeaves } from "@/utils/planning/leaves";
 import { absenceTheme, simColor } from "@/utils/planning/theme";
 import { TONE_SOFT_BADGE } from "@/lib/theme/tone.ts";
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
-import { CaretLeftIcon, CaretRightIcon, ShieldWarningIcon, WarningIcon } from "@phosphor-icons/react";
-import { GripVertical } from "lucide-react";
+import { CaretLeftIcon, CaretRightIcon, ShieldWarningIcon, WarningIcon, DotsSixVerticalIcon } from "@phosphor-icons/react";
 import type { DragMode, DragState, DrawState } from "@/hooks/useGanttGestures";
 
 interface GanttEmployeeRowProps {
@@ -304,7 +303,7 @@ export default function GanttEmployeeRow({
                     style={{ background: color.border }}
                     onMouseDown={(e) => startDrag(e, block, "resize-left")}
                   >
-                    <GripVertical className="size-2.5 text-white" />
+                    <DotsSixVerticalIcon className="size-2.5 text-white" />
                   </div>
                 ) : null}
                 <div
@@ -330,7 +329,7 @@ export default function GanttEmployeeRow({
                     style={{ background: color.border }}
                     onMouseDown={(e) => startDrag(e, block, "resize-right")}
                   >
-                    <GripVertical className="size-2.5 text-white" />
+                    <DotsSixVerticalIcon className="size-2.5 text-white" />
                   </div>
                 ) : null}
               </div>

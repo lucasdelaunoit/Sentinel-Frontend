@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye } from "lucide-react";
-import { UserPlusIcon } from "@phosphor-icons/react";
+import { UserPlusIcon, EyeIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HighlightMatch } from "@/utils/useHighlightableText";
@@ -116,7 +115,7 @@ export default function ProjectTeamTab({ projectId }: { projectId: string | unde
           className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press"
           onClick={() => navigate(`/users/${emp.id}`)}
         >
-          <Eye className="size-3.5" /> View
+          <EyeIcon className="size-3.5" /> View
         </Button>
       ),
       skeleton: <Skeleton className="h-8 w-14 rounded-lg" />,

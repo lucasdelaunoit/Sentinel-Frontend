@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowRightIcon } from "lucide-react";
-import { CalendarBlankIcon } from "@phosphor-icons/react";
+import { CalendarBlankIcon, ArrowRightIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils.ts";
 import { Card } from "@/components/ui/card.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";

@@ -1,5 +1,5 @@
 import { type ReactNode, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { cn } from "@/lib/utils.ts";
@@ -126,7 +126,7 @@ export default function MediumCalendar<T>({
             className="size-7 cursor-pointer rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
             aria-label="Previous month"
           >
-            <ChevronLeft className="size-4" />
+            <CaretLeftIcon className="size-4" />
           </button>
           <button
             onClick={() => setCursor(new Date(new Date().getFullYear(), new Date().getMonth(), 1))}
@@ -139,7 +139,7 @@ export default function MediumCalendar<T>({
             className="size-7 cursor-pointer rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
             aria-label="Next month"
           >
-            <ChevronRight className="size-4" />
+            <CaretRightIcon className="size-4" />
           </button>
         </div>
       }

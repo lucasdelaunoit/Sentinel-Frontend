@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
-import { Check, Loader2, X, Zap } from "lucide-react";
+import { CheckIcon, CircleNotchIcon, LightningIcon, XIcon } from "@phosphor-icons/react";
 import TopBar from "@/components/layout/topbar/TopBar";
 import { Button } from "@/components/ui/button";
 import {
@@ -169,13 +169,13 @@ export default function Planning() {
 
             {mode === "view" ? (
               <Button size="lg" onClick={() => setMode("simulate")}>
-                <Zap className="size-3.5" />
+                <LightningIcon className="size-3.5" />
                 Start simulation
               </Button>
             ) : (
               <div className="flex items-center gap-2">
                 <Button size="lg" variant="secondary" onClick={discardSimulation} className="bg-background">
-                  <X className="size-3.5" />
+                  <XIcon className="size-3.5" />
                   Discard
                 </Button>
                 <Button
@@ -184,7 +184,7 @@ export default function Planning() {
                   disabled={simBlocks.length === 0 || !allBlocksValid || simulationStatus === "pending"}
                   className="bg-planned hover:bg-planned/90"
                 >
-                  <Check className="size-3.5" />
+                  <CheckIcon className="size-3.5" />
                   Save scenario
                   {simBlocks.length > 0 && (
                     <span className="flex size-[17px] items-center justify-center rounded-full bg-white/25 text-[9px] font-bold">
@@ -299,7 +299,7 @@ export default function Planning() {
               disabled={isApplying}
               className={cn("bg-planned hover:bg-planned/90 text-planned-foreground gap-1.5")}
             >
-              {isApplying ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+              {isApplying ? <CircleNotchIcon className="size-3.5 animate-spin" /> : <CheckIcon className="size-3.5" />}
               Save scenario
             </AlertDialogAction>
           </AlertDialogFooter>
