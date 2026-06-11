@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button.tsx";
 import { PlusIcon, UserPlusIcon } from "@phosphor-icons/react";
 import useGetProjectKnowledgeCoverage from "@/api/projects/useGetProjectKnowledgeCoverage.ts";
 import AddProjectSkillSheet from "@/components/specified/models/projects/sheets/AddProjectSkillSheet.tsx";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
+import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import SkillCoverageStatusBadge from "@/components/specified/models/skill/badges/SkillCoverageStatusBadge.tsx";
 
 const LEVEL_LABELS = ["", "Beginner", "Elementary", "Intermediate", "Advanced", "Expert"] as const;

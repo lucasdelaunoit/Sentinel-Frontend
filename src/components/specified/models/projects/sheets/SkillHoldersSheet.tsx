@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SearchBar from "@/components/common/inputs/SearchBar";
 import { TablePagination } from "@/components/common/table/TablePagination";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar";
+import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTablePagination } from "@/hooks/useTablePagination";
 import useGetSkillHolders from "@/api/projects/useGetSkillHolders";
@@ -85,8 +85,7 @@ export default function SkillHoldersSheet({ projectId, skill, open, onOpenChange
       description={
         skill ? (
           <>
-            Everyone on the team who holds{" "}
-            <span className="font-semibold text-foreground">{skill.name}</span>
+            Everyone on the team who holds <span className="font-semibold text-foreground">{skill.name}</span>
             {total > 0 ? ` · ${total} ${total === 1 ? "person" : "people"}` : ""}
           </>
         ) : undefined

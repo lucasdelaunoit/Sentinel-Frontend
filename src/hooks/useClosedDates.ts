@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import useGetWorkingDays from "@/api/organization/useGetWorkingDays";
-import useGetCompanyHolidays from "@/api/company-holidays/useGetCompanyHolidays";
+import useGetWorkingDays from "@/api/settings/organization/useGetWorkingDays";
+import useGetCompanyHolidays from "@/api/settings/companyHoliday/useGetCompanyHolidays";
 
 const FALLBACK_WORKING_DAYS = [1, 1, 1, 1, 1, 0, 0]; // ISO Mon=0 … Sun=6
 

@@ -9,9 +9,9 @@ import {
   LightbulbIcon,
   type Icon,
 } from "@phosphor-icons/react";
-import useGetUserRecommendations from "@/api/users/useGetUserRecommendations.ts";
-import useGetAbsencesForUser from "@/api/absences/useGetAbsencesForUser.ts";
-import useGetUserAbsenceStats from "@/api/absences/useGetUserAbsenceStats.ts";
+import useGetUserRecommendations from "@/api/user/useGetUserRecommendations.ts";
+import useGetAbsencesForUser from "@/api/absence/useGetAbsencesForUser.ts";
+import useGetUserAbsenceStats from "@/api/absence/useGetUserAbsenceStats.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import { SecondaryButton } from "@/components/common/buttons/SecondaryButton.tsx";

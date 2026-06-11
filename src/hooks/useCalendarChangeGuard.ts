@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import useCalendarImpactPreview, {
   type CalendarChangePayload,
   type CalendarImpactAffected,
-} from "@/api/calendar/useCalendarImpactPreview";
+} from "@/api/settings/calendar/useCalendarImpactPreview";
 
 type ApplyFn = (freezeAbsenceIds: number[]) => void;
 

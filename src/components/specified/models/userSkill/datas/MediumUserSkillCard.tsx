@@ -8,7 +8,7 @@ import SegmentedLevelBar from "@/components/common/bars/SegmentedLevelBar";
 import SkillCategoryBadge from "@/components/specified/models/skill/badges/SkillCategoryBadge.tsx";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
 import EditUserSkillLevelSheet from "@/components/specified/models/skill/sheets/EditUserSkillLevelSheet";
-import useDetachSkillFromUser from "@/api/users/useDetachSkillFromUser";
+import useDetachSkillFromUser from "@/api/user/useDetachSkillFromUser";
 import type { UserSkillDetail } from "@/types/dashboard";
 
 interface UserSkillCardProps {

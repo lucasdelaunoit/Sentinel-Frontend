@@ -3,6 +3,7 @@ import { ArrowLeft, Check, Lightbulb, Loader2, ShieldAlert, Trash2, Users } from
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SecondaryCard from "@/components/common/cards/SecondaryCard";
@@ -25,6 +26,8 @@ interface SimBlockDetailSheetProps {
   /** Persists this block as a real planned absence, with the chosen type and optional note. */
   onConfirm: (details: { type: AbsenceType; reason?: string }) => void;
   isConfirming?: boolean;
+  /** True while the parent is still computing the scenario simulation — impact body shows skeletons. */
+  isSimulating?: boolean;
 }
 
 const SEVERITY_MESSAGE: Record<Severity, string> = {
@@ -50,6 +53,7 @@ export default function SimBlockDetailSheet({
   onDelete,
   onConfirm,
   isConfirming = false,
+  isSimulating = false,
 }: SimBlockDetailSheetProps) {
   const color = simColor(block.colorIdx);
 
@@ -130,10 +134,14 @@ export default function SimBlockDetailSheet({
           <MetricRow label="From" value={formatHalfDate(block.startDate, block.startHalf)} />
           <MetricRow label="To" value={formatHalfDate(block.endDate, block.endHalf)} />
           <MetricRow label="Calendar span" value={blockDurationLabel(block)} />
-          <MetricRow
-            label="Working days off"
-            value={userImpact ? `${userImpact.days_off} day${userImpact.days_off === 1 ? "" : "s"}` : "—"}
-          />
+          {isSimulating ? (
+            <MetricRow.Skeleton />
+          ) : (
+            <MetricRow
+              label="Working days off"
+              value={userImpact ? `${userImpact.days_off} day${userImpact.days_off === 1 ? "" : "s"}` : "—"}
+            />
+          )}
         </MetricRow.List>
         <p className="text-[10px] opacity-60 leading-snug pb-1">Weekends &amp; holidays excluded from working days.</p>
       </div>
@@ -168,7 +176,9 @@ export default function SimBlockDetailSheet({
         </>
       )}
 
-      {step === "overview" && userImpact && (
+      {step === "overview" && isSimulating && <ImpactBodySkeleton />}
+
+      {step === "overview" && !isSimulating && userImpact && (
         <SecondaryCard
           before={<SeverityBadge severity={userImpact.severity} size="md" />}
           title={SEVERITY_MESSAGE[userImpact.severity]}
@@ -181,7 +191,7 @@ export default function SimBlockDetailSheet({
         />
       )}
 
-      {step === "overview" && skills.length > 0 && (
+      {step === "overview" && !isSimulating && skills.length > 0 && (
         <Section icon={ShieldAlert} title={`Impacted Skills (${skills.length})`}>
           <div className="space-y-2">
             {skills.map((s) => (
@@ -191,7 +201,7 @@ export default function SimBlockDetailSheet({
         </Section>
       )}
 
-      {step === "overview" && projects.length > 0 && (
+      {step === "overview" && !isSimulating && projects.length > 0 && (
         <Section title={`Project Impact (${projects.length})`}>
           <div className="space-y-2">
             {projects.map((p) => (
@@ -201,7 +211,7 @@ export default function SimBlockDetailSheet({
         </Section>
       )}
 
-      {step === "overview" && userImpact && userImpact.replacement_candidates.length > 0 && (
+      {step === "overview" && !isSimulating && userImpact && userImpact.replacement_candidates.length > 0 && (
         <Section icon={Users} title="Replacement candidates">
           <div className="space-y-1.5">
             {userImpact.replacement_candidates.map((c) => (
@@ -225,7 +235,7 @@ export default function SimBlockDetailSheet({
         </Section>
       )}
 
-      {step === "overview" && cascading.length > 0 && (
+      {step === "overview" && !isSimulating && cascading.length > 0 && (
         <Section icon={Lightbulb} title="Cascading risks">
           <div className="space-y-1.5">
             {cascading.map((c, i) => (
@@ -246,6 +256,29 @@ export default function SimBlockDetailSheet({
         </Section>
       )}
     </ComposedSheet>
+  );
+}
+
+/** Impact body placeholder shown while the scenario simulation is still computing. */
+function ImpactBodySkeleton() {
+  return (
+    <>
+      <div className="flex items-center gap-3 rounded-xl border bg-background p-3">
+        <Skeleton className="h-6 w-20 rounded-full" />
+        <Skeleton className="h-3.5 w-2/3" />
+      </div>
+
+      {Array.from({ length: 2 }).map((_, section) => (
+        <div key={section} className="space-y-2">
+          <Skeleton className="h-3 w-32" />
+          <div className="space-y-1.5">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Skeleton key={i} className="h-14 w-full rounded-xl" />
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
   );
 }
 

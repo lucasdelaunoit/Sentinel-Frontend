@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldDescription } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SelectorList from "@/components/common/inputs/SelectorList";
-import UserSelectorRow from "@/components/specified/models/employees/items/UserSelectorRow";
-import useGetUsers from "@/api/users/useGetUsers";
+import UserSelectorRow from "@/components/specified/models/user/items/UserSelectorRow";
+import useGetUsers from "@/api/user/useGetUsers";
 import useAttachUserToProject from "@/api/projects/useAttachUserToProject";
 
 interface AddProjectMembersSheetProps {
@@ -69,12 +69,7 @@ export default function AddProjectMembersSheet({ projectId, open, onOpenChange }
           <Button variant="outline" onClick={close} className="flex-1" disabled={attaching} size="lg">
             Cancel
           </Button>
-          <Button
-            onClick={submit}
-            disabled={picked === null || attaching}
-            className="flex-1"
-            size="lg"
-          >
+          <Button onClick={submit} disabled={picked === null || attaching} className="flex-1" size="lg">
             {attaching ? "Adding…" : "Add member"}
           </Button>
         </>

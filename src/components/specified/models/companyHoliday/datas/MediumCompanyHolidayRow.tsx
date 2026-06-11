@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils.ts";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
 import RecurringBadge from "@/components/specified/models/companyHoliday/badges/RecurringBadge.tsx";
 import CompanyHolidayAvatar from "@/components/specified/models/companyHoliday/avatars/CompanyHolidayAvatar.tsx";
-import useDeleteCompanyHoliday from "@/api/company-holidays/useDeleteCompanyHoliday.ts";
+import useDeleteCompanyHoliday from "@/api/settings/companyHoliday/useDeleteCompanyHoliday.ts";
 
 interface MediumCompanyHolidayRowProps {
   holiday: CompanyHoliday;
@@ -37,8 +37,12 @@ export default function MediumCompanyHolidayRow({
   const startFull = start.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const endFull = end.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   const dateLabel = holiday.recurring
-    ? (sameDay ? `${startMonthDay} (yearly)` : `${startMonthDay} → ${endMonthDay} (yearly)`)
-    : (sameDay ? startFull : `${startFull} → ${endFull}`);
+    ? sameDay
+      ? `${startMonthDay} (yearly)`
+      : `${startMonthDay} → ${endMonthDay} (yearly)`
+    : sameDay
+      ? startFull
+      : `${startFull} → ${endFull}`;
   const weekdayLabel = sameDay
     ? start.toLocaleDateString("en-US", { weekday: "short" })
     : `${start.toLocaleDateString("en-US", { weekday: "short" })} → ${end.toLocaleDateString("en-US", { weekday: "short" })}`;
@@ -68,7 +72,11 @@ export default function MediumCompanyHolidayRow({
               onOpenChange={setDeleteOpen}
               trigger={
                 <Button variant="destructive" size="sm" className="h-8 w-8 p-0" disabled={isDeleting}>
-                  {isDeleting ? <CircleNotchIcon className="animate-spin" weight="bold" /> : <Trash2 className="size-3.5" />}
+                  {isDeleting ? (
+                    <CircleNotchIcon className="animate-spin" weight="bold" />
+                  ) : (
+                    <Trash2 className="size-3.5" />
+                  )}
                 </Button>
               }
               title={`Delete holiday "${holiday.name}"?`}

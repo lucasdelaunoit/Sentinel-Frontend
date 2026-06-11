@@ -13,15 +13,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog";
-import useGetUsers from "@/api/users/useGetUsers";
+import useGetUsers from "@/api/user/useGetUsers";
 import { Skeleton } from "@/components/ui/skeleton";
 import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable";
 import { HighlightMatch } from "@/utils/useHighlightableText";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
-import UserStatusBadge from "@/components/specified/models/employees/badges/UserStatusBadge.tsx";
+import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
+import UserStatusBadge from "@/components/specified/models/user/badges/UserStatusBadge.tsx";
 import UsersStatCardsSection from "@/components/specified/pages/employees/UsersStatCardsSection.tsx";
 import { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
-import CreateUserSheet from "@/components/specified/models/employees/sheets/CreateUserSheet";
+import CreateUserSheet from "@/components/specified/models/user/sheets/CreateUserSheet";
 import type { UserListItem, UserSkillItem } from "@/types/dashboard";
 
 /* ─── Types ────────────────────────────────────────────────── */

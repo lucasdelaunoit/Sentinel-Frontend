@@ -17,7 +17,7 @@ import PlanningCapacityStrip from "./PlanningCapacityStrip";
 import PlanningLegend from "./PlanningLegend";
 import GanttHeader from "./GanttHeader";
 import GanttEmployeeRow from "./GanttEmployeeRow";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
+import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import { Skeleton } from "@/components/ui/skeleton";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import { Button } from "@/components/ui/button";

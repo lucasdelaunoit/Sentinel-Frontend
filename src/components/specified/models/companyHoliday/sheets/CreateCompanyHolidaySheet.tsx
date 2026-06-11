@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import useCreateCompanyHoliday from "@/api/company-holidays/useCreateCompanyHoliday";
+import useCreateCompanyHoliday from "@/api/settings/companyHoliday/useCreateCompanyHoliday";
 import CalendarImpactDialog from "@/components/specified/pages/settings/CalendarImpactDialog";
 import { useCalendarChangeGuard } from "@/hooks/useCalendarChangeGuard";
 
@@ -28,21 +28,14 @@ interface CreateCompanyHolidaySheetProps {
   defaultDate?: string;
 }
 
-export default function CreateCompanyHolidaySheet({
-  open,
-  onOpenChange,
-  defaultDate,
-}: CreateCompanyHolidaySheetProps) {
+export default function CreateCompanyHolidaySheet({ open, onOpenChange, defaultDate }: CreateCompanyHolidaySheetProps) {
   const schema = yup.object({
     name: yup
       .string()
       .required("Name is required.")
       .min(2, "Name must be at least 2 characters.")
       .max(MAX_NAME_LENGTH, `Name must be ${MAX_NAME_LENGTH} characters or fewer.`),
-    start_date: yup
-      .string()
-      .required("Start date is required.")
-      .matches(DATE_RE, "Date must be YYYY-MM-DD."),
+    start_date: yup.string().required("Start date is required.").matches(DATE_RE, "Date must be YYYY-MM-DD."),
     end_date: yup
       .string()
       .required("End date is required.")
@@ -101,122 +94,122 @@ export default function CreateCompanyHolidaySheet({
 
   return (
     <>
-    <ComposedSheet
-      open={open}
-      onOpenChange={(v) => {
-        if (!v) handleClose();
-      }}
-      title="Add Holiday"
-      description="Block a single day or a multi-day period in the company calendar."
-      icon={<CalendarDays className="size-4 text-primary" />}
-      footer={
-        <>
-          <Button variant="outline" onClick={handleClose} className="flex-1" disabled={isPending} size="lg">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit(onSubmit)}
-            disabled={!isDirty || !isValid || isPending || guard.isChecking}
-            className="flex-1"
-            size="lg"
-          >
-            {isPending ? "Adding…" : guard.isChecking ? "Checking…" : "Create the holiday"}
-          </Button>
-        </>
-      }
-    >
-      <div className="space-y-4">
-        <Controller
-          name="name"
-          control={control}
-          render={({ field }) => (
-            <Field>
-              <FieldLabel>
-                Holiday Name <span className="text-destructive-foreground">*</span>
-              </FieldLabel>
-              <Input
-                {...field}
-                placeholder="e.g. Easter Monday, Summer Shutdown"
-                autoFocus
-                autoComplete="off"
-                maxLength={MAX_NAME_LENGTH + 1}
-                aria-invalid={!!errors.name}
-                onChange={(e) => field.onChange(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSubmit(onSubmit)()}
-              />
-              {errors.name ? (
-                <FieldError>{errors.name.message}</FieldError>
-              ) : (
-                <FieldDescription>Displayed in the holidays list and leave calendar</FieldDescription>
-              )}
-            </Field>
-          )}
-        />
-
-        <div className="grid grid-cols-2 gap-3">
+      <ComposedSheet
+        open={open}
+        onOpenChange={(v) => {
+          if (!v) handleClose();
+        }}
+        title="Add Holiday"
+        description="Block a single day or a multi-day period in the company calendar."
+        icon={<CalendarDays className="size-4 text-primary" />}
+        footer={
+          <>
+            <Button variant="outline" onClick={handleClose} className="flex-1" disabled={isPending} size="lg">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmit(onSubmit)}
+              disabled={!isDirty || !isValid || isPending || guard.isChecking}
+              className="flex-1"
+              size="lg"
+            >
+              {isPending ? "Adding…" : guard.isChecking ? "Checking…" : "Create the holiday"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
           <Controller
-            name="start_date"
+            name="name"
             control={control}
             render={({ field }) => (
               <Field>
                 <FieldLabel>
-                  Start <span className="text-destructive-foreground">*</span>
+                  Holiday Name <span className="text-destructive-foreground">*</span>
                 </FieldLabel>
                 <Input
-                  type="date"
-                  value={field.value}
+                  {...field}
+                  placeholder="e.g. Easter Monday, Summer Shutdown"
+                  autoFocus
+                  autoComplete="off"
+                  maxLength={MAX_NAME_LENGTH + 1}
+                  aria-invalid={!!errors.name}
                   onChange={(e) => field.onChange(e.target.value)}
-                  aria-invalid={!!errors.start_date}
+                  onKeyDown={(e) => e.key === "Enter" && handleSubmit(onSubmit)()}
                 />
-                {errors.start_date && <FieldError>{errors.start_date.message}</FieldError>}
+                {errors.name ? (
+                  <FieldError>{errors.name.message}</FieldError>
+                ) : (
+                  <FieldDescription>Displayed in the holidays list and leave calendar</FieldDescription>
+                )}
               </Field>
             )}
           />
+
+          <div className="grid grid-cols-2 gap-3">
+            <Controller
+              name="start_date"
+              control={control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>
+                    Start <span className="text-destructive-foreground">*</span>
+                  </FieldLabel>
+                  <Input
+                    type="date"
+                    value={field.value}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    aria-invalid={!!errors.start_date}
+                  />
+                  {errors.start_date && <FieldError>{errors.start_date.message}</FieldError>}
+                </Field>
+              )}
+            />
+            <Controller
+              name="end_date"
+              control={control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>
+                    End <span className="text-destructive-foreground">*</span>
+                  </FieldLabel>
+                  <Input
+                    type="date"
+                    value={field.value}
+                    min={startWatch || undefined}
+                    onChange={(e) => field.onChange(e.target.value)}
+                    aria-invalid={!!errors.end_date}
+                  />
+                  {errors.end_date && <FieldError>{errors.end_date.message}</FieldError>}
+                </Field>
+              )}
+            />
+          </div>
+          <FieldDescription>For a single-day holiday, leave start and end on the same date.</FieldDescription>
+
           <Controller
-            name="end_date"
+            name="recurring"
             control={control}
             render={({ field }) => (
-              <Field>
-                <FieldLabel>
-                  End <span className="text-destructive-foreground">*</span>
-                </FieldLabel>
-                <Input
-                  type="date"
-                  value={field.value}
-                  min={startWatch || undefined}
-                  onChange={(e) => field.onChange(e.target.value)}
-                  aria-invalid={!!errors.end_date}
+              <Field orientation="horizontal">
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={(v) => field.onChange(v === true)}
+                  id="recurring-checkbox"
                 />
-                {errors.end_date && <FieldError>{errors.end_date.message}</FieldError>}
+                <FieldLabel htmlFor="recurring-checkbox" className="font-normal cursor-pointer">
+                  Recurring yearly
+                  <FieldDescription className="mt-0.5">
+                    Repeats on the same month/day range every year.
+                  </FieldDescription>
+                </FieldLabel>
               </Field>
             )}
           />
         </div>
-        <FieldDescription>For a single-day holiday, leave start and end on the same date.</FieldDescription>
+      </ComposedSheet>
 
-        <Controller
-          name="recurring"
-          control={control}
-          render={({ field }) => (
-            <Field orientation="horizontal">
-              <Checkbox
-                checked={field.value}
-                onCheckedChange={(v) => field.onChange(v === true)}
-                id="recurring-checkbox"
-              />
-              <FieldLabel htmlFor="recurring-checkbox" className="font-normal cursor-pointer">
-                Recurring yearly
-                <FieldDescription className="mt-0.5">
-                  Repeats on the same month/day range every year.
-                </FieldDescription>
-              </FieldLabel>
-            </Field>
-          )}
-        />
-      </div>
-    </ComposedSheet>
-
-    <CalendarImpactDialog {...guard.dialog} isApplying={isPending} />
+      <CalendarImpactDialog {...guard.dialog} isApplying={isPending} />
     </>
   );
 }

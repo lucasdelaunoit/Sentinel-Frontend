@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import useCreateSkillCategory from "@/api/skill-categories/useCreateSkillCategory";
+import useCreateSkillCategory from "@/api/skillCategory/useCreateSkillCategory";
 import SkillCategoryBadge from "@/components/specified/models/skill/badges/SkillCategoryBadge.tsx";
 
 const MAX_NAME_LENGTH = 32;

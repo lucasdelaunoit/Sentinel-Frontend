@@ -6,7 +6,7 @@ import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SkillCategoryBadge from "@/components/specified/models/skill/badges/SkillCategoryBadge.tsx";
 import SkillLevelPicker from "@/components/specified/models/skill/items/SkillLevelPicker";
-import useUpdateUserSkillLevel from "@/api/users/useUpdateUserSkillLevel";
+import useUpdateUserSkillLevel from "@/api/user/useUpdateUserSkillLevel";
 import type { UserSkillDetail } from "@/types/dashboard";
 
 interface EditUserSkillLevelSheetProps {

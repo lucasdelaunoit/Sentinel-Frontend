@@ -15,7 +15,7 @@ import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
 import DataDisplay from "@/components/common/data/DataDisplay";
 import LifecycleBadge from "@/components/specified/models/absence/badges/LifecycleBadge";
-import useDeleteAbsence from "@/api/absences/useDeleteAbsence.ts";
+import useDeleteAbsence from "@/api/absence/useDeleteAbsence.ts";
 import { dateRelativeLabel } from "@/utils/absence/lifecycle";
 import { halfRangeDuration, ABSENCE_HALF_LABEL } from "@/utils/absence/halfDay";
 import { classifyAbsenceLifecycle, formatDate } from "@/utils/formatters/date";
@@ -70,7 +70,13 @@ export default function AbsenceDetailSheet({ absence, open, onOpenChange, userId
       title="Absence details"
       description="Timing, type and notes at a glance."
       footer={
-        <Button variant="destructive" onClick={() => setDeleteOpen(true)} disabled={isDeleting} className="flex-1 gap-1.5" size="lg">
+        <Button
+          variant="destructive"
+          onClick={() => setDeleteOpen(true)}
+          disabled={isDeleting}
+          className="flex-1 gap-1.5"
+          size="lg"
+        >
           {isDeleting ? <CircleNotchIcon className="animate-spin" weight="bold" /> : <TrashIcon weight="bold" />}
           Delete absence
         </Button>

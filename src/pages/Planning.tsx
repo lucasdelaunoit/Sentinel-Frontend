@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 import useGetPlanning from "@/api/planning/useGetPlanning";
 import useSimulatePlanning from "@/api/planning/useSimulatePlanning";
 import useApplyPlanningSimulation from "@/api/planning/useApplyPlanningSimulation";
-import useGetAbsencesForUser from "@/api/absences/useGetAbsencesForUser";
+import useGetAbsencesForUser from "@/api/absence/useGetAbsencesForUser";
 import AbsenceDetailSheet from "@/components/specified/models/absence/sheets/AbsenceDetailSheet";
 import PlanningGantt from "@/components/specified/pages/planning/PlanningGantt";
 import PlanningImpactSection from "@/components/specified/pages/planning/PlanningImpactSection";
@@ -258,6 +258,7 @@ export default function Planning() {
           onDelete={() => removeBlock(selectedBlock.id)}
           onConfirm={(details) => confirmBlock(selectedBlock, details)}
           isConfirming={isApplying}
+          isSimulating={simulationIsLoading}
         />
       )}
 

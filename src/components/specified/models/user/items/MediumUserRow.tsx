@@ -1,6 +1,6 @@
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
-import UserStatusBadge from "@/components/specified/models/employees/badges/UserStatusBadge.tsx";
+import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
+import UserStatusBadge from "@/components/specified/models/user/badges/UserStatusBadge.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { getFullName } from "@/utils/formatters/persons.ts";
 

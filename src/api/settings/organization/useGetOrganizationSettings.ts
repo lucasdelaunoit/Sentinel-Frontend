@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import usePrivateApi from "@/api/privateApi";
+import usePrivateApi from "@/api/privateApi.ts";
 
 export default function useGetOrganizationSettings() {
   const privateApi = usePrivateApi();

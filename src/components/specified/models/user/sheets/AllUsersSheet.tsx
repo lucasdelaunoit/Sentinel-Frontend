@@ -8,8 +8,8 @@ import DataPagination from "@/components/common/pagination/DataPagination.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import { useTablePagination } from "@/hooks/useTablePagination.ts";
 import { cn } from "@/lib/utils.ts";
-import useGetUsers from "@/api/users/useGetUsers.ts";
-import MediumUserRow from "@/components/specified/models/users/datas/items/MediumUserRow.tsx";
+import useGetUsers from "@/api/user/useGetUsers.ts";
+import MediumUserRow from "@/components/specified/models/user/items/MediumUserRow.tsx";
 
 type SheetFilter = "all" | UserStatus;
 

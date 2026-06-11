@@ -1,8 +1,8 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import SelectorRow from "@/components/common/inputs/SelectorRow";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar";
-import { HighlightMatch } from "@/utils/useHighlightableText";
-import { getFullName } from "@/utils/formatters/persons";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import SelectorRow from "@/components/common/inputs/SelectorRow.tsx";
+import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
+import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
+import { getFullName } from "@/utils/formatters/persons.ts";
 
 interface UserSelectorRowProps {
   user: User;

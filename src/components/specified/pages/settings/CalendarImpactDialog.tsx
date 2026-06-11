@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { CalendarImpactAffected } from "@/api/calendar/useCalendarImpactPreview";
+import type { CalendarImpactAffected } from "@/api/settings/calendar/useCalendarImpactPreview";
 
 type Decision = "recount" | "keep";
 

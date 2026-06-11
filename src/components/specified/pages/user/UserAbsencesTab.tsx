@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CalendarBlankIcon, SunHorizonIcon, ClockCountdownIcon, PlusIcon } from "@phosphor-icons/react";
-import useGetAbsencesForUser from "@/api/absences/useGetAbsencesForUser.ts";
-import useGetUserAbsenceStats from "@/api/absences/useGetUserAbsenceStats.ts";
+import useGetAbsencesForUser from "@/api/absence/useGetAbsencesForUser.ts";
+import useGetUserAbsenceStats from "@/api/absence/useGetUserAbsenceStats.ts";
 import { Button } from "@/components/ui/button.tsx";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import StatCard from "@/components/common/cards/StatCard.tsx";
@@ -54,12 +54,21 @@ export default function UserAbsencesTab({ userId }: UserAbsencesTabProps) {
           {isStatsLoading || !stats ? (
             <>
               <StatCard.Skeleton title="Total absences" icon={CalendarBlankIcon} className="flex-1" />
-              <StatCard.Skeleton title={`Days off — ${new Date().getFullYear()}`} icon={SunHorizonIcon} className="flex-1" />
+              <StatCard.Skeleton
+                title={`Days off — ${new Date().getFullYear()}`}
+                icon={SunHorizonIcon}
+                className="flex-1"
+              />
               <StatCard.Skeleton title="Upcoming" icon={ClockCountdownIcon} className="flex-1" />
             </>
           ) : (
             <>
-              <StatCard title="Total absences" icon={CalendarBlankIcon} card={stats.total_absences} className="flex-1" />
+              <StatCard
+                title="Total absences"
+                icon={CalendarBlankIcon}
+                card={stats.total_absences}
+                className="flex-1"
+              />
               <StatCard
                 title={`Days off — ${new Date().getFullYear()}`}
                 icon={SunHorizonIcon}

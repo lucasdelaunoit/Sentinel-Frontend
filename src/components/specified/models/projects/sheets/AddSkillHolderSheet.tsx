@@ -9,9 +9,9 @@ import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SelectorList from "@/components/common/inputs/SelectorList";
 import SelectorRow from "@/components/common/inputs/SelectorRow";
 import SkillLevelPicker from "@/components/specified/models/skill/items/SkillLevelPicker";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar";
+import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar";
 import useGetProjectUsers from "@/api/projects/useGetProjectUsers";
-import useAttachSkillToUser from "@/api/users/useAttachSkillToUser";
+import useAttachSkillToUser from "@/api/user/useAttachSkillToUser";
 import { HighlightMatch } from "@/utils/useHighlightableText";
 import { getFullName } from "@/utils/formatters/persons";
 

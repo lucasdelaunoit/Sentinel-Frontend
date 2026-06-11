@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import useGetOrganizationSettings from "@/api/organization/useGetOrganizationSettings";
-import useUpdateOrganizationSettings from "@/api/organization/useUpdateOrganizationSettings";
+import useGetOrganizationSettings from "@/api/settings/organization/useGetOrganizationSettings";
+import useUpdateOrganizationSettings from "@/api/settings/organization/useUpdateOrganizationSettings";
 import RulesSettingsTab from "../organizationTab/RulesSettingsTab";
 import SectionSaveButton from "../organizationTab/SectionSaveButton";
 import type { OrgFormFields } from "../organizationTab/types";

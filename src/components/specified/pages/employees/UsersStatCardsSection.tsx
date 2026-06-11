@@ -1,5 +1,5 @@
 import StatCard from "@/components/common/cards/StatCard";
-import useGetUsersStats from "@/api/users/useGetUsersStats.ts";
+import useGetUsersStats from "@/api/user/useGetUsersStats.ts";
 import { CalendarCheckIcon, ShieldWarningIcon, UserCircleIcon, UsersIcon } from "@phosphor-icons/react";
 
 export default function UsersStatCardsSection() {

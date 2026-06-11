@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import DataPagination from "@/components/common/pagination/DataPagination";
 import ComposedCard from "@/components/common/cards/ComposedCard";
 import useGetSkillCategories from "@/hooks/useGetSkillCategories";
-import useGetSkills from "@/api/skills/useGetSkills.ts";
+import useGetSkills from "@/api/skill/useGetSkills.ts";
 import { SecondaryButton } from "@/components/common/buttons/SecondaryButton.tsx";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import MediumSkillCard from "@/components/specified/models/skill/datas/MediumSkillCard.tsx";
@@ -26,7 +26,11 @@ export default function SkillsTab() {
   const [catSheetOpen, setCatSheetOpen] = useState(false);
 
   const { data: categoriesData, isLoading: catLoading } = useGetSkillCategories();
-  const { data: list, lastPage: totalPages, isLoading: skillsLoading } = useGetSkills({
+  const {
+    data: list,
+    lastPage: totalPages,
+    isLoading: skillsLoading,
+  } = useGetSkills({
     page,
     per_page: ITEMS_PER_PAGE,
     search: search || undefined,

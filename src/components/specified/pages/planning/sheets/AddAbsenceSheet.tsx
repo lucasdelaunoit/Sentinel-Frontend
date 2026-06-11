@@ -4,14 +4,9 @@ import { Button } from "@/components/ui/button";
 import DatePicker from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
+import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import { useClosedDates } from "@/hooks/useClosedDates";
-import {
-  getDayOfWeekForDay,
-  getDaysInMonth,
-  getFirstDayOfWeek,
-  makeDateStr,
-} from "@/utils/planning/calendar";
+import { getDayOfWeekForDay, getDaysInMonth, getFirstDayOfWeek, makeDateStr } from "@/utils/planning/calendar";
 
 interface AddAbsenceSheetProps {
   users: PlanningUser[];
@@ -22,14 +17,7 @@ interface AddAbsenceSheetProps {
   onAdd: (empId: string, startDate: string, startHalf: Half, endDate: string, endHalf: Half) => void;
 }
 
-export default function AddAbsenceSheet({
-  users,
-  viewYear,
-  viewMonth,
-  open,
-  onClose,
-  onAdd,
-}: AddAbsenceSheetProps) {
+export default function AddAbsenceSheet({ users, viewYear, viewMonth, open, onClose, onAdd }: AddAbsenceSheetProps) {
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
   const { isClosedDate } = useClosedDates();
   const viewMonthDate = new Date(viewYear, viewMonth - 1, 1);
@@ -67,9 +55,8 @@ export default function AddAbsenceSheet({
   const durationLabel = useMemo(() => {
     if (!isValid) return "Invalid range";
     const days =
-      Math.round(
-        (new Date(endDate + "T12:00:00").getTime() - new Date(startDate + "T12:00:00").getTime()) / 86400000,
-      ) + 1;
+      Math.round((new Date(endDate + "T12:00:00").getTime() - new Date(startDate + "T12:00:00").getTime()) / 86400000) +
+      1;
     const halves = days * 2 - startHalf - (1 - endHalf);
     if (halves <= 0) return "Invalid range";
     if (halves === 1) return "½ day";
@@ -97,11 +84,7 @@ export default function AddAbsenceSheet({
           <Button variant="outline" onClick={onClose} className="flex-1 rounded-xl h-9 text-[12px]">
             Cancel
           </Button>
-          <Button
-            onClick={handleAdd}
-            disabled={!isValid}
-            className="flex-1 rounded-xl h-9 text-[12px] gap-1.5"
-          >
+          <Button onClick={handleAdd} disabled={!isValid} className="flex-1 rounded-xl h-9 text-[12px] gap-1.5">
             <Plus className="size-3.5" /> Add block
           </Button>
         </>

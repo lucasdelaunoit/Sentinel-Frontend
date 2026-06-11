@@ -3,16 +3,16 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { UserPlusIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
-import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import SkillsPicker from "@/components/specified/models/skill/form/SkillsPicker";
-import DepartmentPicker from "@/components/specified/models/department/form/DepartmentPicker";
-import useGetDepartments from "@/api/departments/useGetDepartments";
-import useGetSkills from "@/api/skills/useGetSkills";
-import useCreateUser from "@/api/users/useCreateUser";
-import useAttachSkillToUser from "@/api/users/useAttachSkillToUser";
+import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field.tsx";
+import ComposedSheet from "@/components/common/sheets/ComposedSheet.tsx";
+import SkillsPicker from "@/components/specified/models/skill/form/SkillsPicker.tsx";
+import DepartmentPicker from "@/components/specified/models/department/form/DepartmentPicker.tsx";
+import useGetDepartments from "@/api/department/useGetDepartments.ts";
+import useGetSkills from "@/api/skill/useGetSkills.ts";
+import useCreateUser from "@/api/user/useCreateUser.ts";
+import useAttachSkillToUser from "@/api/user/useAttachSkillToUser.ts";
 
 const MAX_NAME = 80;
 const MAX_EMAIL = 180;
@@ -156,9 +156,7 @@ export default function CreateUserSheet({ open, onOpenChange }: CreateUserSheetP
       const created = await createUser(payload);
       if (v.skills.length > 0 && created?.id != null) {
         await Promise.all(
-          v.skills.map((s) =>
-            attachSkillToUser({ userId: created.id, skillId: s.skill_id, level: s.level }),
-          ),
+          v.skills.map((s) => attachSkillToUser({ userId: created.id, skillId: s.skill_id, level: s.level })),
         );
       }
       handleClose();

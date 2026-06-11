@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card.tsx";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
+import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Mail, Phone, CalendarDays } from "lucide-react";
 import { PencilSimpleIcon, BuildingsIcon } from "@phosphor-icons/react";
-import UserStatusBadge from "@/components/specified/models/employees/badges/UserStatusBadge.tsx";
+import UserStatusBadge from "@/components/specified/models/user/badges/UserStatusBadge.tsx";
 import DataDisplay from "@/components/common/data/DataDisplay.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import EditUserSheet from "@/components/specified/models/employees/sheets/EditUserSheet.tsx";
+import EditUserSheet from "@/components/specified/models/user/sheets/EditUserSheet.tsx";
 
 interface UserProfileCardProps {
   user: User | undefined;

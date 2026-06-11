@@ -8,7 +8,7 @@ import SelectorList from "@/components/common/inputs/SelectorList";
 import ComposedSelect from "@/components/common/inputs/ComposedSelect";
 import SkillSelectorRow from "@/components/specified/models/skill/items/SkillSelectorRow";
 import SkillLevelPicker from "@/components/specified/models/skill/items/SkillLevelPicker";
-import useGetSkills from "@/api/skills/useGetSkills";
+import useGetSkills from "@/api/skill/useGetSkills";
 import useGetSkillCategories from "@/hooks/useGetSkillCategories";
 import useAddProjectSkillRequirement from "@/api/projects/useAddProjectSkillRequirement";
 

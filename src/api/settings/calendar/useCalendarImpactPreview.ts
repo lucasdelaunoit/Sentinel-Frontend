@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import usePrivateApi from "@/api/privateApi";
+import usePrivateApi from "@/api/privateApi.ts";
 
 /** A future absence whose working-day count would change under a pending calendar change. */
 export interface CalendarImpactAffected {

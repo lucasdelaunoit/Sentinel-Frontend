@@ -4,8 +4,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { CalendarBlankIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import useCreateAbsence from "@/api/absences/useCreateAbsence";
-import useGetAbsencesForUser from "@/api/absences/useGetAbsencesForUser.ts";
+import useCreateAbsence from "@/api/absence/useCreateAbsence";
+import useGetAbsencesForUser from "@/api/absence/useGetAbsencesForUser.ts";
 import { findOverlappingAbsence, formatHalfRange } from "@/utils/absence/halfDay.ts";
 import AbsenceFormFields from "@/components/specified/models/absence/sheets/AbsenceFormFields.tsx";
 import {

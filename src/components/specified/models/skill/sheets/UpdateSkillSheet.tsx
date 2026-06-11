@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SkillCategoryBadge from "@/components/specified/models/skill/badges/SkillCategoryBadge.tsx";
-import useUpdateSkill from "@/api/skills/useUpdateSkill";
+import useUpdateSkill from "@/api/skill/useUpdateSkill";
 import { cn } from "@/lib/utils";
 
 const MAX_NAME_LENGTH = 48;

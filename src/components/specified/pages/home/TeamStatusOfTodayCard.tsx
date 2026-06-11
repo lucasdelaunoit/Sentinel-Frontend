@@ -6,10 +6,10 @@ import PercentDonut from "@/components/common/charts/PercentDonut.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 
-import useGetUsers from "@/api/users/useGetUsers.ts";
-import useGetUsersCapacity from "@/api/users/useGetUsersCapacity.ts";
-import AllUsersSheet from "@/components/specified/models/users/sheets/AllUsersSheet.tsx";
-import MediumUserRow from "@/components/specified/models/users/datas/items/MediumUserRow.tsx";
+import useGetUsers from "@/api/user/useGetUsers.ts";
+import useGetUsersCapacity from "@/api/user/useGetUsersCapacity.ts";
+import AllUsersSheet from "@/components/specified/models/user/sheets/AllUsersSheet.tsx";
+import MediumUserRow from "@/components/specified/models/user/items/MediumUserRow.tsx";
 
 const PREVIEW_COUNT = 5;
 

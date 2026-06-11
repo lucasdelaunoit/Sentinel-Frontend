@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import DataPagination from "@/components/common/pagination/DataPagination";
 import ComposedCard from "@/components/common/cards/ComposedCard";
-import useGetDepartments from "@/api/departments/useGetDepartments";
+import useGetDepartments from "@/api/department/useGetDepartments";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import MediumDepartmentCard from "@/components/specified/models/department/datas/MediumDepartmentCard.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";

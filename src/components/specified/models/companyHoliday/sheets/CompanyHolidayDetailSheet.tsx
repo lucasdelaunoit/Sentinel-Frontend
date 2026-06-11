@@ -8,7 +8,7 @@ import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog
 import DataDisplay from "@/components/common/data/DataDisplay";
 import RecurringBadge from "@/components/specified/models/companyHoliday/badges/RecurringBadge";
 import CompanyHolidayAvatar from "@/components/specified/models/companyHoliday/avatars/CompanyHolidayAvatar";
-import useDeleteCompanyHoliday from "@/api/company-holidays/useDeleteCompanyHoliday";
+import useDeleteCompanyHoliday from "@/api/settings/companyHoliday/useDeleteCompanyHoliday";
 import { formatDate } from "@/utils/formatters/date";
 
 interface CompanyHolidayDetailSheetProps {

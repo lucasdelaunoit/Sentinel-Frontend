@@ -13,7 +13,7 @@ import {
 } from "@/utils/planning/calendar";
 import { getViewLeaves } from "@/utils/planning/leaves";
 import { absenceTheme, simColor } from "@/utils/planning/theme";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
+import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import { CaretLeftIcon, CaretRightIcon, ShieldWarningIcon, WarningIcon } from "@phosphor-icons/react";
 import { GripVertical } from "lucide-react";
 import type { DragMode, DragState, DrawState } from "@/hooks/useGanttGestures";
@@ -190,9 +190,7 @@ export default function GanttEmployeeRow({
                   top: 10,
                   height: 34,
                   // Opaque so the locked-past hatch can't show through greyed leaves.
-                  ...(simulating
-                    ? { background: "color-mix(in srgb, var(--muted-foreground) 15%, var(--card))" }
-                    : {}),
+                  ...(simulating ? { background: "color-mix(in srgb, var(--muted-foreground) 15%, var(--card))" } : {}),
                 }}
                 onMouseDown={simulating ? undefined : (e) => e.stopPropagation()}
                 onClick={simulating ? undefined : () => onSelectAbsence(emp.id, lr.id)}

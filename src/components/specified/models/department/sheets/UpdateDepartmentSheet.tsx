@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import useUpdateDepartment from "@/api/departments/useUpdateDepartment";
+import useUpdateDepartment from "@/api/department/useUpdateDepartment";
 
 const MAX_NAME_LENGTH = 64;
 

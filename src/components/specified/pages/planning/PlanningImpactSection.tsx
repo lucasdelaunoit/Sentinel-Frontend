@@ -7,7 +7,7 @@ import SecondaryCard from "@/components/common/cards/SecondaryCard";
 import Feedback from "@/components/common/feedbacks/Feedback";
 import { blockDurationLabel, formatHalfDate } from "@/utils/planning/calendar";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
-import UserAvatar from "@/components/specified/models/employees/avatars/UserAvatar.tsx";
+import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import ProjectsImpactCard from "@/components/specified/pages/planning/impact/ProjectsImpactCard.tsx";
 import SkillImpactCard from "@/components/specified/pages/planning/impact/SkillImpactCard.tsx";
 import HotspotsImpactCard from "@/components/specified/pages/planning/impact/HotspotsImpactCard.tsx";
@@ -75,7 +75,11 @@ export default function PlanningImpactSection({
                     before={
                       <div className="flex items-center gap-2">
                         <div className="size-2 rounded-full shrink-0 bg-planned" />
-                        <UserAvatar firstname={user?.firstname ?? ""} lastname={user?.lastname ?? ""} variant={user?.status} />
+                        <UserAvatar
+                          firstname={user?.firstname ?? ""}
+                          lastname={user?.lastname ?? ""}
+                          variant={user?.status}
+                        />
                       </div>
                     }
                     title={user ? `${user.firstname} ${user.lastname}` : "Unknown"}
@@ -102,7 +106,12 @@ export default function PlanningImpactSection({
               })}
             </div>
           ) : (
-            <Feedback variant="info" title="No absences simulated" description="Add employees above to begin." className="py-6" />
+            <Feedback
+              variant="info"
+              title="No absences simulated"
+              description="Add employees above to begin."
+              className="py-6"
+            />
           )}
         </div>
       </ComposedCard>

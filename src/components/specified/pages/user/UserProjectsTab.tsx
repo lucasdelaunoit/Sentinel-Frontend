@@ -10,7 +10,7 @@ import DataTable, { type DataTableColumn } from "@/components/common/table/DataT
 import type { FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import ProjectStatusBadge from "@/components/specified/models/projects/badges/ProjectStatusBadge.tsx";
 import AddUserProjectsSheet from "@/components/specified/models/projects/sheets/AddUserProjectsSheet";
-import useGetUserProjects from "@/api/users/useGetUserProjects";
+import useGetUserProjects from "@/api/user/useGetUserProjects";
 import { formatDate } from "@/utils/formatters/date.ts";
 
 type ProjectSortField = "name" | "risk_score" | "team_availability" | "knowledge_coverage" | "created_at";

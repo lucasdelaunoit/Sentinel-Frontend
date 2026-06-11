@@ -10,9 +10,9 @@ import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SelectorList from "@/components/common/inputs/SelectorList";
 import SkillsPicker from "@/components/specified/models/skill/form/SkillsPicker";
-import UserSelectorRow from "@/components/specified/models/employees/items/UserSelectorRow";
-import useGetUsers from "@/api/users/useGetUsers";
-import useGetSkills from "@/api/skills/useGetSkills";
+import UserSelectorRow from "@/components/specified/models/user/items/UserSelectorRow";
+import useGetUsers from "@/api/user/useGetUsers";
+import useGetSkills from "@/api/skill/useGetSkills";
 import useCreateProject from "@/api/projects/useCreateProject";
 import { getFullName, getInitials } from "@/utils/formatters/persons";
 

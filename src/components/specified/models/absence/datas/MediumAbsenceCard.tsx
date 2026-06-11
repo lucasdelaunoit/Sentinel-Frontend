@@ -7,7 +7,7 @@ import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
 import AbsenceDetailSheet from "@/components/specified/models/absence/sheets/AbsenceDetailSheet.tsx";
 import EditAbsenceSheet from "@/components/specified/models/absence/sheets/EditAbsenceSheet.tsx";
-import useDeleteAbsence from "@/api/absences/useDeleteAbsence.ts";
+import useDeleteAbsence from "@/api/absence/useDeleteAbsence.ts";
 import { dateRelativeLabel, fmtDate } from "@/utils/absence/lifecycle.ts";
 import { halfRangeDuration, ABSENCE_HALF_SHORT } from "@/utils/absence/halfDay.ts";
 import DurationBadge from "@/components/specified/models/absence/badges/DurationBadge.tsx";

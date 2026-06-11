@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import useGetOrganizationSettings from "@/api/organization/useGetOrganizationSettings";
-import useUpdateOrganizationSettings from "@/api/organization/useUpdateOrganizationSettings";
+import useGetOrganizationSettings from "@/api/settings/organization/useGetOrganizationSettings";
+import useUpdateOrganizationSettings from "@/api/settings/organization/useUpdateOrganizationSettings";
 import OrganizationIdentitySettingsTab from "./organizationTab/OrganizationIdentitySettingsTab";
 import RiskWeightsSettingsTab from "./organizationTab/RiskWeightsSettingsTab";
 import SectionSaveButton from "./organizationTab/SectionSaveButton";

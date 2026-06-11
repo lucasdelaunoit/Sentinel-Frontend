@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
 import UpdateSkillSheet from "@/components/specified/models/skill/sheets/UpdateSkillSheet.tsx";
 import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
-import useDeleteSkill from "@/api/skills/useDeleteSkill.ts";
+import useDeleteSkill from "@/api/skill/useDeleteSkill.ts";
 import useGetSkillCategories from "@/hooks/useGetSkillCategories";
 
 interface MediumSkillCardProps {

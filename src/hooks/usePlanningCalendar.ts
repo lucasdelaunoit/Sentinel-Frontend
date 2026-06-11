@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import useGetWorkingDays from "@/api/organization/useGetWorkingDays";
-import useGetCompanyHolidaysForMonth from "@/api/company-holidays/useGetCompanyHolidaysForMonth";
+import useGetWorkingDays from "@/api/settings/organization/useGetWorkingDays";
+import useGetCompanyHolidaysForMonth from "@/api/settings/companyHoliday/useGetCompanyHolidaysForMonth";
 import { getDayOfWeekForDay, getDaysInMonth, getFirstDayOfWeek } from "@/utils/planning/calendar";
 
 export interface PlanningHoliday {

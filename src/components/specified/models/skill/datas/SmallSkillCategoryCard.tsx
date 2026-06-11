@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
-import useDeleteSkillCategory from "@/api/skill-categories/useDeleteSkillCategory.ts";
-import useUpdateSkillCategory from "@/api/skill-categories/useUpdateSkillCategory.ts";
+import useDeleteSkillCategory from "@/api/skillCategory/useDeleteSkillCategory.ts";
+import useUpdateSkillCategory from "@/api/skillCategory/useUpdateSkillCategory.ts";
 
 interface SmallSkillCategoryCardProps {
   category: SkillCategory;

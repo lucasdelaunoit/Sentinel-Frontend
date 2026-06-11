@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
 import UpdateDepartmentSheet from "@/components/specified/models/department/sheets/UpdateDepartmentSheet.tsx";
 import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
-import useDeleteDepartment from "@/api/departments/useDeleteDepartment.ts";
+import useDeleteDepartment from "@/api/department/useDeleteDepartment.ts";
 
 interface MediumDepartmentCardProps {
   department: Department;
