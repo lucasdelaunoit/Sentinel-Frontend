@@ -10,7 +10,7 @@ import UserStatusBadge from "@/components/specified/models/user/badges/UserStatu
 import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable";
 import type { FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import useGetProjectUsers from "@/api/projects/useGetProjectUsers";
-import AddProjectMembersSheet from "@/components/specified/models/projects/sheets/AddProjectMembersSheet";
+import AddProjectMembersSheet from "@/components/specified/models/project/sheets/AddProjectMembersSheet";
 import type { UserListItem } from "@/types/dashboard";
 
 type TeamSortableField = "firstname" | "lastname" | "title" | "created_at";

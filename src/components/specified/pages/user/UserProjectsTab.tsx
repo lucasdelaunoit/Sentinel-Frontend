@@ -8,11 +8,11 @@ import { cn } from "@/lib/utils";
 import { HighlightMatch } from "@/utils/useHighlightableText";
 import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable";
 import type { FilterPillOption } from "@/components/common/filters/FilterPillGroup";
-import ProjectStatusBadge from "@/components/specified/models/projects/badges/ProjectStatusBadge.tsx";
-import AddUserProjectsSheet from "@/components/specified/models/projects/sheets/AddUserProjectsSheet";
+import AddUserProjectsSheet from "@/components/specified/models/project/sheets/AddUserProjectsSheet";
 import useGetUserProjects from "@/api/user/useGetUserProjects";
 import { formatDate } from "@/utils/formatters/date.ts";
-import { SEVERITY_BG, SEVERITY_TEXT } from "@/lib/theme/severity.ts";
+import ProjectStatusBadge from "@/components/specified/models/project/badges/ProjectStatusBadge.tsx";
+import MetricCell from "@/components/common/displays/MetricCell.tsx";
 
 type ProjectSortField = "name" | "risk_score" | "team_availability" | "knowledge_coverage" | "created_at";
 
@@ -24,21 +24,6 @@ const STATUS_FILTER_OPTIONS: FilterPillOption<ProjectStatus | null>[] = [
   { value: "completed", label: "Completed" },
   { value: "archived", label: "Archived" },
 ];
-
-function MetricCell({ metric, withRaw = false }: { metric: MetricResult | null | undefined; withRaw?: boolean }) {
-  if (!metric) return <span className="text-[13px] text-muted-foreground">—</span>;
-  return (
-    <div className="flex items-center gap-1.5" title={metric.insight ?? undefined}>
-      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", SEVERITY_BG[metric.severity])} />
-      <span className={cn("text-[13px] font-semibold whitespace-nowrap", SEVERITY_TEXT[metric.severity])}>
-        {metric.value}
-        {withRaw && metric.value_raw !== null && metric.value_raw !== undefined && (
-          <span className="ml-1 tabular-nums opacity-70">({metric.value_raw})</span>
-        )}
-      </span>
-    </div>
-  );
-}
 
 export default function UserProjectsTab({ userId }: { userId: string | undefined }) {
   const navigate = useNavigate();
@@ -76,14 +61,14 @@ export default function UserProjectsTab({ userId }: { userId: string | undefined
       key: "fragility",
       header: "Fragility",
       sortKey: "risk_score",
-      cell: (proj) => <MetricCell metric={proj.fragility} withRaw />,
+      cell: (proj) => <MetricCell metric={proj.fragility} raw="paren" />,
       skeleton: <Skeleton className="h-4 w-20" />,
     },
     {
       key: "team_availability",
       header: "Team Availability",
       sortKey: "team_availability",
-      cell: (proj) => <MetricCell metric={proj.team_availability} withRaw />,
+      cell: (proj) => <MetricCell metric={proj.team_availability} raw="paren" />,
       skeleton: <Skeleton className="h-4 w-20" />,
     },
     {

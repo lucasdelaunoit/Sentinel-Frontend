@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
-import RiskBadge from "@/components/specified/pages/home/_shared/RiskBadge.tsx";
+import RiskBadge from "@/components/specified/others/badges/RiskBadge.tsx";
 import { cn } from "@/lib/utils.ts";
 import { formatDelta } from "@/utils/formatters/number.ts";
 import type { UpcomingRiskEvent } from "@/types/others/UpcomingRiskEvent";

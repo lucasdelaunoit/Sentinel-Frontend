@@ -43,6 +43,8 @@ export default function AllUsersSheet({
     lastPage,
     isLoading,
     isError,
+    isFetching,
+    isPlaceholderData,
   } = useGetUsers({
     page,
     per_page: perPage,
@@ -89,13 +91,13 @@ export default function AllUsersSheet({
       }
       footer={
         !isLoading && !isError && total > 0 ? (
-          <div className="flex justify-center">
-            <DataPagination page={page} totalPages={lastPage} onPageChange={setPage} />
+          <div className="flex w-full justify-center">
+            <DataPagination page={page} totalPages={lastPage} onPageChange={setPage} disabled={isFetching} />
           </div>
         ) : null
       }
     >
-      {isLoading ? (
+      {isLoading || isPlaceholderData ? (
         <div className="space-y-4 p-0.5">
           {Array.from({ length: perPage > 8 ? 8 : perPage }).map((_, i) => (
             <div key={i} className="flex items-center gap-3">

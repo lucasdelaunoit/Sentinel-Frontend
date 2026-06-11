@@ -16,11 +16,10 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import useGetProjects from "@/api/projects/useGetProjects";
-import CreateProjectSheet from "@/components/specified/models/projects/sheets/CreateProjectSheet.tsx";
+import CreateProjectSheet from "@/components/specified/models/project/sheets/CreateProjectSheet.tsx";
 import { Skeleton } from "@/components/ui/skeleton";
 import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable";
 import { HighlightMatch } from "@/utils/useHighlightableText";
-import ProjectStatusBadge from "@/components/specified/models/projects/badges/ProjectStatusBadge.tsx";
 import { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import {
   DropdownMenu,
@@ -37,20 +36,12 @@ import useReopenProject from "@/api/projects/useReopenProject";
 import useArchiveProject from "@/api/projects/useArchiveProject";
 import useUnarchiveProject from "@/api/projects/useUnarchiveProject";
 import { formatDate } from "@/utils/formatters/date.ts";
-import { SEVERITY_BG, SEVERITY_TEXT } from "@/lib/theme/severity.ts";
+import ProjectStatusBadge from "@/components/specified/models/project/badges/ProjectStatusBadge.tsx";
+import MetricCell from "@/components/common/displays/MetricCell.tsx";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
 type ProjSortKey = "name" | "risk_score" | "team_availability" | "knowledge_coverage" | "created_at";
-
-/* ─── Helpers ───────────────────────────────────────────────── */
-
-function severityText(card: { severity: Severity }) {
-  return SEVERITY_TEXT[card.severity];
-}
-function severityDot(card: { severity: Severity }) {
-  return SEVERITY_BG[card.severity];
-}
 
 /* ─── Row Actions ───────────────────────────────────────────── */
 
@@ -172,23 +163,6 @@ const STATUS_FILTER_OPTIONS: FilterPillOption<ProjectStatus | null>[] = [
   { value: "archived", label: "Archived" },
 ];
 
-/** Severity dot + value cell for a project metric. `raw`: how to render value_raw alongside value. */
-function StatDotCell({ metric, raw = "none" }: { metric?: MetricResult | null; raw?: "inline" | "paren" | "none" }) {
-  if (!metric) return <span className="text-[13px] text-muted-foreground">—</span>;
-  return (
-    <div className="flex items-center gap-1.5" title={metric.insight ?? undefined}>
-      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", severityDot(metric))} />
-      <span className={cn("text-[13px] font-semibold whitespace-nowrap", severityText(metric))}>
-        {metric.value}
-        {raw === "paren" && ` (${metric.value_raw})`}
-        {raw === "inline" && metric.value_raw != null && (
-          <span className="ml-1 tabular-nums opacity-70">{metric.value_raw}</span>
-        )}
-      </span>
-    </div>
-  );
-}
-
 const PROJECT_COLUMNS: DataTableColumn<Project, ProjSortKey>[] = [
   {
     key: "name",
@@ -222,19 +196,19 @@ const PROJECT_COLUMNS: DataTableColumn<Project, ProjSortKey>[] = [
     key: "fragility",
     header: "Fragility",
     sortKey: "risk_score",
-    cell: (project) => <StatDotCell metric={project.fragility} raw="inline" />,
+    cell: (project) => <MetricCell metric={project.fragility} raw="inline" />,
   },
   {
     key: "team_availability",
     header: "Team Availability",
     sortKey: "team_availability",
-    cell: (project) => <StatDotCell metric={project.team_availability} raw="paren" />,
+    cell: (project) => <MetricCell metric={project.team_availability} raw="paren" />,
   },
   {
     key: "knowledge_coverage",
     header: "Knowledge Coverage",
     sortKey: "knowledge_coverage",
-    cell: (project) => <StatDotCell metric={project.knowledge_coverage} />,
+    cell: (project) => <MetricCell metric={project.knowledge_coverage} />,
   },
   {
     key: "deadline",

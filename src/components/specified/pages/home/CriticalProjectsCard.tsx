@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 
 import useGetProjects from "@/api/projects/useGetProjects.ts";
 import useGetProjectsStats from "@/api/projects/useGetProjectsStats.ts";
-import MediumProjectRow from "@/components/specified/models/projects/datas/items/MediumProjectRow.tsx";
+import MediumProjectRow from "@/components/specified/models/project/datas/MediumProjectRow.tsx";
 
 const PREVIEW_COUNT = 4;
 

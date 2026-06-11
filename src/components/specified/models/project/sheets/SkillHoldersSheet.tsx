@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import SearchBar from "@/components/common/inputs/SearchBar";
-import { TablePagination } from "@/components/common/table/TablePagination";
-import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useTablePagination } from "@/hooks/useTablePagination";
-import useGetSkillHolders from "@/api/projects/useGetSkillHolders";
-import { HighlightMatch } from "@/utils/useHighlightableText";
-import { getFullName } from "@/utils/formatters/persons";
-import { cn } from "@/lib/utils";
+import ComposedSheet from "@/components/common/sheets/ComposedSheet.tsx";
+import SearchBar from "@/components/common/inputs/SearchBar.tsx";
+import { TablePagination } from "@/components/common/table/TablePagination.tsx";
+import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { useTablePagination } from "@/hooks/useTablePagination.ts";
+import useGetSkillHolders from "@/api/projects/useGetSkillHolders.ts";
+import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
+import { getFullName } from "@/utils/formatters/persons.ts";
+import { cn } from "@/lib/utils.ts";
 import { skillLevelLabel } from "@/lib/theme/skillLevel.ts";
 
 const SKELETON_ROWS = 6;

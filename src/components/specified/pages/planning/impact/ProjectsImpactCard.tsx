@@ -1,6 +1,6 @@
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
-import MediumProjectImpactRow from "@/components/specified/models/projects/datas/items/MediumProjectImpactRow.tsx";
+import MediumProjectImpactRow from "@/components/specified/models/project/datas/MediumProjectImpactRow.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import { formatRange } from "@/utils/planning/calendar.ts";
 
@@ -30,7 +30,10 @@ function scenarioContext(
   if (blocks.length === 0) return { window: null, drivers: null };
 
   const start = blocks.map((b) => b.startDate).sort()[0];
-  const end = blocks.map((b) => b.endDate).sort().at(-1)!;
+  const end = blocks
+    .map((b) => b.endDate)
+    .sort()
+    .at(-1)!;
 
   const names = driverIds.map((id) => {
     const u = usersById.get(id);
@@ -52,7 +55,12 @@ export default function ProjectsImpactCard({ projects, perUserImpact, simBlocks,
       }
     >
       {projects.length === 0 ? (
-        <Feedback variant="success" title="No project impact" description="No projects are affected by this scenario." className="py-6" />
+        <Feedback
+          variant="success"
+          title="No project impact"
+          description="No projects are affected by this scenario."
+          className="py-6"
+        />
       ) : (
         <div className="space-y-2">
           {projects.map((p) => {

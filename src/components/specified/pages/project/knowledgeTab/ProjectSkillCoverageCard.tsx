@@ -1,10 +1,10 @@
 import { useState } from "react";
 import AddSkillHolderSheet, {
   type HolderSheetSkill,
-} from "@/components/specified/models/projects/sheets/AddSkillHolderSheet.tsx";
+} from "@/components/specified/models/project/sheets/AddSkillHolderSheet.tsx";
 import SkillHoldersSheet, {
   type HoldersSheetSkill,
-} from "@/components/specified/models/projects/sheets/SkillHoldersSheet.tsx";
+} from "@/components/specified/models/project/sheets/SkillHoldersSheet.tsx";
 import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable.tsx";
 import { cn } from "@/lib/utils.ts";
 import { TONE_BG, TONE_TEXT } from "@/lib/theme/tone.ts";
@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { PlusIcon, UserPlusIcon } from "@phosphor-icons/react";
 import useGetProjectKnowledgeCoverage from "@/api/projects/useGetProjectKnowledgeCoverage.ts";
-import AddProjectSkillSheet from "@/components/specified/models/projects/sheets/AddProjectSkillSheet.tsx";
+import AddProjectSkillSheet from "@/components/specified/models/project/sheets/AddProjectSkillSheet.tsx";
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import SkillCoverageStatusBadge from "@/components/specified/models/skill/badges/SkillCoverageStatusBadge.tsx";
 

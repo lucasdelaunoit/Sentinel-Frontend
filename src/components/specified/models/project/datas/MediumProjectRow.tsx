@@ -1,8 +1,8 @@
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
-import ProjectAvatar from "@/components/specified/models/projects/avatars/ProjectAvatar.tsx";
-import FragilityBadge from "@/components/specified/models/projects/datas/FragilityBadge.tsx";
+import ProjectAvatar from "@/components/specified/models/project/avatars/ProjectAvatar.tsx";
+import FragilityBadge from "@/components/specified/models/project/badges/FragilityBadge.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import ProjectFragilityAvatar from "@/components/specified/models/projects/avatars/ProjectFragilityAvatar.tsx";
+import ProjectFragilityAvatar from "@/components/specified/models/project/avatars/ProjectFragilityAvatar.tsx";
 
 interface MediumProjectRowProps {
   project: Project;

@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FolderPlusIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { Field, FieldDescription } from "@/components/ui/field";
-import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import SelectorList from "@/components/common/inputs/SelectorList";
-import ProjectSelectorRow from "@/components/specified/models/projects/items/ProjectSelectorRow";
-import useGetProjects from "@/api/projects/useGetProjects";
-import useAttachUserToProject from "@/api/projects/useAttachUserToProject";
+import { Button } from "@/components/ui/button.tsx";
+import { Field, FieldDescription } from "@/components/ui/field.tsx";
+import ComposedSheet from "@/components/common/sheets/ComposedSheet.tsx";
+import SelectorList from "@/components/common/inputs/SelectorList.tsx";
+import ProjectSelectorRow from "@/components/specified/models/project/datas/ProjectSelectorRow.tsx";
+import useGetProjects from "@/api/projects/useGetProjects.ts";
+import useAttachUserToProject from "@/api/projects/useAttachUserToProject.ts";
 
 interface AddUserProjectsSheetProps {
   userId: string | undefined;

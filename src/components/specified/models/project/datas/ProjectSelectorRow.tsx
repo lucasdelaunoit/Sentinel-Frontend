@@ -1,8 +1,8 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import SelectorRow from "@/components/common/inputs/SelectorRow";
-import ProjectAvatar from "@/components/specified/models/projects/avatars/ProjectAvatar";
-import ProjectStatusBadge from "@/components/specified/models/projects/badges/ProjectStatusBadge";
-import { HighlightMatch } from "@/utils/useHighlightableText";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import SelectorRow from "@/components/common/inputs/SelectorRow.tsx";
+import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
+import ProjectStatusBadge from "@/components/specified/models/project/badges/ProjectStatusBadge.tsx";
+import ProjectAvatar from "@/components/specified/models/project/avatars/ProjectAvatar.tsx";
 
 interface ProjectSelectorRowProps {
   project: Project;

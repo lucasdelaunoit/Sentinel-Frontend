@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { CertificateIcon, XIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
-import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import SelectorList from "@/components/common/inputs/SelectorList";
-import ComposedSelect from "@/components/common/inputs/ComposedSelect";
-import SkillSelectorRow from "@/components/specified/models/skill/items/SkillSelectorRow";
-import SkillLevelPicker from "@/components/specified/models/skill/items/SkillLevelPicker";
-import useGetSkills from "@/api/skill/useGetSkills";
-import useGetSkillCategories from "@/api/skillCategory/useGetSkillCategories";
-import useAddProjectSkillRequirement from "@/api/projects/useAddProjectSkillRequirement";
+import { Button } from "@/components/ui/button.tsx";
+import { Field, FieldLabel, FieldDescription } from "@/components/ui/field.tsx";
+import ComposedSheet from "@/components/common/sheets/ComposedSheet.tsx";
+import SelectorList from "@/components/common/inputs/SelectorList.tsx";
+import ComposedSelect from "@/components/common/inputs/ComposedSelect.tsx";
+import SkillSelectorRow from "@/components/specified/models/skill/items/SkillSelectorRow.tsx";
+import SkillLevelPicker from "@/components/specified/models/skill/items/SkillLevelPicker.tsx";
+import useGetSkills from "@/api/skill/useGetSkills.ts";
+import useGetSkillCategories from "@/api/skillCategory/useGetSkillCategories.ts";
+import useAddProjectSkillRequirement from "@/api/projects/useAddProjectSkillRequirement.ts";
 
 interface AddProjectSkillSheetProps {
   projectId: string | undefined;

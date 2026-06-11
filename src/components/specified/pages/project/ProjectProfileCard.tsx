@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { CalendarDays, Target, Users, Archive } from "lucide-react";
 import { PencilSimpleIcon } from "@phosphor-icons/react";
-import ProjectStatusBadge from "@/components/specified/models/projects/badges/ProjectStatusBadge.tsx";
-import ProjectAvatar from "@/components/specified/models/projects/avatars/ProjectAvatar.tsx";
 import DataDisplay from "@/components/common/data/DataDisplay.tsx";
-import EditProjectSheet from "@/components/specified/models/projects/sheets/EditProjectSheet.tsx";
+import EditProjectSheet from "@/components/specified/models/project/sheets/EditProjectSheet.tsx";
 import { formatDate } from "@/utils/formatters/date.ts";
 import type { ProjectDetailResponse } from "@/types/dashboard";
+import ProjectAvatar from "../../models/project/avatars/ProjectAvatar";
+import ProjectStatusBadge from "@/components/specified/models/project/badges/ProjectStatusBadge.tsx";
 
 interface ProjectProfileCardProps {
   project: ProjectDetailResponse;

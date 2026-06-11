@@ -7,20 +7,25 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { cn } from "@/lib/utils";
 
 interface DataPaginationProps {
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  disabled?: boolean;
 }
 
-export default function DataPagination({ page, totalPages, onPageChange }: DataPaginationProps) {
+export default function DataPagination({ page, totalPages, onPageChange, disabled = false }: DataPaginationProps) {
   if (totalPages <= 1) return null;
 
   const pages = buildPageRange(page, totalPages);
 
   return (
-    <div className="pt-3 border-t border-border/40">
+    <div
+      className={cn("pt-3 border-t border-border/40", disabled && "pointer-events-none opacity-50")}
+      aria-disabled={disabled}
+    >
       <Pagination>
         <PaginationContent>
           <PaginationItem>

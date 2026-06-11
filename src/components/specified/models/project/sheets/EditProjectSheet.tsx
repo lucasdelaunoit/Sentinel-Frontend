@@ -3,12 +3,12 @@ import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { PencilSimpleIcon } from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
-import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import useUpdateProject from "@/api/projects/useUpdateProject";
+import { Button } from "@/components/ui/button.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Textarea } from "@/components/ui/textarea.tsx";
+import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field.tsx";
+import ComposedSheet from "@/components/common/sheets/ComposedSheet.tsx";
+import useUpdateProject from "@/api/projects/useUpdateProject.ts";
 import type { ProjectDetailResponse } from "@/types/dashboard";
 
 const MAX_NAME = 80;

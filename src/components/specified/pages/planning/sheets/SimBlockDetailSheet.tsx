@@ -15,7 +15,7 @@ import { simColor } from "@/utils/planning/theme";
 import { TONE_SOLID_BADGE } from "@/lib/theme/tone.ts";
 import { capitalize } from "@/utils/formatters/string.ts";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
-import MediumProjectImpactRow from "@/components/specified/models/projects/datas/items/MediumProjectImpactRow.tsx";
+import MediumProjectImpactRow from "@/components/specified/models/project/datas/MediumProjectImpactRow.tsx";
 import MediumSkillImpactRow from "@/components/specified/models/skill/datas/items/MediumSkillImpactRow.tsx";
 
 interface SimBlockDetailSheetProps {
@@ -38,8 +38,7 @@ const SEVERITY_MESSAGE: Record<Severity, string> = {
   ok: "All required skills are covered.",
 };
 
-const MATCH_CLASS = (pct: number) =>
-  TONE_SOLID_BADGE[pct >= 70 ? "success" : pct >= 40 ? "warning" : "danger"];
+const MATCH_CLASS = (pct: number) => TONE_SOLID_BADGE[pct >= 70 ? "success" : pct >= 40 ? "warning" : "danger"];
 
 const COST_CLASS: Record<ReplacementCandidate["cost_signal"], string> = {
   ok: TONE_SOLID_BADGE.success,
@@ -223,9 +222,7 @@ export default function SimBlockDetailSheet({
                 description={`${c.available_days}d available`}
                 action={
                   <div className="flex items-center gap-2">
-                    <Badge className={cn("font-semibold", MATCH_CLASS(c.skill_match_pct))}>
-                      {c.skill_match_pct}%
-                    </Badge>
+                    <Badge className={cn("font-semibold", MATCH_CLASS(c.skill_match_pct))}>{c.skill_match_pct}%</Badge>
                     <Badge className={cn("font-semibold", COST_CLASS[c.cost_signal])}>
                       {capitalize(c.cost_signal)}
                     </Badge>
