@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { UserPlusIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button.tsx";
 import { Field, FieldDescription } from "@/components/ui/field.tsx";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet.tsx";
@@ -62,7 +61,6 @@ export default function AddProjectMembersSheet({ projectId, open, onOpenChange }
       }}
       title="Add team members"
       description="Assign existing employees to this project"
-      icon={<UserPlusIcon className="size-4 text-primary" />}
       maxWidth="sm:max-w-[520px]"
       footer={
         <>

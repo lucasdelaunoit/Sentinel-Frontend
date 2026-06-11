@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { CalendarBlankIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import useCreateAbsence from "@/api/absence/useCreateAbsence";
@@ -79,7 +78,6 @@ export default function CreateAbsenceSheet({ open, onOpenChange, userId }: Creat
       }}
       title="Add Absence"
       description="Record a planned or past absence for this employee"
-      icon={<CalendarBlankIcon className="size-4 text-primary" />}
       footer={
         <>
           <Button variant="outline" onClick={handleClose} className="flex-1" disabled={isPending} size="lg">

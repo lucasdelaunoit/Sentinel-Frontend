@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { FolderPlusIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button.tsx";
 import { Field, FieldDescription } from "@/components/ui/field.tsx";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet.tsx";
@@ -62,7 +61,6 @@ export default function AddUserProjectsSheet({ userId, open, onOpenChange }: Add
       }}
       title="Assign to project"
       description="Pick a project to add this employee to"
-      icon={<FolderPlusIcon className="size-4 text-primary" />}
       maxWidth="sm:max-w-[520px]"
       footer={
         <>

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { UserPlusIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Field, FieldLabel, FieldDescription } from "@/components/ui/field.tsx";
@@ -95,7 +94,6 @@ export default function AddSkillHolderSheet({ projectId, skill, open, onOpenChan
           </>
         ) : undefined
       }
-      icon={<UserPlusIcon className="size-4 text-primary" />}
       maxWidth="sm:max-w-[520px]"
       footer={
         <>

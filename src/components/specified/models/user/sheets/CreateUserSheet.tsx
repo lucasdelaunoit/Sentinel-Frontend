@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { UserPlusIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field.tsx";
@@ -173,7 +172,6 @@ export default function CreateUserSheet({ open, onOpenChange }: CreateUserSheetP
       }}
       title="New Employee"
       description="Add a teammate to the organization"
-      icon={<UserPlusIcon className="size-4 text-primary" />}
       maxWidth="sm:max-w-[560px]"
       footer={
         <>

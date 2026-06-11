@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CertificateIcon, XIcon } from "@phosphor-icons/react";
+import { XIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
@@ -84,7 +84,6 @@ export default function AddUserSkillSheet({
       }}
       title="Add skill"
       description="Pick a skill from the catalog and set this employee's level"
-      icon={<CertificateIcon className="size-4 text-primary" />}
       maxWidth="sm:max-w-[520px]"
       footer={
         <>

@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { PencilSimpleIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
@@ -111,7 +110,6 @@ export default function EditProjectSheet({ open, onOpenChange, project }: EditPr
       }}
       title="Edit Project"
       description="Update project name, description, and dates"
-      icon={<PencilSimpleIcon className="size-4 text-primary" />}
       maxWidth="sm:max-w-[560px]"
       footer={
         <>

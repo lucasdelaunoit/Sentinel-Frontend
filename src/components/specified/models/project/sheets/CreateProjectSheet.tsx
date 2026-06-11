@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { FolderPlusIcon, XIcon } from "@phosphor-icons/react";
+import { XIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
@@ -177,7 +177,6 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
       }}
       title="New Project"
       description="Create a project and assign team + required skills"
-      icon={<FolderPlusIcon className="size-4 text-primary" />}
       maxWidth="sm:max-w-[560px]"
       footer={
         <>

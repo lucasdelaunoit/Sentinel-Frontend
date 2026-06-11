@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
@@ -78,7 +77,6 @@ export default function UpdateSkillSheet({ open, onOpenChange, skill, categories
       }}
       title="Edit Skill"
       description="Update skill name or category"
-      icon={<Pencil className="size-4 text-primary" />}
       footer={
         <>
           <Button variant="outline" onClick={handleClose} className="flex-1" disabled={isPending} size="lg">

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { PencilSimpleIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
@@ -48,7 +47,6 @@ export default function EditUserSkillLevelSheet({ userId, skill, open, onOpenCha
       }}
       title="Edit skill level"
       description="Adjust this employee's proficiency"
-      icon={<PencilSimpleIcon className="size-4 text-primary" />}
       maxWidth="sm:max-w-[480px]"
       footer={
         <>

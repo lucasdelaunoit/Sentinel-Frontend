@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -101,7 +100,6 @@ export default function CreateCompanyHolidaySheet({ open, onOpenChange, defaultD
         }}
         title="Add Holiday"
         description="Block a single day or a multi-day period in the company calendar."
-        icon={<CalendarDays className="size-4 text-primary" />}
         footer={
           <>
             <Button variant="outline" onClick={handleClose} className="flex-1" disabled={isPending} size="lg">

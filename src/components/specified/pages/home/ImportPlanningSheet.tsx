@@ -124,7 +124,6 @@ export default function ImportPlanningSheet({ open, onOpenChange }: ImportPlanni
       onOpenChange={onOpenChange}
       title="Import Planning"
       description="Upload a screenshot of your team planning to sync absences."
-      icon={<Upload className="size-4 text-primary" />}
       onClose={handleClose}
       footer={
         <>

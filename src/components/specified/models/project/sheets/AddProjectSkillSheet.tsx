@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { CertificateIcon, XIcon } from "@phosphor-icons/react";
+import { XIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button.tsx";
 import { Field, FieldLabel, FieldDescription } from "@/components/ui/field.tsx";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet.tsx";
@@ -89,7 +89,6 @@ export default function AddProjectSkillSheet({
       }}
       title="Add required skill"
       description="Pick a skill the project needs and set the target level"
-      icon={<CertificateIcon className="size-4 text-primary" />}
       maxWidth="sm:max-w-[520px]"
       footer={
         <>

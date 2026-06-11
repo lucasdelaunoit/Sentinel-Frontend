@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { PencilSimpleIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field.tsx";
@@ -122,7 +121,6 @@ export default function EditUserSheet({ open, onOpenChange, user }: EditUserShee
       }}
       title="Edit Profile"
       description="Update employee identity, contact, and department"
-      icon={<PencilSimpleIcon className="size-4 text-primary" />}
       maxWidth="sm:max-w-[560px]"
       footer={
         <>
