@@ -9,9 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
 import SelectorList from "@/components/common/inputs/SelectorList";
-import LevelPicker from "@/components/common/inputs/LevelPicker";
+import SkillsPicker from "@/components/specified/models/skill/form/SkillsPicker";
 import UserSelectorRow from "@/components/specified/models/employees/items/UserSelectorRow";
-import SkillSelectorRow from "@/components/specified/models/skill/items/SkillSelectorRow";
 import useGetUsers from "@/api/users/useGetUsers";
 import useGetSkills from "@/api/skills/useGetSkills";
 import useCreateProject from "@/api/projects/useCreateProject";
@@ -123,19 +122,13 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
 
   const selectedUsers = useMemo(() => users.filter((u) => userIds.includes(Number(u.id))), [users, userIds]);
 
-  const selectedSkillsMap = useMemo(() => {
-    const map = new Map<number, SkillReqForm>();
-    skillReqs.forEach((r) => map.set(r.skill_id, r));
-    return map;
-  }, [skillReqs]);
-
   function toggleUser(id: number) {
     const next = userIds.includes(id) ? userIds.filter((x) => x !== id) : [...userIds, id];
     setValue("user_ids", next, { shouldDirty: true, shouldValidate: true });
   }
 
   function toggleSkill(id: number) {
-    if (selectedSkillsMap.has(id)) {
+    if (skillReqs.some((r) => r.skill_id === id)) {
       setValue(
         "skill_requirements",
         skillReqs.filter((r) => r.skill_id !== id),
@@ -328,64 +321,17 @@ export default function CreateProjectSheet({ open, onOpenChange }: CreateProject
         </Field>
 
         {/* Skill requirements */}
-        <Field>
-          <div className="flex items-center justify-between mb-1">
-            <FieldLabel>Required skills</FieldLabel>
-            <span className="text-[11px] text-muted-foreground tabular-nums">{skillReqs.length} added</span>
-          </div>
-          <SelectorList
-            items={skills}
-            renderItem={(s) => (
-              <SkillSelectorRow
-                key={s.id}
-                skill={s}
-                selected={selectedSkillsMap.has(Number(s.id))}
-                onToggle={() => toggleSkill(Number(s.id))}
-                searchTerm={skillSearch}
-              />
-            )}
-            renderSkeleton={() => <SkillSelectorRow.Skeleton />}
-            searchValue={skillSearch}
-            onSearchChange={setSkillSearch}
-            searchPlaceholder="Search skills..."
-            isLoading={skillsLoading}
-            emptyMessage="No skills found."
-            maxHeight="max-h-64"
-            selected={
-              skillReqs.length > 0 && (
-                <div className="space-y-2">
-                  {skillReqs.map((req) => {
-                    const skill = skills.find((s) => Number(s.id) === req.skill_id);
-                    return (
-                      <div
-                        key={req.skill_id}
-                        className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-semibold text-foreground truncate leading-tight">
-                            {skill?.name ?? `Skill #${req.skill_id}`}
-                          </p>
-                          {skill?.category?.name && (
-                            <p className="text-[11px] text-muted-foreground truncate mt-0.5">{skill.category.name}</p>
-                          )}
-                        </div>
-                        <LevelPicker value={req.required_level} onChange={(lvl) => setSkillLevel(req.skill_id, lvl)} />
-                        <button
-                          type="button"
-                          onClick={() => toggleSkill(req.skill_id)}
-                          className="size-7 grid place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
-                        >
-                          <XIcon className="size-4" />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )
-            }
-          />
-          <FieldDescription>Each requirement defines a target level (1 = beginner, 5 = expert)</FieldDescription>
-        </Field>
+        <SkillsPicker
+          label="Required skills"
+          description="Each requirement defines a target level (1 = beginner, 5 = expert)"
+          skills={skills}
+          isLoading={skillsLoading}
+          search={skillSearch}
+          onSearchChange={setSkillSearch}
+          selected={skillReqs.map((r) => ({ skillId: r.skill_id, level: r.required_level }))}
+          onToggle={toggleSkill}
+          onLevelChange={setSkillLevel}
+        />
       </div>
     </ComposedSheet>
   );

@@ -1,21 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { UserPlusIcon, XIcon } from "@phosphor-icons/react";
+import { UserPlusIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field";
-import { Skeleton } from "@/components/ui/skeleton";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet";
-import SelectorList from "@/components/common/inputs/SelectorList";
-import LevelPicker from "@/components/common/inputs/LevelPicker";
-import SkillSelectorRow from "@/components/specified/models/skill/items/SkillSelectorRow";
+import SkillsPicker from "@/components/specified/models/skill/form/SkillsPicker";
+import DepartmentPicker from "@/components/specified/models/department/form/DepartmentPicker";
 import useGetDepartments from "@/api/departments/useGetDepartments";
 import useGetSkills from "@/api/skills/useGetSkills";
 import useCreateUser from "@/api/users/useCreateUser";
 import useAttachSkillToUser from "@/api/users/useAttachSkillToUser";
-import { cn } from "@/lib/utils";
 
 const MAX_NAME = 80;
 const MAX_EMAIL = 180;
@@ -117,14 +114,8 @@ export default function CreateUserSheet({ open, onOpenChange }: CreateUserSheetP
   const departmentId = watch("department_id");
   const userSkills = watch("skills");
 
-  const selectedSkillsMap = useMemo(() => {
-    const map = new Map<number, UserSkillForm>();
-    userSkills.forEach((s) => map.set(s.skill_id, s));
-    return map;
-  }, [userSkills]);
-
   function toggleSkill(id: number) {
-    if (selectedSkillsMap.has(id)) {
+    if (userSkills.some((s) => s.skill_id === id)) {
       setValue(
         "skills",
         userSkills.filter((s) => s.skill_id !== id),
@@ -291,129 +282,24 @@ export default function CreateUserSheet({ open, onOpenChange }: CreateUserSheetP
           )}
         />
 
-        {/* Department */}
-        <Field>
-          <div className="flex items-center justify-between mb-1">
-            <FieldLabel>Department</FieldLabel>
-            {departmentId != null && (
-              <button
-                type="button"
-                onClick={() => setValue("department_id", null, { shouldDirty: true, shouldValidate: true })}
-                className="text-[11px] text-muted-foreground hover:text-foreground cursor-pointer"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-          {deptsLoading ? (
-            <div className="flex flex-wrap gap-1.5">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-8 w-24 rounded-full" />
-              ))}
-            </div>
-          ) : departments.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border/60 px-4 py-3 text-[12px] text-muted-foreground">
-              No departments yet. Create one in Settings.
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-1.5">
-              {departments.map((d) => {
-                const active = departmentId === d.id;
-                return (
-                  <button
-                    key={d.id}
-                    type="button"
-                    onClick={() =>
-                      setValue("department_id", active ? null : d.id, {
-                        shouldDirty: true,
-                        shouldValidate: true,
-                      })
-                    }
-                    className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors cursor-pointer",
-                      active
-                        ? "border-primary/40 bg-primary/10 text-primary"
-                        : "border-border/60 bg-card text-foreground/70 hover:bg-muted/50 hover:text-foreground",
-                    )}
-                  >
-                    {d.name}
-                    {typeof d.users_count === "number" && (
-                      <span
-                        className={cn(
-                          "text-[10px] tabular-nums",
-                          active ? "text-primary/70" : "text-muted-foreground/70",
-                        )}
-                      >
-                        {d.users_count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-          <FieldDescription>Optional — used to group employees and target rules</FieldDescription>
-        </Field>
+        <DepartmentPicker
+          departments={departments}
+          isLoading={deptsLoading}
+          value={departmentId}
+          onChange={(id) => setValue("department_id", id, { shouldDirty: true, shouldValidate: true })}
+        />
 
-        {/* Skills */}
-        <Field>
-          <div className="flex items-center justify-between mb-1">
-            <FieldLabel>Skills</FieldLabel>
-            <span className="text-[11px] text-muted-foreground tabular-nums">{userSkills.length} added</span>
-          </div>
-          <SelectorList
-            items={skills}
-            renderItem={(s) => (
-              <SkillSelectorRow
-                key={s.id}
-                skill={s}
-                selected={selectedSkillsMap.has(Number(s.id))}
-                onToggle={() => toggleSkill(Number(s.id))}
-                searchTerm={skillSearch}
-              />
-            )}
-            renderSkeleton={() => <SkillSelectorRow.Skeleton />}
-            searchValue={skillSearch}
-            onSearchChange={setSkillSearch}
-            searchPlaceholder="Search skills..."
-            isLoading={skillsLoading}
-            emptyMessage="No skills found."
-            maxHeight="max-h-64"
-            selected={
-              userSkills.length > 0 && (
-                <div className="space-y-2">
-                  {userSkills.map((s) => {
-                    const skill = skills.find((sk) => Number(sk.id) === s.skill_id);
-                    return (
-                      <div
-                        key={s.skill_id}
-                        className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-semibold text-foreground truncate leading-tight">
-                            {skill?.name ?? `Skill #${s.skill_id}`}
-                          </p>
-                          {skill?.category?.name && (
-                            <p className="text-[11px] text-muted-foreground truncate mt-0.5">{skill.category.name}</p>
-                          )}
-                        </div>
-                        <LevelPicker value={s.level} onChange={(lvl) => setSkillLevel(s.skill_id, lvl)} />
-                        <button
-                          type="button"
-                          onClick={() => toggleSkill(s.skill_id)}
-                          className="size-7 grid place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer"
-                        >
-                          <XIcon className="size-4" />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )
-            }
-          />
-          <FieldDescription>Pick skills and set proficiency (1 = beginner, 5 = expert)</FieldDescription>
-        </Field>
+        <SkillsPicker
+          label="Skills"
+          description="Pick skills and set proficiency (1 = beginner, 5 = expert)"
+          skills={skills}
+          isLoading={skillsLoading}
+          search={skillSearch}
+          onSearchChange={setSkillSearch}
+          selected={userSkills.map((s) => ({ skillId: s.skill_id, level: s.level }))}
+          onToggle={toggleSkill}
+          onLevelChange={setSkillLevel}
+        />
       </div>
     </ComposedSheet>
   );
