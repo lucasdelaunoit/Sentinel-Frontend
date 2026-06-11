@@ -2,7 +2,7 @@ import { CalendarClock } from "lucide-react";
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import useGetUpcomingRiskEvents from "@/hooks/useGetUpcomingRiskEvents.ts";
+import useGetUpcomingRiskEvents from "@/api/dashboard/useGetUpcomingRiskEvents";
 import MediumUpcomingRiskCard from "@/components/specified/others/datas/MediumUpcomingRiskCard.tsx";
 
 const HORIZON_DAYS = 30;

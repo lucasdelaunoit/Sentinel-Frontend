@@ -1,5 +1,5 @@
 import StatCard from "@/components/common/cards/StatCard";
-import useGetDashboardStats from "@/hooks/useGetDashboardStats";
+import useGetDashboardStats from "@/api/dashboard/useGetDashboardStats";
 import { ChartPolarIcon, LightningIcon, UserIcon, WarningIcon } from "@phosphor-icons/react";
 
 export default function HomeStatCardsSection() {

@@ -8,7 +8,7 @@ import CoverageRadar, { type CoverageRadarDatum } from "@/components/common/char
 import AddUserSkillSheet from "@/components/specified/models/skill/sheets/AddUserSkillSheet";
 import useGetSkillsForUser from "@/api/user/useGetSkillsForUser";
 import useGetUserCompetencyRadar from "@/api/user/useGetUserCompetencyRadar";
-import useGetSkillCategories from "@/hooks/useGetSkillCategories";
+import useGetSkillCategories from "@/api/skillCategory/useGetSkillCategories";
 import MediumUserSkillCard from "@/components/specified/models/userSkill/datas/MediumUserSkillCard.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";

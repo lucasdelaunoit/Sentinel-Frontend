@@ -5,7 +5,7 @@ import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import CoverageRadar, { type CoverageRadarDatum } from "@/components/common/charts/CoverageRadar.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 
-import useGetKnowledgeCoverageDetail from "@/hooks/useGetKnowledgeCoverageDetail.ts";
+import useGetKnowledgeCoverageDetail from "@/api/dashboard/useGetKnowledgeCoverageDetail";
 
 const TARGET_PCT = 70;
 

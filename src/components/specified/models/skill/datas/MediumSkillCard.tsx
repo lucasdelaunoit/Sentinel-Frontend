@@ -8,7 +8,7 @@ import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog
 import UpdateSkillSheet from "@/components/specified/models/skill/sheets/UpdateSkillSheet.tsx";
 import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
 import useDeleteSkill from "@/api/skill/useDeleteSkill.ts";
-import useGetSkillCategories from "@/hooks/useGetSkillCategories";
+import useGetSkillCategories from "@/api/skillCategory/useGetSkillCategories";
 
 interface MediumSkillCardProps {
   skill: Skill;
