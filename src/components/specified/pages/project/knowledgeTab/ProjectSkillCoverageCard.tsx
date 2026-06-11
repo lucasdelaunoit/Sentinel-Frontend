@@ -13,31 +13,60 @@ import { skillLevelLabel } from "@/lib/theme/skillLevel.ts";
 import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { PlusIcon, UserPlusIcon } from "@phosphor-icons/react";
+import { DotsThreeIcon, PlusIcon, UserPlusIcon } from "@phosphor-icons/react";
+import { AVATAR_SIZE } from "@/lib/theme/avatar.ts";
 import useGetProjectKnowledgeCoverage from "@/api/projects/useGetProjectKnowledgeCoverage.ts";
 import AddProjectSkillSheet from "@/components/specified/models/project/sheets/AddProjectSkillSheet.tsx";
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import SkillCoverageStatusBadge from "@/components/specified/models/skill/badges/SkillCoverageStatusBadge.tsx";
 
-type CoverageSortField = "name" | "status" | "active_holders_count" | "max_level";
+type CoverageSortField = "name" | "status" | "max_level";
 
 /* ─── Holder avatars ──────────────────────────────────────── */
 
-function HolderAvatars({ holders }: { holders: ProjectKnowledgeCoverageHolder[] }) {
-  if (holders.length === 0) return <span className="text-[13px] text-muted-foreground">—</span>;
+const VISIBLE_HOLDERS = 2;
+
+function HolderAvatars({
+  holders,
+  total,
+  onClick,
+}: {
+  holders: ProjectKnowledgeCoverageHolder[];
+  total: number;
+  onClick: () => void;
+}) {
+  if (total === 0) return <span className="text-[13px] text-muted-foreground">—</span>;
+
+  const visible = holders.slice(0, VISIBLE_HOLDERS);
+  const extra = total - visible.length;
 
   return (
-    <div className="flex items-center -space-x-1.5">
-      {holders.map((h) => (
+    <button
+      type="button"
+      onClick={onClick}
+      title="View all holders"
+      className="group flex items-center -space-x-1.5 rounded-xl p-1 -m-1 cursor-pointer transition-colors hover:bg-border"
+    >
+      {visible.map((h) => (
         <div
           key={h.id}
           title={`${h.firstname} ${h.lastname}${h.on_leave_today ? " (on leave)" : ""} — level ${h.level}/5`}
-          className={cn("rounded-md ring-2 ring-white shadow-sm")}
+          className="rounded-xl ring-2 ring-card transition-colors group-hover:ring-border"
         >
           <UserAvatar firstname={h.firstname} lastname={h.lastname} variant={h.status} />
         </div>
       ))}
-    </div>
+      {extra > 0 && (
+        <div
+          className={cn(
+            "flex items-center justify-center rounded-xl ring-2 ring-background bg-muted text-muted-foreground shadow-sm transition-colors group-hover:ring-border",
+            AVATAR_SIZE.base,
+          )}
+        >
+          <DotsThreeIcon className="size-4" weight="bold" />
+        </div>
+      )}
+    </button>
   );
 }
 
@@ -87,54 +116,34 @@ export default function ProjectSkillCoverageCard({ projectId }: ProjectSkillCove
       skeleton: <Skeleton className="h-5 w-24 rounded-full" />,
     },
     {
-      key: "active",
-      header: "Active Holders",
-      sortKey: "active_holders_count",
-      cell: (c) => {
-        const tone = COVERAGE_TONE[c.status];
-        const widthPct = c.team_size > 0 ? Math.min(100, (c.active_holders_count / c.team_size) * 100) : 0;
-        return (
-          <div className="flex items-center gap-2">
-            <div className="h-1.5 w-16 rounded-full bg-muted overflow-hidden">
-              <div className={cn("h-full rounded-full", TONE_BG[tone])} style={{ width: `${widthPct}%` }} />
-            </div>
-            <span className="text-[11px] text-muted-foreground tabular-nums whitespace-nowrap">
-              {c.active_holders_count}/{c.team_size}
-            </span>
-          </div>
-        );
-      },
-      skeleton: (
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-1.5 w-16 rounded-full" />
-          <Skeleton className="h-3 w-8" />
-        </div>
-      ),
-    },
-    {
       key: "owners",
       header: "Owners",
       cell: (c) => {
-        const extra = c.holders_total - c.holders.length;
+        const tone = COVERAGE_TONE[c.status];
         return (
-          <div className="flex items-center gap-2">
-            <HolderAvatars holders={c.holders} />
-            {c.holders_total > 0 && (
-              <button
-                type="button"
-                className="text-[11px] font-medium text-primary hover:underline whitespace-nowrap"
-                onClick={() => setViewHoldersSkill({ id: Number(c.skill.id), name: c.skill.name })}
-              >
-                {extra > 0 ? `+${extra} view all` : "View all"}
-              </button>
-            )}
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-1.5">
+              <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", TONE_BG[tone])} />
+              <span className={cn("text-[13px] font-semibold tabular-nums", TONE_TEXT[tone])}>{c.holders_total}</span>
+            </div>
+            <HolderAvatars
+              holders={c.holders}
+              total={c.holders_total}
+              onClick={() => setViewHoldersSkill({ id: Number(c.skill.id), name: c.skill.name })}
+            />
           </div>
         );
       },
       skeleton: (
-        <div className="flex -space-x-1.5">
-          <Skeleton className="size-8 rounded-xl" />
-          <Skeleton className="size-8 rounded-xl" />
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5">
+            <Skeleton className="size-1.5 rounded-full" />
+            <Skeleton className="h-4 w-5" />
+          </div>
+          <div className="flex -space-x-1.5">
+            <Skeleton className="size-8 rounded-xl" />
+            <Skeleton className="size-8 rounded-xl" />
+          </div>
         </div>
       ),
     },
@@ -168,9 +177,8 @@ export default function ProjectSkillCoverageCard({ projectId }: ProjectSkillCove
       stopPropagation: true,
       cell: (c) => (
         <Button
-          variant="ghost"
-          size="icon"
-          className="size-7 text-muted-foreground hover:text-foreground ml-auto"
+          size="sm"
+          className="gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-8 px-3 text-[12px] font-medium shadow-sm shadow-primary/10 btn-press ml-auto"
           title="Add someone with this skill"
           aria-label={`Add someone with ${c.skill.name}`}
           onClick={() =>
@@ -181,10 +189,10 @@ export default function ProjectSkillCoverageCard({ projectId }: ProjectSkillCove
             })
           }
         >
-          <UserPlusIcon className="size-4" />
+          <UserPlusIcon className="size-3.5" /> Add
         </Button>
       ),
-      skeleton: <Skeleton className="size-7 rounded-md ml-auto" />,
+      skeleton: <Skeleton className="h-8 w-14 rounded-lg ml-auto" />,
     },
   ];
 

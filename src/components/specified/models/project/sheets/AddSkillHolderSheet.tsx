@@ -39,7 +39,6 @@ export default function AddSkillHolderSheet({ projectId, skill, open, onOpenChan
   });
   const { attachSkillToUser, isLoading: attaching } = useAttachSkillToUser();
 
-  // Only team members who don't already hold this skill — adding them improves coverage.
   const candidates = useMemo(
     () => members.filter((m) => !m.skills?.some((s) => s.id === skill?.id)),
     [members, skill?.id],

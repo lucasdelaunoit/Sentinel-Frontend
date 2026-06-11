@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { axiosClient } from "@/lib/api/client";
 import { useQueryString, unwrapPagination, type PaginatedResponse, type QueryParams } from "@/lib/api/pagination";
 
@@ -26,6 +26,7 @@ export default function useGetSkillHolders(
     enabled: !!projectId && skillId !== null,
     staleTime: 1000 * 60 * 5,
     retry: 1,
+    placeholderData: keepPreviousData,
   });
 
   return { ...rest, ...unwrapPagination(raw) };

@@ -14,17 +14,19 @@ interface SearchBarProps {
 
 const SIZE_STYLES: Record<
   SearchBarSize,
-  { input: string; icon: string; clear: string; iconLeft: string; clearRight: string }
+  { width: string; input: string; icon: string; clear: string; iconLeft: string; clearRight: string }
 > = {
   sm: {
-    input: "pl-7 pr-6 h-8 py-1 w-44 text-[12px] rounded-md",
+    width: "w-44",
+    input: "pl-7 pr-6 h-8 py-1 text-[12px] rounded-md",
     icon: "size-3.5",
     clear: "size-3",
     iconLeft: "left-2",
     clearRight: "right-2",
   },
   md: {
-    input: "pl-9 pr-8 h-8 py-4.5 w-56",
+    width: "w-56",
+    input: "pl-9 pr-8 h-8 py-4.5",
     icon: "size-3.5",
     clear: "size-3.5",
     iconLeft: "left-2.5",
@@ -41,7 +43,7 @@ export default function SearchBar({
 }: SearchBarProps) {
   const s = SIZE_STYLES[size];
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative", s.width, className)}>
       <MagnifyingGlassIcon
         className={cn(
           "absolute top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none z-10",
@@ -54,7 +56,7 @@ export default function SearchBar({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={cn(s.input, "focus-visible:outline-none focus:outline-none")}
+        className={cn(s.input, "w-full focus-visible:outline-none focus:outline-none")}
       />
       {value && (
         <button

@@ -4,7 +4,7 @@ import SearchBar from "@/components/common/inputs/SearchBar.tsx";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SortableTableHead } from "@/components/common/table/SortableTableHead";
-import { TablePagination } from "@/components/common/table/TablePagination";
+import DataPagination from "@/components/common/pagination/DataPagination";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useTablePagination } from "@/hooks/useTablePagination";
 import FilterPillGroup, { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
@@ -68,14 +68,12 @@ export default function DataTable<T extends { id: string | number }, S extends s
   const [search, setSearch] = useState("");
   const [filterValue, setFilterValue] = useState<F | null>(null);
   const { sort, toggleSort } = useTableSort<S>(defaultSort, defaultSortDir);
-  const { page, setPage, perPage, setPerPage } = useTablePagination(defaultPerPage, [search, filterValue]);
+  const { page, setPage, perPage } = useTablePagination(defaultPerPage, [search, filterValue]);
 
   const {
     data: rows,
     total,
     lastPage,
-    from,
-    to,
     isLoading,
     isError,
   } = hook({
@@ -187,16 +185,7 @@ export default function DataTable<T extends { id: string | number }, S extends s
       </Table>
 
       {!isLoading && !isError && (
-        <TablePagination
-          page={page}
-          lastPage={lastPage}
-          perPage={perPage}
-          total={total}
-          from={from}
-          to={to}
-          onPageChange={setPage}
-          onPerPageChange={setPerPage}
-        />
+        <DataPagination page={page} totalPages={lastPage} onPageChange={setPage} className="pb-3" />
       )}
     </ComposedCard>
   );

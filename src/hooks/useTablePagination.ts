@@ -6,7 +6,6 @@ export function useTablePagination(defaultPerPage = 15, resetDeps: unknown[] = [
 
   useEffect(() => {
     setPage(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...resetDeps, perPage]);
 
   return { page, setPage, perPage, setPerPage };

@@ -1,17 +1,11 @@
 import { useEffect, useState } from "react";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet.tsx";
 import SearchBar from "@/components/common/inputs/SearchBar.tsx";
-import { TablePagination } from "@/components/common/table/TablePagination.tsx";
-import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
-import { Skeleton } from "@/components/ui/skeleton.tsx";
+import DataPagination from "@/components/common/pagination/DataPagination.tsx";
+import Feedback from "@/components/common/feedbacks/Feedback.tsx";
+import MediumSkillHolderRow from "@/components/specified/models/project/datas/MediumSkillHolderRow.tsx";
 import { useTablePagination } from "@/hooks/useTablePagination.ts";
 import useGetSkillHolders from "@/api/projects/useGetSkillHolders.ts";
-import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
-import { getFullName } from "@/utils/formatters/persons.ts";
-import { cn } from "@/lib/utils.ts";
-import { skillLevelLabel } from "@/lib/theme/skillLevel.ts";
-
-const SKELETON_ROWS = 6;
 
 export interface HoldersSheetSkill {
   id: number;
@@ -25,47 +19,18 @@ interface SkillHoldersSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-function HolderRow({ holder, search }: { holder: ProjectKnowledgeCoverageHolder; search: string }) {
-  return (
-    <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-lg hover:bg-muted/40 transition-colors">
-      <UserAvatar firstname={holder.firstname} lastname={holder.lastname} variant={holder.status} size="base" />
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold text-foreground truncate">
-          <HighlightMatch text={getFullName(holder.firstname, holder.lastname)} searchTerm={search} />
-        </p>
-        {holder.on_leave_today && <p className="text-[11px] text-warning font-medium">On leave today</p>}
-      </div>
-      <span className="text-[12px] font-semibold text-muted-foreground tabular-nums whitespace-nowrap">
-        {skillLevelLabel(holder.level)} ({holder.level}/5)
-      </span>
-    </div>
-  );
-}
-
-function HolderRowSkeleton() {
-  return (
-    <div className="flex items-center gap-3 px-3.5 py-2.5">
-      <UserAvatar.Skeleton size="base" />
-      <div className="flex-1 space-y-1.5">
-        <Skeleton className="h-3.5 w-40" />
-      </div>
-      <Skeleton className="h-3.5 w-20" />
-    </div>
-  );
-}
-
 export default function SkillHoldersSheet({ projectId, skill, open, onOpenChange }: SkillHoldersSheetProps) {
   const [search, setSearch] = useState("");
-  const { page, setPage, perPage, setPerPage } = useTablePagination(10, [search, skill?.id]);
+  const { page, setPage, perPage } = useTablePagination(10, [search, skill?.id]);
 
   const {
     data: holders,
     total,
     lastPage,
-    from,
-    to,
     isLoading,
     isError,
+    isFetching,
+    isPlaceholderData,
   } = useGetSkillHolders(projectId, skill?.id ?? null, {
     page,
     per_page: perPage,
@@ -91,37 +56,34 @@ export default function SkillHoldersSheet({ projectId, skill, open, onOpenChange
         ) : undefined
       }
       maxWidth="sm:max-w-[480px]"
-      className="p-0"
       subheader={<SearchBar value={search} onChange={setSearch} placeholder="Search holders..." className="w-full" />}
+      footer={
+        !isLoading && !isError && lastPage > 1 ? (
+          <div className="flex w-full justify-center">
+            <DataPagination page={page} totalPages={lastPage} onPageChange={setPage} disabled={isFetching} />
+          </div>
+        ) : null
+      }
     >
-      <div className={cn("space-y-0.5", isLoading && "pointer-events-none")}>
-        {isLoading ? (
-          Array.from({ length: SKELETON_ROWS }).map((_, i) => <HolderRowSkeleton key={i} />)
-        ) : isError ? (
-          <p className="px-3.5 py-12 text-center text-sm text-muted-foreground">
-            Failed to load holders. Check API connection.
-          </p>
-        ) : holders.length === 0 ? (
-          <p className="px-3.5 py-12 text-center text-sm text-muted-foreground">
-            {search ? "No holders match your search." : "No one holds this skill yet."}
-          </p>
-        ) : (
-          holders.map((h) => <HolderRow key={h.id} holder={h} search={search} />)
-        )}
-      </div>
-
-      {!isLoading && !isError && total > perPage && (
-        <div className="-mx-6">
-          <TablePagination
-            page={page}
-            lastPage={lastPage}
-            perPage={perPage}
-            total={total}
-            from={from}
-            to={to}
-            onPageChange={setPage}
-            onPerPageChange={setPerPage}
-          />
+      {isLoading || isPlaceholderData ? (
+        <div className="space-y-2">
+          {Array.from({ length: perPage > 8 ? 8 : perPage }).map((_, i) => (
+            <MediumSkillHolderRow.Skeleton key={i} />
+          ))}
+        </div>
+      ) : isError ? (
+        <Feedback variant="danger" title="Failed to load holders" description="Check API connection." />
+      ) : holders.length === 0 ? (
+        <Feedback
+          variant="neutral"
+          title={search ? "No matches" : "No holders yet"}
+          description={search ? "Try adjusting the search." : "No one holds this skill yet."}
+        />
+      ) : (
+        <div className="space-y-2">
+          {holders.map((h) => (
+            <MediumSkillHolderRow key={h.id} holder={h} search={search} />
+          ))}
         </div>
       )}
     </ComposedSheet>
