@@ -69,7 +69,8 @@ export default function CreateDepartmentSheet({ open, onOpenChange }: CreateDepa
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
-            disabled={!isDirty || !isValid || isPending}
+            disabled={!isDirty || !isValid}
+            loading={isPending}
             className="flex-1"
             size="lg"
           >

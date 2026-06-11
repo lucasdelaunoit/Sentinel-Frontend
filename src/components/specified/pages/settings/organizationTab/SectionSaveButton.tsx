@@ -20,7 +20,7 @@ export default function SectionSaveButton({ dirty, isPending, justSaved, onSave 
   }
 
   return (
-    <Button onClick={onSave} disabled={!dirty || isPending} className={cn("gap-1.5", !dirty && "opacity-60")}>
+    <Button onClick={onSave} disabled={!dirty} loading={isPending} className={cn("gap-1.5", !dirty && "opacity-60")}>
       {isPending ? "Saving…" : "Save"}
     </Button>
   );

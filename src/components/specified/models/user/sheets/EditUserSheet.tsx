@@ -129,7 +129,8 @@ export default function EditUserSheet({ open, onOpenChange, user }: EditUserShee
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
-            disabled={!isDirty || !isValid || isLoading}
+            disabled={!isDirty || !isValid}
+            loading={isLoading}
             className="flex-1"
             size="lg"
           >

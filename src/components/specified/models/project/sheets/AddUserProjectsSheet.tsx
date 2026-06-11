@@ -67,7 +67,7 @@ export default function AddUserProjectsSheet({ userId, open, onOpenChange }: Add
           <Button variant="outline" onClick={close} className="flex-1" disabled={attaching} size="lg">
             Cancel
           </Button>
-          <Button onClick={submit} disabled={picked === null || attaching} className="flex-1" size="lg">
+          <Button onClick={submit} disabled={picked === null} loading={attaching} className="flex-1" size="lg">
             {attaching ? "Assigning…" : "Assign project"}
           </Button>
         </>

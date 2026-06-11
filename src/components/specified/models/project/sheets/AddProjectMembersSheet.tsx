@@ -67,7 +67,7 @@ export default function AddProjectMembersSheet({ projectId, open, onOpenChange }
           <Button variant="outline" onClick={close} className="flex-1" disabled={attaching} size="lg">
             Cancel
           </Button>
-          <Button onClick={submit} disabled={picked === null || attaching} className="flex-1" size="lg">
+          <Button onClick={submit} disabled={picked === null} loading={attaching} className="flex-1" size="lg">
             {attaching ? "Adding…" : "Add member"}
           </Button>
         </>

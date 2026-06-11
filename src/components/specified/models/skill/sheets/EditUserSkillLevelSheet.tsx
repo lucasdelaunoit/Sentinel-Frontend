@@ -53,7 +53,7 @@ export default function EditUserSkillLevelSheet({ userId, skill, open, onOpenCha
           <Button variant="outline" onClick={close} className="flex-1" disabled={isLoading} size="lg">
             Cancel
           </Button>
-          <Button onClick={submit} disabled={!dirty || isLoading} className="flex-1" size="lg">
+          <Button onClick={submit} disabled={!dirty} loading={isLoading} className="flex-1" size="lg">
             {isLoading ? "Saving…" : "Save changes"}
           </Button>
         </>

@@ -85,7 +85,8 @@ export default function CreateAbsenceSheet({ open, onOpenChange, userId }: Creat
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
-            disabled={!isDirty || !isValid || isPending || !!overlapError}
+            disabled={!isDirty || !isValid || !!overlapError}
+            loading={isPending}
             className="flex-1"
             size="lg"
           >

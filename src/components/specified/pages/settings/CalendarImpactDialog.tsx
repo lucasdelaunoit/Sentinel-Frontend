@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarClock, Check, Loader2 } from "lucide-react";
+import { CalendarClock, Check } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -135,8 +135,8 @@ export default function CalendarImpactDialog({
           <Button variant="ghost" onClick={onCancel} disabled={isApplying} className="rounded-xl">
             Cancel
           </Button>
-          <Button onClick={handleApply} disabled={isApplying} className="rounded-xl gap-1.5">
-            {isApplying ? <Loader2 className="size-3.5 animate-spin" /> : <Check className="size-3.5" />}
+          <Button onClick={handleApply} loading={isApplying} className="rounded-xl gap-1.5">
+            {!isApplying && <Check className="size-3.5" />}
             Apply change
           </Button>
         </AlertDialogFooter>

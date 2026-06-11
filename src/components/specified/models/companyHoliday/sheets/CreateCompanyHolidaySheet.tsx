@@ -107,7 +107,8 @@ export default function CreateCompanyHolidaySheet({ open, onOpenChange, defaultD
             </Button>
             <Button
               onClick={handleSubmit(onSubmit)}
-              disabled={!isDirty || !isValid || isPending || guard.isChecking}
+              disabled={!isDirty || !isValid}
+              loading={isPending || guard.isChecking}
               className="flex-1"
               size="lg"
             >

@@ -102,7 +102,8 @@ export default function EditAbsenceSheet({ absence, userId, open, onOpenChange }
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
-            disabled={!isDirty || !isValid || isPending || !!overlapError}
+            disabled={!isDirty || !isValid || !!overlapError}
+            loading={isPending}
             className="flex-1"
             size="lg"
           >

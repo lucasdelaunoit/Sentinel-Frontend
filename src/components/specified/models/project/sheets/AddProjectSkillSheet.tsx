@@ -95,7 +95,7 @@ export default function AddProjectSkillSheet({
           <Button variant="outline" onClick={close} className="flex-1" disabled={adding} size="lg">
             Cancel
           </Button>
-          <Button onClick={submit} disabled={!canSubmit} className="flex-1" size="lg">
+          <Button onClick={submit} disabled={!canSubmit} loading={adding} className="flex-1" size="lg">
             {adding ? "Adding…" : "Add requirement"}
           </Button>
         </>

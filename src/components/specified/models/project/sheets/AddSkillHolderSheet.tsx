@@ -100,7 +100,7 @@ export default function AddSkillHolderSheet({ projectId, skill, open, onOpenChan
           <Button variant="outline" onClick={close} className="flex-1" disabled={attaching} size="lg">
             Cancel
           </Button>
-          <Button onClick={submit} disabled={!canSubmit} className="flex-1" size="lg">
+          <Button onClick={submit} disabled={!canSubmit} loading={attaching} className="flex-1" size="lg">
             {attaching ? "Saving…" : "Assign skill"}
           </Button>
         </>

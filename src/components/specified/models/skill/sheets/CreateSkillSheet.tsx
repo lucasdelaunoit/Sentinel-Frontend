@@ -84,7 +84,8 @@ export default function CreateSkillSheet({ open, onOpenChange, categories, prese
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
-            disabled={!isDirty || !isValid || isPending}
+            disabled={!isDirty || !isValid}
+            loading={isPending}
             className="flex-1"
             size="lg"
           >

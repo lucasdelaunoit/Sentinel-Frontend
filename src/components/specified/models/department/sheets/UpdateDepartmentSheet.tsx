@@ -70,7 +70,8 @@ export default function UpdateDepartmentSheet({ open, onOpenChange, department }
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
-            disabled={!isDirty || !isValid || isPending}
+            disabled={!isDirty || !isValid}
+            loading={isPending}
             className="flex-1"
             size="lg"
           >

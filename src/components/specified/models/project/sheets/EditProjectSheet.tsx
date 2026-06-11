@@ -118,7 +118,8 @@ export default function EditProjectSheet({ open, onOpenChange, project }: EditPr
           </Button>
           <Button
             onClick={handleSubmit(onSubmit)}
-            disabled={!isDirty || !isValid || isLoading}
+            disabled={!isDirty || !isValid}
+            loading={isLoading}
             className="flex-1"
             size="lg"
           >

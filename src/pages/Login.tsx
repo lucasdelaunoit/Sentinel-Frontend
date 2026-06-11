@@ -93,7 +93,7 @@ export default function Login() {
               Keep me signed in for 30 days
             </Label>
 
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+            <Button type="submit" loading={isSubmitting} className="w-full">
               {isSubmitting ? "Signing in…" : "Sign in"}
             </Button>
           </form>
