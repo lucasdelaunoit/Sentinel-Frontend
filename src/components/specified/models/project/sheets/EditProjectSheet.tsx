@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea.tsx";
 import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field.tsx";
 import ComposedSheet from "@/components/common/sheets/ComposedSheet.tsx";
 import useUpdateProject from "@/api/projects/useUpdateProject.ts";
-import type { ProjectDetailResponse } from "@/types/dashboard";
 
 const MAX_NAME = 80;
 const MAX_DESC = 5000;

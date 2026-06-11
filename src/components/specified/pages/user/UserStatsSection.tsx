@@ -1,6 +1,5 @@
 import { ShieldAlert, Users, Code2, FolderKanban } from "lucide-react";
 import StatCard from "@/components/common/cards/StatCard";
-import type { UserStats } from "@/types/dashboard";
 
 interface UserStatsSectionProps {
   stats: UserStats;

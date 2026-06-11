@@ -9,7 +9,6 @@ import SkillCategoryBadge from "@/components/specified/models/skill/badges/Skill
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
 import EditUserSkillLevelSheet from "@/components/specified/models/skill/sheets/EditUserSkillLevelSheet";
 import useDetachSkillFromUser from "@/api/user/useDetachSkillFromUser";
-import type { UserSkillDetail } from "@/types/dashboard";
 
 interface UserSkillCardProps {
   userId: string;

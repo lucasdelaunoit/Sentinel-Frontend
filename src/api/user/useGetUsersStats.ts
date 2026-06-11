@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import { axiosClient } from "@/lib/api/client";
 
 /* -------- /Types/ -------- */
-import type { UsersStats } from "@/types/dashboard";
 
 /* ------------------- (Hook) ------------------ */
 

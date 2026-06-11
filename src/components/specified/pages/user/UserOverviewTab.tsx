@@ -21,7 +21,6 @@ import DataDisplay from "@/components/common/data/DataDisplay.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import { cn } from "@/lib/utils.ts";
 import { type Tone, TONE_SOFT_BG, TONE_SOFT_BORDER, TONE_TEXT } from "@/lib/theme/tone.ts";
-import type { StatCardData, UserRecommendationIcon } from "@/types/dashboard";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 
 interface UserOverviewTabProps {

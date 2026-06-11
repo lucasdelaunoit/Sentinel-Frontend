@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { axiosClient } from "@/lib/api/client";
 import { useQueryString, unwrapPagination, type PaginatedResponse, type QueryParams } from "@/lib/api/pagination";
-import type { UserListItem } from "@/types/dashboard";
 
 export default function useGetProjectUsers(
   projectId: string | number | undefined,

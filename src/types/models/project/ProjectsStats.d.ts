@@ -1,6 +1,6 @@
 interface ProjectsStats {
-  total: import("@/types/dashboard").StatCardData;
-  avg_fragility: import("@/types/dashboard").StatCardData;
-  fragile_count: import("@/types/dashboard").StatCardData;
-  deadline_pressure: import("@/types/dashboard").StatCardData;
+  total: StatCardData;
+  avg_fragility: StatCardData;
+  fragile_count: StatCardData;
+  deadline_pressure: StatCardData;
 }

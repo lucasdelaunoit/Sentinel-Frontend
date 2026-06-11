@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { axiosClient } from "@/lib/api/client";
-import type { UserAbsenceStats } from "@/types/dashboard";
 
 export default function useGetUserAbsenceStats(userId: string | undefined) {
 

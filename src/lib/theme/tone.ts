@@ -1,7 +1,7 @@
 /**
  * Semantic tone scale — the single source of truth for risk/status coloring.
  *
- * Every domain enum (Severity, RiskLevel, coverage status, …) maps onto a Tone,
+ * Every domain enum (Severity, coverage status, …) maps onto a Tone,
  * and every component resolves its classes from these maps. Class strings are
  * written out in full so the Tailwind JIT can see them — never build them with
  * template literals.

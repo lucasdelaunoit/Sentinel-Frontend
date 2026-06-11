@@ -1,11 +1,9 @@
-import type { RiskEventKind, RiskEventOrgImpact, RiskEventSeverity } from "@/types/dashboard";
-
-export interface UpcomingRiskEvent {
+interface UpcomingRiskEvent {
   id: string;
   date: string;
   employee: { id: string; firstname: string; lastname: string };
   kind: RiskEventKind;
-  severity: RiskEventSeverity;
+  severity: Severity;
   org_impact: RiskEventOrgImpact;
   affected_projects: RiskEventProjectImpact[];
 }

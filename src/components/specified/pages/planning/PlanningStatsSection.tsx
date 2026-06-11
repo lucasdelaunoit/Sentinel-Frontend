@@ -1,6 +1,5 @@
 import { Activity, Gauge, Shield, Users } from "lucide-react";
 import StatCard from "@/components/common/cards/StatCard";
-import type { StatCardData } from "@/types/dashboard";
 
 interface PlanningStatsSectionProps {
   data: SimulateResponse;

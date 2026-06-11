@@ -7,7 +7,6 @@ import { PencilSimpleIcon } from "@phosphor-icons/react";
 import DataDisplay from "@/components/common/data/DataDisplay.tsx";
 import EditProjectSheet from "@/components/specified/models/project/sheets/EditProjectSheet.tsx";
 import { formatDate } from "@/utils/formatters/date.ts";
-import type { ProjectDetailResponse } from "@/types/dashboard";
 import ProjectAvatar from "../../models/project/avatars/ProjectAvatar";
 import ProjectStatusBadge from "@/components/specified/models/project/badges/ProjectStatusBadge.tsx";
 

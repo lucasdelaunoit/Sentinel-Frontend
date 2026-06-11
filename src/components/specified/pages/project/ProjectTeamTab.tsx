@@ -11,7 +11,6 @@ import DataTable, { type DataTableColumn } from "@/components/common/table/DataT
 import type { FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import useGetProjectUsers from "@/api/projects/useGetProjectUsers";
 import AddProjectMembersSheet from "@/components/specified/models/project/sheets/AddProjectMembersSheet";
-import type { UserListItem } from "@/types/dashboard";
 
 type TeamSortableField = "firstname" | "lastname" | "title" | "created_at";
 

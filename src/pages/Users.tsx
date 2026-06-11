@@ -22,7 +22,6 @@ import UserStatusBadge from "@/components/specified/models/user/badges/UserStatu
 import UsersStatCardsSection from "@/components/specified/pages/employees/UsersStatCardsSection.tsx";
 import { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import CreateUserSheet from "@/components/specified/models/user/sheets/CreateUserSheet";
-import type { UserListItem, UserSkillItem } from "@/types/dashboard";
 
 /* ─── Types ────────────────────────────────────────────────── */
 

@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { axiosClient } from "@/lib/api/client";
 import { useQueryString, unwrapPagination, type PaginatedResponse, type QueryParams } from "@/lib/api/pagination";
-import type { UserSkillDetail } from "@/types/dashboard";
 
 export default function useGetSkillsForUser(userId: string | undefined, params: QueryParams = {}) {
   const queryString = useQueryString(params);
