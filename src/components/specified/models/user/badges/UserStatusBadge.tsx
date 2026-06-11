@@ -1,18 +1,16 @@
 import { Badge } from "@/components/ui/badge.tsx";
+import { USER_STATUS_BG, USER_STATUS_LABEL } from "@/lib/theme/userStatus.ts";
+import { UNKNOWN_STATUS_BG, UNKNOWN_STATUS_LABEL } from "@/lib/theme/status.ts";
 
 interface UserStatusBadgeProps {
   status: UserStatus;
 }
 
-const STATUS_VARIANTS: Record<UserStatus, { style: string; text: string }> = {
-  available: { style: "bg-success", text: "Available" },
-  away: { style: "bg-danger", text: "Away" },
-};
-
-const DEFAULT_STATUS = { style: "bg-gray-200", text: "Unknown" };
-
 export default function UserStatusBadge({ status }: UserStatusBadgeProps) {
-  const statusVariant = status && STATUS_VARIANTS[status] ? STATUS_VARIANTS[status] : DEFAULT_STATUS;
-
-  return <Badge className={statusVariant.style}>{statusVariant.text}</Badge>;
+  const known = status && USER_STATUS_BG[status];
+  return (
+    <Badge className={known || UNKNOWN_STATUS_BG}>
+      {known ? USER_STATUS_LABEL[status] : UNKNOWN_STATUS_LABEL}
+    </Badge>
+  );
 }

@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { getTrajectoryTier, TONE_TEXT, TONE_SOFT_BG, TONE_SOFT_BORDER } from "@/lib/scoring";
+import { getTrajectoryTier } from "@/lib/theme/scoring";
+import { TONE_TEXT, TONE_SOFT_BG, TONE_SOFT_BORDER } from "@/lib/theme/tone.ts";
 
 interface TrajectoryBadgeProps {
   value?: number | null;

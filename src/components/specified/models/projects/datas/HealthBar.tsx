@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { getTrajectoryTier, TONE_BG, TONE_TEXT } from "@/lib/scoring";
+import { getTrajectoryTier } from "@/lib/theme/scoring";
+import { TONE_BG, TONE_TEXT } from "@/lib/theme/tone.ts";
 
 interface TrajectoryBarProps {
   value?: number | null;

@@ -7,7 +7,9 @@ import SkillHoldersSheet, {
 } from "@/components/specified/models/projects/sheets/SkillHoldersSheet.tsx";
 import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable.tsx";
 import { cn } from "@/lib/utils.ts";
-import { type Tone, TONE_BG, TONE_TEXT } from "@/lib/scoring.ts";
+import { TONE_BG, TONE_TEXT } from "@/lib/theme/tone.ts";
+import { COVERAGE_TONE } from "@/lib/theme/skillCoverage.ts";
+import { skillLevelLabel } from "@/lib/theme/skillLevel.ts";
 import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -17,15 +19,7 @@ import AddProjectSkillSheet from "@/components/specified/models/projects/sheets/
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import SkillCoverageStatusBadge from "@/components/specified/models/skill/badges/SkillCoverageStatusBadge.tsx";
 
-const LEVEL_LABELS = ["", "Beginner", "Elementary", "Intermediate", "Advanced", "Expert"] as const;
-
 type CoverageSortField = "name" | "status" | "active_holders_count" | "max_level";
-
-const STATUS_TONE: Record<ProjectKnowledgeCoverageStatus, Tone> = {
-  uncovered: "danger",
-  silo: "warning",
-  covered: "success",
-};
 
 /* ─── Holder avatars ──────────────────────────────────────── */
 
@@ -62,7 +56,7 @@ export default function ProjectSkillCoverageCard({ projectId }: ProjectSkillCove
       header: "Skill",
       sortKey: "name",
       cell: (c, { search }) => {
-        const tone = STATUS_TONE[c.status];
+        const tone = COVERAGE_TONE[c.status];
         return (
           <div className="flex items-center gap-2">
             <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", TONE_BG[tone])} />
@@ -97,7 +91,7 @@ export default function ProjectSkillCoverageCard({ projectId }: ProjectSkillCove
       header: "Active Holders",
       sortKey: "active_holders_count",
       cell: (c) => {
-        const tone = STATUS_TONE[c.status];
+        const tone = COVERAGE_TONE[c.status];
         const widthPct = c.team_size > 0 ? Math.min(100, (c.active_holders_count / c.team_size) * 100) : 0;
         return (
           <div className="flex items-center gap-2">
@@ -149,8 +143,8 @@ export default function ProjectSkillCoverageCard({ projectId }: ProjectSkillCove
       header: "Best Level",
       sortKey: "max_level",
       cell: (c) => {
-        const tone = STATUS_TONE[c.status];
-        const levelLabel = c.max_level > 0 ? LEVEL_LABELS[c.max_level] : "—";
+        const tone = COVERAGE_TONE[c.status];
+        const levelLabel = skillLevelLabel(c.max_level);
         const levelGap = c.required_level > 0 && c.max_level > 0 && c.max_level < c.required_level;
         return c.max_level > 0 ? (
           <div className="flex flex-col">

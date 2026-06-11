@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar";
 import SeveredSkillBadge from "@/components/specified/models/skill/badges/SeveredSkillBadge.tsx";
-import { TONE_BG, TONE_TEXT } from "@/lib/scoring.ts";
+import { TONE_BG, TONE_TEXT } from "@/lib/theme/tone.ts";
 import { cn } from "@/lib/utils.ts";
 
 interface MediumAbsenceImpactRowProps {

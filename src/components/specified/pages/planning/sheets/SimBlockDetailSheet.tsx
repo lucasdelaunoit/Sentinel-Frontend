@@ -12,6 +12,8 @@ import { SegButton } from "@/components/specified/models/absence/sheets/AbsenceF
 import { ABSENCE_TYPE_LABEL, ABSENCE_TYPE_VALUES } from "@/utils/absence/absenceType.ts";
 import { blockDurationLabel, formatHalfDate, formatRange } from "@/utils/planning/calendar";
 import { simColor } from "@/utils/planning/theme";
+import { TONE_SOLID_BADGE } from "@/lib/theme/tone.ts";
+import { capitalize } from "@/utils/formatters/string.ts";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
 import MediumProjectImpactRow from "@/components/specified/models/projects/datas/items/MediumProjectImpactRow.tsx";
 import MediumSkillImpactRow from "@/components/specified/models/skill/datas/items/MediumSkillImpactRow.tsx";
@@ -37,12 +39,12 @@ const SEVERITY_MESSAGE: Record<Severity, string> = {
 };
 
 const MATCH_CLASS = (pct: number) =>
-  pct >= 70 ? "bg-success/15 text-success" : pct >= 40 ? "bg-warning/15 text-warning" : "bg-danger/15 text-danger";
+  TONE_SOLID_BADGE[pct >= 70 ? "success" : pct >= 40 ? "warning" : "danger"];
 
 const COST_CLASS: Record<ReplacementCandidate["cost_signal"], string> = {
-  ok: "bg-success/15 text-success",
-  stretch: "bg-warning/15 text-warning",
-  overloaded: "bg-danger/15 text-danger",
+  ok: TONE_SOLID_BADGE.success,
+  stretch: TONE_SOLID_BADGE.warning,
+  overloaded: TONE_SOLID_BADGE.danger,
 };
 
 export default function SimBlockDetailSheet({
@@ -221,11 +223,11 @@ export default function SimBlockDetailSheet({
                 description={`${c.available_days}d available`}
                 action={
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className={cn("text-[11px]", MATCH_CLASS(c.skill_match_pct))}>
+                    <Badge className={cn("font-semibold", MATCH_CLASS(c.skill_match_pct))}>
                       {c.skill_match_pct}%
                     </Badge>
-                    <Badge variant="secondary" className={cn("text-[9px] uppercase", COST_CLASS[c.cost_signal])}>
-                      {c.cost_signal}
+                    <Badge className={cn("font-semibold", COST_CLASS[c.cost_signal])}>
+                      {capitalize(c.cost_signal)}
                     </Badge>
                   </div>
                 }

@@ -2,6 +2,7 @@ import { RadialBarChart, RadialBar } from "recharts";
 import { ChartContainer, type ChartConfig } from "@/components/ui/chart.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { cn } from "@/lib/utils.ts";
+import { TONE_CSS_VAR } from "@/lib/theme/tone.ts";
 
 type PercentDonutSize = "sm" | "md" | "lg";
 
@@ -24,9 +25,9 @@ export interface Threshold {
 }
 
 const DEFAULT_THRESHOLDS: Threshold[] = [
-  { min: 80, color: "#097155" },
-  { min: 60, color: "#f59e0b" },
-  { min: 0, color: "#ef4444" },
+  { min: 80, color: TONE_CSS_VAR.success },
+  { min: 60, color: TONE_CSS_VAR.warning },
+  { min: 0, color: TONE_CSS_VAR.danger },
 ];
 
 interface PercentDonutProps {

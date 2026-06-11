@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { CAPACITY_ROW_HEIGHT, DAY_COL_WIDTH, NAME_COL_WIDTH, makeDateStr } from "@/utils/planning/calendar";
 import { isOnRealLeave, isOnSimLeave } from "@/utils/planning/leaves";
 import { capacityToneClass } from "@/utils/planning/theme";
+import { SEVERITY_TINT } from "@/lib/theme/severity.ts";
 
 interface PlanningCapacityStripProps {
   days: number[];
@@ -12,12 +13,6 @@ interface PlanningCapacityStripProps {
   isClosedDay: (d: number) => boolean;
   perDayLoad?: DayLoad[];
 }
-
-const SEV_TINT: Record<Severity, string> = {
-  ok: "",
-  warning: "bg-warning/10",
-  critical: "bg-danger/20",
-};
 
 export default function PlanningCapacityStrip({
   days,
@@ -54,7 +49,7 @@ export default function PlanningCapacityStrip({
           const closed = ratio === -1;
           const dateStr = makeDateStr(viewYear, viewMonth, d);
           const load = loadByDate.get(dateStr);
-          const tint = load ? SEV_TINT[load.severity] : "";
+          const tint = load ? SEVERITY_TINT[load.severity] : "";
           return (
             <div
               key={d}

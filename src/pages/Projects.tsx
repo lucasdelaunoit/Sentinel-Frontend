@@ -37,6 +37,7 @@ import useReopenProject from "@/api/projects/useReopenProject";
 import useArchiveProject from "@/api/projects/useArchiveProject";
 import useUnarchiveProject from "@/api/projects/useUnarchiveProject";
 import { formatDate } from "@/utils/formatters/date.ts";
+import { SEVERITY_BG, SEVERITY_TEXT } from "@/lib/theme/severity.ts";
 
 /* ─── Types ────────────────────────────────────────────────── */
 
@@ -44,23 +45,11 @@ type ProjSortKey = "name" | "risk_score" | "team_availability" | "knowledge_cove
 
 /* ─── Helpers ───────────────────────────────────────────────── */
 
-const SEVERITY_TEXT: Record<Severity, string> = {
-  ok: "text-success",
-  warning: "text-warning",
-  critical: "text-danger",
-};
-
-const SEVERITY_DOT: Record<Severity, string> = {
-  ok: "bg-success",
-  warning: "bg-warning",
-  critical: "bg-danger",
-};
-
 function severityText(card: { severity: Severity }) {
   return SEVERITY_TEXT[card.severity];
 }
 function severityDot(card: { severity: Severity }) {
-  return SEVERITY_DOT[card.severity];
+  return SEVERITY_BG[card.severity];
 }
 
 /* ─── Row Actions ───────────────────────────────────────────── */

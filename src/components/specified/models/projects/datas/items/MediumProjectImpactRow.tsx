@@ -4,7 +4,8 @@ import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import MetricBox from "@/components/common/data/MetricBox.tsx";
 import SeveredSkillBadge from "@/components/specified/models/skill/badges/SeveredSkillBadge.tsx";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
-import { getFragilityTier, TONE_BG } from "@/lib/scoring.ts";
+import { getFragilityTier } from "@/lib/theme/scoring.ts";
+import { TONE_BG } from "@/lib/theme/tone.ts";
 import { cn } from "@/lib/utils.ts";
 
 interface MediumProjectImpactRowProps {

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import RecommendationPriorityBadge from "@/components/specified/models/recommendation/badges/RecommendationPriorityBadge.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
-import { SEVERITY_COLORS_CLASSNAMES } from "@/lib/severity.ts";
+import { SEVERITY_BADGE } from "@/lib/theme/severity.ts";
 
 interface RuleSentenceRowProps {
   icon?: Icon;
@@ -27,7 +27,7 @@ export default function MediumRecommendationRow({
         <div
           className={cn(
             "flex size-10 items-center justify-center rounded-lg text-[13px] shrink-0",
-            severity ? SEVERITY_COLORS_CLASSNAMES[severity] : "bg-tertiary text-tertiary-foreground",
+            severity ? SEVERITY_BADGE[severity] : "bg-tertiary text-tertiary-foreground",
           )}
         >
           {Icon && <Icon className="size-4" weight="bold" />}

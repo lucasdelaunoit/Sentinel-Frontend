@@ -13,6 +13,7 @@ import {
 } from "@/utils/planning/calendar";
 import { getViewLeaves } from "@/utils/planning/leaves";
 import { absenceTheme, simColor } from "@/utils/planning/theme";
+import { TONE_SOFT_BADGE } from "@/lib/theme/tone.ts";
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import { CaretLeftIcon, CaretRightIcon, ShieldWarningIcon, WarningIcon } from "@phosphor-icons/react";
 import { GripVertical } from "lucide-react";
@@ -91,7 +92,7 @@ export default function GanttEmployeeRow({
           <div
             className={cn(
               "flex shrink-0 size-5 items-center justify-center rounded-full",
-              impact === "critical" ? "bg-danger/15 text-destructive-foreground" : "bg-warning/15 text-warning",
+              impact === "critical" ? TONE_SOFT_BADGE.danger : TONE_SOFT_BADGE.warning,
             )}
           >
             {impact === "critical" ? <ShieldWarningIcon className="size-3" /> : <WarningIcon className="size-3" />}

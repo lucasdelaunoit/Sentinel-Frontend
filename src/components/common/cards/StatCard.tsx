@@ -3,12 +3,7 @@ import { ArrowRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils.ts";
 import { Card } from "@/components/ui/card.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-
-const SEVERITY_COLOR: Record<Severity, string> = {
-  critical: "text-destructive-foreground",
-  warning: "text-amber-500",
-  ok: "text-emerald-600",
-};
+import { SEVERITY_TEXT } from "@/lib/theme/severity.ts";
 
 /** Minimal metric shape rendered by the card — satisfied by both StatCardData and MetricResult. */
 interface StatCardValue {
@@ -26,7 +21,7 @@ interface StatCardProps {
 }
 
 export default function StatCard({ title, icon: Icon, card, onClick, className }: StatCardProps) {
-  const color = (card && SEVERITY_COLOR[card.severity]) || "text-foreground";
+  const color = (card && SEVERITY_TEXT[card.severity]) || "text-foreground";
 
   return (
     <Card

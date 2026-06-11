@@ -1,6 +1,6 @@
 import ComposedCard from "@/components/common/cards/ComposedCard.tsx";
 import MetricRow from "@/components/common/displays/MetricRow.tsx";
-import type { Tone } from "@/lib/scoring.ts";
+import type { Tone } from "@/lib/theme/tone.ts";
 import { type Icon, ShieldCheckIcon, WarningIcon, WarningOctagonIcon } from "@phosphor-icons/react";
 import useGetProjectCoverageSummary from "@/api/projects/useGetProjectCoverageSummary.ts";
 

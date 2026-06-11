@@ -12,6 +12,7 @@ import ProjectStatusBadge from "@/components/specified/models/projects/badges/Pr
 import AddUserProjectsSheet from "@/components/specified/models/projects/sheets/AddUserProjectsSheet";
 import useGetUserProjects from "@/api/user/useGetUserProjects";
 import { formatDate } from "@/utils/formatters/date.ts";
+import { SEVERITY_BG, SEVERITY_TEXT } from "@/lib/theme/severity.ts";
 
 type ProjectSortField = "name" | "risk_score" | "team_availability" | "knowledge_coverage" | "created_at";
 
@@ -24,23 +25,11 @@ const STATUS_FILTER_OPTIONS: FilterPillOption<ProjectStatus | null>[] = [
   { value: "archived", label: "Archived" },
 ];
 
-const SEVERITY_TEXT: Record<Severity, string> = {
-  ok: "text-success",
-  warning: "text-warning",
-  critical: "text-danger",
-};
-
-const SEVERITY_DOT: Record<Severity, string> = {
-  ok: "bg-success",
-  warning: "bg-warning",
-  critical: "bg-danger",
-};
-
 function MetricCell({ metric, withRaw = false }: { metric: MetricResult | null | undefined; withRaw?: boolean }) {
   if (!metric) return <span className="text-[13px] text-muted-foreground">—</span>;
   return (
     <div className="flex items-center gap-1.5" title={metric.insight ?? undefined}>
-      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", SEVERITY_DOT[metric.severity])} />
+      <div className={cn("size-1.5 rounded-full shrink-0 shadow-sm", SEVERITY_BG[metric.severity])} />
       <span className={cn("text-[13px] font-semibold whitespace-nowrap", SEVERITY_TEXT[metric.severity])}>
         {metric.value}
         {withRaw && metric.value_raw !== null && metric.value_raw !== undefined && (

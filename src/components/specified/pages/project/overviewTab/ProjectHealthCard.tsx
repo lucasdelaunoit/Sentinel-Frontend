@@ -1,4 +1,4 @@
-import { type Tone, TONE_TEXT } from "@/lib/scoring.ts";
+import { type Tone, TONE_TEXT } from "@/lib/theme/tone.ts";
 import { cn } from "@/lib/utils.ts";
 import MetricRow, { type MetricTone } from "@/components/common/displays/MetricRow.tsx";
 import { CalendarIcon, type Icon, ShieldWarningIcon, UsersIcon } from "@phosphor-icons/react";

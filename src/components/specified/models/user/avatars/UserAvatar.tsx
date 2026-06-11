@@ -1,8 +1,10 @@
 import { cn } from "@/lib/utils.ts";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { getInitials } from "@/utils/formatters/persons.ts";
+import { USER_STATUS_BG } from "@/lib/theme/userStatus.ts";
+import { AVATAR_SIZE, type AvatarSize } from "@/lib/theme/avatar.ts";
 
-export type UserAvatarSizes = Extract<Sizes, "base" | "lg" | "xl" | "2xl">;
+export type UserAvatarSizes = AvatarSize;
 
 interface StatusAvatarProps {
   firstname: string;
@@ -11,25 +13,13 @@ interface StatusAvatarProps {
   size?: UserAvatarSizes;
 }
 
-const STATUS_VARIANTS: Record<UserStatus, string> = {
-  available: "bg-success",
-  away: "bg-danger",
-};
-
-const SIZE_VARIANTS: Record<UserAvatarSizes, string> = {
-  base: "size-8 text-[11px] font-bold",
-  lg: "size-10 text-[13px] font-medium",
-  xl: "size-14 text-[15px] font-semibold",
-  "2xl": "size-20 text-xl font-bold",
-};
-
 export default function UserAvatar({ firstname, lastname, variant = "available", size = "base" }: StatusAvatarProps) {
   return (
     <div
       className={cn(
         "flex items-center select-none justify-center rounded-xl text-primary-foreground shadow-sm",
-        SIZE_VARIANTS[size],
-        STATUS_VARIANTS[variant],
+        AVATAR_SIZE[size],
+        USER_STATUS_BG[variant],
       )}
     >
       {getInitials(firstname, lastname)}
@@ -38,5 +28,5 @@ export default function UserAvatar({ firstname, lastname, variant = "available",
 }
 
 UserAvatar.Skeleton = function UserAvatarSkeleton({ size = "base" }: { size?: UserAvatarSizes }) {
-  return <Skeleton className={cn("rounded-xl shrink-0", SIZE_VARIANTS[size])} />;
+  return <Skeleton className={cn("rounded-xl shrink-0", AVATAR_SIZE[size])} />;
 };

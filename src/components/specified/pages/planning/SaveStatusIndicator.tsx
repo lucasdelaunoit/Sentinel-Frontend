@@ -11,7 +11,7 @@ const META: Record<SimulateStatus, { label: string; Icon: typeof Check; cls: str
   idle: { label: "Up to date", Icon: Check, cls: "text-muted-foreground" },
   pending: { label: "Saving …", Icon: Loader2, cls: "text-muted-foreground", spin: true },
   saved: { label: "Saved", Icon: Check, cls: "text-success" },
-  error: { label: "Invalid range", Icon: AlertCircle, cls: "text-destructive-foreground" },
+  error: { label: "Invalid range", Icon: AlertCircle, cls: "text-danger" },
 };
 
 export default function SaveStatusIndicator({ status, className }: SaveStatusIndicatorProps) {

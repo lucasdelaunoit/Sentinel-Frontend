@@ -1,17 +1,7 @@
+import type { Tone } from "@/lib/theme/tone.ts";
+
 export type FragilityKey = "solid" | "stable" | "stretched" | "fragile" | "critical";
 export type TrajectoryKey = "off_course" | "drifting" | "wobbling" | "on_track" | "cruising";
-
-export type Tone = "success" | "warning" | "danger";
-
-export type RiskLevel = "critical" | "high" | "medium" | "low";
-
-/** Maps a discrete risk level onto the semantic tone scale. */
-export const RISK_TONE: Record<RiskLevel, Tone> = {
-  critical: "danger",
-  high: "danger",
-  medium: "warning",
-  low: "success",
-};
 
 export interface FragilityTier {
   key: FragilityKey;
@@ -52,27 +42,3 @@ export function getFragilityTier(raw: number): FragilityTier {
 export function getTrajectoryTier(raw: number): TrajectoryTier {
   return TRAJECTORY_TIERS.find((t) => raw >= t.min && raw <= t.max) ?? TRAJECTORY_TIERS[0];
 }
-
-export const TONE_TEXT: Record<Tone, string> = {
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger",
-};
-
-export const TONE_BG: Record<Tone, string> = {
-  success: "bg-success",
-  warning: "bg-warning",
-  danger: "bg-danger",
-};
-
-export const TONE_SOFT_BG: Record<Tone, string> = {
-  success: "bg-success/10",
-  warning: "bg-warning/10",
-  danger: "bg-danger/10",
-};
-
-export const TONE_SOFT_BORDER: Record<Tone, string> = {
-  success: "border-success/40",
-  warning: "border-warning/40",
-  danger: "border-danger/40",
-};

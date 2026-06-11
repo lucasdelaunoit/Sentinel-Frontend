@@ -9,8 +9,8 @@ import useGetSkillHolders from "@/api/projects/useGetSkillHolders";
 import { HighlightMatch } from "@/utils/useHighlightableText";
 import { getFullName } from "@/utils/formatters/persons";
 import { cn } from "@/lib/utils";
+import { skillLevelLabel } from "@/lib/theme/skillLevel.ts";
 
-const LEVEL_LABELS = ["", "Beginner", "Elementary", "Intermediate", "Advanced", "Expert"] as const;
 const SKELETON_ROWS = 6;
 
 export interface HoldersSheetSkill {
@@ -36,7 +36,7 @@ function HolderRow({ holder, search }: { holder: ProjectKnowledgeCoverageHolder;
         {holder.on_leave_today && <p className="text-[11px] text-warning font-medium">On leave today</p>}
       </div>
       <span className="text-[12px] font-semibold text-muted-foreground tabular-nums whitespace-nowrap">
-        {LEVEL_LABELS[holder.level] ?? "—"} ({holder.level}/5)
+        {skillLevelLabel(holder.level)} ({holder.level}/5)
       </span>
     </div>
   );

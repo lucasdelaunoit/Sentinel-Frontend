@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/badge.tsx";
-import { COVERAGE_COLORS_CLASSNAMES, COVERAGE_LABEL } from "@/lib/skill/skillCoverage.ts";
+import { COVERAGE_BADGE, COVERAGE_LABEL } from "@/lib/theme/skillCoverage.ts";
 
 interface SkillCoverageStatusBadgeProps {
   status: ProjectKnowledgeCoverageStatus;
 }
 
 export default function SkillCoverageStatusBadge({ status }: SkillCoverageStatusBadgeProps) {
-  return <Badge className={COVERAGE_COLORS_CLASSNAMES[status]}>{COVERAGE_LABEL[status]}</Badge>;
+  return <Badge className={COVERAGE_BADGE[status]}>{COVERAGE_LABEL[status]}</Badge>;
 }

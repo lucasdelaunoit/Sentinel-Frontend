@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { cn } from "@/lib/utils.ts";
 import { formatDelta } from "@/utils/formatters/number.ts";
+import { TONE_SOLID_BADGE } from "@/lib/theme/tone.ts";
 
 interface MetricBoxProps {
   label: string;
@@ -17,9 +18,9 @@ export default function MetricBox({ label, before, after, delta, worseWhen = "do
   const worse = worseWhen === "up" ? resolvedDelta > 0 : resolvedDelta < 0;
   const better = worseWhen === "up" ? resolvedDelta < 0 : resolvedDelta > 0;
   const chipTone = worse
-    ? "bg-danger text-background"
+    ? TONE_SOLID_BADGE.danger
     : better
-      ? "bg-success text-background"
+      ? TONE_SOLID_BADGE.success
       : "bg-muted text-muted-foreground";
 
   return (

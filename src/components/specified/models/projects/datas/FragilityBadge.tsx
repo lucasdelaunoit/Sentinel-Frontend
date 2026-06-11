@@ -1,19 +1,14 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge.tsx";
-
-const FRAGILITY_COLORS_TIERS: Record<Severity, string> = {
-  critical: "bg-danger",
-  warning: "bg-warning",
-  ok: "bg-success",
-};
+import { SEVERITY_BG } from "@/lib/theme/severity.ts";
 
 interface FragilityBadgeProps {
   fragility: MetricResult;
 }
 
 export default function FragilityBadge({ fragility }: FragilityBadgeProps) {
-  return <Badge className={FRAGILITY_COLORS_TIERS[fragility.severity]}>{fragility.value}</Badge>;
+  return <Badge className={SEVERITY_BG[fragility.severity]}>{fragility.value}</Badge>;
 }
 
 FragilityBadge.Skeleton = function FragilityBadgeSkeleton({ size = "md" }: { size?: "sm" | "md" }) {

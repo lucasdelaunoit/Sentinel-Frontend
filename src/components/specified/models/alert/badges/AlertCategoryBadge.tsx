@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge.tsx";
 import { capitalize } from "@/utils/formatters/string.ts";
 import { cn } from "@/lib/utils.ts";
-import { SEVERITY_COLORS_CLASSNAMES } from "@/lib/severity.ts";
+import { SEVERITY_BADGE } from "@/lib/theme/severity.ts";
 
 interface RecommendationPriorityBadgeProps {
   category: string;
@@ -9,5 +9,5 @@ interface RecommendationPriorityBadgeProps {
 }
 
 export default function AlertCategoryBadge({ category, severity }: RecommendationPriorityBadgeProps) {
-  return <Badge className={cn(SEVERITY_COLORS_CLASSNAMES[severity])}>{capitalize(category)}</Badge>;
+  return <Badge className={cn(SEVERITY_BADGE[severity])}>{capitalize(category)}</Badge>;
 }

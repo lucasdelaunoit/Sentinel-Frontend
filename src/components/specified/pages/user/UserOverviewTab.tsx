@@ -20,6 +20,7 @@ import MediumRecommendationRow from "@/components/specified/models/recommendatio
 import DataDisplay from "@/components/common/data/DataDisplay.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import { cn } from "@/lib/utils.ts";
+import { type Tone, TONE_SOFT_BG, TONE_SOFT_BORDER, TONE_TEXT } from "@/lib/theme/tone.ts";
 import type { StatCardData, UserRecommendationIcon } from "@/types/dashboard";
 import CountDisplay from "@/components/common/displays/CountDisplay.tsx";
 
@@ -41,11 +42,9 @@ const RECOMMENDATION_ICONS: Record<UserRecommendationIcon, Icon> = {
 /* ─── Helpers ────────────────────────────────────────────── */
 
 function critLabel(score: number) {
-  if (score >= 70)
-    return { label: "High Criticality", color: "text-rose-700", bg: "bg-rose-50", border: "border-rose-200" };
-  if (score >= 40)
-    return { label: "Medium Criticality", color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200" };
-  return { label: "Low Criticality", color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" };
+  const tone: Tone = score >= 70 ? "danger" : score >= 40 ? "warning" : "success";
+  const label = score >= 70 ? "High Criticality" : score >= 40 ? "Medium Criticality" : "Low Criticality";
+  return { label, color: TONE_TEXT[tone], bg: TONE_SOFT_BG[tone], border: TONE_SOFT_BORDER[tone] };
 }
 
 /* ─── CriticalityHeadline ────────────────────────────────── */

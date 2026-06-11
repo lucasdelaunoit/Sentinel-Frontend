@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import MetricBox from "@/components/common/data/MetricBox.tsx";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
-import { SEVERITY_COLORS } from "@/lib/severity.ts";
+import { SEVERITY_BG } from "@/lib/theme/severity.ts";
 import { cn } from "@/lib/utils.ts";
 
 interface MediumSkillImpactRowProps {
@@ -23,9 +23,7 @@ export default function MediumSkillImpactRow({ skill, className, onClick }: Medi
       onClick={onClick}
       title={
         <span className="flex min-w-0 items-center gap-2">
-          <span
-            className={cn("size-2 shrink-0 rounded-full", `bg-${SEVERITY_COLORS[skill.severity].backgroundColor}`)}
-          />
+          <span className={cn("size-2 shrink-0 rounded-full", SEVERITY_BG[skill.severity])} />
           <span className="truncate text-[14px] font-semibold leading-tight text-foreground">{skill.name}</span>
           {skill.is_critical_for_org && (
             <Badge

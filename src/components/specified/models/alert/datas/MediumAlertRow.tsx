@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils.ts";
-import { SEVERITY_COLORS_CLASSNAMES } from "@/lib/severity.ts";
+import { SEVERITY_BADGE } from "@/lib/theme/severity.ts";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import { WarningIcon } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
@@ -12,7 +12,7 @@ export default function MediumAlertRow({ alert }: { alert: ProjectFragilityAlert
         <div
           className={cn(
             "flex size-10 items-center justify-center rounded-lg text-[13px] shrink-0",
-            SEVERITY_COLORS_CLASSNAMES[alert.severity],
+            SEVERITY_BADGE[alert.severity],
           )}
         >
           <WarningIcon className="size-4" weight="bold" />

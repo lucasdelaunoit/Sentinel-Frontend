@@ -1,12 +1,5 @@
 import { cn } from "@/lib/utils";
-
-export const SKILL_LEVEL_LABEL: Record<number, string> = {
-  1: "Beginner",
-  2: "Elementary",
-  3: "Intermediate",
-  4: "Advanced",
-  5: "Expert",
-};
+import { SKILL_LEVEL_LABEL } from "@/lib/theme/skillLevel.ts";
 
 const LEVEL_COLOR: Record<number, string> = {
   1: "bg-planned-foreground text-planned border-planned",

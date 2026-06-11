@@ -1,11 +1,10 @@
 import { cn } from "@/lib/utils";
+import { SEVERITY_BG } from "@/lib/theme/severity.ts";
 
 export type SegmentedLevelSeverity = "ok" | "warning" | "critical" | "neutral";
 
 const FILL_COLOR: Record<SegmentedLevelSeverity, string> = {
-  ok: "bg-success",
-  warning: "bg-warning",
-  critical: "bg-danger",
+  ...SEVERITY_BG,
   neutral: "bg-primary",
 };
 
