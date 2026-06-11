@@ -1,4 +1,4 @@
-import createMutationHook from "@/api/createMutationHook";
+import { createMutationHook } from "@/lib/api/createMutationHook";
 
 const useDeleteSkill = createMutationHook(
   "deleteSkill",

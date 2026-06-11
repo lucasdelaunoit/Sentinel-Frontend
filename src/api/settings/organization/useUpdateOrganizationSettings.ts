@@ -1,4 +1,4 @@
-import createMutationHook from "@/api/createMutationHook.ts";
+import { createMutationHook } from "@/lib/api/createMutationHook";
 
 const useUpdateOrganizationSettings = createMutationHook("updateOrganizationSettings", {
   mutationFn: (api, payload: UpdateOrganizationSettingsRequest) =>

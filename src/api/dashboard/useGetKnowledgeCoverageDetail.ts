@@ -1,14 +1,13 @@
 import { useQuery } from "@tanstack/react-query"
-import usePrivateApi from "@/api/privateApi"
+import { axiosClient } from "@/lib/api/client";
 import type { KnowledgeCoverageDetail } from "@/types/dashboard"
 
 export default function useGetKnowledgeCoverageDetail() {
-  const privateApi = usePrivateApi()
 
   return useQuery<KnowledgeCoverageDetail>({
     queryKey: ["dashboard", "knowledge-coverage"],
     queryFn: async () => {
-      const { data } = await privateApi.get<KnowledgeCoverageDetail>("/api/dashboard/knowledge-coverage")
+      const { data } = await axiosClient.get<KnowledgeCoverageDetail>("/api/dashboard/knowledge-coverage")
       return data
     },
     staleTime: 1000 * 60,

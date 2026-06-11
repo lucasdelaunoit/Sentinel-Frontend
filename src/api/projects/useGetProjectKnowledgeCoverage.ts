@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import usePrivateApi from "@/api/privateApi.ts";
-import { useQueryString, unwrapPagination } from "@/hooks/pagination";
-import type { PaginatedResponse, QueryParams } from "@/types/pagination";
+import { axiosClient } from "@/lib/api/client";
+import { useQueryString, unwrapPagination, type PaginatedResponse, type QueryParams } from "@/lib/api/pagination";
 
 /**
  * Paginated, searchable, sortable, filterable knowledge-coverage rows for a project.
@@ -10,13 +9,12 @@ import type { PaginatedResponse, QueryParams } from "@/types/pagination";
  * page — read project-wide aggregates from `useGetProjectCoverageSummary`.
  */
 export default function useGetProjectKnowledgeCoverage(projectId: string | undefined, params: QueryParams = {}) {
-  const privateApi = usePrivateApi();
   const queryString = useQueryString(params);
 
   const { data: raw, ...rest } = useQuery<PaginatedResponse<ProjectKnowledgeCoverageItem>>({
     queryKey: ["projects", projectId, "knowledge-coverage", queryString],
     queryFn: async () => {
-      const { data } = await privateApi.get<PaginatedResponse<ProjectKnowledgeCoverageItem>>(
+      const { data } = await axiosClient.get<PaginatedResponse<ProjectKnowledgeCoverageItem>>(
         `/api/projects/${projectId}/knowledge-coverage${queryString}`,
       );
       return data;

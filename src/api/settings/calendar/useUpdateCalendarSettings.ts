@@ -1,4 +1,4 @@
-import createMutationHook from "@/api/createMutationHook.ts";
+import { createMutationHook } from "@/lib/api/createMutationHook";
 
 const useUpdateCalendarSettings = createMutationHook("updateCalendarSettings", {
   mutationFn: (api, payload: UpdateCalendarSettingsRequest & { freeze_absence_ids?: number[] }) =>

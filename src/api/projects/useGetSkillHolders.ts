@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import usePrivateApi from "@/api/privateApi.ts";
-import { useQueryString, unwrapPagination } from "@/hooks/pagination";
-import type { PaginatedResponse, QueryParams } from "@/types/pagination";
+import { axiosClient } from "@/lib/api/client";
+import { useQueryString, unwrapPagination, type PaginatedResponse, type QueryParams } from "@/lib/api/pagination";
 
 /**
  * Paginated holders of a single skill within a project — every team member who holds the
@@ -14,13 +13,12 @@ export default function useGetSkillHolders(
   skillId: number | null,
   params: QueryParams = {},
 ) {
-  const privateApi = usePrivateApi();
   const queryString = useQueryString(params);
 
   const { data: raw, ...rest } = useQuery<PaginatedResponse<ProjectKnowledgeCoverageHolder>>({
     queryKey: ["projects", projectId, "skills", skillId, "holders", queryString],
     queryFn: async () => {
-      const { data } = await privateApi.get<PaginatedResponse<ProjectKnowledgeCoverageHolder>>(
+      const { data } = await axiosClient.get<PaginatedResponse<ProjectKnowledgeCoverageHolder>>(
         `/api/projects/${projectId}/skills/${skillId}/holders${queryString}`,
       );
       return data;

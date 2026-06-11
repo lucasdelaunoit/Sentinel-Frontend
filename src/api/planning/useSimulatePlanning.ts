@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import usePrivateApi from "@/api/privateApi";
+import { axiosClient } from "@/lib/api/client";
 
 export type SimulateStatus = "idle" | "pending" | "saved" | "error";
 
@@ -42,7 +42,6 @@ export default function useSimulatePlanning(
   options: UseSimulatePlanningOptions = {},
 ) {
   const { debounceMs = 300 } = options;
-  const privateApi = usePrivateApi();
 
   const signature = JSON.stringify(absences);
   const [debounced, setDebounced] = useState(absences);
@@ -57,7 +56,7 @@ export default function useSimulatePlanning(
   const query = useQuery({
     queryKey: ["planning-simulate", debouncedSignature],
     queryFn: async () => {
-      const { data } = await privateApi.post<SimulateResponse>("/api/planning/simulate", { absences: debounced });
+      const { data } = await axiosClient.post<SimulateResponse>("/api/planning/simulate", { absences: debounced });
       return data;
     },
     enabled,

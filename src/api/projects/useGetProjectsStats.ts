@@ -4,7 +4,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 /* -------- /Custom hooks/ -------- */
-import usePrivateApi from "@/api/privateApi.ts";
+import { axiosClient } from "@/lib/api/client";
 
 /* ------------------- (Hook) ------------------ */
 
@@ -17,12 +17,11 @@ import usePrivateApi from "@/api/privateApi.ts";
  * @returns React Query result wrapping `ProjectsStats`
  */
 export default function useGetProjectsStats() {
-  const privateApi = usePrivateApi();
 
   return useQuery<ProjectsStats>({
     queryKey: ["projects", "stats"],
     queryFn: async () => {
-      const { data } = await privateApi.get<ProjectsStats>("/api/projects/stats");
+      const { data } = await axiosClient.get<ProjectsStats>("/api/projects/stats");
       return data;
     },
     staleTime: 1000 * 60,

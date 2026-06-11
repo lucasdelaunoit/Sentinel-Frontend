@@ -1,6 +1,42 @@
 import { useMemo } from "react";
 import { useDebounce } from "@/hooks/useDebounce";
-import type { PaginatedResponse, QueryParams } from "@/types/pagination";
+
+/* ─── Request types ─────────────────────────────────────────── */
+
+export interface SortParam {
+  field: string;
+  direction: "asc" | "desc";
+}
+
+export interface FilterParam {
+  field: string;
+  value: string | number | boolean | string[];
+}
+
+export interface QueryParams {
+  page?: number;
+  per_page?: number;
+  search?: string;
+  filters?: FilterParam[];
+  sorts?: SortParam[];
+  includes?: string[];
+}
+
+/** Raw Laravel paginator payload as returned by the API. */
+export interface PaginatedResponse<T> {
+  current_page: number;
+  data: T[];
+  first_page_url: string;
+  from: number;
+  last_page: number;
+  last_page_url: string;
+  next_page_url: string | null;
+  path: string;
+  per_page: number;
+  prev_page_url: string | null;
+  to: number;
+  total: number;
+}
 
 /* ─── Query-string builder ──────────────────────────────────── */
 

@@ -1,4 +1,4 @@
-import createMutationHook from "@/api/createMutationHook.ts";
+import { createMutationHook } from "@/lib/api/createMutationHook";
 
 const useDeleteCompanyHoliday = createMutationHook("deleteCompanyHoliday", {
   mutationFn: (api, id: number) => api.delete(`/api/settings/holidays/${id}`),

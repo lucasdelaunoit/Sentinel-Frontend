@@ -9,8 +9,7 @@ import { useTableSort } from "@/hooks/useTableSort";
 import { useTablePagination } from "@/hooks/useTablePagination";
 import FilterPillGroup, { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import { cn } from "@/lib/utils";
-import type { PaginatedQuery } from "@/hooks/pagination";
-import type { QueryParams } from "@/types/pagination";
+import { type PaginatedQuery, type QueryParams } from "@/lib/api/pagination";
 
 export interface DataTableColumn<T, S extends string = string> {
   key: string;

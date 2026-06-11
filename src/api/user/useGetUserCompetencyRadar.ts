@@ -1,13 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import usePrivateApi from "@/api/privateApi.ts";
+import { axiosClient } from "@/lib/api/client";
 
 export default function useGetUserCompetencyRadar(userId: string | undefined) {
-  const privateApi = usePrivateApi();
 
   return useQuery<CompetencyRadarItem[]>({
     queryKey: ["users", userId, "competency-radar"],
     queryFn: async () => {
-      const { data } = await privateApi.get<UserCompetencyRadarResponse>(
+      const { data } = await axiosClient.get<UserCompetencyRadarResponse>(
         `/api/users/${userId}/competency-radar`,
       );
       return data.data;

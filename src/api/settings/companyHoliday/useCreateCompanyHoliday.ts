@@ -1,4 +1,4 @@
-import createMutationHook from "@/api/createMutationHook.ts";
+import { createMutationHook } from "@/lib/api/createMutationHook";
 
 const useCreateCompanyHoliday = createMutationHook("createCompanyHoliday", {
   mutationFn: (api, payload: CompanyHolidayRequest & { freeze_absence_ids?: number[] }) =>

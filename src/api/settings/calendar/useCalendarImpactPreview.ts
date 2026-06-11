@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import usePrivateApi from "@/api/privateApi.ts";
+import { axiosClient } from "@/lib/api/client";
 
 /** A future absence whose working-day count would change under a pending calendar change. */
 export interface CalendarImpactAffected {
@@ -29,11 +29,10 @@ export type CalendarChangePayload =
  * Used to decide whether to surface the confirmation modal.
  */
 export default function useCalendarImpactPreview() {
-  const privateApi = usePrivateApi();
 
   const mutation = useMutation({
     mutationFn: async (payload: CalendarChangePayload) => {
-      const { data } = await privateApi.post<{ affected: CalendarImpactAffected[] }>(
+      const { data } = await axiosClient.post<{ affected: CalendarImpactAffected[] }>(
         "/api/settings/calendar/impact",
         payload,
       );

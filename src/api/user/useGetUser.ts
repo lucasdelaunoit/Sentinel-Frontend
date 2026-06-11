@@ -1,13 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import usePrivateApi from "@/api/privateApi.ts";
+import { axiosClient } from "@/lib/api/client";
 
 export default function useGetUser(id: string | undefined) {
-  const privateApi = usePrivateApi();
 
   return useQuery<User>({
     queryKey: ["users", id],
     queryFn: async () => {
-      const { data } = await privateApi.get<User>(`/api/users/${id}`);
+      const { data } = await axiosClient.get<User>(`/api/users/${id}`);
       return data;
     },
     enabled: !!id,

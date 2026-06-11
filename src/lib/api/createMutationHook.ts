@@ -1,14 +1,9 @@
-import {
-  useMutation,
-  useQueryClient,
-  type QueryKey,
-  type UseMutateAsyncFunction,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient, type QueryKey, type UseMutateAsyncFunction } from "@tanstack/react-query";
 import { toast } from "sonner";
-import usePrivateApi from "@/api/privateApi";
-import extractApiErrorMessage from "@/utils/extractApiErrorMessage";
+import { axiosClient } from "./client";
+import { extractApiErrorMessage } from "./errors";
 
-type PrivateApi = ReturnType<typeof usePrivateApi>;
+type PrivateApi = typeof axiosClient;
 
 /** Either a static value, or one derived from the mutation's variables and result. */
 type Derivable<T, TVars, TData> = T | ((vars: TVars, data: TData) => T);
@@ -34,14 +29,8 @@ type NamedMutationResult<K extends string, TVars, TData> = {
   isSuccess: boolean;
 };
 
-function resolve<T, TVars, TData>(
-  value: Derivable<T, TVars, TData>,
-  vars: TVars,
-  data: TData,
-): T {
-  return typeof value === "function"
-    ? (value as (vars: TVars, data: TData) => T)(vars, data)
-    : value;
+function resolve<T, TVars, TData>(value: Derivable<T, TVars, TData>, vars: TVars, data: TData): T {
+  return typeof value === "function" ? (value as (vars: TVars, data: TData) => T)(vars, data) : value;
 }
 
 /**
@@ -52,25 +41,22 @@ function resolve<T, TVars, TData>(
  * `TVars` and `TData` are inferred from `mutationFn`; annotate its `vars` parameter to
  * drive the inference (e.g. `(api, { id }: DeletePayload) => api.delete(...)`).
  */
-export default function createMutationHook<K extends string, TVars, TData>(
+export function createMutationHook<K extends string, TVars, TData>(
   action: K,
   config: MutationConfig<TVars, TData>,
 ): () => NamedMutationResult<K, TVars, TData> {
   return function useGeneratedMutation() {
-    const privateApi = usePrivateApi();
     const queryClient = useQueryClient();
 
     const mutation = useMutation<TData, Error, TVars>({
-      mutationFn: (vars) => config.mutationFn(privateApi, vars),
+      mutationFn: (vars) => config.mutationFn(axiosClient, vars),
       onSuccess: (data, vars) => {
         if (config.invalidateKeys) {
-          for (const key of resolve(config.invalidateKeys, vars, data)) {
+          for (const key of resolve(config.invalidateKeys, vars, data))
             queryClient.invalidateQueries({ queryKey: key });
-          }
         }
-        if (config.successMessage !== undefined) {
-          toast.success(resolve(config.successMessage, vars, data));
-        }
+
+        if (config.successMessage !== undefined) toast.success(resolve(config.successMessage, vars, data));
       },
       onError: (error) => {
         toast.error(extractApiErrorMessage(error, config.errorMessage));

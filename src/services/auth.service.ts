@@ -1,4 +1,4 @@
-import axiosClient from "@/api/axiosClient"
+import { axiosClient } from "@/lib/api/client";
 
 export interface AuthUser {
   id: number

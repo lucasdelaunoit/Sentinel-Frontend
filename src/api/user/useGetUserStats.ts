@@ -4,7 +4,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 /* -------- /Custom hooks/ -------- */
-import usePrivateApi from "@/api/privateApi.ts";
+import { axiosClient } from "@/lib/api/client";
 
 /* -------- /Types/ -------- */
 import type { UserStats } from "@/types/dashboard";
@@ -12,12 +12,11 @@ import type { UserStats } from "@/types/dashboard";
 /* ------------------- (Hook) ------------------ */
 
 export default function useGetUserStats(userId: string | undefined) {
-  const privateApi = usePrivateApi();
 
   return useQuery<UserStats>({
     queryKey: ["users", userId, "stats"],
     queryFn: async () => {
-      const { data } = await privateApi.get<UserStats>(`/api/users/${userId}/stats`);
+      const { data } = await axiosClient.get<UserStats>(`/api/users/${userId}/stats`);
       return data;
     },
     enabled: !!userId,

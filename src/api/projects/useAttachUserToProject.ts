@@ -1,4 +1,4 @@
-import createMutationHook from "@/api/createMutationHook";
+import { createMutationHook } from "@/lib/api/createMutationHook";
 
 interface AttachUserArgs {
   projectId: string | number;

@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
 import { useQueryClient } from "@tanstack/react-query"
-import { AUTH_UNAUTHORIZED_EVENT, getStoredToken, setStoredToken } from "@/api/axiosClient"
+import { AUTH_UNAUTHORIZED_EVENT, getStoredToken, setStoredToken } from "@/lib/api/client";
 import { fetchCurrentUser, login as loginRequest, logout as logoutRequest, type AuthUser } from "@/services/auth.service"
 
 interface AuthContextValue {

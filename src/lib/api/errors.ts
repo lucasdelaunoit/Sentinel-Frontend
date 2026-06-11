@@ -5,7 +5,7 @@ interface LaravelErrorBody {
   errors?: Record<string, string[]>;
 }
 
-export default function extractApiErrorMessage(error: unknown, fallback: string): string {
+export function extractApiErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof AxiosError) {
     const body = error.response?.data as LaravelErrorBody | undefined;
     const firstFieldError = body?.errors ? Object.values(body.errors)[0]?.[0] : undefined;

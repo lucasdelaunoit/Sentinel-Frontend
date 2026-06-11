@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import usePrivateApi from "@/api/privateApi.ts";
+import { axiosClient } from "@/lib/api/client";
 
 /**
  * Full (unpaginated) knowledge-coverage matrix with complete holder lists. Use for dashboard
@@ -7,13 +7,12 @@ import usePrivateApi from "@/api/privateApi.ts";
  * the paginated `useGetProjectKnowledgeCoverage` and its 5-holder cap would give wrong totals.
  */
 export default function useGetProjectKnowledgeMatrix(projectId: string | undefined) {
-  const privateApi = usePrivateApi();
 
   return useQuery<ProjectKnowledgeCoverageItem[]>({
     // "knowledge-coverage" prefix so skill mutations invalidate this alongside the list & summary.
     queryKey: ["projects", projectId, "knowledge-coverage", "matrix"],
     queryFn: async () => {
-      const { data } = await privateApi.get<ProjectKnowledgeCoverageResponse>(
+      const { data } = await axiosClient.get<ProjectKnowledgeCoverageResponse>(
         `/api/projects/${projectId}/knowledge-coverage/matrix`,
       );
       return data.data;

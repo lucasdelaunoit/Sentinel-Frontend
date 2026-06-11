@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import usePrivateApi from "@/api/privateApi.ts";
+import { axiosClient } from "@/lib/api/client";
 
 /**
  * Project-wide coverage summary (covered / silo / uncovered / total) computed over ALL
@@ -7,13 +7,12 @@ import usePrivateApi from "@/api/privateApi.ts";
  * stay exact even though the coverage table is paginated.
  */
 export default function useGetProjectCoverageSummary(projectId: string | undefined) {
-  const privateApi = usePrivateApi();
 
   return useQuery<ProjectKnowledgeCoverageSummary>({
     // "knowledge-coverage" prefix so skill mutations invalidate this alongside the list.
     queryKey: ["projects", projectId, "knowledge-coverage", "summary"],
     queryFn: async () => {
-      const { data } = await privateApi.get<{ data: ProjectKnowledgeCoverageSummary }>(
+      const { data } = await axiosClient.get<{ data: ProjectKnowledgeCoverageSummary }>(
         `/api/projects/${projectId}/knowledge-coverage/summary`,
       );
       return data.data;
