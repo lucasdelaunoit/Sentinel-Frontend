@@ -199,7 +199,8 @@ export default function SimBlockDetailSheet({
         </Section>
       )}
 
-      {step === "overview" && !isSimulating && userImpact && userImpact.replacement_candidates.length > 0 && (
+      {/* Replacements answer "who fills the gap" — pointless when the absence breaks nothing. */}
+      {step === "overview" && !isSimulating && userImpact && userImpact.severity !== "ok" && userImpact.replacement_candidates.length > 0 && (
         <Section
           title="Replacement candidates"
           info={`The percentage is the skill match: how much of ${user.firstname}'s skill set the candidate also covers. 100% means they could stand in for every skill, lower means only part of the role is covered.`}

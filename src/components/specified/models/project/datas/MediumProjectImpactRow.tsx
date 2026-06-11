@@ -20,22 +20,26 @@ interface MediumProjectImpactRowProps {
 /**
  * How much this absence actually degrades the project — driven by the *change*, not the
  * project's baseline state. A scenario that moves nothing reads "Safe", even on a project
- * that is fragile to begin with.
+ * that is fragile to begin with — unless the baseline is already broken (no coverage or
+ * bus factor 0), where a green "Safe" would mislead: that reads "Already at risk" instead.
  */
-function impactSeverity(p: ProjectImpact): Severity {
+function impactSeverity(p: ProjectImpact): { severity: Severity; label?: string } {
   const fragilityUp = p.risk_score_after - p.risk_score_before > 0;
   const busDropped = p.bus_factor_after < p.bus_factor_before;
   const coverageDropped = p.coverage_pct_after < p.coverage_pct_before;
   const worsened = fragilityUp || busDropped || coverageDropped || p.skills_at_risk.length > 0;
 
-  if (!worsened) return "ok";
+  if (!worsened) {
+    const baselineBroken = p.bus_factor_before === 0 || p.coverage_pct_before === 0;
+    return baselineBroken ? { severity: "warning", label: "Already at risk" } : { severity: "ok" };
+  }
 
   const lostLastOwner = p.bus_factor_after === 0 && p.bus_factor_before > 0;
   const criticalSkillUncovered = p.skills_at_risk.some((s) => s.severity === "critical");
   if (lostLastOwner || criticalSkillUncovered || getFragilityTier(p.risk_score_after).tone === "danger") {
-    return "critical";
+    return { severity: "critical" };
   }
-  return "warning";
+  return { severity: "warning" };
 }
 
 export default function MediumProjectImpactRow({
@@ -45,7 +49,7 @@ export default function MediumProjectImpactRow({
   className,
   onClick,
 }: MediumProjectImpactRowProps) {
-  const severity = impactSeverity(project);
+  const { severity, label } = impactSeverity(project);
 
   const skills = project.skills_at_risk;
   const visibleSkills = skills.slice(0, 4);
@@ -136,7 +140,7 @@ export default function MediumProjectImpactRow({
           )}
         </span>
       }
-      action={<SeverityBadge severity={severity} size="md" />}
+      action={<SeverityBadge severity={severity} label={label} size="md" />}
     />
   );
 }
