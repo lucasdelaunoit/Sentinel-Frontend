@@ -237,29 +237,13 @@
 
 /* Page transitions */
 .page-enter {
-    animation: pageEnter 0.3s ease-out;
+    animation: pageEnter 0.8s cubic-bezier(0.33, 1, 0.68, 1) both;
 }
 
 @keyframes pageEnter {
     from {
         opacity: 0;
-        transform: translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Staggered list animations */
-.stagger-item {
-    animation: staggerIn 0.4s ease-out both;
-}
-
-@keyframes staggerIn {
-    from {
-        opacity: 0;
-        transform: translateY(12px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
