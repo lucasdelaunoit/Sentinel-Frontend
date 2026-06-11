@@ -48,6 +48,25 @@ export function formatRange(start: string, end: string): string | null {
   return `${a.day} ${mon(a.month)} – ${b.day} ${mon(b.month)}`;
 }
 
+/** "6–7 Jul, 10 Jul" — collapse consecutive YYYY-MM-DD dates into formatted ranges. */
+export function formatDateRuns(dates: string[]): string | null {
+  const sorted = [...dates].sort();
+  const runs: Array<[string, string]> = [];
+  for (const date of sorted) {
+    const last = runs.at(-1);
+    if (last && nextDay(last[1]) === date) last[1] = date;
+    else runs.push([date, date]);
+  }
+  const formatted = runs.map(([start, end]) => formatRange(start, end)).filter(Boolean);
+  return formatted.length > 0 ? formatted.join(", ") : null;
+}
+
+function nextDay(dateStr: string): string {
+  const d = new Date(dateStr + "T12:00:00");
+  d.setDate(d.getDate() + 1);
+  return makeDateStr(d.getFullYear(), d.getMonth() + 1, d.getDate());
+}
+
 export function getDayOfWeekForDay(day: number, firstDayOfWeek: number): number {
   return (firstDayOfWeek + day - 1) % 7;
 }

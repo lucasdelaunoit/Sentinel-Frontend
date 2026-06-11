@@ -2,10 +2,9 @@ import { CalendarDotsIcon, UserMinusIcon } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import MetricBox from "@/components/common/data/MetricBox.tsx";
-import SeveredSkillBadge from "@/components/specified/models/skill/badges/SeveredSkillBadge.tsx";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
 import { getFragilityTier } from "@/lib/theme/scoring.ts";
-import { TONE_BG } from "@/lib/theme/tone.ts";
+import { SEVERITY_BG } from "@/lib/theme/severity.ts";
 import { cn } from "@/lib/utils.ts";
 
 interface MediumProjectImpactRowProps {
@@ -46,7 +45,7 @@ export default function MediumProjectImpactRow({
   className,
   onClick,
 }: MediumProjectImpactRowProps) {
-  const fragilityTier = getFragilityTier(project.risk_score_after);
+  const severity = impactSeverity(project);
 
   const skills = project.skills_at_risk;
   const visibleSkills = skills.slice(0, 4);
@@ -62,13 +61,13 @@ export default function MediumProjectImpactRow({
           <span
             className={cn(
               "rounded-md px-2.5 py-1 text-[15px] font-bold tabular-nums text-background",
-              TONE_BG[fragilityTier.tone],
+              SEVERITY_BG[severity],
             )}
           >
             {project.risk_score_after}
           </span>
           <span className="text-[10px] font-medium tabular-nums text-muted-foreground">
-            from {project.risk_score_before}
+            {project.risk_score_after === project.risk_score_before ? "unchanged" : `from ${project.risk_score_before}`}
           </span>
         </div>
       }
@@ -95,7 +94,7 @@ export default function MediumProjectImpactRow({
         </span>
       }
       description={
-        <span className="mt-3 block space-y-2.5">
+        <span className="mt-3 block space-y-2">
           <span className="grid grid-cols-2 gap-2">
             <MetricBox
               label="Bus factor"
@@ -115,18 +114,29 @@ export default function MediumProjectImpactRow({
           </span>
 
           {visibleSkills.length > 0 && (
-            <span className="flex flex-wrap items-center gap-1.5">
-              {visibleSkills.map((s) => (
-                <SeveredSkillBadge key={s.skill_id} name={`${s.name} · ${s.owners_left} left`} severity={s.severity} />
-              ))}
-              {extraSkills > 0 && (
-                <span className="text-[11px] font-medium text-muted-foreground">+{extraSkills} more</span>
-              )}
+            <span className="block rounded-lg bg-muted/40 py-2">
+              <span className="block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                Skills at risk
+              </span>
+              <span className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
+                {visibleSkills.map((s) => (
+                  <span key={s.skill_id} className="flex items-center gap-1.5 text-[12px]">
+                    <span className={cn("size-1.5 rounded-full", SEVERITY_BG[s.severity])} />
+                    <span className="font-semibold text-foreground">{s.name}</span>
+                    <span className="font-medium text-muted-foreground">
+                      {s.owners_left === 0 ? "no one left" : `${s.owners_left} left`}
+                    </span>
+                  </span>
+                ))}
+                {extraSkills > 0 && (
+                  <span className="text-[11px] font-medium text-muted-foreground">+{extraSkills} more</span>
+                )}
+              </span>
             </span>
           )}
         </span>
       }
-      action={<SeverityBadge severity={impactSeverity(project)} size="md" />}
+      action={<SeverityBadge severity={severity} size="md" />}
     />
   );
 }

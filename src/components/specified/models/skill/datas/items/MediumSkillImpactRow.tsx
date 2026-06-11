@@ -1,10 +1,11 @@
-import { CalendarDotsIcon, ShieldWarningIcon } from "@phosphor-icons/react";
+import { CalendarDotsIcon, FolderIcon } from "@phosphor-icons/react";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { Badge } from "@/components/ui/badge.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import MetricBox from "@/components/common/data/MetricBox.tsx";
+import OrgCriticalBadge from "@/components/specified/models/skill/badges/OrgCriticalBadge.tsx";
 import SeverityBadge from "@/components/specified/others/badges/SeverityBadge.tsx";
 import { SEVERITY_BG } from "@/lib/theme/severity.ts";
+import { formatDateRuns } from "@/utils/planning/calendar.ts";
 import { cn } from "@/lib/utils.ts";
 
 interface MediumSkillImpactRowProps {
@@ -15,7 +16,7 @@ interface MediumSkillImpactRowProps {
 
 export default function MediumSkillImpactRow({ skill, className, onClick }: MediumSkillImpactRowProps) {
   const projectCount = skill.projects_impacted.length;
-  const extraDates = Math.max(0, skill.dates_uncovered.length - 4);
+  const uncovered = formatDateRuns(skill.dates_uncovered);
 
   return (
     <SecondaryCard
@@ -25,15 +26,7 @@ export default function MediumSkillImpactRow({ skill, className, onClick }: Medi
         <span className="flex min-w-0 items-center gap-2">
           <span className={cn("size-2 shrink-0 rounded-full", SEVERITY_BG[skill.severity])} />
           <span className="truncate text-[14px] font-semibold leading-tight text-foreground">{skill.name}</span>
-          {skill.is_critical_for_org && (
-            <Badge
-              variant="outline"
-              className="h-4 shrink-0 gap-1 border-danger/40 px-1.5 text-[9px] font-semibold text-danger"
-            >
-              <ShieldWarningIcon className="size-2.5" />
-              Org-critical
-            </Badge>
-          )}
+          {skill.is_critical_for_org && <OrgCriticalBadge className="shrink-0" />}
         </span>
       }
       description={
@@ -48,20 +41,18 @@ export default function MediumSkillImpactRow({ skill, className, onClick }: Medi
             <MetricBox label="Owners" before={skill.owners_total} after={skill.owners_left} />
           </span>
 
-          {(projectCount > 0 || skill.dates_uncovered.length > 0) && (
-            <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-muted-foreground">
+          {(projectCount > 0 || uncovered) && (
+            <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-medium text-muted-foreground">
               {projectCount > 0 && (
-                <span>
+                <span className="flex items-center gap-1.5">
+                  <FolderIcon className="size-3.5 text-muted-foreground/70" />
                   {projectCount} project{projectCount === 1 ? "" : "s"} affected
                 </span>
               )}
-              {skill.dates_uncovered.length > 0 && (
+              {uncovered && (
                 <span className="flex min-w-0 items-center gap-1.5 text-danger">
                   <CalendarDotsIcon className="size-3.5 shrink-0" />
-                  <span className="truncate">
-                    Uncovered {skill.dates_uncovered.slice(0, 4).join(", ")}
-                    {extraDates > 0 ? ` +${extraDates}` : ""}
-                  </span>
+                  <span className="truncate">Uncovered {uncovered}</span>
                 </span>
               )}
             </span>
