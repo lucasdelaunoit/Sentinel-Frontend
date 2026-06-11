@@ -1,4 +1,4 @@
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis } from "recharts";
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts";
 
 import { ChartContainer, type ChartConfig, ChartLegend, ChartLegendContent } from "@/components/ui/chart.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
@@ -63,6 +63,7 @@ export default function CoverageRadar({
       <RadarChart data={data} outerRadius="80%" margin={{ top: 10, right: 50, bottom: 0, left: 50 }}>
         <PolarGrid />
         <PolarAngleAxis dataKey="axis" tick={<AngleTick />} />
+        <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
         {showTarget && (
           <Radar
             dataKey="target"
