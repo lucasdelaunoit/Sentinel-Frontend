@@ -8,7 +8,6 @@ interface MetricCellProps {
   empty?: string;
 }
 
-/** Severity dot + tone-colored value, for metric columns in tables. */
 export default function MetricCell({ metric, renderRaw = false, empty = "—" }: MetricCellProps) {
   if (!metric) return <span className="text-[13px] text-muted-foreground">{empty}</span>;
   return (

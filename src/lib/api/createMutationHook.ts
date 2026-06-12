@@ -56,6 +56,10 @@ export function createMutationHook<K extends string, TVars, TData>(
             queryClient.invalidateQueries({ queryKey: key });
         }
 
+        // Any successful mutation may queue a backend recalculation — poke every
+        // mounted sync-status query so cards flip to "queued" without waiting a poll cycle.
+        queryClient.invalidateQueries({ predicate: (query) => query.queryKey.includes("sync-status") });
+
         if (config.successMessage !== undefined) toast.success(resolve(config.successMessage, vars, data));
       },
       onError: (error) => {

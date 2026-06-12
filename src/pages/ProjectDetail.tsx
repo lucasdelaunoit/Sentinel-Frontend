@@ -7,6 +7,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import TopBar from "@/components/layout/topbar/TopBar.tsx";
 import useGetProject from "@/api/projects/useGetProject";
 import useGetProjectStats from "@/api/projects/useGetProjectStats";
+import useGetProjectSyncStatus from "@/api/projects/useGetProjectSyncStatus";
+import useTriggerProjectRecalculation from "@/api/projects/useTriggerProjectRecalculation";
+import SyncStatusCard from "@/components/common/cards/SyncStatusCard.tsx";
 import ProjectProfileCard from "@/components/specified/pages/project/ProjectProfileCard.tsx";
 import ProjectStatsSection from "@/components/specified/pages/project/ProjectStatsSection.tsx";
 import ProjectTeamTab from "@/components/specified/pages/project/ProjectTeamTab.tsx";
@@ -31,6 +34,8 @@ export default function ProjectDetail() {
 
   const { data: apiProject, isLoading, isError } = useGetProject(id);
   const { data: stats, isLoading: isLoadingStats } = useGetProjectStats(id);
+  const { data: syncStatus, isLoading: isLoadingSync } = useGetProjectSyncStatus(id);
+  const { triggerProjectRecalculation, isLoading: isRecalculating } = useTriggerProjectRecalculation();
 
   useEffect(() => {
     if (apiProject) {
@@ -62,6 +67,17 @@ export default function ProjectDetail() {
           { label: "Projects", to: "/projects" },
           { label: isLoading ? "Loading…" : (apiProject?.name ?? "Project") },
         ]}
+        actions={
+          isLoadingSync ? (
+            <SyncStatusCard.Skeleton />
+          ) : (
+            <SyncStatusCard
+              status={syncStatus}
+              isRecalculating={isRecalculating}
+              onRecalculate={() => id && triggerProjectRecalculation({ id }).catch(() => {})}
+            />
+          )
+        }
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         {/* ── Hero ─────────────────────────────────────────────── */}

@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button.tsx";
 import Feedback from "@/components/common/feedbacks/Feedback.tsx";
 import useGetUser from "@/api/user/useGetUser";
 import useGetUserStats from "@/api/user/useGetUserStats";
+import useGetUserSyncStatus from "@/api/user/useGetUserSyncStatus";
+import useTriggerUserRecalculation from "@/api/user/useTriggerUserRecalculation";
+import SyncStatusCard from "@/components/common/cards/SyncStatusCard.tsx";
 import UserProfileCard from "@/components/specified/pages/user/UserProfileCard.tsx";
 import UserStatsSection from "@/components/specified/pages/user/UserStatsSection.tsx";
 import UserOverviewTab from "@/components/specified/pages/user/UserOverviewTab.tsx";
@@ -27,6 +30,8 @@ export default function UserDetail() {
 
   const { data: user, isLoading, isError } = useGetUser(id);
   const { data: stats, isLoading: isLoadingStats } = useGetUserStats(id);
+  const { data: syncStatus, isLoading: isLoadingSync } = useGetUserSyncStatus(id);
+  const { triggerUserRecalculation, isLoading: isRecalculating } = useTriggerUserRecalculation();
 
   useEffect(() => {
     if (user) {
@@ -64,6 +69,17 @@ export default function UserDetail() {
           { label: "Employees", to: "/users" },
           ...(isLoading ? [] : [{ label: user ? `${user.firstname} ${user.lastname}` : "Employee" }]),
         ]}
+        actions={
+          isLoadingSync ? (
+            <SyncStatusCard.Skeleton />
+          ) : (
+            <SyncStatusCard
+              status={syncStatus}
+              isRecalculating={isRecalculating}
+              onRecalculate={() => id && triggerUserRecalculation({ id }).catch(() => {})}
+            />
+          )
+        }
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         {/* ── Hero ─────────────────────────────────────────────── */}

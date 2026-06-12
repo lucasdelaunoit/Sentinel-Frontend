@@ -235,27 +235,9 @@ const PROJECT_COLUMNS: DataTableColumn<Project, ProjSortKey>[] = [
   },
 ];
 
-function ProjectList() {
-  const navigate = useNavigate();
-  return (
-    <DataTable<Project, ProjSortKey, ProjectStatus>
-      title="All Projects"
-      hook={(params) => useGetProjects(params)}
-      columns={PROJECT_COLUMNS}
-      defaultSort="name"
-      searchable
-      searchPlaceholder="Search projects..."
-      filter={{ field: "status", options: STATUS_FILTER_OPTIONS }}
-      onRowClick={(project) => navigate(`/projects/${project.id}`)}
-      emptyMessage="No projects match your filters."
-      errorMessage="Failed to load projects. Check API connection."
-    />
-  );
-}
-
-/* ─── Projects Page ─────────────────────────────────────────── */
-
 export default function Projects() {
+  const navigate = useNavigate();
+
   const [searchParams, setSearchParams] = useSearchParams();
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -280,7 +262,18 @@ export default function Projects() {
       />
       <div className="flex-1 overflow-y-auto p-6 space-y-5 page-enter">
         <ProjectsStatCardsSection />
-        <ProjectList />
+        <DataTable<Project, ProjSortKey, ProjectStatus>
+          title="All Projects"
+          hook={(params) => useGetProjects(params)}
+          columns={PROJECT_COLUMNS}
+          defaultSort="name"
+          searchable
+          searchPlaceholder="Search projects..."
+          filter={{ field: "status", options: STATUS_FILTER_OPTIONS }}
+          onRowClick={(project) => navigate(`/projects/${project.id}`)}
+          emptyMessage="No projects match your filters."
+          errorMessage="Failed to load projects. Check API connection."
+        />
       </div>
 
       <CreateProjectSheet open={sheetOpen} onOpenChange={setSheetOpen} />
