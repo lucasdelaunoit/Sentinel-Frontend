@@ -19,7 +19,7 @@ import useGetProjects from "@/api/projects/useGetProjects";
 import CreateProjectSheet from "@/components/specified/models/project/sheets/CreateProjectSheet.tsx";
 import { Skeleton } from "@/components/ui/skeleton";
 import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable";
-import { HighlightMatch } from "@/utils/useHighlightableText";
+import { HighlightMatch } from "@/components/common/displays/HighlightMatch.tsx";
 import { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import {
   DropdownMenu,

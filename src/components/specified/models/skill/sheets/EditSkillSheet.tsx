@@ -17,7 +17,7 @@ interface FormValues {
   skill_category_id: number | "";
 }
 
-interface UpdateSkillSheetProps {
+interface EditSkillSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   skill: Skill;
@@ -33,7 +33,7 @@ const schema = yup.object({
   skill_category_id: yup.number().typeError("Category is required.").required("Category is required."),
 });
 
-export default function UpdateSkillSheet({ open, onOpenChange, skill, categories }: UpdateSkillSheetProps) {
+export default function EditSkillSheet({ open, onOpenChange, skill, categories }: EditSkillSheetProps) {
   const {
     control,
     handleSubmit,

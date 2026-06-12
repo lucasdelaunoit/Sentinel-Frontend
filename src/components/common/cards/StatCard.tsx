@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { SEVERITY_TEXT } from "@/lib/theme/severity.ts";
 
 /** Minimal metric shape rendered by the card — satisfied by both StatCardData and MetricResult. */
-interface StatCardValue {
+export interface StatCardValue {
   value: string;
   severity: Severity;
   insight?: string | null;

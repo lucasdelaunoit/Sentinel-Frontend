@@ -9,7 +9,7 @@ const useResumeProject = createMutationHook(
   "resumeProject",
   {
     mutationFn: (api, { id }: ResumeProjectArgs) => api.post(`/api/projects/${id}/resume`),
-    invalidateKeys: ({ id }) => [["projects"], ["projects-stats"], ["project", id]],
+    invalidateKeys: () => [["projects"]],
     successMessage: ({ name }) => (name ? `Project "${name}" resumed.` : "Project resumed."),
     errorMessage: "Failed to resume project.",
   },

@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import SelectorRow from "@/components/common/inputs/SelectorRow";
-import { HighlightMatch } from "@/utils/useHighlightableText";
+import { HighlightMatch } from "@/components/common/displays/HighlightMatch.tsx";
 
 interface SkillSelectorRowProps {
   skill: Skill;

@@ -4,7 +4,7 @@ const useDeleteUser = createMutationHook(
   "deleteUser",
   {
     mutationFn: (api, id: number) => api.delete(`/api/users/${id}`),
-    invalidateKeys: () => [["users"], ["users-stats"]],
+    invalidateKeys: () => [["users"]],
     successMessage: "Employee deleted.",
     errorMessage: "Failed to delete employee.",
   },

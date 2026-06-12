@@ -14,7 +14,7 @@ const useDetachSkillFromProject = createMutationHook(
       ["projects", projectId, "knowledge-coverage"],
       ["projects", projectId, "competency-radar"],
       ["projects", String(projectId)],
-      ["projects-stats"],
+      ["projects", "stats"],
     ],
     successMessage: "Required skill removed.",
     errorMessage: "Failed to remove required skill.",

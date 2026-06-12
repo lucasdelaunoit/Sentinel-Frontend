@@ -4,8 +4,8 @@ import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
-import UpdateDepartmentSheet from "@/components/specified/models/department/sheets/UpdateDepartmentSheet.tsx";
-import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
+import EditDepartmentSheet from "@/components/specified/models/department/sheets/EditDepartmentSheet.tsx";
+import { HighlightMatch } from "@/components/common/displays/HighlightMatch.tsx";
 import useDeleteDepartment from "@/api/department/useDeleteDepartment.ts";
 
 interface MediumDepartmentCardProps {
@@ -73,7 +73,7 @@ export default function MediumDepartmentCard({ department, searchTerm = "", onDe
           </div>
         }
       />
-      <UpdateDepartmentSheet open={editOpen} onOpenChange={setEditOpen} department={department} />
+      <EditDepartmentSheet open={editOpen} onOpenChange={setEditOpen} department={department} />
     </>
   );
 }

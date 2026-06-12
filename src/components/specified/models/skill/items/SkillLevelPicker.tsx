@@ -1,13 +1,5 @@
 import { cn } from "@/lib/utils";
-import { SKILL_LEVEL_LABEL } from "@/lib/theme/skillLevel.ts";
-
-const LEVEL_COLOR: Record<number, string> = {
-  1: "bg-planned-foreground text-planned border-planned",
-  2: "bg-danger-foreground text-danger border-danger",
-  3: "bg-warning-foreground text-warning border-warning",
-  4: "bg-info-foreground text-info border-info",
-  5: "bg-success-foreground text-success border-success",
-};
+import { SKILL_LEVEL_LABEL, SKILL_LEVEL_PICKER_CLASS } from "@/lib/theme/skillLevel.ts";
 
 interface SkillLevelPickerProps {
   value: number | null;
@@ -29,7 +21,7 @@ export default function SkillLevelPicker({ value, onChange, disabled = false }: 
             className={cn(
               "flex flex-col items-center justify-center gap-0.5 rounded-lg border px-2 py-2.5 transition-all cursor-pointer",
               active
-                ? LEVEL_COLOR[lvl] + " shadow-sm"
+                ? cn(SKILL_LEVEL_PICKER_CLASS[lvl], "shadow-sm")
                 : "border-border/60 bg-muted/30 text-muted-foreground hover:bg-muted/60 hover:text-foreground",
               disabled && "opacity-50 cursor-not-allowed",
             )}

@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button.tsx";
 import SkillCategoryBadge from "@/components/specified/models/skill/badges/SkillCategoryBadge.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";
-import UpdateSkillSheet from "@/components/specified/models/skill/sheets/UpdateSkillSheet.tsx";
-import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
+import EditSkillSheet from "@/components/specified/models/skill/sheets/EditSkillSheet.tsx";
+import { HighlightMatch } from "@/components/common/displays/HighlightMatch.tsx";
 import useDeleteSkill from "@/api/skill/useDeleteSkill.ts";
 import useGetSkillCategories from "@/api/skillCategory/useGetSkillCategories";
 
@@ -64,7 +64,7 @@ export default function MediumSkillCard({ skill, searchTerm = "", onDeleted }: M
           </div>
         }
       />
-      <UpdateSkillSheet open={editOpen} onOpenChange={setEditOpen} skill={skill} categories={categories} />
+      <EditSkillSheet open={editOpen} onOpenChange={setEditOpen} skill={skill} categories={categories} />
     </>
   );
 }

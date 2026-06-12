@@ -18,7 +18,7 @@ const useAddProjectSkillRequirement = createMutationHook(
       ["projects", projectId, "knowledge-coverage"],
       ["projects", projectId, "competency-radar"],
       ["projects", String(projectId)],
-      ["projects-stats"],
+      ["projects", "stats"],
     ],
     errorMessage: "Failed to add required skill.",
   },

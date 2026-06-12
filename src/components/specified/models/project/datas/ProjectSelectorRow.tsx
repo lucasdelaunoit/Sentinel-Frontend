@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import SelectorRow from "@/components/common/inputs/SelectorRow.tsx";
-import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
+import { HighlightMatch } from "@/components/common/displays/HighlightMatch.tsx";
 import ProjectStatusBadge from "@/components/specified/models/project/badges/ProjectStatusBadge.tsx";
 import ProjectAvatar from "@/components/specified/models/project/avatars/ProjectAvatar.tsx";
 

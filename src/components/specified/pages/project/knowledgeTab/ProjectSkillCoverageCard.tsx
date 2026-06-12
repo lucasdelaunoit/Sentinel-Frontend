@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils.ts";
 import { TONE_BG, TONE_TEXT } from "@/lib/theme/tone.ts";
 import { COVERAGE_TONE } from "@/lib/theme/skillCoverage.ts";
 import { skillLevelLabel } from "@/lib/theme/skillLevel.ts";
-import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
+import { HighlightMatch } from "@/components/common/displays/HighlightMatch.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import ComposedAlertDialog from "@/components/common/dialogs/ComposedAlertDialog.tsx";

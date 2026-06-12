@@ -3,7 +3,7 @@ import SecondaryCard from "@/components/common/cards/SecondaryCard.tsx";
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { Skeleton } from "@/components/ui/skeleton.tsx";
-import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
+import { HighlightMatch } from "@/components/common/displays/HighlightMatch.tsx";
 import { getFullName } from "@/utils/formatters/persons.ts";
 import { skillLevelLabel, SKILL_LEVEL_MAX } from "@/lib/theme/skillLevel.ts";
 

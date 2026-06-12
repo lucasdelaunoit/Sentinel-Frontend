@@ -13,7 +13,7 @@ const useAttachUserToProject = createMutationHook(
     invalidateKeys: ({ projectId, userId }) => [
       ["projects", projectId, "users"],
       ["projects", String(projectId)],
-      ["projects-stats"],
+      ["projects", "stats"],
       ["users", String(userId), "projects"],
       ["users", String(userId), "stats"],
     ],

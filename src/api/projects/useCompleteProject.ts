@@ -9,7 +9,7 @@ const useCompleteProject = createMutationHook(
   "completeProject",
   {
     mutationFn: (api, { id }: CompleteProjectArgs) => api.post(`/api/projects/${id}/complete`),
-    invalidateKeys: ({ id }) => [["projects"], ["projects-stats"], ["project", id]],
+    invalidateKeys: () => [["projects"]],
     successMessage: ({ name }) => (name ? `Project "${name}" completed.` : "Project completed."),
     errorMessage: "Failed to complete project.",
   },

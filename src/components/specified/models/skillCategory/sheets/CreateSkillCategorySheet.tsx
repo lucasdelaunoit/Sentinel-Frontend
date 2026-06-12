@@ -126,7 +126,7 @@ export default function CreateSkillCategorySheet({
             </FieldLabel>
             <div className="flex flex-wrap gap-1.5 pt-0.5">
               {categories.map((cat) => (
-                <SkillCategoryBadge category={cat} className="bg-secondary" />
+                <SkillCategoryBadge key={cat.id} category={cat} className="bg-secondary" />
               ))}
             </div>
           </Field>

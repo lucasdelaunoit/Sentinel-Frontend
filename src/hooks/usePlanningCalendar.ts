@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import useGetWorkingDays from "@/api/settings/organization/useGetWorkingDays";
 import useGetCompanyHolidaysForMonth from "@/api/settings/companyHoliday/useGetCompanyHolidaysForMonth";
 import { getDayOfWeekForDay, getDaysInMonth, getFirstDayOfWeek } from "@/utils/planning/calendar";
+import { holidayRangeForYear } from "@/utils/holidays";
 
 export interface PlanningHoliday {
   day: number;
@@ -27,12 +28,7 @@ export function usePlanningCalendar(viewYear: number, viewMonth: number) {
     const daysInMonth = getDaysInMonth(viewYear, viewMonth);
     const result: PlanningHoliday[] = [];
     for (const h of holidays) {
-      const srcStart = new Date(h.start_date);
-      const srcEnd = new Date(h.end_date);
-      const startY = h.recurring ? viewYear : srcStart.getFullYear();
-      const endY = h.recurring ? viewYear + (srcEnd.getFullYear() - srcStart.getFullYear()) : srcEnd.getFullYear();
-      const start = new Date(startY, srcStart.getMonth(), srcStart.getDate());
-      const end = new Date(endY, srcEnd.getMonth(), srcEnd.getDate());
+      const { start, end } = holidayRangeForYear(h, viewYear);
       for (let d = 1; d <= daysInMonth; d++) {
         const date = new Date(viewYear, viewMonth - 1, d);
         if (date >= start && date <= end) result.push({ day: d, label: h.name });

@@ -4,7 +4,7 @@ import { FolderPlusIcon, EyeIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { HighlightMatch } from "@/utils/useHighlightableText";
+import { HighlightMatch } from "@/components/common/displays/HighlightMatch.tsx";
 import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable";
 import type { FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import AddUserProjectsSheet from "@/components/specified/models/project/sheets/AddUserProjectsSheet";

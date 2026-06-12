@@ -7,7 +7,7 @@ const useCreateUser = createMutationHook(
       const { data } = await api.post<User>("/api/users", payload);
       return data;
     },
-    invalidateKeys: () => [["users"], ["users-stats"]],
+    invalidateKeys: () => [["users"]],
     successMessage: ({ firstname, lastname }) => `Employee "${firstname} ${lastname}" created.`,
     errorMessage: "Failed to create employee.",
   },

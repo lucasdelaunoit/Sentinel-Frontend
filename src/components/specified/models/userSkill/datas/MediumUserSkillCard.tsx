@@ -2,7 +2,7 @@ import { useState } from "react";
 import { PencilSimpleIcon, TrashIcon, CircleNotchIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { HighlightMatch } from "@/utils/useHighlightableText";
+import { HighlightMatch } from "@/components/common/displays/HighlightMatch.tsx";
 import SecondaryCard from "@/components/common/cards/SecondaryCard";
 import SegmentedLevelBar from "@/components/common/bars/SegmentedLevelBar";
 import SkillCategoryBadge from "@/components/specified/models/skill/badges/SkillCategoryBadge.tsx";

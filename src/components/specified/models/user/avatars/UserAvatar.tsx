@@ -6,14 +6,14 @@ import { AVATAR_SIZE, type AvatarSize } from "@/lib/theme/avatar.ts";
 
 export type UserAvatarSizes = AvatarSize;
 
-interface StatusAvatarProps {
+interface UserAvatarProps {
   firstname: string;
   lastname: string;
   variant?: UserStatus;
   size?: UserAvatarSizes;
 }
 
-export default function UserAvatar({ firstname, lastname, variant = "available", size = "base" }: StatusAvatarProps) {
+export default function UserAvatar({ firstname, lastname, variant = "available", size = "base" }: UserAvatarProps) {
   return (
     <div
       className={cn(

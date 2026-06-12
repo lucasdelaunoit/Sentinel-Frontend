@@ -9,7 +9,7 @@ const useArchiveProject = createMutationHook(
   "archiveProject",
   {
     mutationFn: (api, { id }: ArchiveProjectArgs) => api.post(`/api/projects/${id}/archive`),
-    invalidateKeys: ({ id }) => [["projects"], ["projects-stats"], ["project", id]],
+    invalidateKeys: () => [["projects"]],
     successMessage: ({ name }) => (name ? `Project "${name}" archived.` : "Project archived."),
     errorMessage: "Failed to archive project.",
   },

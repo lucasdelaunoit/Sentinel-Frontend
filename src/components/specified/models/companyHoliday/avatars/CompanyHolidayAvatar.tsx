@@ -3,15 +3,15 @@ import { Skeleton } from "@/components/ui/skeleton.tsx";
 import { PROJECT_STATUS_BG } from "@/lib/theme/projectStatus.ts";
 import { AVATAR_SIZE, type AvatarSize } from "@/lib/theme/avatar.ts";
 
-export type ProjectAvatarSizes = AvatarSize;
+export type CompanyHolidayAvatarSizes = AvatarSize;
 
-interface ProjectAvatarProps {
+interface CompanyHolidayAvatarProps {
   dayNumber: number;
   variant?: ProjectStatus;
-  size?: ProjectAvatarSizes;
+  size?: CompanyHolidayAvatarSizes;
 }
 
-export default function CompanyHolidayAvatar({ dayNumber, variant = "active", size = "base" }: ProjectAvatarProps) {
+export default function CompanyHolidayAvatar({ dayNumber, variant = "active", size = "base" }: CompanyHolidayAvatarProps) {
   return (
     <div
       className={cn(
@@ -25,6 +25,6 @@ export default function CompanyHolidayAvatar({ dayNumber, variant = "active", si
   );
 }
 
-CompanyHolidayAvatar.Skeleton = function ProjectAvatarSkeleton({ size = "base" }: { size?: ProjectAvatarSizes }) {
+CompanyHolidayAvatar.Skeleton = function CompanyHolidayAvatarSkeleton({ size = "base" }: { size?: CompanyHolidayAvatarSizes }) {
   return <Skeleton className={cn("rounded-xl shrink-0", AVATAR_SIZE[size])} />;
 };

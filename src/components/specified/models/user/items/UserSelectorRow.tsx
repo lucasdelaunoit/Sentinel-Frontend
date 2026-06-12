@@ -1,7 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton.tsx";
 import SelectorRow from "@/components/common/inputs/SelectorRow.tsx";
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
-import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
+import { HighlightMatch } from "@/components/common/displays/HighlightMatch.tsx";
 import { getFullName } from "@/utils/formatters/persons.ts";
 
 interface UserSelectorRowProps {

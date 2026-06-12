@@ -12,7 +12,7 @@ const useUpdateUser = createMutationHook(
       const { data } = await api.patch<User>(`/api/users/${id}`, payload);
       return data;
     },
-    invalidateKeys: ({ id }) => [["users"], ["users", String(id)], ["users-stats"]],
+    invalidateKeys: () => [["users"]],
     successMessage: "Profile updated.",
     errorMessage: "Failed to update profile.",
   },

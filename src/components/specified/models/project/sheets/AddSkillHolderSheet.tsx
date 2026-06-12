@@ -11,7 +11,7 @@ import SkillLevelPicker from "@/components/specified/models/skill/items/SkillLev
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import useGetProjectUsers from "@/api/projects/useGetProjectUsers.ts";
 import useAttachSkillToUser from "@/api/user/useAttachSkillToUser.ts";
-import { HighlightMatch } from "@/utils/useHighlightableText.tsx";
+import { HighlightMatch } from "@/components/common/displays/HighlightMatch.tsx";
 import { getFullName } from "@/utils/formatters/persons.ts";
 
 export interface HolderSheetSkill {

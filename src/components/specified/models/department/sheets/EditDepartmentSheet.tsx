@@ -14,7 +14,7 @@ interface FormValues {
   name: string;
 }
 
-interface UpdateDepartmentSheetProps {
+interface EditDepartmentSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   department: Department;
@@ -28,7 +28,7 @@ const schema = yup.object({
     .max(MAX_NAME_LENGTH, `Name must be ${MAX_NAME_LENGTH} characters or fewer.`),
 });
 
-export default function UpdateDepartmentSheet({ open, onOpenChange, department }: UpdateDepartmentSheetProps) {
+export default function EditDepartmentSheet({ open, onOpenChange, department }: EditDepartmentSheetProps) {
   const {
     control,
     handleSubmit,

@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils.ts";
 /* ─── Constants ──────────────────────────────────────────── */
 
 const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+
+const NAV_BUTTON_CLASS =
+  "size-7 cursor-pointer rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors";
 const MONTH_NAMES = [
   "January",
   "February",
@@ -121,11 +124,7 @@ export default function MediumCalendar<T>({
       }
       action={
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => shift(-1)}
-            className="size-7 cursor-pointer rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-            aria-label="Previous month"
-          >
+          <button onClick={() => shift(-1)} className={NAV_BUTTON_CLASS} aria-label="Previous month">
             <CaretLeftIcon className="size-4" />
           </button>
           <button
@@ -134,11 +133,7 @@ export default function MediumCalendar<T>({
           >
             Today
           </button>
-          <button
-            onClick={() => shift(1)}
-            className="size-7 cursor-pointer rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-            aria-label="Next month"
-          >
+          <button onClick={() => shift(1)} className={NAV_BUTTON_CLASS} aria-label="Next month">
             <CaretRightIcon className="size-4" />
           </button>
         </div>

@@ -15,9 +15,10 @@ import useGetUsers from "@/api/user/useGetUsers";
 import useDeleteUser from "@/api/user/useDeleteUser";
 import { Skeleton } from "@/components/ui/skeleton";
 import DataTable, { type DataTableColumn } from "@/components/common/table/DataTable";
-import { HighlightMatch } from "@/utils/useHighlightableText";
+import { HighlightMatch } from "@/components/common/displays/HighlightMatch.tsx";
 import UserAvatar from "@/components/specified/models/user/avatars/UserAvatar.tsx";
 import UserStatusBadge from "@/components/specified/models/user/badges/UserStatusBadge.tsx";
+import UserSkillsCell from "@/components/specified/models/user/items/UserSkillsCell.tsx";
 import UsersStatCardsSection from "@/components/specified/pages/employees/UsersStatCardsSection.tsx";
 import { type FilterPillOption } from "@/components/common/filters/FilterPillGroup";
 import CreateUserSheet from "@/components/specified/models/user/sheets/CreateUserSheet";
@@ -43,7 +44,7 @@ function UserActionsCell({ user }: { user: UserListItem }) {
       await deleteUser(user.id);
       setConfirmDelete(false);
     } catch {
-      console.error();
+      // Error toast is handled by the hook; keep the dialog open.
     }
   };
 
@@ -106,30 +107,6 @@ const USER_STATUS_FILTER_OPTIONS: FilterPillOption<UserStatus | null>[] = [
   { value: "away", label: "Away" },
 ];
 
-function SkillsCell({ skills }: { skills: UserSkillItem[] }) {
-  return (
-    <div className="flex items-center gap-1.5 flex-wrap">
-      <span className="font-semibold text-foreground text-[14px]">{skills.length}</span>
-      <span className="text-muted-foreground text-[11px]">skills</span>
-      <div className="flex gap-1 ml-1 flex-wrap">
-        {skills.slice(0, 3).map((s) => (
-          <span
-            key={s.id}
-            className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60"
-          >
-            {s.name}
-          </span>
-        ))}
-        {skills.length > 3 && (
-          <span className="inline-flex items-center rounded-md bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-foreground/60">
-            +{skills.length - 3}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
 const USER_COLUMNS: DataTableColumn<UserListItem, EmpSortKey>[] = [
   {
     key: "employee",
@@ -183,7 +160,7 @@ const USER_COLUMNS: DataTableColumn<UserListItem, EmpSortKey>[] = [
   {
     key: "skills",
     header: "Skills",
-    cell: (emp) => <SkillsCell skills={emp.skills} />,
+    cell: (emp) => <UserSkillsCell skills={emp.skills} />,
     skeleton: (
       <div className="flex gap-1.5">
         <Skeleton className="h-5 w-16 rounded-md" />

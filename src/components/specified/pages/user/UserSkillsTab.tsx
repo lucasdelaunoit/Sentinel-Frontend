@@ -49,6 +49,7 @@ export default function UserSkillsTab({ userId }: UserSkillsTabProps) {
   );
 
   const showAddInHeader = isLoading || (!!skills && skills.length > 0);
+  const hasFilters = !!search || categoryId !== null;
 
   return (
     <>
@@ -95,14 +96,18 @@ export default function UserSkillsTab({ userId }: UserSkillsTabProps) {
           ) : skills.length === 0 ? (
             <Feedback
               variant="warning"
-              title={true ? "No skills match your filters." : "No skills recorded for this employee yet."}
-              description="Add your first skill to get started."
+              title={hasFilters ? "No skills match your filters." : "No skills recorded for this employee yet."}
+              description={
+                hasFilters ? "Try adjusting your search or category filter." : "Add your first skill to get started."
+              }
               className="h-96"
               action={
-                <Button onClick={() => setAddOpen(true)} className="sm">
-                  <PlusIcon className="size-3.5" />
-                  Add your first skill
-                </Button>
+                hasFilters ? undefined : (
+                  <Button onClick={() => setAddOpen(true)} className="sm">
+                    <PlusIcon className="size-3.5" />
+                    Add your first skill
+                  </Button>
+                )
               }
             />
           ) : (
